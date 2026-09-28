@@ -194,20 +194,20 @@ The dashboard was run offscreen with genuine historical market rows played at 0.
 
 A second slower replay explicitly checked concurrency while new bars were still arriving. By the first candidate's completion the agent had observed 29 timestamps, made 1,447 decisions, matured 1,395 outcomes, and saved 1,179 replay examples. Seventeen additional champion inferences occurred while `candidate_training` was true, and the mock-feed process was still running as rows were appended. The 0.5B candidate completed one update (0.759 s), changed weights by L1 3.589, then failed validation and was rejected; champion inference continued. Inference p50 was 27.7 ms, peak CUDA allocation 6.40 GB, and the clean-stop state shows `candidate_training: false`. Its files are in `runtime-global-desktop-concurrency/mock/agent/`. The standalone MockBroker queue check returned a simulated fill with `live_order: false`. No real broker is configured, and there is no exchange websocket subscription or full option-chain/order-book feed in the bundled default providers.
 
-## ºê¶ó¿ìÀú ´ë½Ãº¸µå (±ÇÀå ½ÇÇà)
+## ë¸Œë¼ìš°ì € ëŒ€ì‹œë³´ë“œ (ê¶Œì¥ ì‹¤í–‰)
 
-Windows¿¡¼­ ÇÑ ¹ø ½ÇÇàÇÏ¸é ·ÎÄÃ À¥ ´ë½Ãº¸µå, °ø°³ ½Ã¼¼ ¼öÁı±â, ±âÁ¸ champion ¸ğµ¨ÀÌ ÇÔ²² ½ÃÀÛµÇ°í ºê¶ó¿ìÀú Ã¢ÀÌ ¿­¸³´Ï´Ù. ±âº» ½ÇÇàÀº ÁÖ¹® OFF paper ¸ğµåÀÔ´Ï´Ù.
+Windowsì—ì„œ í•œ ë²ˆ ì‹¤í–‰í•˜ë©´ ë¡œì»¬ ì›¹ ëŒ€ì‹œë³´ë“œ, ê³µê°œ ì‹œì„¸ ìˆ˜ì§‘ê¸°, ê¸°ì¡´ champion ëª¨ë¸ì´ í•¨ê»˜ ì‹œì‘ë˜ê³  ë¸Œë¼ìš°ì € ì°½ì´ ì—´ë¦½ë‹ˆë‹¤. ê¸°ë³¸ ì‹¤í–‰ì€ ì£¼ë¬¸ OFF paper ëª¨ë“œì…ë‹ˆë‹¤.
 
 ```powershell
 python -m pip install -e .
 python -m stockrl web
 ```
 
-¶Ç´Â ÆÄÀÏ Å½»ö±â¿¡¼­ `scripts/launch_global_web.bat`¸¦ ½ÇÇàÇÏ¼¼¿ä. ´ë½Ãº¸µå´Â `http://127.0.0.1:8765`¿¡¼­ ¿­¸³´Ï´Ù. `½Ç½Ã°£ ½Ã¼¼` ¶Ç´Â `°ú°Å µ¥ÀÌÅÍ Àç»ı`À» °ñ¶ó ½ÃÀÛÇÒ ¼ö ÀÖ°í, Á¤Áö/ºñ»óÁ¤Áö ½Ã »óÅÂ ÀúÀåÀ» ¿äÃ»ÇÕ´Ï´Ù. À¥ È­¸éÀº ¸ğ¹ÙÀÏ Æø¿¡ ¸Â°Ô ¹İÀÀÇüÀ¸·Î ±¸¼ºÇß½À´Ï´Ù. ½ÇÇà »óÅÂ´Â `runtime-global-web/`¿¡ º°µµ ÀúÀåÇÏ¹Ç·Î ±âÁ¸ °ËÁõ runtime/championÀ» µ¤¾î¾²Áö ¾Ê½À´Ï´Ù. Ã¢¿¡¼­ °»½ÅµÇ´Â Ç×¸ñÀº ½Ã¼¼/¸ğµ¨ ¿¬°á, champion, ÃÖ±Ù BUY/HOLD/SELL ÆÇ´Ü ¹× È®·ü/°¡Ä¡, °¡»ó Æ÷Áö¼Ç, reward, replay, candidate update¿Í ½Â°İ/±â°¢ ±â·Ï, GPU/VRAMÀÔ´Ï´Ù.
+ë˜ëŠ” íŒŒì¼ íƒìƒ‰ê¸°ì—ì„œ `scripts/launch_global_web.bat`ë¥¼ ì‹¤í–‰í•˜ì„¸ìš”. ëŒ€ì‹œë³´ë“œëŠ” `http://127.0.0.1:8765`ì—ì„œ ì—´ë¦½ë‹ˆë‹¤. `ì‹¤ì‹œê°„ ì‹œì„¸` ë˜ëŠ” `ê³¼ê±° ë°ì´í„° ì¬ìƒ`ì„ ê³¨ë¼ ì‹œì‘í•  ìˆ˜ ìˆê³ , ì •ì§€/ë¹„ìƒì •ì§€ ì‹œ ìƒíƒœ ì €ì¥ì„ ìš”ì²­í•©ë‹ˆë‹¤. ì›¹ í™”ë©´ì€ ëª¨ë°”ì¼ í­ì— ë§ê²Œ ë°˜ì‘í˜•ìœ¼ë¡œ êµ¬ì„±í–ˆìŠµë‹ˆë‹¤. ì‹¤í–‰ ìƒíƒœëŠ” `runtime-global-web/`ì— ë³„ë„ ì €ì¥í•˜ë¯€ë¡œ ê¸°ì¡´ ê²€ì¦ runtime/championì„ ë®ì–´ì“°ì§€ ì•ŠìŠµë‹ˆë‹¤. ì°½ì—ì„œ ê°±ì‹ ë˜ëŠ” í•­ëª©ì€ ì‹œì„¸/ëª¨ë¸ ì—°ê²°, champion, ìµœê·¼ BUY/HOLD/SELL íŒë‹¨ ë° í™•ë¥ /ê°€ì¹˜, ê°€ìƒ í¬ì§€ì…˜, reward, replay, candidate updateì™€ ìŠ¹ê²©/ê¸°ê° ê¸°ë¡, GPU/VRAMì…ë‹ˆë‹¤.
 
-°°Àº PCÀÇ ÈŞ´ëÆù ºê¶ó¿ìÀú¿¡¼­ º¸·Á¸é LAN ¿¬°á¿¡¼­ `python -m stockrl web --host 0.0.0.0`·Î ½ÇÇàÇÏ°í PCÀÇ »ç¼³ LAN ÁÖ¼Ò¸¦ ¿©¼¼¿ä. ÇöÀç À¥ÆÇÀº ÀÎÁõ/HTTPS°¡ ¾øÀ¸¹Ç·Î ÀÎÅÍ³İ¿¡ Á÷Á¢ °ø°³ÇÏ°Å³ª Å¬¶ó¿ìµå¿¡ ¹Ù·Î ¹èÆ÷ÇÏÁö ¸¶¼¼¿ä. Å¬¶ó¿ìµå ¿î¿µÀº ÀÎÁõ, HTTPS reverse proxy, persistent volumeÀ» ¾Õ¿¡ µÖ¾ß ÇÕ´Ï´Ù. ½Ç½Ã°£ µ¥ÀÌÅÍ´Â ¹«·á °ø°³ APIÀÇ best-effort Á¦°øÀÌ¸ç, ½ÇÁ¦ ºê·ÎÄ¿ ÁÖ¹® ±â´ÉÀº À¥ÆÇ¿¡ ¿¬°áÇÏÁö ¾Ê¾Ò½À´Ï´Ù.
+ê°™ì€ PCì˜ íœ´ëŒ€í° ë¸Œë¼ìš°ì €ì—ì„œ ë³´ë ¤ë©´ LAN ì—°ê²°ì—ì„œ `python -m stockrl web --host 0.0.0.0`ë¡œ ì‹¤í–‰í•˜ê³  PCì˜ ì‚¬ì„¤ LAN ì£¼ì†Œë¥¼ ì—¬ì„¸ìš”. í˜„ì¬ ì›¹íŒì€ ì¸ì¦/HTTPSê°€ ì—†ìœ¼ë¯€ë¡œ ì¸í„°ë„·ì— ì§ì ‘ ê³µê°œí•˜ê±°ë‚˜ í´ë¼ìš°ë“œì— ë°”ë¡œ ë°°í¬í•˜ì§€ ë§ˆì„¸ìš”. í´ë¼ìš°ë“œ ìš´ì˜ì€ ì¸ì¦, HTTPS reverse proxy, persistent volumeì„ ì•ì— ë‘¬ì•¼ í•©ë‹ˆë‹¤. ì‹¤ì‹œê°„ ë°ì´í„°ëŠ” ë¬´ë£Œ ê³µê°œ APIì˜ best-effort ì œê³µì´ë©°, ì‹¤ì œ ë¸Œë¡œì»¤ ì£¼ë¬¸ ê¸°ëŠ¥ì€ ì›¹íŒì— ì—°ê²°í•˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.
 
-°£´ÜÇÑ health/status È®ÀÎ: `GET /api/status`; ÄÁÆ®·Ñ: `POST /api/start` (`{"mode":"live"}` ¶Ç´Â `{"mode":"mock"}`), `POST /api/stop`.
+ê°„ë‹¨í•œ health/status í™•ì¸: `GET /api/status`; ì»¨íŠ¸ë¡¤: `POST /api/start` (`{"mode":"live"}` ë˜ëŠ” `{"mode":"mock"}`), `POST /api/stop`.
 
 ## Shared multi-market training loader
 
