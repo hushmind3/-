@@ -1,8 +1,27 @@
 # StockRL 금융매매 모델
 
-이 프로젝트는 PyTorch를 사용해 장중 단일 봉 기준의 시장 판단을 연구합니다. 가중 teacher 앙상블, GRU actor-critic, teacher 지식 증류, 소규모 PPO 미세 조정을 결합합니다. 행동은 **SELL / HOLD / BUY**이며, critic의 스칼라 출력은 상태 가치 추정치로 제공합니다. reward와 백테스트에는 포지션 변경에 따른 수수료를 반영합니다.
+이 프로젝트의 목표는 특정 trader나 고정 전략을 영구 모방하는 것이 아니라, 시장 경험과 비용 차감 순손익으로 정책을 발전시키는 자율 트레이딩 에이전트다. 모델은 시장·종목·시간축·포트폴리오 상태를 바탕으로 종목 선택, BUY/HOLD/SELL, 자금 배분, 포지션 유지·교체·청산을 학습한다.
 
-> 이 저장소는 연구·엔지니어링 예제이며, 수익이 보장되는 전략이나 투자 조언이 아닙니다. 포함된 휴리스틱 정책은 실행 가능한 시연용 teacher이며, 공개 사전학습 시장 모델이 아닙니다. 일반적인 주식매매 체크포인트가 이 프로젝트의 관측 구조와 행동 의미에 맞는다고 가정할 수 없습니다. 로컬 Stable-Baselines3 PPO/A2C/DQN 체크포인트는 명시적 adapter를 통해 사용할 수 있습니다. 사용 전 입력 특징, 행동의 의미, 학습 출처를 확인하세요. FinRL은 트레이딩 에이전트 학습용 오픈소스 프레임워크이며, 모든 프로젝트와 호환되는 사전학습 체크포인트 저장소는 아닙니다.
+수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
+
+운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 경험을 메모리 replay에 임시 보관 → candidate 학습 → 사용한 경험 정리 → champion과 같은 미학습 구간의 순손익 비교 → 개선 시에만 승격`. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
+
+## 현재 파일 배치
+
+- 이 프로젝트 폴더에는 소스 코드, 설정, 문서와 정적 연구 데이터가 있다.
+- Windows 모델 폴더 `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt`만 둔다.
+- runtime 데이터는 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live` 아래에 둔다. replay, 미완료 결과, 검증 자료는 실행 중 메모리에서 처리한다. 학습에 실제 사용한 replay 항목은 정리하며, 이 자료들을 `.pt` 파일로 쌓지 않는다.
+- 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
+- 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
+- 웹 실행기는 새 경험 약 4,096개마다 candidate를 한 번 학습한다. 설정은 batch 1, update 1이다. 재시작하면 replay와 미완료 판단은 사라지고 candidate는 champion에서 다시 시작한다.
+- 현재는 잘못된 승격을 막기 위해 자동 승격을 멈춰 둔다. 지금 점수는 두 모델을 같은 미사용 구간의 실제 가상계좌로 순서대로 돌린 최종 순손익이 아니라 근사치다.
+- candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작한다.
+
+## 초기 연구 / 부트스트랩 기록
+
+초기에는 가중 teacher 앙상블, GRU actor-critic, teacher 지식 증류, 소규모 PPO 미세 조정을 연구했다. 행동은 **SELL / HOLD / BUY**이며, critic의 스칼라 출력은 상태 가치 추정치다. 이 구현은 현재 프로젝트의 최종 학습 목표가 아니라 연구·비교용 baseline이다.
+
+> 이 저장소는 연구·엔지니어링 프로젝트이며 수익을 보장하거나 투자 조언을 제공하지 않는다. 포함된 휴리스틱 정책은 실행 가능한 시연용 teacher이며 공개 사전학습 시장 모델이 아니다. 일반적인 주식매매 체크포인트가 이 프로젝트의 관측 구조와 행동 의미에 맞는다고 가정할 수 없다. 로컬 Stable-Baselines3 PPO/A2C/DQN 체크포인트는 명시적 adapter를 통해 사용할 수 있다. 사용 전 입력 특징, 행동 의미, 학습 출처를 확인한다. FinRL은 트레이딩 에이전트 학습용 오픈소스 프레임워크이며, 모든 프로젝트와 호환되는 사전학습 체크포인트 저장소는 아니다.
 
 ## 요구 사항 및 설치
 
@@ -25,10 +44,10 @@ python -m pip install -e '.[teachers]'
 
 ```bash
 python -m stockrl train --data data/sample_ohlcv.csv --epochs 2 --ppo-updates 1
-python -m stockrl predict --data data/sample_ohlcv.csv --checkpoint checkpoints/final.pt
+python -m stockrl predict --data data/sample_ohlcv.csv
 ```
 
-Windows PowerShell에서는 `python -m pip install -e .`을 실행한 뒤 `python -m stockrl ...`을 실행하세요. 학습은 각 증류 epoch와 PPO update가 끝날 때마다 `checkpoints/latest.pt`를 저장하고, 완료 시 `checkpoints/final.pt`도 저장합니다. 검증 지표와 따로 떼어 둔 최종 테스트 백테스트 결과를 각각 출력합니다. train/validation/test는 시간순으로 70/15/15 비율로 나누며, 특징과 teacher 관측값에 미래 수익률을 사용하지 않습니다.
+Windows PowerShell에서는 `python -m pip install -e .`을 실행한 뒤 `python -m stockrl ...`을 실행하세요. 초기 baseline 학습 결과는 프로젝트 밖의 `baseline-checkpoints` runtime 폴더에 저장합니다. 검증 지표와 따로 떼어 둔 최종 테스트 백테스트 결과를 각각 출력합니다. train/validation/test는 시간순으로 70/15/15 비율로 나누며, 특징과 teacher 관측값에 미래 수익률을 사용하지 않습니다.
 
 ## 데이터 형식
 
@@ -48,25 +67,27 @@ SB3 관측값은 펼친 window 특징 배열이며, 행동은 0=SELL, 1=HOLD, 2=
 
 ```bash
 python -m stockrl train --data PATH.csv --teachers configs/teachers.json --device auto
-python -m stockrl predict --data PATH.csv --checkpoint checkpoints/final.pt --device auto
+python -m stockrl predict --data PATH.csv --device auto
 ```
 
 이 구현은 학습용 최소 PPO 루프이며 실전 주문 실행 엔진이 아닙니다. 실제 운영에 사용하려면 소스를 검토하고 거래·세금 규칙과 현실적인 시장 시뮬레이터를 추가하세요.
 
-## 지속 관찰과 가상매매
+## 예전 GRU baseline 지속 관찰 기능 (현재 운영에 사용하지 않음)
+
+아래 `continuous`와 `replay` 명령은 초기 GRU baseline의 예전 연구 기능이다. 이 명령들은 별도 replay/checkpoint 파일을 만들 수 있어 현재 운영 구조와 맞지 않는다. 현재 가상매매를 시작할 때는 웹 실행기만 사용한다. 현재 online agent는 replay/pending/validation을 메모리에서 처리하고, 모델 폴더에는 champion과 candidate만 둔다.
 
 초기 모델을 한 번 만든 뒤, 툴/피드가 최신 봉을 계속 추가하는 CSV를 감시할 수 있습니다.
 
 ```bash
-python -m stockrl continuous --data path/to/live_bars.csv --champion checkpoints/final.pt
+python -m stockrl continuous --data path/to/live_bars.csv
 ```
 
 프로세스는 `Ctrl+C`까지 실행되며, 새 timestamp마다 판단을 기록하고 `runtime/latest_signal.json`을 원자적으로 갱신합니다. 신호의 `mode`는 항상 `paper`입니다. 이 JSON은 외부 자동매매 툴이 읽을 연동 경계입니다. 툴에서 사용자가 자동매매를 눌렀을 때 주문 실행은 그 툴이 담당하고, 모델 루프는 브로커 주문 API를 호출하지 않습니다. 실행 결과를 다시 학습하려면 툴이 `timestamp,action,reward` 열을 가진 CSV를 갱신하고 `--feedback path/to/feedback.csv`를 지정합니다. 실제 주문 체결과 손익 귀속은 툴에서 계산해 `reward`로 전달해야 합니다.
 
-완료된 가상 판단은 지정 horizon 봉 뒤에 수수료를 차감해 replay에 쌓입니다. 최근 관측으로 만든 후보는 replay로 incremental update한 뒤, 해당 replay 학습 구간보다 뒤의 시간 검증 구간에서 기존 champion과 비교합니다. 검증 수익률이 개선되지 않으면 champion은 유지됩니다. 기록은 `runtime/paper_decisions.jsonl`, replay는 `runtime/replay.pt`에 저장됩니다. 과거 데이터를 가상 체결로 흘려보내는 확인 명령:
+이하 내용은 당시 구현 동작을 설명하는 기록이다. 특히 `runtime/replay.pt` 출력 설명은 현재 실행 방식에 적용되지 않는다. 과거 데이터를 가상 체결로 흘려보내는 확인 명령:
 
 ```bash
-python -m stockrl replay --data data/sample_ohlcv.csv --checkpoint checkpoints/final.pt --state-dir runtime-replay
+python -m stockrl replay --data data/sample_ohlcv.csv
 ```
 
 ## 시장과 입력 호환성
@@ -146,19 +167,23 @@ python -m stockrl global-info --data data/global_market_daily.csv --device auto
 실시간 feed 프로세스는 위 형식의 append-only CSV에 시장 bar를 timestamp별로 추가합니다. 아래 명령은 각 timestamp를 관찰·판단하고, horizon 이후 가상 손익에 수수료·slippage를 반영해 replay에 저장합니다. learner는 별도 thread에서 업데이트합니다. Ctrl+C로 종료합니다. CSV 연결은 feed adapter이며 거래소 구독기나 주문 API가 아닙니다.
 
 ```powershell
-python -m stockrl global-online --data data/global_live.csv --state-dir runtime-global --follow --poll-seconds 1 --device auto
+python -m stockrl global-online --data "$env:LOCALAPPDATA/StockRL/runtime-global-korea-live/live/market.csv" --state-dir "$env:LOCALAPPDATA/StockRL/runtime-global-korea-live/live/agent" --model-dir "$env:USERPROFILE/Desktop/모델" --follow --poll-seconds 1 --device auto
 ```
 
 공개 teacher 판단을 먼저 만들어 글로벌 에이전트의 imitation replay에 추가할 수 있습니다. 입력 파일에는 `date,action` 열이 있어야 하며 기본 teacher symbol은 MSFT입니다.
 
 ```powershell
-python -m stockrl teacher-dataset --data data/msft_real_daily.csv --teachers configs/teachers.json --output outputs/public_teachers
-python -m stockrl global-online --data data/global_live.csv --state-dir runtime-global --follow --teacher-decisions outputs/public_teachers/ensemble.csv --teacher-symbol MSFT --device auto
+python -m stockrl teacher-dataset --data data/msft_real_daily.csv --teachers configs/teachers.json --output "$env:LOCALAPPDATA/StockRL/public-teachers"
+python -m stockrl global-online --data "$env:LOCALAPPDATA/StockRL/runtime-global-korea-live/live/market.csv" --state-dir "$env:LOCALAPPDATA/StockRL/runtime-global-korea-live/live/agent" --model-dir "$env:USERPROFILE/Desktop/모델" --follow --teacher-decisions "$env:LOCALAPPDATA/StockRL/public-teachers/ensemble.csv" --teacher-symbol MSFT --device auto
 ```
 
 teacher 연결 확인에서는 public teacher ensemble 435행 중 시간순 학습 구간에 속한 404행을 imitation replay에 넣었습니다. 짧은 update 10회 중 2회는 teacher imitation, 8회는 paper 경험을 사용했고 모델 weight가 변경됐습니다. 산출물은 `runtime-global-teacher-final/metrics.json`입니다.
 
-### 온라인 학습 확인 결과
+### 과거 온라인 학습 실험 기록
+
+아래 경로와 `.pt` 산출물 목록은 당시 연구 실행 기록이다. 현재 운영 실행기는 이 파일들을 만들거나 읽지 않는다. 현재 모델 폴더에는 `champion.pt`, `candidate.pt`만 두고, replay와 검증 경험은 메모리에서 처리한다.
+
+아래 benchmark와 파일 목록은 당시 실험 산출물 기록이다. 지금의 저장 구조를 설명하지 않는다. 현재 경로와 저장 원칙은 README 상단의 `현재 파일 배치`를 따른다.
 
 데이터는 시간순으로 나눴습니다. 앞 70%는 replay 학습, 다음 15%는 champion 검증, 마지막 15%는 별도 backtest에 사용했습니다. RTX 3070에서 합성 입력이 아닌 `data/global_market_daily.csv` 전체 과정으로 실행했습니다. 시장 상품 52개에서 관찰 10회, 판단 492건, 지연 outcome/reward 492건이 replay에 들어갔으며 replay 파일 크기는 9,005,607 bytes였습니다. update 1회 후 weight의 L1 변화량은 2,139.50이었습니다. candidate의 net validation score `0.000108`이 champion의 `-0.006814`보다 높아 이 실행에서는 승격됐고, 이전 champion은 `champion.previous.pt`에 보관했습니다. 다른 실측 실행에서는 candidate 점수가 낮아 자동 기각되고 champion이 유지됐습니다.
 
@@ -168,7 +193,9 @@ teacher 연결 확인에서는 public teacher ensemble 435행 중 시간순 학�
 
 모든 승격·기각은 연구용 paper 평가로만 취급합니다. 전용 데스크톱은 Yahoo chart와 Kraken 공개 OHLC 분봉에 연결합니다. 전체 호가창·옵션 체인 feed나 실제 broker 연결은 제공하지 않습니다. 실주문 경로는 broker adapter를 명시적으로 설치해야 사용할 수 있으며 기본값은 OFF입니다.
 
-## 데스크톱 제어판과 실시간 feed
+## 과거 데스크톱 제어판 구현 기록
+
+이 절의 restart 후 replay/checkpoint 복구 설명은 과거 구현의 동작 기록이다. 현재 운영 경로에서는 replay와 pending 상태를 `.pt`로 복원하지 않는다.
 
 고정된 0.5B Transformer와 기존 온라인 에이전트의 구조는 변경하지 않습니다. Windows 데스크톱 패널은 공개 feed 프로세스와 `global-online --follow` 프로세스를 관리합니다. 후자는 관찰 루프에서 champion 추론을 계속하고, 별도 learner thread가 candidate를 업데이트하고 검증합니다. GUI는 별도 프로세스이므로 GUI를 중지·재시작해도 replay, champion, cursor, 미확정 paper 결과, 검증 샘플, 포지션, 설정을 버리지 않습니다.
 
@@ -203,7 +230,7 @@ python -m pip install -e .
 python -m stockrl web
 ```
 
-또는 파일 탐색기에서 `scripts/launch_global_web.bat`를 실행하세요. 대시보드는 `http://127.0.0.1:8765`에서 열립니다. `실시간 시세` 또는 `과거 데이터 재생`을 골라 시작할 수 있고, 정지/비상정지 시 상태 저장을 요청합니다. 웹 화면은 모바일 폭에 맞게 반응형으로 구성했습니다. 실행 상태는 `runtime-global-web/`에 별도 저장하므로 기존 검증 runtime/champion을 덮어쓰지 않습니다. 창에서 갱신되는 항목은 시세/모델 연결, champion, 최근 BUY/HOLD/SELL 판단 및 확률/가치, 가상 포지션, reward, replay, candidate update와 승격/기각 기록, GPU/VRAM입니다.
+또는 파일 탐색기에서 `StockRL Start.bat`을 실행하세요. 대시보드는 `http://127.0.0.1:8766`에서 열립니다. 실행 상태는 Windows의 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`에 저장하고, checkpoint는 `Desktop\모델`의 champion/candidate 두 파일만 사용합니다. 창에는 시세/모델 연결, champion, BUY/HOLD/SELL 판단, 가상 포지션, reward, replay 건수, candidate 승격/기각 기록, GPU/VRAM이 표시됩니다.
 
 같은 PC의 휴대폰 브라우저에서 보려면 LAN 연결에서 `python -m stockrl web --host 0.0.0.0`로 실행하고 PC의 사설 LAN 주소를 여세요. 현재 웹판은 인증/HTTPS가 없으므로 인터넷에 직접 공개하거나 클라우드에 바로 배포하지 마세요. 클라우드 운영은 인증, HTTPS reverse proxy, persistent volume을 앞에 둬야 합니다. 실시간 데이터는 무료 공개 API의 best-effort 제공이며, 실제 브로커 주문 기능은 웹판에 연결하지 않았습니다.
 

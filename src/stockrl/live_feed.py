@@ -12,6 +12,7 @@ import logging
 import math
 import os
 import queue
+import shutil
 import sqlite3
 import threading
 import time
@@ -101,7 +102,13 @@ def _utc_stamp(epoch: int | float) -> str:
 
 
 class AppendOnlyMarketCSV:
-    """Append bars exactly once across process restarts, with a durable key index."""
+    """Append bars exactly once and compact the live cache to a rolling window."""
+    RETAIN_TIMESTAMPS = 512
+    REFERENCE_CARRY_ROWS = 20
+    DEDUPE_DAYS = 8
+    COMPACT_CSV_BYTES = 64 * 1024 * 1024
+    COMPACT_INDEX_BYTES = 128 * 1024 * 1024
+
     def __init__(self, path: str | Path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -109,7 +116,10 @@ class AppendOnlyMarketCSV:
         self.db = sqlite3.connect(self.db_path, timeout=30)
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("CREATE TABLE IF NOT EXISTS seen (symbol TEXT NOT NULL, stamp_ns INTEGER NOT NULL, PRIMARY KEY(symbol,stamp_ns))")
+        self.db.execute("CREATE INDEX IF NOT EXISTS seen_stamp_idx ON seen(stamp_ns)")
         self.db.commit()
+        self._next_csv_compaction = self.COMPACT_CSV_BYTES
+        self._next_index_compaction = self.COMPACT_INDEX_BYTES
         self._seed_index()
 
     def _seed_index(self) -> None:
@@ -150,7 +160,75 @@ class AppendOnlyMarketCSV:
         with self.db:
             self.db.executemany("INSERT OR IGNORE INTO seen VALUES (?,?)",
                                 [(str(r["symbol"]), int(pd.Timestamp(r["date"]).value)) for r in unique])
+        self._compact_if_needed()
         return len(unique)
+
+    def _compact_if_needed(self) -> None:
+        wal=self.db_path.with_name(self.db_path.name+"-wal")
+        csv_bytes=self.path.stat().st_size if self.path.exists() else 0
+        index_bytes=sum(p.stat().st_size for p in (self.db_path,wal) if p.exists())
+        if csv_bytes < self._next_csv_compaction and index_bytes < self._next_index_compaction:
+            return
+        if not self.path.exists() or csv_bytes == 0:
+            return
+        temporary=self.path.with_suffix(self.path.suffix+".compact.tmp")
+        recent_temporary=self.path.with_suffix(self.path.suffix+".recent.tmp")
+        try:
+            latest_rows=self.db.execute(
+                "SELECT DISTINCT stamp_ns FROM seen ORDER BY stamp_ns DESC LIMIT ?",
+                (self.RETAIN_TIMESTAMPS,)).fetchall()
+            if not latest_rows:
+                return
+            cutoff_ns=int(latest_rows[-1][0]) if len(latest_rows)>=self.RETAIN_TIMESTAMPS else None
+            latest_ns=int(latest_rows[0][0])
+            carry_by_symbol={}
+            wrote_recent=False
+            for chunk in pd.read_csv(self.path,chunksize=100_000):
+                stamps=pd.to_datetime(chunk["date"],utc=True,errors="coerce")
+                if cutoff_ns is None:
+                    recent_mask=stamps.notna()
+                else:
+                    stamp_ns=stamps.astype("int64",copy=False)
+                    recent_mask=stamps.notna() & (stamp_ns>=cutoff_ns)
+                    reference=~chunk["asset_class"].astype(str).str.casefold().eq("equity")
+                    old_reference=chunk.loc[stamps.notna() & (stamp_ns<cutoff_ns) & reference]
+                    for symbol,rows in old_reference.groupby("symbol",sort=False):
+                        prior=carry_by_symbol.get(symbol)
+                        merged=rows if prior is None else pd.concat((prior,rows),ignore_index=True)
+                        carry_by_symbol[symbol]=merged.sort_values("date",kind="stable").tail(
+                            self.REFERENCE_CARRY_ROWS)
+                recent=chunk.loc[recent_mask]
+                if not recent.empty:
+                    recent.to_csv(recent_temporary,index=False,columns=FEED_COLUMNS,
+                                  mode="a" if wrote_recent else "w",header=not wrote_recent)
+                    wrote_recent=True
+            carry=(pd.concat(carry_by_symbol.values(),ignore_index=True)
+                   if carry_by_symbol else pd.DataFrame(columns=FEED_COLUMNS))
+            if not carry.empty:
+                carry=carry.sort_values(["date","symbol"],kind="stable")
+            carry.to_csv(temporary,index=False,columns=FEED_COLUMNS)
+            if wrote_recent:
+                with recent_temporary.open("rb") as source, temporary.open("ab") as target:
+                    source.readline()  # The final file already has its CSV header.
+                    shutil.copyfileobj(source,target,1024*1024)
+            with temporary.open("rb+") as stream:
+                os.fsync(stream.fileno())
+            os.replace(temporary,self.path)
+            keep_after=latest_ns-int(pd.Timedelta(days=self.DEDUPE_DAYS).value)
+            with self.db:
+                self.db.execute("DELETE FROM seen WHERE stamp_ns < ?",(keep_after,))
+            self.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            self.db.execute("VACUUM")
+        except (OSError,sqlite3.Error,pd.errors.ParserError,ValueError) as exc:
+            logging.getLogger(__name__).warning("Could not compact live market cache: %s",exc)
+        finally:
+            temporary.unlink(missing_ok=True)
+            recent_temporary.unlink(missing_ok=True)
+        if self.path.exists():
+            current_csv=self.path.stat().st_size
+            current_index=sum(p.stat().st_size for p in (self.db_path,wal) if p.exists())
+            self._next_csv_compaction=max(self.COMPACT_CSV_BYTES,int(current_csv*1.5))
+            self._next_index_compaction=max(self.COMPACT_INDEX_BYTES,int(current_index*1.5))
 
     def close(self):
         self.db.close()

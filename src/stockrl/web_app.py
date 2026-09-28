@@ -15,6 +15,7 @@ from datetime import datetime, time as day_time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
+from .paths import default_runtime_dir
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -112,7 +113,8 @@ def _market_overview(instruments: list[dict], decisions: list[dict],
 class Supervisor:
     def __init__(self, runtime: Path, device: str, candidate_every: int, fee: float,
                  horizon: str = "1m", config: str = "configs/live_symbols.json",
-                 initial_champion: str | None = None):
+                 initial_champion: str | None = None, model_dir: str | Path | None = None,
+                 settings_dir: str | Path | None = None):
         self.runtime, self.device = runtime, device
         self.candidate_every, self.fee = candidate_every, fee
         self.config = Path(config)
@@ -121,6 +123,10 @@ class Supervisor:
         self.initial_champion = Path(initial_champion) if initial_champion else None
         if self.initial_champion is not None and not self.initial_champion.is_absolute():
             self.initial_champion = ROOT / self.initial_champion
+        self.model_dir = Path(model_dir) if model_dir else Path(
+            os.environ.get("STOCKRL_MODEL_DIR", str(Path.home() / "Desktop" / "모델")))
+        if not self.model_dir.is_absolute():
+            self.model_dir = ROOT / self.model_dir
         self.lock = threading.RLock()
         self.profile: Path | None = None
         self.mode = "live"
@@ -134,7 +140,8 @@ class Supervisor:
         self._latest_csv_cache = {}
         self._gpu_snapshot = {"sampled": 0.0}
         self.runtime.mkdir(parents=True, exist_ok=True)
-        self.settings_path = self.runtime / "web_settings.json"
+        self.settings_path = Path(settings_dir) / "web_settings.json" if settings_dir else ROOT / "configs" / "local" / "web_settings.json"
+        self.settings_path.parent.mkdir(parents=True, exist_ok=True)
         settings = _json(self.settings_path)
         self.mode = settings.get("mode", "live")
         self.horizon = settings.get("horizon", horizon)
@@ -259,11 +266,11 @@ class Supervisor:
             self._spawn(name, args, self.profile / "logs" / "feed.log")
             return
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
-                "--state-dir", str(state), "--follow", "--poll-seconds", "1", "--window", "128",
+                "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
                 "--candidate-every", str(self.candidate_every), "--fee", str(self.fee), "--horizon", self.horizon,
                 "--device", self._device()]
-        seed = self.initial_champion or (ROOT / "runtime-global-cuda-final/champion.pt")
+        seed = self.initial_champion or (self.model_dir / "champion.pt")
         if seed.is_file():
             args.extend(["--initial-champion", str(seed)])
         self._spawn(name, args, self.profile / "logs" / "agent.log")
@@ -458,21 +465,27 @@ class Supervisor:
             positions = _json(state / "live_positions.json")
             paper_account = _json(state / "paper_account.json")
             rows = self._market_row_count(data)
-            checkpoint = state / "champion.pt"
+            checkpoint = self.model_dir / "champion.pt"
             gpu = metrics.get("cuda_device", metrics.get("device", "CPU"))
             if metrics.get("cuda_total_memory_bytes"):
                 gpu += f" VRAM {metrics.get('cuda_memory_allocated_bytes',0)/1024**3:.1f}/{metrics['cuda_total_memory_bytes']/1024**3:.1f} GB"
+            provider_status=__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime)
+            feed_running=bool(self.children.get("feed") and self.children["feed"].poll() is None)
+            feed_metrics["broker_provider"]=provider_status["provider"]
+            feed_metrics["provider_environment"]=provider_status["environment"]
+            if not feed_running:
+                feed_metrics["broker_connected"]=False
             return {"running": self.run_requested, "stopping": self.stopping,
                     "restarting": self.restart_request is not None,
                     "mode": self.mode, "horizon": self.horizon,
-                    "feed_running": bool(self.children.get("feed") and self.children["feed"].poll() is None),
+                    "feed_running": feed_running,
                     "agent_running": bool(self.children.get("agent") and self.children["agent"].poll() is None),
                     "feed_rows": max(0, rows),
                     "configured_instruments": len(instruments),
                     "markets": _market_overview(instruments,list(latest_decisions.values()),
                         fresh_symbols),
                     "instruments": instrument_status,
-                    "provider":__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime),
+                    "provider":provider_status,
                     "feed_metrics": feed_metrics, "metrics": metrics,
                     "autonomy_enabled":self.autonomy_enabled,
                     "paper_enabled":self.autonomy_enabled,
@@ -484,14 +497,16 @@ class Supervisor:
                     "logs": "\n".join(self.log_tail[-8:]) or "Broker API is not connected; orders remain OFF."}
 
 
-def serve(host: str = "127.0.0.1", port: int = 8765, runtime: str = "runtime-global-web",
+def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
           device: str = "auto", candidate_every: int = 256, fee: float = .001,
           auto_start: bool = True, open_browser: bool = True, horizon: str = "1m",
-          config: str = "configs/live_symbols.json", initial_champion: str | None = None):
-    runtime_path = Path(runtime)
+          config: str = "configs/live_symbols.json", initial_champion: str | None = None,
+          model_dir: str | None = None, settings_dir: str | None = None):
+    runtime_path = Path(runtime) if runtime is not None else default_runtime_dir()
     if not runtime_path.is_absolute():
         runtime_path = ROOT / runtime_path
-    supervisor = Supervisor(runtime_path, device, candidate_every, fee, horizon, config, initial_champion)
+    supervisor = Supervisor(runtime_path, device, candidate_every, fee, horizon, config, initial_champion,
+                            model_dir, settings_dir)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "StockRLWeb/1.0"
@@ -510,6 +525,8 @@ def serve(host: str = "127.0.0.1", port: int = 8765, runtime: str = "runtime-glo
             route = urlparse(self.path).path
             if route == "/":
                 return self._send(PAGE, content_type="text/html; charset=utf-8")
+            if route == "/api/health":
+                return self._send({"ok": True})
             if route == "/api/status":
                 return self._send(supervisor.status())
             if route == "/api/provider":

@@ -244,17 +244,21 @@ class GlobalMarketPanel:
                  recent_timestamps: int | None = None,
                  active_stale_seconds: int | None = None):
         raw = pd.read_csv(path)
+        self.recent_cutoff = None
         if recent_timestamps is not None and recent_timestamps > 0 and len(raw):
             stamps = pd.to_datetime(raw["date"], errors="raise", utc=True)
             unique_stamps = stamps.dropna().drop_duplicates().sort_values()
             if len(unique_stamps) > recent_timestamps:
                 cutoff = unique_stamps.iloc[-recent_timestamps]
-                # Keep non-equity reference markets (indices, futures, yields,
-                # volatility, FX, and crypto) even when their venue is closed.
-                # Their last quote is needed for global context and action
-                # display; stale status is handled by the dashboard.
+                self.recent_cutoff = cutoff.tz_localize(None).to_datetime64()
+                # Retain the active window for every symbol. Keep only enough
+                # older reference bars to calculate rolling features and carry
+                # a last quote across closed sessions.
                 reference = ~raw["asset_class"].astype(str).str.casefold().eq("equity")
-                raw = raw.loc[(stamps >= cutoff) | reference].copy()
+                recent = raw.loc[stamps >= cutoff]
+                carry = raw.loc[(stamps < cutoff) & reference].groupby("symbol",sort=False).tail(20)
+                raw = pd.concat((recent,carry),ignore_index=True).sort_values(
+                    ["date","symbol"],kind="stable").reset_index(drop=True)
         df = _feature_panel(raw, training_compatible=symbol_map is not None)
         context_frame = df
         if active_stale_seconds is not None and len(df):

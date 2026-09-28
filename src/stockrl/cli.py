@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from dataclasses import asdict
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from .core import (Config, TemporalActorCritic, device_for, evaluate, infer, loa
 from .continuous import run_continuous, run_replay
 from .global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig, parameter_count
 from .global_online import OnlineGlobalAgent, benchmark_model, load_model
+from .paths import default_runtime_dir
 
 
 def train(args: argparse.Namespace) -> None:
@@ -92,7 +94,7 @@ def global_online(args: argparse.Namespace) -> None:
       horizon=args.horizon,fee=args.fee,slippage_bps=args.slippage_bps,min_replay=args.min_replay,
       batch_size=args.batch_size,updates_per_candidate=args.updates,lr=args.lr,seed=args.seed,
       candidate_interval=args.candidate_every,initial_champion=args.initial_champion,
-      teacher_replay_path=args.teacher_replay)
+      teacher_replay_path=args.teacher_replay,model_dir=args.model_dir)
     try:
         if args.follow and not args.teacher_decisions:
             print(f"following={args.data} poll_seconds={args.poll_seconds}; stop with Ctrl+C")
@@ -127,7 +129,7 @@ def global_online(args: argparse.Namespace) -> None:
         elif agent.replay.trainable_count()>=args.min_replay:
             agent.metrics["candidate_skip_reason"]="held-out validation window has too few timestamps"
         post_training_test=agent.evaluate_panel(panel,agent.champion,start_index=test_start,stride=args.stride)
-        candidate_path=agent.state_dir/"candidate.pt"
+        candidate_path=agent.model_dir/"candidate.pt"
         candidate_test=None
         if candidate_path.is_file():
             candidate_model,_=load_model(candidate_path,agent.device)
@@ -163,22 +165,22 @@ def main() -> None:
     sub=p.add_subparsers(dest="command",required=True)
     t=sub.add_parser("train",help="distill teachers, PPO fine-tune, validate and backtest")
     t.add_argument("--data",default="data/sample_ohlcv.csv"); t.add_argument("--teachers",default="configs/teachers.json")
-    t.add_argument("--checkpoint-dir",default="checkpoints"); t.add_argument("--window",type=int,default=32)
+    t.add_argument("--checkpoint-dir",default=str(default_runtime_dir()/"baseline-checkpoints")); t.add_argument("--window",type=int,default=32)
     t.add_argument("--fee",type=float,default=.001); t.add_argument("--seed",type=int,default=7)
     t.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"])
     t.add_argument("--epochs",type=int,default=15); t.add_argument("--batch-size",type=int,default=128)
     t.add_argument("--ppo-updates",type=int,default=4); t.set_defaults(func=train)
     q=sub.add_parser("predict",help="load a trained checkpoint and infer the latest action")
-    q.add_argument("--data",required=True); q.add_argument("--checkpoint",default="checkpoints/final.pt")
+    q.add_argument("--data",required=True); q.add_argument("--checkpoint",default=str(default_runtime_dir()/"baseline-checkpoints"/"final.pt"))
     q.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"]); q.set_defaults(func=predict)
     d=sub.add_parser("teacher-dataset",help="run configured trained public teachers and save per-model plus ensemble targets")
     d.add_argument("--data",required=True); d.add_argument("--teachers",default="configs/teachers.json")
-    d.add_argument("--output",default="outputs/public_teachers"); d.add_argument("--window",type=int,default=32)
+    d.add_argument("--output",default=str(default_runtime_dir()/"public-teachers")); d.add_argument("--window",type=int,default=32)
     d.set_defaults(func=public_teacher_dataset)
     c=sub.add_parser("continuous",help="observe an updating CSV and paper trade/learn until stopped")
     c.add_argument("--data",required=True,help="append/update-only OHLCV CSV feed")
     c.add_argument("--feedback",default=None,help="optional execution feedback CSV: timestamp,action,reward")
-    c.add_argument("--champion",default="checkpoints/final.pt"); c.add_argument("--state-dir",default="runtime")
+    c.add_argument("--champion",default=str(default_runtime_dir()/"baseline-checkpoints"/"final.pt")); c.add_argument("--state-dir",default=str(default_runtime_dir()/"continuous"))
     c.add_argument("--window",type=int,default=32); c.add_argument("--fee",type=float,default=.001)
     c.add_argument("--horizon",type=int,default=5); c.add_argument("--poll-seconds",type=float,default=10)
     c.add_argument("--validation-rows",type=int,default=64); c.add_argument("--minimum-delta",type=float,default=0.0)
@@ -187,8 +189,8 @@ def main() -> None:
     c.add_argument("--once",action="store_true",help="process current feed once for verification")
     c.set_defaults(func=run_continuous)
     r=sub.add_parser("replay",help="replay historical rows through the paper decision/outcome loop")
-    r.add_argument("--data",required=True); r.add_argument("--checkpoint",default="checkpoints/final.pt")
-    r.add_argument("--state-dir",default="runtime-replay"); r.add_argument("--window",type=int,default=32)
+    r.add_argument("--data",required=True); r.add_argument("--checkpoint",default=str(default_runtime_dir()/"baseline-checkpoints"/"final.pt"))
+    r.add_argument("--state-dir",default=str(default_runtime_dir()/"replay")); r.add_argument("--window",type=int,default=32)
     r.add_argument("--fee",type=float,default=.001); r.add_argument("--horizon",type=int,default=5)
     r.add_argument("--stride",type=int,default=1); r.add_argument("--replay-capacity",type=int,default=10000)
     r.add_argument("--seed",type=int,default=7); r.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"])
@@ -197,7 +199,9 @@ def main() -> None:
     gi.add_argument("--data",default=None); gi.add_argument("--window",type=int,default=8); gi.add_argument("--repeats",type=int,default=3)
     gi.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"]); gi.set_defaults(func=global_info)
     go=sub.add_parser("global-online",help="run global-market paper observation, delayed reward, replay and asynchronous continual RL")
-    go.add_argument("--data",required=True); go.add_argument("--state-dir",default="runtime-global")
+    go.add_argument("--data",required=True); go.add_argument("--state-dir",default=str(default_runtime_dir()/"global-online"))
+    go.add_argument("--model-dir",default=os.environ.get("STOCKRL_MODEL_DIR",str(Path.home()/"Desktop"/"모델")),
+                    help="directory containing only champion.pt and candidate.pt")
     go.add_argument("--window",type=int,default=128); go.add_argument("--horizon",type=str,default="1bar",
       help="outcome horizon: 30s, 1m, 5m, 1bar, 5bars. Durations resolve to the next observed bar at/after the target time.")
     go.add_argument("--fee",type=float,default=.001); go.add_argument("--slippage-bps",type=float,default=1.0)
@@ -220,7 +224,7 @@ def main() -> None:
     go.add_argument("--seed",type=int,default=7); go.add_argument("--device",default="auto",choices=["auto","cuda","mps","cpu"])
     go.set_defaults(func=global_online)
     lf=sub.add_parser("live-feed",help="poll public minute market data and append de-duplicated UTC bars for global-online")
-    lf.add_argument("--config",default="configs/live_symbols.json"); lf.add_argument("--output",default="data/global_live.csv")
+    lf.add_argument("--config",default="configs/live_symbols.json"); lf.add_argument("--output",default=str(default_runtime_dir()/"live"/"market.csv"))
     lf.add_argument("--poll-seconds",type=float,default=15.0); lf.add_argument("--timeout",type=float,default=15.0)
     lf.add_argument("--once",action="store_true",help="poll every configured instrument once and exit")
     lf.add_argument("--stop-file",default=None,help="stop cleanly when this file is created")
@@ -236,7 +240,7 @@ def main() -> None:
         LiveMarketCollector(args.config,args.output,args.poll_seconds,args.timeout,stop_file=args.stop_file).run(args.once,args.max_cycles)
     lf.set_defaults(func=run_live_feed)
     mf=sub.add_parser("mock-feed",help="stream real historical CSV bars at a controllable pace into the live paper feed")
-    mf.add_argument("--source",default="data/global_market_daily.csv"); mf.add_argument("--output",default="runtime-global-desktop/mock_market.csv")
+    mf.add_argument("--source",default="data/global_market_daily.csv"); mf.add_argument("--output",default=str(default_runtime_dir()/"desktop"/"mock_market.csv"))
     mf.add_argument("--bars",type=int,default=24); mf.add_argument("--interval-seconds",type=float,default=.5)
     mf.add_argument("--start-offset",type=int,default=0); mf.add_argument("--max-cycles",type=int,default=None)
     mf.add_argument("--stop-file",default=None)
@@ -248,25 +252,27 @@ def main() -> None:
         print(json.dumps(result,indent=2))
     mf.set_defaults(func=run_mock_feed)
     ui=sub.add_parser("desktop",help="open the Windows paper-trading and continual-learning dashboard")
-    ui.add_argument("--runtime",default="runtime-global-desktop"); ui.add_argument("--device",default="auto",choices=["auto","cuda","mps","cpu"])
+    ui.add_argument("--runtime",default=str(default_runtime_dir()/"desktop")); ui.add_argument("--device",default="auto",choices=["auto","cuda","mps","cpu"])
     def run_desktop(args):
         from .desktop import run_desktop_app
         run_desktop_app(args.runtime,args.device)
     ui.set_defaults(func=run_desktop)
     web=sub.add_parser("web",help="open responsive browser dashboard and start the paper agent")
     web.add_argument("--host",default="127.0.0.1",help="bind address; localhost by default")
-    web.add_argument("--port",type=int,default=8765); web.add_argument("--runtime",default="runtime-global-web")
+    web.add_argument("--port",type=int,default=8766); web.add_argument("--runtime",default=str(default_runtime_dir()))
+    web.add_argument("--model-dir",default=None,help="directory for champion/candidate checkpoints")
     web.add_argument("--device",default="auto",choices=["auto","cuda","mps","cpu"])
     web.add_argument("--candidate-every",type=int,default=256); web.add_argument("--fee",type=float,default=.001)
     web.add_argument("--horizon",default="1m",help="paper outcome horizon: 30s, 1m, or 5m")
     web.add_argument("--config",default="configs/live_symbols.json",help="market universe/provider config")
-    web.add_argument("--initial-champion",default=None,help="seed checkpoint; copied into this web runtime")
+    web.add_argument("--initial-champion",default=None,help="seed checkpoint in the model directory")
     web.add_argument("--no-auto-start",action="store_true",help="open dashboard without starting feed/model")
     web.add_argument("--no-browser",action="store_true",help=argparse.SUPPRESS)
     def run_web(args):
         from .web_app import serve
+        model_dir=args.model_dir or os.environ.get("STOCKRL_MODEL_DIR") or str(Path.home()/"Desktop"/"모델")
         serve(args.host,args.port,args.runtime,args.device,args.candidate_every,args.fee,
-              not args.no_auto_start,not args.no_browser,args.horizon,args.config,args.initial_champion)
+              not args.no_auto_start,not args.no_browser,args.horizon,args.config,args.initial_champion,model_dir)
     web.set_defaults(func=run_web)
     args=p.parse_args(); args.func(args)
 

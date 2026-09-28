@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBo
     QPushButton, QSpinBox, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QInputDialog)
 
 from .broker import BrokerAdapter, BrokerWorker, OrderRequest
+from .paths import default_runtime_dir
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -53,7 +54,7 @@ class StatCard(QFrame):
 
 
 class GlobalAgentWindow(QMainWindow):
-    def __init__(self, runtime: str | Path = "runtime-global-desktop", device: str = "auto"):
+    def __init__(self, runtime: str | Path | None = None, device: str = "auto"):
         super().__init__()
         if os.name=="nt" and not QFontDatabase.families():
             # Qt's offscreen plugin may not enumerate Windows fonts; loading
@@ -61,8 +62,10 @@ class GlobalAgentWindow(QMainWindow):
             for font_file in (Path(os.environ.get("WINDIR",r"C:\Windows"))/"Fonts"/"segoeui.ttf",
                               Path(os.environ.get("WINDIR",r"C:\Windows"))/"Fonts"/"segoeuib.ttf"):
                 if font_file.is_file(): QFontDatabase.addApplicationFont(str(font_file))
-        self.runtime = (ROOT / runtime).resolve() if not Path(runtime).is_absolute() else Path(runtime).resolve()
+        runtime = Path(runtime) if runtime is not None else default_runtime_dir() / "desktop"
+        self.runtime = (ROOT / runtime).resolve() if not runtime.is_absolute() else runtime.resolve()
         self.runtime.mkdir(parents=True, exist_ok=True)
+        self.model_dir = Path(os.environ.get("STOCKRL_MODEL_DIR", str(Path.home()/"Desktop"/"모델"))).expanduser()
         self.device = device
         self.settings_path = self.runtime / "desktop_settings.json"
         self.settings = _read_json(self.settings_path)
@@ -211,10 +214,11 @@ class GlobalAgentWindow(QMainWindow):
                   "--output",str(data),"--poll-seconds","5","--stop-file",str(data.parent/"feed.stop")]
             self.feed_proc=self._new_process("live-feed",args)
         agent_args=["-u","-m","stockrl","global-online","--data",str(data),"--state-dir",str(state),
+            "--model-dir",str(self.model_dir),
             "--follow","--poll-seconds","1","--initial-lookback-bars","128","--candidate-every",str(self.candidate_every),
             "--fee",str(self.fee),"--device",self.device]
-        seed=ROOT/"runtime-global-verified/champion.pt"
-        if seed.is_file() and not (state/"champion.pt").exists(): agent_args.extend(["--initial-champion",str(seed)])
+        seed=self.model_dir/"champion.pt"
+        if seed.is_file(): agent_args.extend(["--initial-champion",str(seed)])
         self.agent_proc=self._new_process("global-online",agent_args)
         self.config_status.setText(f"State: {state} / cursor, replay and champion saved automatically")
 
@@ -249,16 +253,17 @@ class GlobalAgentWindow(QMainWindow):
                 self.feed_proc=self._new_process("live-feed",args)
         else:
             args=["-u","-m","stockrl","global-online","--data",str(data),"--state-dir",str(state),
+                  "--model-dir",str(self.model_dir),
                   "--follow","--poll-seconds","1","--initial-lookback-bars","128","--candidate-every",str(self.candidate_every),
                   "--fee",str(self.fee),"--device",self.device]
-            seed=ROOT/"runtime-global-verified/champion.pt"
-            if seed.is_file() and not (state/"champion.pt").exists(): args.extend(["--initial-champion",str(seed)])
+            seed=self.model_dir/"champion.pt"
+            if seed.is_file(): args.extend(["--initial-champion",str(seed)])
             self.agent_proc=self._new_process("global-online",args)
 
     def _process_output(self,proc,name):
         chunk=bytes(proc.readAllStandardOutput()).decode("utf-8",errors="replace").strip()
         if chunk:
-            logdir=ROOT/"logs"; logdir.mkdir(exist_ok=True)
+            logdir=self.runtime/"logs"; logdir.mkdir(parents=True,exist_ok=True)
             with (logdir/f"desktop-{name}.log").open("a",encoding="utf-8") as f:
                 f.write(chunk+"\n")
 
@@ -418,7 +423,7 @@ class GlobalAgentWindow(QMainWindow):
         agent_running=bool(getattr(self,"agent_proc",None) and self.agent_proc.state()!=QProcess.ProcessState.NotRunning)
         model_status="Running" if agent_running and metrics.get("observations") else ("Starting" if agent_running else "Stopped")
         self.cards["model"].value.setText(model_status+f"\n{metrics.get('parameters',0):,} params")
-        champion=state/"champion.pt"
+        champion=self.model_dir/"champion.pt"
         champion_version=datetime.fromtimestamp(champion.stat().st_mtime,timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC") if champion.exists() else "Waiting for initialization"
         self.cards["champion"].value.setText(f"Promotions {metrics.get('promotions',0)}\n{champion_version}")
         self.cards["replay"].value.setText(f"{metrics.get('replay_count',0):,}")
@@ -451,7 +456,7 @@ class GlobalAgentWindow(QMainWindow):
         self._disable_live_orders(); self._save_settings(); event.accept()
 
 
-def run_desktop_app(runtime="runtime-global-desktop",device="auto"):
+def run_desktop_app(runtime=None,device="auto"):
     app=QApplication.instance() or QApplication(sys.argv)
     window=GlobalAgentWindow(runtime,device); window.show()
     return app.exec()

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,8 +22,9 @@ def _vault():
     return keyring
 
 
-def _settings_path(runtime: Path) -> Path:
-    return Path(runtime) / "provider_settings.json"
+def _settings_path(runtime: Path | None = None) -> Path:
+    local = Path(__file__).resolve().parents[2] / "configs" / "local"
+    return Path(os.environ.get("STOCKRL_LOCAL_CONFIG_DIR", local)) / "provider_settings.json"
 
 
 def _migration_credentials(runtime: Path, environment: str) -> dict:

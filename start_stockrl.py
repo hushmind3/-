@@ -12,13 +12,22 @@ import webbrowser
 
 
 ROOT = Path(__file__).resolve().parent
-PORT = int(os.environ.get("STOCKRL_WEB_PORT", "8767"))
+PORT = 8766
 URL = f"http://127.0.0.1:{PORT}/"
+
+
+def default_runtime_dir() -> Path:
+    configured = os.environ.get("STOCKRL_RUNTIME_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    local = os.environ.get("LOCALAPPDATA")
+    base = Path(local) if local else Path.home() / "AppData" / "Local"
+    return base / "StockRL" / "runtime-global-korea-live"
 
 
 def ready() -> bool:
     try:
-        with urlopen(URL + "api/status", timeout=2) as response:
+        with urlopen(URL + "api/health", timeout=2) as response:
             return response.status == 200
     except (OSError, URLError):
         return False
@@ -30,8 +39,8 @@ def main() -> int:
         webbrowser.open(URL, new=2)
         return 0
 
-    log_dir = Path(os.environ.get("STOCKRL_RUNTIME_DIR", ROOT / "runtime-global-korea-live"))
-    log_dir.mkdir(exist_ok=True)
+    log_dir = default_runtime_dir()
+    log_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env["STOCKRL_RUNTIME_DIR"] = str(log_dir)
     env["STOCKRL_WEB_PORT"] = str(PORT)

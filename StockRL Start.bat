@@ -3,8 +3,9 @@
 setlocal
 cd /d "%~dp0"
 set "PYTHONPATH=%CD%\src;%PYTHONPATH%"
-set "STOCKRL_RUNTIME_DIR=%USERPROFILE%\Desktop\모델\runtime-global-korea-live"
-set "STOCKRL_WEB_PORT=8767"
+set "STOCKRL_RUNTIME_DIR=%LOCALAPPDATA%\StockRL\runtime-global-korea-live"
+set "STOCKRL_MODEL_DIR=%USERPROFILE%\Desktop\모델"
+set "STOCKRL_WEB_PORT=8766"
 set "PY_CMD=python"
 python --version >nul 2>&1
 if errorlevel 1 (

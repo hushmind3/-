@@ -1,25 +1,34 @@
 param(
     [string]$Python = "python",
-    [string]$Data = "data/global_live.csv",
-    [string]$State = "runtime-global-live",
-    [string]$Config = "configs/live_symbols.json",
+    [string]$Data = "",
+    [string]$State = "",
+    [string]$ModelDir = "",
+    [string]$Config = "configs/live_symbols_korea.json",
     [string]$Device = "auto"
 )
 
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $root
-foreach ($path in @($Data, $State, "logs")) {
+$runtimeRoot = $env:STOCKRL_RUNTIME_DIR
+if (-not $runtimeRoot) { $runtimeRoot = Join-Path $env:LOCALAPPDATA "StockRL\runtime-global-korea-live" }
+if (-not $Data) { $Data = Join-Path $runtimeRoot "live\market.csv" }
+if (-not $State) { $State = Join-Path $runtimeRoot "live\agent" }
+if (-not $ModelDir) { $ModelDir = $env:STOCKRL_MODEL_DIR }
+if (-not $ModelDir) { $ModelDir = Join-Path ([Environment]::GetFolderPath('Desktop')) "모델" }
+$logDir = Join-Path $runtimeRoot "logs"
+foreach ($path in @($Data, $State, $logDir)) {
     $parent = Split-Path -Parent $path
     if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 }
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 function Quote-ProcessArgument([string]$Value) {
     '"' + ($Value -replace '"', '\"') + '"'
 }
 function Start-Worker([string]$Name, [string[]]$Arguments) {
-    $stdout = Join-Path $root "logs/$Name.out.log"
-    $stderr = Join-Path $root "logs/$Name.err.log"
+    $stdout = Join-Path $logDir "$Name.out.log"
+    $stderr = Join-Path $logDir "$Name.err.log"
     $joined = ($Arguments | ForEach-Object { Quote-ProcessArgument ([string]$_) }) -join ' '
     Start-Process -FilePath $Python -ArgumentList $joined -WorkingDirectory $root -WindowStyle Hidden `
         -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
@@ -27,6 +36,7 @@ function Start-Worker([string]$Name, [string[]]$Arguments) {
 
 $dataPath = [IO.Path]::GetFullPath($Data)
 $statePath = [IO.Path]::GetFullPath($State)
+$modelPath = [IO.Path]::GetFullPath($ModelDir)
 $configPath = [IO.Path]::GetFullPath($Config)
 $feedStopPath = Join-Path (Split-Path -Parent $dataPath) "feed.stop"
 $agentStopPath = Join-Path $statePath "stop.request"
@@ -36,11 +46,15 @@ foreach ($stopFile in @($feedStopPath, $agentStopPath)) {
 $feedArgs = @("-m", "stockrl", "live-feed", "--config", $configPath, "--output", $dataPath,
     "--poll-seconds", "5", "--stop-file", $feedStopPath)
 $agentArgs = @("-m", "stockrl", "global-online", "--data", $dataPath, "--state-dir", $statePath,
-    "--follow", "--poll-seconds", "2", "--initial-lookback-bars", "128", "--candidate-every", "256",
+    "--model-dir", $modelPath, "--follow", "--poll-seconds", "2", "--initial-lookback-bars", "128",
     "--candidate-every", "256", "--device", $Device)
+$championPath = Join-Path $modelPath "champion.pt"
+if (Test-Path -LiteralPath $championPath -PathType Leaf) {
+    $agentArgs += @("--initial-champion", $championPath)
+}
 $feed = $null
 $agent = $null
-Write-Host "Global paper agent is running. Data/replay/checkpoints persist under $dataPath and $statePath. Press Ctrl+C to stop."
+Write-Host "Paper agent uses port-independent feed data under $dataPath, runtime state under $statePath, and checkpoints under $modelPath. Replay stays in memory. Press Ctrl+C to stop."
 try {
     $feed = Start-Worker "global-live-feed" $feedArgs
     Start-Sleep -Seconds 2
@@ -52,7 +66,7 @@ try {
             $feed = Start-Worker "global-live-feed" $feedArgs
         }
         if ($agent.HasExited) {
-            Write-Warning "Paper agent exited ($($agent.ExitCode)); restarting from its saved cursor/replay/champion. See logs/global-paper-agent.err.log"
+            Write-Warning "Paper agent exited ($($agent.ExitCode)); restarting from its saved cursor and candidate/champion files. In-memory replay starts fresh."
             $agent = Start-Worker "global-paper-agent" $agentArgs
         }
     }

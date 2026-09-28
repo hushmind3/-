@@ -22,6 +22,7 @@ from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTr
 from .paper_account import PaperAccount
 
 REWARD_VERSION="net_trade_v2"
+PAPER_LEDGER_PROMOTION_READY=False
 REWARD_DEFINITION=("net_trade_v2: one equal-notional isolated horizon trade; BUY/SELL realize signed price return, "
                    "minus entry+exit fees and slippage; HOLD remains cash")
 
@@ -52,7 +53,9 @@ class GlobalReplayBuffer:
     """Bounded replay with explicit recent/old/extreme regime mixture."""
     def __init__(self, capacity: int = 100_000, seed: int = 7):
         self.capacity=capacity; self.items: deque[Experience]=deque(maxlen=capacity)
-        self.rng=random.Random(seed); self.lock=threading.Lock()
+        self.rng=random.Random(seed); self.lock=threading.Lock(); self.paper_outcomes_seen=0
+    def note_paper_outcome(self) -> None:
+        with self.lock: self.paper_outcomes_seen+=1
     def add(self, exp: Experience) -> None:
         with self.lock: self.items.append(exp)
     def __len__(self):
@@ -75,7 +78,7 @@ class GlobalReplayBuffer:
         # Warm-start from demonstrations, then linearly remove their influence
         # as genuine net-PnL paper experiences accumulate. At 10k self outcomes
         # the replay becomes fully self-experience driven.
-        teacher_fraction=(max(0.0,1.0-len(valid_paper)/10_000.0) if teachers else 0.0)
+        teacher_fraction=(max(0.0,1.0-self.paper_outcomes_seen/10_000.0) if teachers else 0.0)
         recent=paper[-max(int(len(paper)*.2),1):]
         older=paper[:-len(recent)] or paper
         extreme=[x for x in paper if abs(x.regime)>.025 or abs(x.reward)>.02] or paper
@@ -86,10 +89,20 @@ class GlobalReplayBuffer:
             bucket=self.rng.choices((recent,older,extreme),weights=(.5,.3,.2),k=1)[0]
             chosen.append(self.rng.choice(bucket))
         return chosen
+    def discard(self, experiences: list[Experience]) -> int:
+        """Drop examples that a successful candidate update actually used."""
+        if not experiences:
+            return 0
+        consumed={id(item) for item in experiences}
+        with self.lock:
+            before=len(self.items)
+            self.items=deque((item for item in self.items if id(item) not in consumed),
+                             maxlen=self.capacity)
+            return before-len(self.items)
     def teacher_fraction(self)->float:
         with self.lock:
             teachers=any(x.source.startswith("teacher") for x in self.items)
-            paper=sum(not x.source.startswith("teacher") for x in self.items)
+            paper=self.paper_outcomes_seen
         return max(0.0,1.0-paper/10_000.0) if teachers else 0.0
     def sample_source(self, source:str) -> Experience|None:
         with self.lock:
@@ -99,19 +112,38 @@ class GlobalReplayBuffer:
         with self.lock:
             return sum(x.source.startswith("teacher") or
                        getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION for x in self.items)
-    def save(self,path:Path):
-        with self.lock: payload=list(self.items)
-        _atomic_save(payload,path)
-    def load(self,path:Path):
+    def load(self,path:Path,manifest_path:Path|None=None):
         if path.exists():
-            data=torch.load(path,map_location="cpu",weights_only=False)
-            with self.lock:
-                for x in data[-self.capacity:]: self.items.append(x)
+            manifest_path=manifest_path or path.with_suffix(".manifest.json")
+            if manifest_path.exists():
+                manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+                if manifest.get("format")!="stockrl-replay-chunks-v1":
+                    raise ValueError(f"unsupported replay manifest: {manifest_path}")
+                root=path.parent/(path.stem+"_chunks")
+                generation=str(manifest.get("generation",""))
+                for name in manifest.get("chunks",[]):
+                    chunk_path=root/generation/name
+                    data=torch.load(chunk_path,map_location="cpu",weights_only=False)
+                    with self.lock:
+                        for x in data: self.items.append(x)
+                    del data
+            else:
+                data=torch.load(path,map_location="cpu",weights_only=False)
+                with self.lock:
+                    for x in data[-self.capacity:]: self.items.append(x)
 
 
-def _atomic_save(obj, path: Path):
-    path.parent.mkdir(parents=True,exist_ok=True); tmp=path.with_suffix(path.suffix+".tmp")
-    torch.save(obj,tmp); os.replace(tmp,path)
+def _atomic_save(obj, path: Path, temp_dir: Path | None = None):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    temp_dir=Path(temp_dir) if temp_dir is not None else path.parent
+    temp_dir.mkdir(parents=True,exist_ok=True)
+    tmp=temp_dir/(path.name+".tmp")
+    try:
+        torch.save(obj,tmp)
+        os.replace(tmp,path)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 def _atomic_json(obj,path:Path):
@@ -151,7 +183,8 @@ def net_action_reward(action:int, forward_return:float, previous_position:int,
     return gross-fee_cost-slippage_cost,fee_cost,slippage_cost
 
 
-def save_model(path:Path, model:GlobalMarketTransformer, cfg:TransformerConfig, optimizer=None, step=0):
+def save_model(path:Path, model:GlobalMarketTransformer, cfg:TransformerConfig, optimizer=None, step=0,
+               temp_dir:Path|None=None):
     payload={"state_dict":model.state_dict(),"config":asdict(cfg),"step":step,
              "optimizer":optimizer.state_dict() if optimizer is not None else None}
     if getattr(model,"_stockrl_uses_market_context",False):
@@ -159,7 +192,7 @@ def save_model(path:Path, model:GlobalMarketTransformer, cfg:TransformerConfig, 
         payload["context_features"]=list(CONTEXT_FEATURES)
         payload["symbol_map"]=model._stockrl_symbol_map
         payload["market_context_model"]=True
-    _atomic_save(payload,path)
+    _atomic_save(payload,path,temp_dir=temp_dir)
 
 
 def load_model(path:Path,device:torch.device):
@@ -197,70 +230,44 @@ class OnlineGlobalAgent:
                  capacity=100_000, window=128, horizon=1, fee=.001, slippage_bps=1.0,
                  min_replay=8, batch_size=2, updates_per_candidate=1, lr=2e-6, seed=7,
                  candidate_interval=256, initial_champion: str|Path|None=None,
-                 teacher_replay_path: str|Path|None=None):
+                 teacher_replay_path: str|Path|None=None,
+                 model_dir: str|Path|None=None):
         from .core import device_for
         self.state_dir=Path(state_dir); self.state_dir.mkdir(parents=True,exist_ok=True)
+        self.model_dir=Path(model_dir) if model_dir is not None else self.state_dir
+        self.model_dir.mkdir(parents=True,exist_ok=True)
         self.device=device_for(device); self.cfg=config or TransformerConfig(); self.window=window
         self.horizon=horizon; self.horizon_kind,self.horizon_amount=parse_horizon(horizon)
+        self.max_pending_age_seconds=30*86400
         self.fee=fee; self.slippage=slippage_bps/10_000
         self.min_replay=min_replay; self.batch_size=batch_size; self.updates_per_candidate=updates_per_candidate
         self.candidate_interval=max(1,candidate_interval)
         self.min_validation_dates=32
         self.lr=lr; self.seed=seed; self.lock=threading.RLock(); self.stop=threading.Event()
-        self.replay=GlobalReplayBuffer(capacity,seed); self.replay_path=self.state_dir/"replay.pt"
-        self.paper_replay_path=self.state_dir/"paper_replay.pt"
-        # Load warm-start examples first, then append this runtime's persistent
-        # self-experience so bounded replay evicts the oldest teacher rows first.
+        self.replay=GlobalReplayBuffer(capacity,seed)
+        # Experience, pending outcomes, and validation slices are process-local
+        # memory. The only durable model files are candidate.pt and champion.pt.
+        # Optional teacher input is read-only; the live agent never persists a replay file.
         if teacher_replay_path: self.replay.load(Path(teacher_replay_path))
-        self.replay.load(self.replay_path)
-        self.paper_experiences=[]
-        if self.paper_replay_path.exists():
-            try:
-                self.paper_experiences=torch.load(self.paper_replay_path,map_location="cpu",weights_only=False)
-                for exp in self.paper_experiences[-capacity:]: self.replay.add(exp)
-            except (OSError,RuntimeError,EOFError): self.paper_experiences=[]
-        self.champion_path=self.state_dir/"champion.pt"; self.backup_path=self.state_dir/"champion.previous.pt"
+        self.champion_path=self.model_dir/"champion.pt"
         if not self.champion_path.exists() and initial_champion and Path(initial_champion).is_file():
             # Seed this isolated runtime from a prior verified champion without
             # writing to or replacing the source checkpoint.
             shutil.copy2(initial_champion,self.champion_path)
         if self.champion_path.exists():
-            try:
-                self.champion,self.cfg=load_model(self.champion_path,self.device)
-                seed_meta_path=(Path(initial_champion).with_name("champion.itch-promotion.json")
-                                if initial_champion else None)
-                seed_meta={}
-                if seed_meta_path and seed_meta_path.exists():
-                    try: seed_meta=json.loads(seed_meta_path.read_text(encoding="utf-8"))
-                    except (OSError,json.JSONDecodeError): pass
-                seed_is_context_candidate=(seed_meta.get("promotion_mode") ==
-                                           "byte-for-byte candidate copy; no weight conversion")
-                if (initial_champion and Path(initial_champion).is_file() and seed_is_context_candidate
-                        and not getattr(self.champion,"_stockrl_uses_market_context",False)):
-                    # Upgrade a previous web-profile's legacy checkpoint to the
-                    # explicitly selected raw candidate, preserving the local
-                    # checkpoint before the schema migration.
-                    backup=self.champion_path.with_name("champion.pre-context-input.pt")
-                    if backup.exists():
-                        backup=self.champion_path.with_name(f"champion.pre-context-input-{int(time.time())}.pt")
-                    shutil.copy2(self.champion_path,backup)
-                    del self.champion
-                    if self.device.type=="cuda": torch.cuda.empty_cache()
-                    shutil.copy2(initial_champion,self.champion_path)
-                    self.champion,self.cfg=load_model(self.champion_path,self.device)
-            except Exception:
-                if not self.backup_path.exists(): raise
-                shutil.copy2(self.backup_path,self.champion_path)
-                self.champion,self.cfg=load_model(self.champion_path,self.device)
+            self.champion,self.cfg=load_model(self.champion_path,self.device)
         else:
             self.champion=GlobalMarketTransformer(self.cfg)
             if self.device.type=="cuda": self.champion=self.champion.half()
             self.champion=self.champion.to(self.device).eval()
-            save_model(self.champion_path,self.champion,self.cfg)
+            save_model(self.champion_path,self.champion,self.cfg,temp_dir=self.state_dir)
         self.candidate=None; self.optimizer=None; self.steps=0; self.updates=0
-        self.last_train_replay_size=0
         self.validation=[]
         self.portfolio_validation=[]
+        self.validation_lock=threading.Lock()
+        self.validation_window_dates=64
+        self.validation_dates=deque()
+        self.portfolio_validation_dates=deque()
         self.positions={}
         self.paper_account=PaperAccount(self.state_dir/"paper_account.json",self.fee,self.slippage)
         if not self.paper_account.path.exists(): self.paper_account.save()
@@ -276,6 +283,7 @@ class OnlineGlobalAgent:
                 self.positions[parsed_key]=int(value)
         self.metrics={"observations":0,"decisions":0,"matured":0,"updates":0,"promotions":0,
                       "rejections":0,"nonfinite_updates":0,"teacher_examples_trained":0,"paper_examples_trained":0,
+                      "paper_experiences_seen":0,
                       "paper_net_reward":0.0,"last_market_timestamp":None,"candidate_training":False,
                       "last_update_utc":None,"last_promotion_utc":None,"last_rejection_utc":None,
                       "inference_during_candidate":0,"reward_definition":REWARD_DEFINITION,
@@ -287,32 +295,43 @@ class OnlineGlobalAgent:
                 self.metrics.update(json.loads(metrics_path.read_text(encoding="utf-8")))
             except (OSError,json.JSONDecodeError):
                 pass
+        for key in ("update_losses","update_seconds","weight_delta_l1"):
+            self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
+        self.metrics.setdefault("paper_experiences_seen",
+                                int(self.metrics.get("paper_examples_trained",0)))
+        self.replay.paper_outcomes_seen=int(self.metrics["paper_experiences_seen"])
         self.metrics["legacy_reward_examples_ignored"]=sum(
             not x.source.startswith("teacher") and getattr(x,"reward_version","legacy_transition_v1")!=REWARD_VERSION
             for x in self.replay.items)
-        self.metrics["portfolio_experiences"] = max(int(self.metrics.get("portfolio_experiences", 0)),
-                                                     len(self.paper_experiences))
+        self.metrics["replay_persistence"]="memory_only"
+        self.metrics["portfolio_experiences"] = int(self.metrics.get("portfolio_experiences",0))
         self.updates=int(self.metrics.get("updates",0)); self.steps=self.updates
-        # Candidate/optimizer objects are intentionally ephemeral. Restarting
-        # resumes from the latest replay and incumbent model checkpoint.
+        # Replay and pending examples stay in memory only; candidate weights
+        # are the durable learning state across restarts.
         self.metrics["candidate_training"]=False
-        self.last_train_replay_size=len(self.replay)
-        self.validation_path=self.state_dir/"live_validation.pt"
+        # New observations mature into a memory-only replay and trigger candidate learning.
+        self.last_train_replay_size=0
         self.validation_meta_path=self.state_dir/"validation_config.json"
-        validation_meta={}
-        try: validation_meta=json.loads(self.validation_meta_path.read_text(encoding="utf-8"))
-        except (OSError,json.JSONDecodeError): pass
-        if self.validation_path.exists() and validation_meta=={"reward_version":REWARD_VERSION,"horizon":str(self.horizon)}:
-            try: self.validation=torch.load(self.validation_path,map_location="cpu",weights_only=False)
-            except (OSError,RuntimeError,EOFError): self.validation=[]
-        portfolio_validation_path=self.state_dir/"paper_validation.pt"
-        if portfolio_validation_path.exists():
-            try: self.portfolio_validation=torch.load(portfolio_validation_path,map_location="cpu",weights_only=False)
-            except (OSError,RuntimeError,EOFError): self.portfolio_validation=[]
-        elif self.validation_path.exists():
-            self.metrics["legacy_validation_ignored"]=True
         _atomic_json({"reward_version":REWARD_VERSION,"horizon":str(self.horizon)},self.validation_meta_path)
         self.thread=threading.Thread(target=self._learner,name="global-learner",daemon=True)
+
+    def _append_validation(self, target:list, date_order:deque, timestamp:str, item) -> None:
+        """Keep a fixed, recent validation window shared by both models."""
+        with self.validation_lock:
+            if not date_order or date_order[-1] != timestamp:
+                date_order.append(timestamp)
+                while len(date_order)>self.validation_window_dates:
+                    expired=date_order.popleft()
+                    if target is self.validation:
+                        target[:]=[row for row in target if row[7]!=expired]
+                    else:
+                        target[:]=[row for row in target if row.timestamp!=expired]
+            target.append(item)
+
+    def _reset_candidate_file(self) -> None:
+        """Keep candidate.pt present but make it match the current champion."""
+        candidate=self.model_dir/"candidate.pt"
+        shutil.copy2(self.champion_path,candidate)
 
     def _target_index(self,panel:GlobalMarketPanel,start:int,symbol:int)->int|None:
         future=np.flatnonzero(panel.observed[start+1:,symbol])+start+1
@@ -327,13 +346,6 @@ class OnlineGlobalAgent:
     def close(self):
         self.stop.set()
         if self.thread.is_alive(): self.thread.join(timeout=300)
-        try:
-            self.replay.save(self.replay_path)
-        except (MemoryError, RuntimeError, OSError) as exc:
-            # The previous replay snapshot is safer than taking down the live
-            # observer while serializing a multi-GB in-memory deque.
-            self.metrics["replay_save_error"] = f"{type(exc).__name__}: {exc}"
-            self._write_metrics()
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
         args=[x.to(self.device) for x in self._window(panel,index)]
@@ -365,25 +377,56 @@ class OnlineGlobalAgent:
     def _mature(self,pending,panel,end_index):
         keep=[]
         for dec in pending:
-            # Exchanges do not share a common bar clock. Wait for the chosen
-            # instrument's next N observed bars instead of rewarding a stock
-            # on a timestamp where only FX/crypto happened to update.
-            if dec.get("timestamp"):
+            if "entry_price" in dec:
+                # Keep the entry price with the decision so rolling the panel
+                # cannot make the original row disappear before its outcome.
                 stamp=np.datetime64(dec["timestamp"])
-                start_ix=int(np.searchsorted(panel.dates,stamp,side="left"))
-                if start_ix>=len(panel.dates) or panel.dates[start_ix]!=stamp:
+                now=panel.dates[end_index]
+                if float((now-stamp)/np.timedelta64(1,"s"))>self.max_pending_age_seconds:
+                    self.metrics["pending_expired_after_window"] = int(
+                        self.metrics.get("pending_expired_after_window",0))+1
+                    continue
+                symbol=dec.get("symbol")
+                if symbol not in panel.symbols:
                     keep.append(dec); continue
-                symbol_ix=panel.symbols.index(dec["symbol"]) if dec.get("symbol") in panel.symbols else dec["symbol_index"]
-                dec["index"]=start_ix; dec["symbol_index"]=symbol_ix
-            symbol_ix=dec["symbol_index"]
-            target=self._target_index(panel,dec["index"],symbol_ix)
-            if target is None:
-                keep.append(dec); continue
-            if end_index<target: keep.append(dec); continue
-            i=symbol_ix; forward=panel.return_to(dec["index"],target,i)
+                symbol_ix=panel.symbols.index(symbol)
+                if now<=stamp or not panel.observed[end_index,symbol_ix]:
+                    keep.append(dec); continue
+                if self.horizon_kind=="bars":
+                    dec["bars_elapsed"]=int(dec.get("bars_elapsed",0))+1
+                    matured=dec["bars_elapsed"]>=self.horizon_amount
+                else:
+                    target=stamp+np.timedelta64(self.horizon_amount,"s")
+                    matured=now>=target
+                if not matured:
+                    keep.append(dec); continue
+                entry=float(dec["entry_price"]); exit_price=float(panel.closes[end_index,symbol_ix])
+                if not np.isfinite(entry*exit_price) or entry<=0:
+                    self.metrics["pending_expired_after_window"] = int(
+                        self.metrics.get("pending_expired_after_window",0))+1
+                    continue
+                forward=exit_price/entry-1.0
+                dec["index"]=end_index; dec["symbol_index"]=symbol_ix
+            else:
+                # Finite historical runs still refer to their fixed panel rows.
+                if dec.get("timestamp"):
+                    stamp=np.datetime64(dec["timestamp"])
+                    start_ix=int(np.searchsorted(panel.dates,stamp,side="left"))
+                    if start_ix>=len(panel.dates) or panel.dates[start_ix]!=stamp:
+                        keep.append(dec); continue
+                    symbol_ix=(panel.symbols.index(dec["symbol"])
+                               if dec.get("symbol") in panel.symbols else dec["symbol_index"])
+                    dec["index"]=start_ix; dec["symbol_index"]=symbol_ix
+                symbol_ix=dec["symbol_index"]
+                target=self._target_index(panel,dec["index"],symbol_ix)
+                if target is None or end_index<target:
+                    keep.append(dec); continue
+                forward=panel.return_to(dec["index"],target,symbol_ix)
+            i=symbol_ix
             self.metrics["matured"]+=1
             if dec.get("is_validation",False):
-                self.validation.append((dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
+                self._append_validation(self.validation,self.validation_dates,dec["timestamp"],
+                    (dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                     dec["valid_mask"],i,forward,dec["timestamp"],dec.get("previous_position",0),
                     dec.get("market_context")))
                 continue
@@ -401,13 +444,14 @@ class OnlineGlobalAgent:
             day=str(dec.get("timestamp","")[:10])
             daily=self.metrics.setdefault("daily_net_pnl",{})
             daily[day]=float(daily.get(day,0.0))+float(reward)
-            regime=abs(float(panel.features[dec["index"],i,6]))
+            regime=(float(dec["regime"]) if "regime" in dec
+                    else abs(float(panel.features[dec["index"],i,6])))
             self.replay.add(Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                 dec["valid_mask"],i,action,float(reward),dec["timestamp"],"paper",max(regime,abs(forward)),
                 market_context=dec.get("market_context")))
         return keep
 
-    def _mature_portfolio(self, pending, panel, equity_before: float):
+    def _mature_portfolio(self, pending, panel, end_index: int):
         """Turn completed paper-account transitions into reward experiences.
 
         The reward is the account's net-of-cost normalized equity change.  It
@@ -419,24 +463,42 @@ class OnlineGlobalAgent:
         now = float(self.paper_account.normalized_equity())
         keep=[]
         for dec in pending:
+            stamp=np.datetime64(dec["timestamp"]); current=panel.dates[end_index]
+            if float((current-stamp)/np.timedelta64(1,"s"))>self.max_pending_age_seconds:
+                self.metrics["portfolio_pending_expired_after_window"] = int(
+                    self.metrics.get("portfolio_pending_expired_after_window",0))+1
+                continue
+            symbol=dec.get("symbol")
+            if symbol not in panel.symbols:
+                keep.append(dec); continue
+            symbol_ix=panel.symbols.index(symbol)
+            if current<=stamp or not panel.observed[end_index,symbol_ix]:
+                keep.append(dec); continue
+            if self.horizon_kind=="bars":
+                dec["bars_elapsed"]=int(dec.get("bars_elapsed",0))+1
+                matured=dec["bars_elapsed"]>=self.horizon_amount
+            else:
+                matured=current>=stamp+np.timedelta64(self.horizon_amount,"s")
+            if not matured:
+                keep.append(dec); continue
             reward = now - float(dec.get("equity_before", now))
             self.metrics["paper_account_reward"] = float(self.metrics.get("paper_account_reward", 0.0)) + reward
-            forward_return=None
-            if "index" in dec:
-                target=self._target_index(panel,int(dec["index"]),int(dec["symbol_index"]))
-                if target is not None and target <= len(panel.dates)-1:
-                    forward_return=float(panel.return_to(int(dec["index"]),target,int(dec["symbol_index"])))
+            entry=float(dec.get("entry_price",0.0)); exit_price=float(panel.closes[end_index,symbol_ix])
+            forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
             exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                    dec["valid_mask"],int(dec["symbol_index"]),int(dec["action"]),float(reward),
+                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(reward),
                     dec["timestamp"],"paper_account",float(dec.get("regime",0.0)),
                     market_context=dec.get("market_context"), portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"), portfolio_reward=float(reward),
                     portfolio_transition=True,forward_return=forward_return)
             if dec.get("is_validation",False):
-                self.portfolio_validation.append(exp)
+                self._append_validation(self.portfolio_validation,self.portfolio_validation_dates,
+                                        exp.timestamp,exp)
             else:
                 self.replay.add(exp)
-                self.paper_experiences.append(exp)
+                self.metrics["paper_experiences_seen"]=int(
+                    self.metrics.get("paper_experiences_seen",0))+1
+                self.replay.note_paper_outcome()
             self.metrics["portfolio_experiences"] = int(self.metrics.get("portfolio_experiences",0)) + 1
         return keep
 
@@ -449,13 +511,13 @@ class OnlineGlobalAgent:
         """
         from .global_transformer import stable_id
         data_path=Path(data_path); cursor_path=self.state_dir/"live_cursor.json"
-        pending_path=self.state_dir/"live_pending.pt"; portfolio_pending_path=self.state_dir/"paper_pending.pt"; decisions_path=self.state_dir/"decisions.csv"
+        decisions_path=self.state_dir/"decisions.csv"
         cursor=None
         last_file_signature=None
         if cursor_path.exists(): cursor=json.loads(cursor_path.read_text(encoding="utf-8")).get("last_timestamp")
-        pending=torch.load(pending_path,map_location="cpu",weights_only=False) if pending_path.exists() else []
-        portfolio_pending=torch.load(portfolio_pending_path,map_location="cpu",weights_only=False) if portfolio_pending_path.exists() else []
-        last_persist=time.monotonic(); persist_interval=30.0
+        account_cursor=self.paper_account.state.get("last_timestamp")
+        if account_cursor and (cursor is None or account_cursor>cursor): cursor=account_cursor
+        pending=[]; portfolio_pending=[]
         self.start()
         try:
             while not self.stop.is_set():
@@ -494,7 +556,18 @@ class OnlineGlobalAgent:
                     start=max(0,len(panel.dates)-max(lookback,1))
                 else:
                     cursor_dt=np.datetime64(cursor)
-                    start=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
+                    oldest=panel.recent_cutoff if panel.recent_cutoff is not None else panel.dates[0]
+                    if cursor_dt<oldest:
+                        self.metrics["market_history_skipped_after_window"] = int(
+                            self.metrics.get("market_history_skipped_after_window",0))+1
+                        self.metrics["pending_expired_after_window"] = int(
+                            self.metrics.get("pending_expired_after_window",0))+len(pending)
+                        self.metrics["portfolio_pending_expired_after_window"] = int(
+                            self.metrics.get("portfolio_pending_expired_after_window",0))+len(portfolio_pending)
+                        pending.clear(); portfolio_pending.clear()
+                        start=max(0,len(panel.dates)-1)
+                    else:
+                        start=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
                 for ti in range(start,len(panel.dates)):
                     if self.stop.is_set(): break
                     # Autonomy is distinct from the model's HOLD action. When
@@ -510,8 +583,7 @@ class OnlineGlobalAgent:
                     self.metrics["paper_enabled"]=paper_enabled
                     self.metrics["observe_enabled"]=observe_enabled
                     self.paper_account.process_bar(panel,ti,paper_enabled)
-                    portfolio_pending=self._mature_portfolio(portfolio_pending,panel,
-                                                             self.paper_account.normalized_equity())
+                    portfolio_pending=self._mature_portfolio(portfolio_pending,panel,ti)
                     pending=self._mature(pending,panel,ti)
                     if not observe_enabled:
                         cursor=str(panel.dates[ti]); self.metrics["observations"]+=1
@@ -533,13 +605,19 @@ class OnlineGlobalAgent:
                         # observed mask remains untouched for reward maturity.
                         if not panel.observed[:ti + 1, j].any(): continue
                         action=int(np.argmax(probs[j])); previous=self.positions.get(symbol,0)
-                        pending.append({"index":ti,"symbol_index":j,"action":action,"previous_position":previous,
-                          "timestamp":stamp,"symbol":symbol,"features":x[0].numpy().astype(np.float16),
-                          "symbol_ids":sid[0].numpy(),"market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),
-                          "valid_mask":mask[0].numpy(),"is_validation":validation,"previous_position":previous,
-                          "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
-                        if paper_enabled:
-                            portfolio_pending.append({"index":ti,"symbol_index":j,"action":action,"timestamp":stamp,
+                        if panel.observed[ti,j]:
+                            pending.append({"index":ti,"symbol_index":j,"action":action,"previous_position":previous,
+                              "timestamp":stamp,"symbol":symbol,"entry_price":float(panel.closes[ti,j]),
+                              "bars_elapsed":0,"regime":abs(float(panel.features[ti,j,6])),
+                              "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
+                              "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),
+                              "valid_mask":mask[0].numpy(),"is_validation":validation,
+                              "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
+                        if paper_enabled and panel.observed[ti,j]:
+                            portfolio_pending.append({"index":ti,"symbol_index":j,"symbol":symbol,
+                              "action":action,"timestamp":stamp,
+                              "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
+                              "regime":abs(float(panel.features[ti,j,6])),
                               "is_validation":validation,
                               "equity_before":self.paper_account.normalized_equity(),
                               "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
@@ -560,13 +638,6 @@ class OnlineGlobalAgent:
                     self.metrics["last_market_timestamp"]=stamp
                     _atomic_json({"last_timestamp":cursor},cursor_path)
                     _atomic_json({str(k):v for k,v in self.positions.items()},self.state_dir/"live_positions.json")
-                if pending_path.parent.exists() and (time.monotonic()-last_persist >= persist_interval):
-                    _atomic_save(pending,pending_path)
-                    _atomic_save(portfolio_pending,portfolio_pending_path)
-                    _atomic_save(self.portfolio_validation,self.state_dir/"paper_validation.pt")
-                    _atomic_save(self.paper_experiences[-10000:],self.paper_replay_path)
-                    last_persist=time.monotonic()
-                    _atomic_save(self.validation,self.validation_path)
                 self._write_metrics()
                 last_file_signature=file_signature
                 self.stop.wait(poll_seconds)
@@ -576,11 +647,6 @@ class OnlineGlobalAgent:
             self.stop.set()
             if self.thread.is_alive(): self.thread.join(timeout=300)
             self.metrics["candidate_training"]=False
-            _atomic_save(pending,pending_path)
-            _atomic_save(portfolio_pending,portfolio_pending_path)
-            _atomic_save(self.portfolio_validation,self.state_dir/"paper_validation.pt")
-            _atomic_save(self.paper_experiences[-10000:],self.paper_replay_path)
-            _atomic_save(self.validation,self.validation_path)
             self.checkpoint()
             (self.state_dir/"stop.request").unlink(missing_ok=True)
 
@@ -606,7 +672,8 @@ class OnlineGlobalAgent:
                     target=self._target_index(panel,ti,j)
                     if not panel.observed[ti,j] or target is None or target>=test_start: continue
                     gross=panel.return_to(ti,target,j)
-                    self.validation.append((x[0].numpy().astype(np.float16),sid[0].numpy(),mid[0].numpy(),aid[0].numpy(),
+                    self._append_validation(self.validation,self.validation_dates,str(panel.dates[ti]),
+                        (x[0].numpy().astype(np.float16),sid[0].numpy(),mid[0].numpy(),aid[0].numpy(),
                         mask[0].numpy(),j,gross,str(panel.dates[ti]),0,
                         window[5][0].numpy().astype(np.float16) if len(window)>5 else None))
                 continue
@@ -628,11 +695,8 @@ class OnlineGlobalAgent:
                 self.metrics["decisions"]+=1
                 self.positions[j]=action-1
             self.metrics["observations"]+=1; count+=1
-            if count%10==0:
-                self.replay.save(self.replay_path)
         # Complete all pending decisions with known later observations.
         if len(panel.dates): pending=self._mature(pending,panel,len(panel.dates)-1)
-        self.replay.save(self.replay_path)
         pd_frame=None
         import pandas as pd
         pd_frame=pd.DataFrame(history)
@@ -772,7 +836,7 @@ class OnlineGlobalAgent:
             # live candidate is promoted only from actual paper-account
             # transitions whose costs and allocation were executed in the
             # virtual ledger.
-            if len(self.paper_experiences) < self.min_replay:
+            if int(self.metrics.get("paper_experiences_seen",0)) < self.min_replay:
                 continue
             if (self.replay.trainable_count()<self.min_replay or validation_dates<self.min_validation_dates or self.candidate is not None
                     or len(self.replay)-self.last_train_replay_size<max(self.min_replay,self.candidate_interval)): continue
@@ -790,6 +854,8 @@ class OnlineGlobalAgent:
         from datetime import datetime, timezone
         self.metrics["candidate_training"]=True
         with self.lock: source_champion=self.champion
+        candidate_path=self.model_dir/"candidate.pt"
+        self.candidate=None
         if getattr(source_champion,"_stockrl_uses_market_context",False):
             from .market_training import ContextConditionedTransformer
             backbone=GlobalMarketTransformer(self.cfg)
@@ -802,13 +868,13 @@ class OnlineGlobalAgent:
             self.candidate=GlobalMarketTransformer(self.cfg)
             if self.device.type=="cuda": self.candidate=self.candidate.half()
         self.candidate=self.candidate.to(self.device)
-        # Champion is read-only for the duration of this copy; never hold the
-        # inference lock during a 0.5B state transfer.
+        # Every candidate starts from the current champion. A rejected candidate
+        # is reset and is never the starting point of the next attempt.
         self.candidate.load_state_dict(source_champion.state_dict())
+        original=self.champion
         candidate=self.candidate.train(); opt=torch.optim.AdamW(candidate.parameters(),lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8)
-        original=self.champion
-        elapsed=[]
+        elapsed=[]; consumed=[]
         for update_ix in range(self.updates_per_candidate):
             batch=self.replay.sample(self.batch_size)
             if not batch: break
@@ -845,11 +911,23 @@ class OnlineGlobalAgent:
                 self.metrics["nonfinite_updates"]+=1
                 continue
             opt.zero_grad(set_to_none=True); loss.backward(); nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
+            consumed.extend(batch)
             self.metrics["update_losses"].append(float(loss.detach().cpu()))
+            self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
             if self.device.type=="cuda": torch.cuda.synchronize(self.device)
             elapsed.append(time.perf_counter()-ti); self.steps+=1
         self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
+        self.metrics["update_seconds"]=self.metrics["update_seconds"][-2000:]
         self.metrics["teacher_mix_probability"]=self.replay.teacher_fraction()
+        if not elapsed:
+            self.metrics["candidate_training"]=False
+            self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
+            self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
+            self.candidate=None
+            self._reset_candidate_file()
+            self._write_metrics()
+            del candidate,opt
+            return
         if not all(torch.isfinite(p).all() for p in candidate.parameters()):
             self.metrics["nonfinite_updates"]+=1
             self.metrics["rejections"]+=1
@@ -861,34 +939,48 @@ class OnlineGlobalAgent:
             self.metrics["candidate_gate_history"]=history[-20:]
             self.metrics["candidate_training"]=False
             self.candidate=None
+            self._reset_candidate_file()
             self._write_metrics()
             del candidate,opt
             return
         delta=sum((candidate.state_dict()[k].float()-v.detach().float()).abs().sum().item()
                   for k,v in original.state_dict().items())
         self.metrics["weight_delta_l1"].append(delta)
+        self.metrics["weight_delta_l1"]=self.metrics["weight_delta_l1"][-2000:]
         self.metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
         # Candidate promotion on a deterministic, held-out chronological tail.
         # It must beat champion in a net reward check before replacing it.
-        score_new=self._score_candidate(candidate); score_old=self._score_candidate(self.champion)
+        with self.validation_lock:
+            validation=list(self.validation)
+            portfolio_validation=list(self.portfolio_validation)
+        score_new=self._score_candidate(candidate,validation,portfolio_validation)
+        score_old=self._score_candidate(self.champion,validation,portfolio_validation)
         self.state_dir.mkdir(exist_ok=True,parents=True)
         # Candidate optimizer state is intentionally ephemeral across runs;
         # omit it from the artifact so evaluation/recovery only loads weights.
-        save_model(self.state_dir/"candidate.pt",candidate,self.cfg,step=self.steps)
+        save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
         self._commit_candidate(candidate,score_new,score_old)
+        discarded=self.replay.discard(consumed)
+        self.metrics["replay_examples_discarded"]=int(self.metrics.get("replay_examples_discarded",0))+discarded
+        self.last_train_replay_size=len(self.replay)
+        self.metrics["candidate_training"]=False
         self._write_metrics()
-        del candidate,opt; self.candidate=None; self.metrics["candidate_training"]=False
+        del candidate,opt; self.candidate=None
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
-        promote=should_promote(score_new,score_old,1e-9)
+        # Never replace the champion with the current return-sum estimate.
+        # Promotion must wait until both models are replayed through the same
+        # untouched bars in separate PaperAccount ledgers.
+        promote=(PAPER_LEDGER_PROMOTION_READY and should_promote(score_new,score_old,1e-9))
+        if not PAPER_LEDGER_PROMOTION_READY:
+            self.metrics["promotion_blocked_reason"] = "sequential paper-account validation is not implemented"
         self.metrics["last_candidate_validation_score"]=score_new
         self.metrics["last_champion_validation_score"]=score_old
         self.metrics["last_candidate_promoted"]=promote
         if promote:
-            staged=self.state_dir/"champion.next.pt"
-            save_model(staged,candidate,self.cfg,step=self.steps)
-            if self.champion_path.exists(): shutil.copy2(self.champion_path,self.backup_path)
+            staged=self.state_dir/"champion.next"
+            save_model(staged,candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
             with self.lock:
                 os.replace(staged,self.champion_path)
                 self.champion=candidate.eval(); self.metrics["promotions"]+=1
@@ -896,19 +988,25 @@ class OnlineGlobalAgent:
                 self.metrics["last_promotion_utc"]=datetime.now(timezone.utc).isoformat()
         else:
             self.metrics["rejections"]+=1
+            self._reset_candidate_file()
             from datetime import datetime, timezone
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
         history=self.metrics.setdefault("candidate_gate_history",[])
+        reason=("sequential paper-account validation improved" if promote else
+                "promotion blocked: sequential paper-account validation is not implemented"
+                if not PAPER_LEDGER_PROMOTION_READY else
+                "candidate paper validation did not beat champion")
         history.append({"time_utc":self.metrics["last_promotion_utc" if promote else "last_rejection_utc"],
-                        "applied":promote,"reason":("새 모델의 동일 구간 순보상이 더 높아 교체" if promote
-                                                    else "새 모델의 동일 구간 순보상이 더 높지 않아 기존 모델 유지"),
+                        "applied":promote,"reason":reason,
                         "candidate_score":float(score_new),"champion_score":float(score_old)})
         self.metrics["candidate_gate_history"]=history[-20:]
         return promote
 
-    def _score_candidate(self,model):
+    def _score_candidate(self,model,validation=None,portfolio_validation=None):
         """Net return over identical chronological holdout dates; held-out rows never train."""
-        if len(self.portfolio_validation) < 8:
+        portfolio_validation=self.portfolio_validation if portfolio_validation is None else portfolio_validation
+        validation=self.validation if validation is None else validation
+        if len(portfolio_validation) < 8:
             # A candidate trained from paper-account rewards may not replace
             # the incumbent on the old isolated-action metric. Wait for a
             # genuinely unseen paper-account validation slice.
@@ -920,7 +1018,7 @@ class OnlineGlobalAgent:
             total=0.0; was_training=model.training; model.eval()
             try:
                 groups={}
-                for exp in self.portfolio_validation:
+                for exp in portfolio_validation:
                     groups.setdefault(exp.timestamp,[]).append(exp)
                 with torch.inference_mode():
                     for _, rows_exp in sorted(groups.items()):
@@ -939,9 +1037,9 @@ class OnlineGlobalAgent:
             finally:
                 model.train(was_training)
             return float(total)
-        if len(self.validation)<2: return float("-inf")
+        if len(validation)<2: return float("-inf")
         groups={}
-        for item in self.validation: groups.setdefault(item[7],[]).append(item)
+        for item in validation: groups.setdefault(item[7],[]).append(item)
         dates=sorted(groups); total_net=0.0; was_training=model.training; model.eval()
         try:
             with torch.inference_mode():
@@ -971,11 +1069,16 @@ class OnlineGlobalAgent:
     def _write_metrics(self):
         proc=psutil.Process(); metrics=dict(self.metrics)
         metrics.update({"parameters":parameter_count(self.champion),"device":str(self.device),
+          "replay_persistence":"memory_only",
+          "promotion_score_mode":"forward_return_approximation",
+          "promotion_uses_sequential_paper_account":PAPER_LEDGER_PROMOTION_READY,
+          "validation_window_dates":len(self.validation_dates),
+          "portfolio_validation_window_dates":len(self.portfolio_validation_dates),
           "horizon":str(self.horizon),"fee_rate":self.fee,"slippage_bps":self.slippage*10000,
           "rss_bytes":proc.memory_info().rss,"replay_count":len(self.replay),
           "trainable_replay_count":self.replay.trainable_count(),
-          "replay_file_bytes":self.replay_path.stat().st_size if self.replay_path.exists() else 0,
-          "champion_path":str(self.champion_path),"candidate_path":str(self.state_dir/"candidate.pt")})
+          "replay_file_bytes":0,
+          "champion_path":str(self.champion_path),"candidate_path":str(self.model_dir/"candidate.pt")})
         if self.device.type=="cuda":
             metrics.update({"cuda_device":torch.cuda.get_device_name(self.device),
                 "cuda_memory_allocated_bytes":torch.cuda.memory_allocated(self.device),
@@ -989,11 +1092,7 @@ class OnlineGlobalAgent:
         _atomic_json(metrics,self.state_dir/"metrics.json")
 
     def checkpoint(self):
-        with self.lock: save_model(self.champion_path,self.champion,self.cfg,step=self.steps)
-        try:
-            self.replay.save(self.replay_path)
-        except (MemoryError, RuntimeError, OSError) as exc:
-            self.metrics["replay_save_error"] = f"{type(exc).__name__}: {exc}"
+        # Do not rewrite champion on shutdown. Only the promotion gate may replace it.
         self._write_metrics()
 
 
