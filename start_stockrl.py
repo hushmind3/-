@@ -31,8 +31,15 @@ def ready() -> bool:
     try:
         with urlopen(URL + "api/health", timeout=2) as response:
             payload = json.load(response)
-            return (response.status == 200 and payload.get("service") == "stockrl"
-                    and payload.get("port") == PORT)
+            if (response.status == 200 and payload.get("service") == "stockrl"
+                    and payload.get("port") == PORT):
+                return True
+        # Older StockRL servers do not include the health identity yet. Accept
+        # their specific status shape so the known 8766 server can be reused.
+        with urlopen(URL + "api/status", timeout=2) as response:
+            payload = json.load(response)
+            return response.status == 200 and all(key in payload for key in
+                ("provider", "feed_running", "agent_running", "paper_account", "instruments"))
     except (OSError, URLError):
         return False
 
