@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
+import socket
 import subprocess
 import sys
 import time
@@ -28,8 +30,18 @@ def default_runtime_dir() -> Path:
 def ready() -> bool:
     try:
         with urlopen(URL + "api/health", timeout=2) as response:
-            return response.status == 200
+            payload = json.load(response)
+            return (response.status == 200 and payload.get("service") == "stockrl"
+                    and payload.get("port") == PORT)
     except (OSError, URLError):
+        return False
+
+
+def port_in_use() -> bool:
+    try:
+        with socket.create_connection(("127.0.0.1", PORT), timeout=.25):
+            return True
+    except OSError:
         return False
 
 
@@ -38,6 +50,10 @@ def main() -> int:
         print(f"StockRL is already running: {URL}")
         webbrowser.open(URL, new=2)
         return 0
+    if port_in_use():
+        print(f"Port {PORT} is occupied by an unrecognized or older server; it was not replaced.",
+              file=sys.stderr)
+        return 1
 
     log_dir = default_runtime_dir()
     log_dir.mkdir(parents=True, exist_ok=True)

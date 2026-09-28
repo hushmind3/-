@@ -498,7 +498,7 @@ class Supervisor:
 
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
-          device: str = "auto", candidate_every: int = 256, fee: float = .001,
+          device: str = "auto", candidate_every: int = 4096, fee: float = .001,
           auto_start: bool = True, open_browser: bool = True, horizon: str = "1m",
           config: str = "configs/live_symbols.json", initial_champion: str | None = None,
           model_dir: str | None = None, settings_dir: str | None = None):
@@ -526,7 +526,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             if route == "/":
                 return self._send(PAGE, content_type="text/html; charset=utf-8")
             if route == "/api/health":
-                return self._send({"ok": True})
+                return self._send({"ok": True, "service": "stockrl", "port": port})
             if route == "/api/status":
                 return self._send(supervisor.status())
             if route == "/api/provider":

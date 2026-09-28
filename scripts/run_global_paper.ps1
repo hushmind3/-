@@ -47,7 +47,7 @@ $feedArgs = @("-m", "stockrl", "live-feed", "--config", $configPath, "--output",
     "--poll-seconds", "5", "--stop-file", $feedStopPath)
 $agentArgs = @("-m", "stockrl", "global-online", "--data", $dataPath, "--state-dir", $statePath,
     "--model-dir", $modelPath, "--follow", "--poll-seconds", "2", "--initial-lookback-bars", "128",
-    "--candidate-every", "256", "--device", $Device)
+    "--candidate-every", "4096", "--device", $Device)
 $championPath = Join-Path $modelPath "champion.pt"
 if (Test-Path -LiteralPath $championPath -PathType Leaf) {
     $agentArgs += @("--initial-champion", $championPath)
