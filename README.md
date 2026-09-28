@@ -1,57 +1,57 @@
-# StockRL Distill
+# StockRL 금융매매 모델
 
-PyTorch sample project for intraday/single-bar market decision research. It combines a weighted teacher ensemble, a GRU actor-critic, teacher distillation, and a compact PPO fine-tuning pass. Actions are **SELL / HOLD / BUY**; the scalar critic output is exposed as a state-value estimate. Fees are charged on position turnover in reward and backtests.
+이 프로젝트는 PyTorch를 사용해 장중 단일 봉 기준의 시장 판단을 연구합니다. 가중 teacher 앙상블, GRU actor-critic, teacher 지식 증류, 소규모 PPO 미세 조정을 결합합니다. 행동은 **SELL / HOLD / BUY**이며, critic의 스칼라 출력은 상태 가치 추정치로 제공합니다. reward와 백테스트에는 포지션 변경에 따른 수수료를 반영합니다.
 
-> This is a research and engineering example, not a profitable strategy or investment advice. The included heuristic policies are runnable demo teachers, **not** pretrained public market models. A generic pretrained stock-trading checkpoint cannot be assumed to match this project's observation shape/action semantics. The project accepts local Stable-Baselines3 PPO/A2C/DQN checkpoints through an explicit adapter; verify their input features, action meanings, and training provenance before use. FinRL is an open-source framework for training trading agents, not a universal compatible pretrained checkpoint repository.
+> 이 저장소는 연구·엔지니어링 예제이며, 수익이 보장되는 전략이나 투자 조언이 아닙니다. 포함된 휴리스틱 정책은 실행 가능한 시연용 teacher이며, 공개 사전학습 시장 모델이 아닙니다. 일반적인 주식매매 체크포인트가 이 프로젝트의 관측 구조와 행동 의미에 맞는다고 가정할 수 없습니다. 로컬 Stable-Baselines3 PPO/A2C/DQN 체크포인트는 명시적 adapter를 통해 사용할 수 있습니다. 사용 전 입력 특징, 행동의 의미, 학습 출처를 확인하세요. FinRL은 트레이딩 에이전트 학습용 오픈소스 프레임워크이며, 모든 프로젝트와 호환되는 사전학습 체크포인트 저장소는 아닙니다.
 
-## Requirements and setup
+## 요구 사항 및 설치
 
-Python 3.10+ and PyTorch 2.2+. On Apple Silicon, create an arm64 environment and install the official MPS-enabled PyTorch wheel for your Python/macOS combination; `--device auto` selects MPS when available and otherwise CPU/CUDA.
+Python 3.10 이상과 PyTorch 2.2 이상이 필요합니다. Apple Silicon에서는 arm64 환경을 만들고 사용하는 Python/macOS 조합에 맞는 공식 MPS 지원 PyTorch wheel을 설치하세요. `--device auto`는 MPS를 사용할 수 있으면 선택하고, 그렇지 않으면 CPU 또는 CUDA를 선택합니다.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate       # Windows PowerShell: .venv\Scripts\Activate.ps1
+source .venv/bin/activate       # Windows PowerShell에서는 .venv\Scripts\Activate.ps1 실행
 python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-To load Stable-Baselines3 teachers as well:
+Stable-Baselines3 teacher도 사용하려면 다음을 설치하세요.
 
 ```bash
 python -m pip install -e '.[teachers]'
 ```
 
-## End-to-end sample
+## 전체 실행 예시
 
 ```bash
 python -m stockrl train --data data/sample_ohlcv.csv --epochs 2 --ppo-updates 1
 python -m stockrl predict --data data/sample_ohlcv.csv --checkpoint checkpoints/final.pt
 ```
 
-For Windows PowerShell run `python -m pip install -e .` then `python -m stockrl ...`. A training run writes `checkpoints/latest.pt` after each distillation epoch and PPO update, plus `checkpoints/final.pt` at completion. It prints validation metrics separately from the held-out final test backtest. The train/validation/test cuts are chronological 70/15/15 and no future return is used in features or teacher observations.
+Windows PowerShell에서는 `python -m pip install -e .`을 실행한 뒤 `python -m stockrl ...`을 실행하세요. 학습은 각 증류 epoch와 PPO update가 끝날 때마다 `checkpoints/latest.pt`를 저장하고, 완료 시 `checkpoints/final.pt`도 저장합니다. 검증 지표와 따로 떼어 둔 최종 테스트 백테스트 결과를 각각 출력합니다. train/validation/test는 시간순으로 70/15/15 비율로 나누며, 특징과 teacher 관측값에 미래 수익률을 사용하지 않습니다.
 
-## Data format
+## 데이터 형식
 
-CSV needs `date,open,high,low,close,volume` (column name case is ignored). The included tiny sample is synthetic solely for smoke checks. For real data, use a properly adjusted, timestamped intraday OHLCV dataset, sort/deduplicate timestamps, account for splits, and include realistic slippage, spread, fills, and market hours before drawing conclusions.
+CSV에는 `date,open,high,low,close,volume` 열이 필요합니다. 열 이름의 대소문자는 구분하지 않습니다. 포함된 작은 샘플은 기본 실행 확인용 합성 데이터입니다. 실제 데이터를 쓸 때는 가격 조정과 시각 정보가 올바른 장중 OHLCV 데이터를 사용하고, timestamp를 정렬·중복 제거하세요. 액면분할, 현실적인 슬리피지와 스프레드, 체결 방식, 거래 시간을 반영한 뒤 결과를 해석해야 합니다.
 
-## Teacher configuration
+## Teacher 설정
 
-Edit `configs/teachers.json`. Heuristic teachers support `trend`, `mean_reversion`, and `volatility_aware`; the nonnegative `weight` is the ensemble weight. These produce common 3-action logits plus a scalar value. Local SB3 examples:
+`configs/teachers.json`을 수정하세요. 휴리스틱 teacher는 `trend`, `mean_reversion`, `volatility_aware`를 지원합니다. 0 이상인 `weight`가 앙상블 가중치입니다. 이 teacher들은 공통 3개 행동 logit과 스칼라 value를 출력합니다. 로컬 SB3 설정 예시는 다음과 같습니다.
 
 ```json
 {"name":"local_ppo","type":"sb3","algorithm":"ppo","path":"models/ppo.zip","weight":1.5}
 ```
 
-SB3 observations are flattened window feature arrays and actions must be discrete indices 0=SELL, 1=HOLD, 2=BUY. The adapter maps action predictions to common logits; SB3 critic values are unavailable through this normalized inference API and map to 0. Use the `Teacher` interface in `src/stockrl/core.py` to adapt any other PyTorch checkpoint. It is the user's responsibility to normalize teacher features/action/value semantics consistently. Teacher evaluation weights are configured explicitly; this project does not claim those weights are empirically validated.
+SB3 관측값은 펼친 window 특징 배열이며, 행동은 0=SELL, 1=HOLD, 2=BUY의 이산 인덱스여야 합니다. adapter는 행동 예측을 공통 logit으로 변환합니다. 이 정규화된 추론 API에서는 SB3 critic value를 사용할 수 없어 0으로 처리합니다. 다른 PyTorch 체크포인트는 `src/stockrl/core.py`의 `Teacher` 인터페이스로 연결하세요. teacher 특징·행동·value의 의미를 일관되게 정규화하는 것은 사용자의 책임입니다. teacher 평가 가중치는 명시적으로 설정하며, 이 프로젝트는 해당 가중치가 실험으로 검증됐다고 주장하지 않습니다.
 
-## Commands
+## 명령어
 
 ```bash
 python -m stockrl train --data PATH.csv --teachers configs/teachers.json --device auto
 python -m stockrl predict --data PATH.csv --checkpoint checkpoints/final.pt --device auto
 ```
 
-This implementation is deliberately a minimal educational PPO loop, not a production execution engine. Inspect the source and add transaction/tax rules and a realistic market simulator for a live deployment workflow.
+이 구현은 학습용 최소 PPO 루프이며 실전 주문 실행 엔진이 아닙니다. 실제 운영에 사용하려면 소스를 검토하고 거래·세금 규칙과 현실적인 시장 시뮬레이터를 추가하세요.
 
 ## 지속 관찰과 가상매매
 
@@ -77,25 +77,25 @@ CSV 필수 열은 `date,open,high,low,close,volume`입니다. 선택 `bid,ask,bi
 
 지속 루프는 파일에 새로운 timestamp가 추가되지 않으면 새 판단/학습을 하지 않습니다. 공급기는 확정된 봉을 append하거나 원자적 교체로 게시해야 합니다. 샘플 데이터만으로 실시간 피드, MPS 장기 실행, 외부 툴의 주문/피드백 연동을 검증할 수는 없습니다.
 
-## 실제 공개 pretrained teacher 체크포인트
+## 공개 teacher 체크포인트
 
-`models/teachers/`에 공개된 **학습 가중치 파일 6개**를 내려받아 저장했고, 전부 SB3/PyTorch로 로드해 Yahoo Finance 실제 MSFT 일봉 데이터에 대해 추론했습니다. source별 전처리·관측공간이 달라 각 모델 전용 adapter를 거쳐 공통 `SELL/HOLD/BUY` logits와 value 숫자로 바꿉니다. action probabilities는 공개 모델의 calibrated probabilities가 아니라, 공개 정책이 고른 행동에 큰 logit을 준 **distillation용 pseudo target**입니다. PPO 모델의 value는 critic 출력, DeepBio DQN의 value는 max Q, Pfizer recurrent model은 공개 추론 인터페이스에서 critic 값을 꺼내지 않아 0으로 기록합니다.
+`models/teachers/`에 공개 **학습 가중치 파일 6개**를 내려받아 저장했습니다. 모두 SB3/PyTorch로 불러와 Yahoo Finance의 실제 MSFT 일봉 데이터에서 추론했습니다. 출처마다 전처리와 관측 공간이 달라 모델별 adapter를 거쳐 공통 `SELL/HOLD/BUY` logits와 value로 변환합니다. action probability는 공개 모델이 보정한 확률이 아닙니다. 공개 정책이 선택한 행동에 큰 logit을 부여한 **증류용 pseudo target**입니다. PPO 모델의 value는 critic 출력, DeepBio DQN은 max Q입니다. Pfizer recurrent 모델은 공개 추론 인터페이스에서 critic 값을 가져올 수 없어 0으로 기록합니다.
 
 | 공개 모델 / 파일 | 구조·실제 입력 | 원래 행동 → 공통 행동 | 라이선스·비고 |
 |---|---|---|---|
-| [maksimprivalov/RLTradingAgent](https://github.com/maksimprivalov/RLTradingAgent), `maksimprivalov_ppo_trader.zip` (276,393 B) | SB3 PPO MLP; 90 float = 15×6 (`log_return,sma20,sma50,rsi14,macd,volume_change`) | Discrete 0 SELL, 1 HOLD, 2 BUY → 그대로 | 저장소 LICENSE 파일을 찾지 못함. 연구 추론용으로 다운로드. 공개 README는 daily OHLCV/MSFT를 설명. 실제 출력은 435행 중 HOLD 433, SELL 1, BUY 1이라 편향을 확인하고 가중치 1.0으로 낮은 영향의 teacher로 둠. |
-| [jk2500/Pfizer-trader](https://github.com/jk2500/Pfizer-trader), `jk2500_pfizer_recurrentppo_lstm.zip` (28,532,063 B) | SB3-Contrib RecurrentPPO `MlpLstmPolicy`; (100,9) (`Open,High,Low,Close,Volume,Adj Close,MA10,MA50,RSI`) | Discrete 0 short, 1 long → SELL, BUY; 이 모델 자체에는 HOLD가 없음 | 저장소 archive에서 LICENSE 파일 미발견. 저장소 설명상 PFE 데이터에 학습. 입력 scaler는 별도 공개 파일이 없어 MSFT 앞 70%로 fit 후 전체 적용. LSTM hidden state를 bar 간 유지. |
-| [Adilbai/stock-trading-rl-agent](https://huggingface.co/Adilbai/stock-trading-rl-agent), `adilbai_final_model.zip` (4,875,406 B) + `adilbai_scaler.pkl` (2,423 B) | SB3 PPO MLP; 60×50 standardized market features + 8 portfolio values = 3,008 float; scaler도 함께 받음 | 실제 SB3 action space는 `Box([action_type, size])`, 예측 첫 요소를 반올림해 0 HOLD, 1 BUY, 2 SELL로 처리하고 size로 paper portfolio 상태 갱신 | Hugging Face model card는 MIT. 카드에 연속/이산 출력 설명이 섞여 있으나 checkpoint action space를 직접 읽어 Box(2)임을 확인하고 adapter는 명시적으로 보수 변환. 공개 성능 수치는 자체 보고라 검증된 성과로 취급하지 않음. |
-| [deepbiolab/drl-trading](https://github.com/deepbiolab/drl-trading), `checkpoint_deepbiolab.pth` (13,668 B), `model_fold_1_deepbiolab.pth` (13,692 B), `model_fold_2_deepbiolab.pth` (13,692 B) | PyTorch Double-DQN Q MLP `3→64→32→8→3`; window 1의 정규화된 연속 차이값 (`Close,BB_upper,BB_lower`) | Q action 0 HOLD, 1 BUY, 2 SELL → HOLD, BUY, SELL | MIT. checkpoint 3개가 실제 state dict임을 로드/forward로 확인. 공개 저장소는 AAPL 데이터·기술지표를 설명. 원본 normalizer artifact가 없어 adapter는 MSFT 앞 70%에서 열별 정규화값을 fit하고 이후 시점에 적용. |
+| [maksimprivalov/RLTradingAgent](https://github.com/maksimprivalov/RLTradingAgent), `maksimprivalov_ppo_trader.zip` (276,393 B) | SB3 PPO MLP; 90개 실수 = 15×6 (`log_return,sma20,sma50,rsi14,macd,volume_change`) | 이산 행동 0 SELL, 1 HOLD, 2 BUY → 그대로 사용 | 저장소에서 LICENSE 파일을 찾지 못했습니다. 연구용 추론을 위해 내려받았습니다. 공개 README는 MSFT 일봉 OHLCV를 설명합니다. 실제 435행 출력 중 HOLD 433회, SELL 1회, BUY 1회로 편향이 확인돼 가중치를 1.0으로 낮춰 영향이 작은 teacher로 설정했습니다. |
+| [jk2500/Pfizer-trader](https://github.com/jk2500/Pfizer-trader), `jk2500_pfizer_recurrentppo_lstm.zip` (28,532,063 B) | SB3-Contrib RecurrentPPO `MlpLstmPolicy`; (100,9) (`Open,High,Low,Close,Volume,Adj Close,MA10,MA50,RSI`) | 이산 행동 0 short, 1 long → SELL, BUY. 모델 자체에는 HOLD가 없습니다. | 저장소 archive에서 LICENSE 파일을 찾지 못했습니다. 저장소 설명에 따르면 PFE 데이터로 학습됐습니다. 별도 입력 scaler가 공개되지 않아 MSFT 앞 70%로 scaler를 fit한 뒤 전체 구간에 적용했습니다. LSTM hidden state는 봉 사이에 유지합니다. |
+| [Adilbai/stock-trading-rl-agent](https://huggingface.co/Adilbai/stock-trading-rl-agent), `adilbai_final_model.zip` (4,875,406 B) + `adilbai_scaler.pkl` (2,423 B) | SB3 PPO MLP; 표준화 시장 특징 60×50개 + 포트폴리오 값 8개 = 실수 3,008개. scaler도 함께 받았습니다. | 실제 SB3 action space는 `Box([action_type, size])`입니다. 예측 첫 요소를 반올림해 0 HOLD, 1 BUY, 2 SELL로 바꾸고 size로 paper portfolio 상태를 갱신합니다. | Hugging Face model card의 라이선스는 MIT입니다. 카드에는 연속·이산 출력 설명이 섞여 있지만 checkpoint의 action space를 직접 읽어 Box(2)임을 확인했습니다. adapter는 이를 명시적으로 보수 변환합니다. 공개 성능 수치는 자체 보고라 검증된 성과로 취급하지 않습니다. |
+| [deepbiolab/drl-trading](https://github.com/deepbiolab/drl-trading), `checkpoint_deepbiolab.pth` (13,668 B), `model_fold_1_deepbiolab.pth` (13,692 B), `model_fold_2_deepbiolab.pth` (13,692 B) | PyTorch Double-DQN Q MLP `3→64→32→8→3`; window 1의 정규화된 연속 차이값 (`Close,BB_upper,BB_lower`) | Q 행동 0 HOLD, 1 BUY, 2 SELL → HOLD, BUY, SELL | MIT 라이선스입니다. checkpoint 3개를 불러와 forward를 실행해 실제 state dict임을 확인했습니다. 공개 저장소는 AAPL 데이터와 기술지표를 설명합니다. 원본 normalizer artifact가 없어 MSFT 앞 70%로 열별 정규화값을 fit하고 이후 구간에 적용했습니다. |
 
-정리하면 **4개 공개 프로젝트에서 6개 체크포인트**를 연결했습니다: PPO 계열 2개, LSTM recurrent PPO 1개, DQN 3개. 이들은 HFT/scalping 전용이라고 주장할 수 없습니다. 확인된 source는 일봉/단일 종목 또는 포트폴리오 정책이며, sub-minute 주문장 전략과는 다릅니다. 별도 공개 checkpoint를 찾지 못한 A2C 전용 모델은 등록하지 않았습니다.
+**공개 프로젝트 4곳의 체크포인트 6개**를 연결했습니다. PPO 계열 2개, LSTM recurrent PPO 1개, DQN 3개입니다. 이 모델들을 HFT/scalping 전용이라고 볼 수는 없습니다. 확인된 출처의 모델은 일봉·단일 종목 또는 포트폴리오 정책이며, 초 단위 미만의 주문장 전략과는 다릅니다. 별도 공개 checkpoint를 찾지 못한 A2C 전용 모델은 등록하지 않았습니다.
 
-다운로드 후 생성한 출력:
+다운로드 후 생성되는 출력:
 
-- `outputs/public_teachers/<teacher>.csv`: MSFT 각 435 timestamp에서 모델별 행동, 세 행동 pseudo probability, value
-- `outputs/public_teachers/ensemble.csv` 및 `distillation_targets.npz`: 여섯 교사의 균등 가중 앙상블 target
-- `checkpoints/public_distilled/final.pt`: 실제 MSFT 시계열의 앞 70%에서 2 epoch distillation + 1 PPO update를 수행한 새 학생 체크포인트
-- 테스트 구간(마지막 15%)의 단순 일봉 backtest: 이 실행에서는 누적 수익률 **-34.11%**, 최대 낙폭 **36.42%**. 이것은 모델 품질이 입증됐다는 결과가 아니라 실행 검증이며, 성과는 음수였습니다.
+- `outputs/public_teachers/<teacher>.csv`: MSFT의 timestamp 435개에 대해 모델별 행동, 세 행동 pseudo probability, value를 기록합니다.
+- `outputs/public_teachers/ensemble.csv` 및 `distillation_targets.npz`: 여섯 teacher의 동일 가중 앙상블 target입니다.
+- `checkpoints/public_distilled/final.pt`: 실제 MSFT 시계열 앞 70%로 distillation 2 epoch와 PPO update 1회를 수행해 만든 학생 체크포인트입니다.
+- 테스트 구간(마지막 15%)의 단순 일봉 backtest: 이 실행의 누적 수익률은 **-34.11%**, 최대 낙폭은 **36.42%**였습니다. 모델 품질을 입증하는 결과가 아니라 실행 확인이며, 성과는 음수입니다.
 
 실행 명령:
 
@@ -105,37 +105,37 @@ python -m stockrl teacher-dataset --data data/msft_real_daily.csv --teachers con
 python -m stockrl train --data data/msft_real_daily.csv --teachers configs/teachers.json --checkpoint-dir checkpoints/public_distilled --epochs 2 --ppo-updates 1 --device auto
 ```
 
-### 다운로드했지만 teacher로 쓰지 않은 공개 후보
+### 내려받았지만 teacher로 사용하지 않은 공개 후보
 
-- [xinghao2003/fyp Hugging Face dataset](https://huggingface.co/datasets/xinghao2003/fyp): dataset/model-results 설명은 있으나 공개 GitHub archive와 HF dataset 파일 확인에서 직접 로드할 RL checkpoint가 없어 제외.
-- [FinRL](https://github.com/AI4Finance-Foundation/FinRL): PPO/A2C/DDPG 등의 학습 코드와 환경은 제공하지만 이 프로젝트에 바로 붙일 공개 pretrained checkpoint 파일은 확인하지 못해 checkpoint teacher로 등록하지 않음.
-- A2C/HFT/scalping 키워드의 여러 저장소는 코드만 있거나 실제 weight가 저장소에 없거나, action/observation 계약을 재구성할 파일이 없어 이번 실행 registry에서는 제외. 공개 체크포인트를 확인하지 않은 알고리즘을 연결했다고 세지 않았습니다.
+- [xinghao2003/fyp Hugging Face dataset](https://huggingface.co/datasets/xinghao2003/fyp): dataset/model-results 설명은 있지만 공개 GitHub archive와 HF dataset 파일에서 직접 불러올 RL checkpoint를 찾지 못해 제외했습니다.
+- [FinRL](https://github.com/AI4Finance-Foundation/FinRL): PPO/A2C/DDPG 등의 학습 코드와 환경은 제공하지만, 이 프로젝트에 바로 연결할 공개 pretrained checkpoint 파일을 확인하지 못해 checkpoint teacher로 등록하지 않았습니다.
+- A2C/HFT/scalping 키워드로 찾은 여러 저장소는 코드만 있거나 실제 weight가 없거나, action/observation 규약을 재구성할 파일이 없어 이번 실행 registry에서 제외했습니다. 공개 checkpoint를 확인하지 않은 알고리즘을 연결했다고 세지 않았습니다.
 
-이번에 검토한 후보 중 라이선스 표기만을 이유로 다운로드/연결에서 제외한 모델은 없습니다. 위 두 저장소는 LICENSE 파일을 찾지 못했지만 요청한 연구용 범위로 체크포인트를 받아 실행했고, 그 상태를 manifest/표에 그대로 표시했습니다. 저장소 archive에서 weight 자체를 찾지 못한 경우와 모델이 실제로 호환되지 않는 경우는 라이선스 이슈와 구분해 제외했습니다.
+이번에 검토한 후보 중 라이선스 표기만을 이유로 내려받기·연결에서 제외한 모델은 없습니다. 위 두 저장소에서는 LICENSE 파일을 찾지 못했지만 요청된 연구 범위에서 checkpoint를 받아 실행했고, 그 상태를 manifest와 표에 표시했습니다. 저장소 archive에서 weight를 찾지 못했거나 실제 호환되지 않은 경우는 라이선스 문제와 구분해 제외했습니다.
 
-실제 가격 파일 `data/msft_real_daily.csv`는 Yahoo Finance chart data에서 받아 2024-01-02부터 2025-09-25까지 유효한 435개 일봉으로 정리했습니다. 이는 샘플 합성 데이터가 아니지만, 매매 빈도는 daily입니다. teacher가 학습된 종목·기간·정규화와 MSFT 2024–2025가 달라 분포 이동이 크므로 결과는 teacher 인터페이스의 실제 실행 검증으로만 해석해야 합니다. Adilbai scaler는 scikit-learn 1.2.2에서 pickle 된 파일로 확인되어 현재 버전에서 호환 경고가 나오지만 로딩/추론은 완료했습니다.
+실제 가격 파일 `data/msft_real_daily.csv`는 Yahoo Finance chart data에서 받아 2024-01-02부터 2025-09-25까지 유효한 일봉 435개로 정리했습니다. 합성 샘플이 아닌 실제 데이터지만 매매 빈도는 일봉입니다. teacher의 학습 종목·기간·정규화와 MSFT의 2024–2025 데이터가 달라 분포 이동이 크므로, 결과는 teacher 인터페이스의 실제 실행 확인으로만 해석해야 합니다. Adilbai scaler는 scikit-learn 1.2.2에서 pickle된 파일이라 현재 버전에서 호환 경고가 발생하지만 로드와 추론은 완료했습니다.
 
-## 글로벌 continual Transformer 에이전트
+## 글로벌 지속 학습 Transformer 에이전트
 
-기존 `TemporalActorCritic` GRU는 작은 종목별 비교 baseline으로 남겨두고, 글로벌 정책은 `src/stockrl/global_transformer.py`의 시간축/시장축 교차 attention Transformer를 사용합니다. 기본 모델의 정확한 크기는 **511,848,836 parameters**입니다: width 1,408, 16 heads, 21개 교차 Transformer block, 17개 시장 특징, 상품/시장/자산/시간 embedding, SELL/HOLD/BUY 정책 head와 value head. 설정을 `d_model=1792, n_layers=26, n_heads=16`으로 확장하면 약 1B급이 됩니다. 실행 기본값을 소형으로 바꾸지 않습니다.
+기존 `TemporalActorCritic` GRU는 종목별 소형 비교 기준으로 유지합니다. 글로벌 정책은 `src/stockrl/global_transformer.py`의 시간축·시장축 교차 attention Transformer를 사용합니다. 기본 모델의 정확한 크기는 **511,848,836개 파라미터**입니다. width 1,408, head 16개, 교차 Transformer block 21개, 시장 특징 17개, 상품·시장·자산·시간 embedding, SELL/HOLD/BUY 정책 head와 value head로 구성됩니다. 설정을 `d_model=1792, n_layers=26, n_heads=16`으로 확장하면 약 10억 파라미터 규모가 됩니다. 실행 기본값을 소형으로 바꾸지 않습니다.
 
-CUDA에서는 모델과 optimizer를 FP16으로 실행합니다. RTX 3070 8 GiB 측정에서 학습 peak allocated VRAM은 6,391,110,656 bytes였고, 저장되는 champion FP16 weight는 약 1.02 GB입니다. AdamW half-state를 쓸 때 epsilon을 1e-4로 두어 NaN을 막습니다. Apple Silicon은 기존 `device=auto` 경로에서 MPS를 선택하고 FP32로 실행합니다. 실제 MPS 장치에서 이번 실행 검증은 하지 않았습니다.
+CUDA에서는 모델과 optimizer를 FP16으로 실행합니다. RTX 3070 8 GiB에서 측정한 학습 peak allocated VRAM은 6,391,110,656 bytes였고, 저장된 champion의 FP16 weight는 약 1.02 GB입니다. AdamW half-state를 쓸 때 epsilon을 1e-4로 설정해 NaN을 방지합니다. Apple Silicon에서는 기존 `device=auto` 경로가 MPS를 선택해 FP32로 실행합니다. 이번에는 실제 MPS 장치에서 실행을 검증하지 않았습니다.
 
-### 실제 글로벌 데이터 받기
+### 글로벌 실제 데이터 받기
 
-다음 명령은 Yahoo Finance chart의 실제 일봉 OHLCV를 `data/global_market_daily.csv`로 저장합니다. 실행 검증 데이터는 2023-01-02~2026-09-25, 52개 상품, 47,860행입니다.
+다음 명령은 Yahoo Finance chart의 실제 일봉 OHLCV를 `data/global_market_daily.csv`에 저장합니다. 실행 확인에 사용한 데이터는 2023-01-02부터 2026-09-25까지, 상품 52개, 행 47,860개입니다.
 
 ```powershell
 python scripts/download_global_data.py --output data/global_market_daily.csv --start 2023-01-01
 ```
 
-포함 상품군은 한국 주식/지수, 미국 주식·지수·지수선물·섹터 ETF, 유럽/일본/홍콩/호주/인도 지수, 미국 국채금리, 채권 ETF, 통화쌍, 원유·천연가스·곡물·금·은·구리 선물, VIX 및 상품 ETF입니다. 이는 글로벌 상품의 **일봉 가격 패널**이지 옵션 체인, 실시간 호가/체결 피드가 아닙니다. 옵션·호가 입력 열은 어댑터에 준비되어 있으며 아래 CSV 칼럼을 실시간/외부 provider에서 제공하면 변환됩니다.
+포함 상품은 한국 주식·지수, 미국 주식·지수·지수선물·섹터 ETF, 유럽·일본·홍콩·호주·인도 지수, 미국 국채금리, 채권 ETF, 통화쌍, 원유·천연가스·곡물·금·은·구리 선물, VIX와 상품 ETF입니다. 이는 글로벌 상품의 **일봉 가격 패널**이며 옵션 체인이나 실시간 호가·체결 피드는 아닙니다. adapter는 옵션·호가 입력 열을 지원하며, 실시간 또는 외부 provider가 아래 CSV 열을 제공하면 변환합니다.
 
-필수 칼럼: `date,symbol,market,asset_class,open,high,low,close,volume`. `date`는 일봉이면 날짜, 실시간 feed이면 UTC ISO timestamp를 씁니다. 선택 칼럼은 `bid,ask,bid_size,ask_size,buy_volume,sell_volume,trade_count,implied_volatility,open_interest,yield_change,days_to_expiry,video_chart_signal,video_volume_signal`입니다. 다른 트레이더 기록 및 영상에서 뽑은 신호도 이 특징 열과 별도 `date,symbol,action` teacher CSV로 정규화해 넣을 수 있습니다. 미제공 옵션/호가 값은 0으로 채워지므로 실제 입력이 있는 것처럼 취급하면 안 됩니다.
+필수 열은 `date,symbol,market,asset_class,open,high,low,close,volume`입니다. 일봉 데이터의 `date`는 날짜를, 실시간 feed는 UTC ISO timestamp를 사용합니다. 선택 열은 `bid,ask,bid_size,ask_size,buy_volume,sell_volume,trade_count,implied_volatility,open_interest,yield_change,days_to_expiry,video_chart_signal,video_volume_signal`입니다. 다른 trader 기록과 영상에서 추출한 신호도 이 특징 열 및 별도의 `date,symbol,action` teacher CSV로 정규화해 넣을 수 있습니다. 제공되지 않은 옵션·호가 값은 0으로 채워지므로 실제 관측값으로 취급하면 안 됩니다.
 
-### GPU 설치와 실행
+### GPU 설치 및 실행
 
-Windows RTX GPU에서는 CUDA wheel을 먼저 설치합니다. 아래는 이 환경에서 검증한 PyTorch 2.14.0 CUDA 13.2 명령입니다. Apple Silicon Mac은 이 CUDA 명령 대신 `python -m pip install -e '.[teachers]'`를 사용합니다.
+Windows RTX GPU에서는 먼저 CUDA wheel을 설치하세요. 아래 명령은 이 환경에서 PyTorch 2.14.0 CUDA 13.2로 확인했습니다. Apple Silicon Mac에서는 CUDA 명령 대신 `python -m pip install -e '.[teachers]'`를 사용하세요.
 
 ```powershell
 python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cu132
@@ -143,56 +143,56 @@ python -m pip install -e ".[teachers]"
 python -m stockrl global-info --data data/global_market_daily.csv --device auto
 ```
 
-실시간 feed 프로세스는 위 형식의 append-only CSV에 모든 시장 bar를 timestamp별로 추가합니다. 아래 명령은 매 timestamp 관찰/판단, horizon 뒤 가상 손익·수수료·slippage 반영, replay 저장을 수행하며 learner는 별도 thread에서 업데이트합니다. 종료는 Ctrl+C입니다. 이 CSV 연결은 feed adapter이지 거래소 구독기나 주문 API가 아닙니다.
+실시간 feed 프로세스는 위 형식의 append-only CSV에 시장 bar를 timestamp별로 추가합니다. 아래 명령은 각 timestamp를 관찰·판단하고, horizon 이후 가상 손익에 수수료·slippage를 반영해 replay에 저장합니다. learner는 별도 thread에서 업데이트합니다. Ctrl+C로 종료합니다. CSV 연결은 feed adapter이며 거래소 구독기나 주문 API가 아닙니다.
 
 ```powershell
 python -m stockrl global-online --data data/global_live.csv --state-dir runtime-global --follow --poll-seconds 1 --device auto
 ```
 
-공개 teacher 판단을 먼저 만들고 글로벌 에이전트의 imitation replay에 추가할 수 있습니다. 파일에는 `date,action` 칼럼이 있어야 하며 기본 teacher symbol은 MSFT입니다.
+공개 teacher 판단을 먼저 만들어 글로벌 에이전트의 imitation replay에 추가할 수 있습니다. 입력 파일에는 `date,action` 열이 있어야 하며 기본 teacher symbol은 MSFT입니다.
 
 ```powershell
 python -m stockrl teacher-dataset --data data/msft_real_daily.csv --teachers configs/teachers.json --output outputs/public_teachers
 python -m stockrl global-online --data data/global_live.csv --state-dir runtime-global --follow --teacher-decisions outputs/public_teachers/ensemble.csv --teacher-symbol MSFT --device auto
 ```
 
-실제 teacher 연결 확인에서는 public teacher ensemble 435행 중 시간순 학습 구간의 404행을 imitation replay에 넣었습니다. 총 10개 짧은 update 중 2개는 teacher imitation, 8개는 paper 경험이었고 weight가 바뀌었습니다. 해당 산출물은 `runtime-global-teacher-final/metrics.json`입니다.
+teacher 연결 확인에서는 public teacher ensemble 435행 중 시간순 학습 구간에 속한 404행을 imitation replay에 넣었습니다. 짧은 update 10회 중 2회는 teacher imitation, 8회는 paper 경험을 사용했고 모델 weight가 변경됐습니다. 산출물은 `runtime-global-teacher-final/metrics.json`입니다.
 
-### 온라인 학습 검증 결과
+### 온라인 학습 확인 결과
 
-분리는 시간순 앞 70% replay 학습, 다음 15% champion 검증, 마지막 15% 별도 backtest입니다. RTX 3070에서 합성 입력이 아닌 `data/global_market_daily.csv`로 전체 과정을 실행했습니다. 52개 시장 상품에서 관찰 10회, 판단 492건, 지연 outcome/reward 492건이 replay에 들어갔고 replay 파일은 9,005,607 bytes였습니다. 한 update 뒤 가중치 L1 변화량 2,139.50을 확인했습니다. candidate net validation score `0.000108`이 champion `-0.006814`보다 높아 이 실행에서는 실제 승격됐고, 이전 champion을 `champion.previous.pt`로 보관했습니다. 다른 실측 실행에서는 candidate score가 낮아 자동 기각하고 champion을 유지했습니다.
+데이터는 시간순으로 나눴습니다. 앞 70%는 replay 학습, 다음 15%는 champion 검증, 마지막 15%는 별도 backtest에 사용했습니다. RTX 3070에서 합성 입력이 아닌 `data/global_market_daily.csv` 전체 과정으로 실행했습니다. 시장 상품 52개에서 관찰 10회, 판단 492건, 지연 outcome/reward 492건이 replay에 들어갔으며 replay 파일 크기는 9,005,607 bytes였습니다. update 1회 후 weight의 L1 변화량은 2,139.50이었습니다. candidate의 net validation score `0.000108`이 champion의 `-0.006814`보다 높아 이 실행에서는 승격됐고, 이전 champion은 `champion.previous.pt`에 보관했습니다. 다른 실측 실행에서는 candidate 점수가 낮아 자동 기각되고 champion이 유지됐습니다.
 
-계측: inference p50 **29.5 ms** (cold-start 포함 p95 122.4 ms), batch 1의 1-step update **0.717 s**, peak VRAM **6.39 GB / 8.59 GB**, process peak RSS **2.46 GB**. checkpoint 저장·재로딩에 성공했고 출력 shape은 `[1,52,3]`, parameter count도 동일했습니다. 마지막 15% backtest는 253 symbol-time 판단/6단계에서 net return **-0.123%**, max drawdown **0.123%**였습니다. 짧은 smoke 구간 성적이지 전략 수익성의 증거는 아닙니다. CUDA 실행에 사용한 `torch==2.14.0+cu132`, GPU `NVIDIA GeForce RTX 3070`입니다. 교체 기준은 수수료·slippage를 포함한 시간순 validation net return입니다.
+측정값은 inference p50 **29.5 ms** (cold-start 포함 p95 122.4 ms), batch 1의 1-step update **0.717 s**, peak VRAM **6.39 GB / 8.59 GB**, process peak RSS **2.46 GB**입니다. checkpoint 저장과 재로드에 성공했고 출력 shape은 `[1,52,3]`, parameter 수도 동일했습니다. 마지막 15% backtest는 symbol-time 판단 253건, 6단계에서 net return **-0.123%**, max drawdown **0.123%**였습니다. 짧은 smoke 구간 결과이며 전략 수익성의 증거가 아닙니다. CUDA 실행은 `torch==2.14.0+cu132`, GPU `NVIDIA GeForce RTX 3070`을 사용했습니다. 교체 기준은 수수료·slippage를 반영한 시간순 validation net return입니다.
 
-산출물은 `runtime-global-verified/metrics.json`, `decisions.csv`, `backtest.csv`, `replay.pt`, `champion.pt`, `candidate.pt`입니다. follow CSV 모드는 `live_cursor.json`, 미결 가상거래 `live_pending.pt`, 현재 target position `live_positions.json`을 함께 저장해 재시작 시 이어갑니다. replay capacity 기본값은 100,000건이며 teacher가 없을 때 recent 50%, old 30%, 극단 변동/보상 20%를 섞습니다. teacher가 있으면 10%를 teacher imitation 예제로 할당합니다. 후보 업데이트는 새 경험이 256건 쌓일 때마다 실행하고 전체 과거 데이터를 epoch 재학습하지 않습니다. 과거 teacher row는 historical run에서 첫 70%에만 넣어 검증/테스트 구간 누수를 막습니다.
+산출물은 `runtime-global-verified/metrics.json`, `decisions.csv`, `backtest.csv`, `replay.pt`, `champion.pt`, `candidate.pt`입니다. follow CSV 모드는 `live_cursor.json`, 미결 가상거래 `live_pending.pt`, 현재 target position `live_positions.json`을 저장해 재시작 후 이어갑니다. 기본 replay capacity는 100,000건입니다. teacher가 없을 때는 최근 경험 50%, 오래된 경험 30%, 극단 변동·보상 경험 20%를 섞습니다. teacher가 있으면 10%를 teacher imitation 예제로 할당합니다. 새 경험 256건마다 후보를 업데이트하며 전체 과거 데이터를 epoch 단위로 다시 학습하지 않습니다. 과거 teacher row는 검증·테스트 누수를 막기 위해 historical run의 앞 70%에만 넣습니다.
 
-All promotions and rejections remain research-only paper evaluation. The dedicated desktop now connects Yahoo chart and Kraken public OHLC minute bars; it does not provide full order-book/option-chain feeds or a real broker. Live order routing requires an explicitly installed broker adapter and is OFF by default.
+모든 승격·기각은 연구용 paper 평가로만 취급합니다. 전용 데스크톱은 Yahoo chart와 Kraken 공개 OHLC 분봉에 연결합니다. 전체 호가창·옵션 체인 feed나 실제 broker 연결은 제공하지 않습니다. 실주문 경로는 broker adapter를 명시적으로 설치해야 사용할 수 있으며 기본값은 OFF입니다.
 
-## Dedicated desktop control panel and live feed
+## 데스크톱 제어판과 실시간 feed
 
-The fixed 0.5B Transformer and existing online agent remain unchanged in shape. The Windows desktop panel supervises the public-feed process and the `global-online --follow` process. The latter keeps champion inference on its observer loop while a separate learner thread updates and validates candidates. The GUI is a separate process; stopping/restarting it does not discard replay, champion, cursor, pending paper outcomes, validation samples, positions, or settings.
+고정된 0.5B Transformer와 기존 온라인 에이전트의 구조는 변경하지 않습니다. Windows 데스크톱 패널은 공개 feed 프로세스와 `global-online --follow` 프로세스를 관리합니다. 후자는 관찰 루프에서 champion 추론을 계속하고, 별도 learner thread가 candidate를 업데이트하고 검증합니다. GUI는 별도 프로세스이므로 GUI를 중지·재시작해도 replay, champion, cursor, 미확정 paper 결과, 검증 샘플, 포지션, 설정을 버리지 않습니다.
 
-Install the GUI dependency once, then launch the panel with one command:
+GUI 의존성을 한 번 설치한 뒤 다음 명령으로 패널을 실행하세요.
 
 ```powershell
 python -m pip install -e ".[desktop]"
 python -m stockrl desktop --device auto
-# or scripts\launch_global_agent.bat
+# 또는 scripts\launch_global_agent.bat
 ```
 
-The default desktop profile is `runtime-global-desktop/live` and starts the public live-data collector when you press Start. Select `Historical real data (mock feed)` to replay recent rows from `data/global_market_daily.csv` at a controlled pace. The panel shows provider/process status, latest per-symbol BUY/HOLD/SELL probabilities and value, champion checkpoint time, replay count, paper reward, candidate activity, promotion/rejection counts, CUDA device/VRAM, and tracked paper positions. Start, graceful stop, and emergency stop are available on the same screen. Runtime profiles are separate from `runtime-global-verified`; the verified model is copied into a new desktop profile on first start, never overwritten.
+기본 데스크톱 프로필은 `runtime-global-desktop/live`이며 Start를 누르면 공개 실시간 데이터 수집기를 시작합니다. `Historical real data (mock feed)`를 선택하면 `data/global_market_daily.csv`의 최근 행을 지정한 속도로 재생합니다. 패널에는 provider/process 상태, 종목별 최신 BUY/HOLD/SELL 확률과 value, champion checkpoint 시각, replay 건수, paper reward, candidate 상태, 승격·기각 횟수, CUDA 장치/VRAM, paper 포지션을 표시합니다. 같은 화면에서 시작, 정상 정지, 비상 정지를 할 수 있습니다. runtime 프로필은 `runtime-global-verified`와 분리되어 있습니다. 검증 모델은 첫 실행 때 새 데스크톱 프로필로 복사되며 원본은 덮어쓰지 않습니다.
 
-The collector polls Yahoo Finance chart bars and Kraken public OHLC. Providers implement `MarketDataProviderAdapter.fetch(instrument)` and register through `register_market_data_provider`; extra modules can be loaded with `STOCKRL_MARKET_PROVIDER_PLUGINS=module1,module2` or repeated `--provider-plugin` flags. It appends finalized bars with canonical UTC timestamps into the CSV consumed by `--follow`, uses a SQLite unique-key index across restarts, records provider errors, and backs off/retries failed symbols. Yahoo chart is an unauthenticated best-effort endpoint, not a guaranteed streaming contract. The configured universe is 36 instruments: Korean and US shares, major indices and equity-index futures, FX, US Treasury yield indices, crude/gold/silver/copper futures, VIX, and BTC/ETH. Public free feeds do not provide a uniform real-time options-chain/history service here; option IV/open interest fields stay empty unless a later adapter supplies them. Yahoo and Kraken minute candles do not provide full order-book depth or trade-side classification. Market data availability, exchange hours, provider rate limits, and delayed/stale bars vary by instrument. The collector reconnects after request errors but cannot manufacture bars while an exchange is closed. After adding the completed-candle guard, a real Yahoo/Kraken check appended 2,397 AAPL/BTC/ETH bars with zero provider failures; a second fetch appended zero duplicate timestamps.
+수집기는 Yahoo Finance chart bar와 Kraken 공개 OHLC를 조회합니다. provider는 `MarketDataProviderAdapter.fetch(instrument)`을 구현하고 `register_market_data_provider`로 등록합니다. `STOCKRL_MARKET_PROVIDER_PLUGINS=module1,module2` 또는 여러 `--provider-plugin` 옵션으로 모듈을 추가할 수 있습니다. 확정된 bar를 표준 UTC timestamp와 함께 `--follow`가 읽는 CSV에 추가하고, 재시작 간 중복 방지를 위해 SQLite 고유 키 index를 사용합니다. provider 오류를 기록하고 실패한 종목은 대기 후 재시도합니다. Yahoo chart는 인증이 필요 없는 best-effort endpoint이며 보장된 streaming 서비스는 아닙니다. 설정된 시장은 한국·미국 주식, 주요 지수와 주가지수 선물, FX, 미국 국채 수익률 지수, 원유·금·은·구리 선물, VIX, BTC/ETH 등 36개 상품입니다. 공개 무료 feed는 일관된 실시간 옵션 체인·이력 서비스를 제공하지 않으므로 이후 adapter가 데이터를 제공하기 전까지 옵션 IV/open interest 값은 비어 있습니다. Yahoo와 Kraken 분봉만으로는 전체 호가창 깊이나 매수·매도 체결 구분을 얻을 수 없습니다. 데이터 제공 여부, 거래 시간, provider 요청 제한, 지연·오래된 bar는 상품마다 다릅니다. 요청 오류 후 재연결하지만 거래소가 닫혀 있을 때 bar를 만들 수는 없습니다. 확정 봉 guard를 추가한 뒤 Yahoo/Kraken 실제 확인에서 AAPL/BTC/ETH bar 2,397개를 provider 오류 없이 추가했고, 두 번째 조회에서는 중복 timestamp가 추가되지 않았습니다.
 
-The run/stop controls start or stop both provider and agent processes. The stop request is persisted via a local marker; the learner completes its current update, the agent saves champion/replay/pending experiences/cursor/positions, and the provider closes its SQLite index. Unexpected child exit triggers a restart from saved files. Repeating `python -m stockrl desktop` opens the same settings and profile. Candidate updates default to each 256 additional replay experiences; this can be changed in the desktop panel. Candidate training does not block feed polling or champion inference. Delayed rewards mature after the configured number of observed bars for that symbol, so a quiet stock market is not rewarded at an unrelated FX/crypto timestamp. Promotion still requires a higher held-out net validation score; the former champion is saved as `champion.previous.pt`.
+실행·정지 제어는 provider와 agent 프로세스를 함께 시작하거나 중지합니다. 정지 요청은 로컬 marker에 저장됩니다. learner는 진행 중인 update를 마친 뒤 agent가 champion, replay, 미결 경험, cursor, 포지션을 저장하고 provider가 SQLite index를 닫습니다. 하위 프로세스가 예기치 않게 종료되면 저장 파일에서 다시 시작합니다. `python -m stockrl desktop`을 다시 실행하면 동일 설정과 프로필을 엽니다. 기본 candidate update 간격은 replay 경험 256건이며 데스크톱 패널에서 바꿀 수 있습니다. candidate 학습은 feed 조회나 champion 추론을 막지 않습니다. 지연 reward는 해당 종목에서 설정한 개수만큼 bar를 관찰한 뒤 확정되므로, 거래가 없는 주식에 무관한 FX/crypto timestamp의 reward를 주지 않습니다. 승격에는 미사용 구간의 net validation score 개선이 필요하며 이전 champion은 `champion.previous.pt`로 저장합니다.
 
-Live order routing is OFF by default. This project does not include an actual brokerage integration. A broker plugin must subclass `stockrl.broker.BrokerAdapter`, set `is_live = True`, implement `supports_symbol`, `size_order`, `connect`, `place_order`, `emergency_stop`, and `close`, and be configured through `STOCKRL_LIVE_BROKER_ADAPTER=module:Class`. The GUI then requires a yes/no confirmation plus typing `ENABLE LIVE ORDERS`; unsupported symbols and any order whose adapter returns a nonpositive risk-limited size are not routed. The bundled `MockBroker` never sends orders. A connected broker must handle its own market-specific lot size, price precision, risk limits, authentication, and kill switch before it is appropriate for live use.
+실주문 경로는 기본 OFF입니다. 이 프로젝트에는 실제 증권사 연결이 포함되어 있지 않습니다. broker plugin은 `stockrl.broker.BrokerAdapter`를 상속하고 `is_live = True`를 설정한 뒤 `supports_symbol`, `size_order`, `connect`, `place_order`, `emergency_stop`, `close`를 구현해야 합니다. 설정은 `STOCKRL_LIVE_BROKER_ADAPTER=module:Class`로 지정합니다. GUI에서는 예/아니요 확인과 `ENABLE LIVE ORDERS` 입력을 모두 요구합니다. 지원하지 않는 종목과 adapter가 위험 제한 수량을 0 이하로 반환한 주문은 전송하지 않습니다. 포함된 `MockBroker`는 실제 주문을 보내지 않습니다. 실전에서 broker를 연결하려면 상품별 주문 단위, 가격 정밀도, 위험 제한, 인증, 긴급 중지 기능을 broker 측에서 처리해야 합니다.
 
-Desktop and collector checks performed on Windows with CUDA PyTorch 2.14.0+cu132 and an RTX 3070: the public collector fetched 26,015 one-minute OHLCV rows across all 36 configured instruments on its first pass. A second pass wrote 2 new rows and zero duplicates; all timestamps parsed as UTC and `(symbol,date)` duplicates were zero. The market CSV was then watched by `global-online --follow`: 14 observations produced 28 predictions, 26 delayed outcomes, and 22 saved replay items. One candidate gradient update ran on CUDA; its weights changed by L1 3.503, update time was 8.00 seconds, while warmed champion inference p50 was about 22 ms. Model device was `cuda` / `NVIDIA GeForce RTX 3070`, with 6.42 GB peak allocated VRAM. This verified live-feed-to-agent behavior is paper research plumbing, not evidence of strategy profitability or order execution. The historical sample backtest recorded earlier remains negative (-0.123% on its held-out slice).
+Windows에서 CUDA PyTorch 2.14.0+cu132와 RTX 3070으로 데스크톱·수집기를 확인했습니다. 첫 실행에서 공개 수집기는 설정된 36개 상품 전체에 대해 1분 OHLCV 행 26,015개를 가져왔습니다. 두 번째 실행은 새 행 2개를 기록했고 중복은 없었습니다. 모든 timestamp가 UTC로 해석됐고 `(symbol,date)` 중복도 0개였습니다. 이후 시장 CSV를 `global-online --follow`가 읽도록 했습니다. 관찰 14회에서 예측 28건, 지연 outcome 26건, replay 저장 22건이 발생했습니다. CUDA에서 candidate gradient update 1회가 실행됐고 weight L1 변화량은 3.503, update 시간은 8.00초였습니다. 준비된 상태의 champion inference p50은 약 22 ms였습니다. 모델 장치는 `cuda` / `NVIDIA GeForce RTX 3070`, peak allocated VRAM은 6.42 GB였습니다. 이 결과는 실시간 feed에서 agent까지 연결되는 paper 연구 흐름을 확인한 것으로 전략 수익성이나 주문 실행을 증명하지 않습니다. 앞서 기록한 과거 샘플 backtest의 held-out 수익률은 여전히 -0.123%입니다.
 
-The dashboard was run offscreen with genuine historical market rows played at 0.15 seconds per bar. It observed 24 timestamps, displayed 1,180 per-symbol decisions, matured 1,136 outcomes, and saved 772 replay examples. The learner performed 2 candidate updates; both failed validation and champion remained unchanged. Candidate weight deltas L1 were 0.780 and 3.867, warmed inference p50 was 24.2 ms, candidate update p50 was 0.385 s, and observed peak CUDA allocation was 6.39 GB. The replay paper reward sum was -0.11% for this short smoke sample. The UI showed 80 latest decision rows, replay count, GPU, candidate and live-order-OFF states. A clean stop then a second GUI start restored replay (772), update count (2), and the same market cursor; decisions remained 1,181 rows and the restarted mock feed appended zero duplicate bars. The saved run is in `runtime-global-desktop-verified2/mock/agent/`; `metrics.json`, `replay.pt`, `champion.pt`, `live_cursor.json`, and `live_validation.pt` can be inspected there.
+실제 과거 시장 행을 봉당 0.15초로 재생해 대시보드를 화면 없이 실행했습니다. timestamp 24개를 관찰하고 종목별 판단 1,180건을 표시했으며 outcome 1,136건을 확정하고 replay 예제 772개를 저장했습니다. learner는 candidate update 2회를 수행했지만 둘 다 검증에서 실패해 champion을 유지했습니다. candidate weight L1 변화량은 0.780과 3.867, 준비된 inference p50은 24.2 ms, candidate update p50은 0.385초, 관찰된 peak CUDA allocation은 6.39 GB였습니다. 짧은 smoke sample의 replay paper reward 합계는 -0.11%였습니다. UI에는 최신 판단 80행, replay 건수, GPU, candidate, 실주문 OFF 상태가 표시됐습니다. 정상 정지 후 GUI를 다시 시작하자 replay(772), update 횟수(2), 동일한 시장 cursor가 복원됐습니다. 판단은 1,181행으로 유지됐고 재시작한 mock feed는 중복 bar를 추가하지 않았습니다. 실행 파일은 `runtime-global-desktop-verified2/mock/agent/`에 있으며 `metrics.json`, `replay.pt`, `champion.pt`, `live_cursor.json`, `live_validation.pt`를 확인할 수 있습니다.
 
-A second slower replay explicitly checked concurrency while new bars were still arriving. By the first candidate's completion the agent had observed 29 timestamps, made 1,447 decisions, matured 1,395 outcomes, and saved 1,179 replay examples. Seventeen additional champion inferences occurred while `candidate_training` was true, and the mock-feed process was still running as rows were appended. The 0.5B candidate completed one update (0.759 s), changed weights by L1 3.589, then failed validation and was rejected; champion inference continued. Inference p50 was 27.7 ms, peak CUDA allocation 6.40 GB, and the clean-stop state shows `candidate_training: false`. Its files are in `runtime-global-desktop-concurrency/mock/agent/`. The standalone MockBroker queue check returned a simulated fill with `live_order: false`. No real broker is configured, and there is no exchange websocket subscription or full option-chain/order-book feed in the bundled default providers.
+새 bar가 계속 들어오는 동안의 동시성을 확인하기 위해 더 느린 replay도 실행했습니다. 첫 candidate 완료 시점까지 agent는 timestamp 29개를 관찰하고 판단 1,447건을 생성했으며 outcome 1,395건을 확정하고 replay 예제 1,179개를 저장했습니다. `candidate_training`이 true인 동안 champion inference가 17회 더 실행됐고, 행이 추가되는 중에도 mock-feed 프로세스가 동작했습니다. 0.5B candidate는 update 1회(0.759초)를 완료하고 weight L1 3.589만큼 바뀐 뒤 검증 실패로 기각됐으며 champion 추론은 계속됐습니다. inference p50은 27.7 ms, peak CUDA allocation은 6.40 GB였고 정상 정지 상태에서 `candidate_training: false`를 확인했습니다. 파일은 `runtime-global-desktop-concurrency/mock/agent/`에 있습니다. 독립 MockBroker queue 확인은 `live_order: false`인 모의 체결을 반환했습니다. 실제 broker는 설정되어 있지 않으며 기본 provider에는 거래소 websocket 구독이나 전체 옵션 체인·호가창 feed가 없습니다.
 
 ## 브라우저 대시보드 (권장 실행)
 
@@ -209,34 +209,34 @@ python -m stockrl web
 
 간단한 health/status 확인: `GET /api/status`; 컨트롤: `POST /api/start` (`{"mode":"live"}` 또는 `{"mode":"mock"}`), `POST /api/stop`.
 
-## Shared multi-market training loader
+## 여러 시장 공용 학습 데이터 loader
 
-`src/stockrl/market_training.py` defines a common loader for multiple market sources. Source-specific adapters normalize UTC events/bars into one schema; one loader handles symbol IDs, chronological windows, coverage-aware symbol sampling, whole-universe context, target returns, and 70/15/15 time splits. The normalized adapter supports equities, ETFs, futures, options, rates, and crypto. Optional fields include bid/ask, trade flow, implied volatility, open interest changes, yield changes, days to expiry, and video-derived chart/volume signals. Missing values map to the existing 17-feature input. The first source-specific adapter is `ITCHSnapshotAdapter` for corrected Nasdaq ITCH snapshots.
+`src/stockrl/market_training.py`은 여러 시장 데이터 출처를 위한 공용 loader를 정의합니다. 출처별 adapter가 UTC event/bar를 하나의 형식으로 정규화합니다. 공용 loader는 symbol ID, 시간순 window, 데이터 범위를 고려한 symbol sampling, 전체 시장 context, target return, 시간순 70/15/15 분할을 처리합니다. 정규화 adapter는 주식, ETF, 선물, 옵션, 금리, crypto를 지원합니다. 선택 필드에는 bid/ask, 거래 흐름, implied volatility, open interest 변화, yield 변화, 만기까지 남은 일수, 영상에서 추출한 차트·거래량 신호가 포함됩니다. 값이 없으면 기존 17개 특징 입력에 맞춰 처리합니다. 첫 출처 전용 adapter는 수정된 Nasdaq ITCH snapshot을 위한 `ITCHSnapshotAdapter`입니다.
 
-The loader assigns deterministic contiguous instrument IDs, records per-symbol exposure, samples mostly from least-exposed symbols, and reserves a volume-weighted portion. Each sequence receives 16 global context statistics computed once from the full current universe. The original 0.5B backbone and champion stay intact; the isolated candidate adds a zero-initialized context residual and an expanded symbol embedding initialized from the legacy embedding. The dry-run never promotes or overwrites the champion.
+loader는 연속된 instrument ID를 결정적으로 할당하고 종목별 노출량을 기록합니다. 노출이 적은 종목을 주로 sampling하고 일부는 거래량 가중 방식으로 뽑습니다. 각 sequence에는 현재 전체 시장에서 한 번 계산한 전역 context 통계 16개가 들어갑니다. 기존 0.5B backbone과 champion은 유지합니다. 격리된 candidate에는 0으로 초기화한 context residual과 기존 embedding으로 초기화한 확장 symbol embedding을 추가합니다. dry-run은 champion을 승격하거나 덮어쓰지 않습니다.
 
-After the official-spec ITCH 5.0 reparse completes, run the CUDA dry-run and 64/128/256 symbol-group benchmark on the RTX 3070:
+공식 규격에 맞춘 ITCH 5.0 재파싱이 끝나면 RTX 3070에서 CUDA dry-run과 64/128/256 symbol-group benchmark를 실행하세요.
 
 ```powershell
 python -m pip install -e .
 python scripts/bench_market_training_loader.py
 ```
 
-Outputs go under `runtime-global-market-training/`: disk-backed panel, symbol map, complete exposure CSV, measured metrics, and an isolated one-update candidate. The command does not start long training and never writes to `runtime-global-cuda-final/champion.pt`.
-### RTX 3070 dry-run results (2026-09-26)
+결과는 `runtime-global-market-training/`에 저장됩니다. 디스크 기반 panel, symbol map, 전체 exposure CSV, 측정 지표, 격리된 update 1회 candidate가 포함됩니다. 이 명령은 장시간 학습을 시작하지 않으며 `runtime-global-cuda-final/champion.pt`에 쓰지 않습니다.
+### RTX 3070 dry-run 결과 (2026-09-26)
 
-The full corrected ITCH snapshot CSV was loaded through the shared adapter and loader. The observed universe was **8,694 instruments / 49,446 UTC time rows**; the memory-mapped shared panel occupies **16,765,457,436 bytes (15.62 GiB)**. Its splits are strictly chronological: train `2019-01-30 09:00:00`–`19:08:45 UTC`, validation `19:08:46`–`21:12:28 UTC`, test `21:12:29`–`2019-01-31 01:00:00 UTC`. Inputs have 17 per-instrument features and 16 full-universe context features at sequence length 128.
+수정된 ITCH snapshot 전체 CSV를 공용 adapter와 loader로 불러왔습니다. 관측 시장 규모는 **instrument 8,694개 / UTC 시간 행 49,446개**였으며, memory-mapped 공용 panel은 **16,765,457,436 bytes (15.62 GiB)**를 차지합니다. 시간 분할은 엄격한 순서대로 train `2019-01-30 09:00:00`–`19:08:45 UTC`, validation `19:08:46`–`21:12:28 UTC`, test `21:12:29`–`2019-01-31 01:00:00 UTC`입니다. 입력은 sequence length 128에서 종목별 특징 17개와 전체 시장 context 특징 16개를 사용합니다.
 
-Measured one-step CUDA forward/backward/update on the NVIDIA GeForce RTX 3070:
+NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했습니다.
 
-| Symbols/sample | Input tensor | Step | Symbols-windows/s | Peak allocated VRAM | Process RSS |
+| 샘플당 종목 수 | 입력 텐서 | 단계 시간 | 초당 종목-window 수 | 최대 할당 VRAM | 프로세스 RSS |
 |---:|---|---:|---:|---:|---:|
 | 64 | `[1,128,64,17]` | 1.269 s | 50.42 | 2.43 GiB | 3.39 GiB |
 | 128 | `[1,128,128,17]` | 2.256 s | 56.74 | 2.95 GiB | 3.50 GiB |
 | 256 | `[1,128,256,17]` | 4.126 s | 62.04 | 4.82 GiB | 3.85 GiB |
 
-The run's recorded peak process RSS was 4.88 GiB; panel-build files remain memory-mapped on disk. Direct IDs are unique for all 8,694 instruments. The previous 8,192-way ticker hash would collide for 3,357 IDs in this universe. The sample run selected 575 distinct instruments across its three benchmark batches; 8,119 had zero exposure in this intentionally short dry-run, so full coverage is a property to accumulate during extended sampling/training, not something claimed by these three batches.
+기록된 process peak RSS는 4.88 GiB였습니다. panel 생성 파일은 디스크에 memory-mapped 상태로 남습니다. 8,694개 instrument의 직접 ID는 모두 고유합니다. 이전 8,192-way ticker hash를 사용하면 이 시장에서 ID 3,357개가 충돌합니다. 짧게 설계된 dry-run의 세 benchmark batch에서는 서로 다른 instrument 575개를 선택했고, 8,119개는 노출이 0이었습니다. 따라서 전체 시장 coverage는 장기 sampling·학습으로 쌓아야 하며, 이 세 batch가 보장했다고 주장하지 않습니다.
 
-An isolated candidate completed an optimizer update and was saved/reloaded; reloaded outputs were finite with logits `[1,128,3]` and values `[1,128]`. The 30-second held-out validation minibatch had 11 reward-valid instruments and mean expected net return of `-0.00128370` for champion versus `-0.00128072` for candidate. This single tiny minibatch is **not** adequate evidence of improvement; the candidate was not promoted. Original champion SHA-256 remains `4100da96158c777426008f6c1a874951de160c17e4a5566f7dda4743a3c36128` and it was not overwritten. Results are saved in `runtime-global-market-training/dryrun_metrics.json`, and per-symbol exposure in `runtime-global-market-training/symbol_exposure.csv`.
+격리 candidate는 optimizer update를 마치고 저장·재로드됐습니다. 재로드 출력은 유한값이었고 logits은 `[1,128,3]`, values는 `[1,128]`이었습니다. 30초 held-out validation minibatch에는 reward를 계산할 수 있는 instrument 11개가 있었습니다. 기대 net return 평균은 champion `-0.00128370`, candidate `-0.00128072`였습니다. 이 작은 minibatch 하나만으로는 개선을 입증할 수 **없으므로** candidate를 승격하지 않았습니다. 기존 champion의 SHA-256 `4100da96158c777426008f6c1a874951de160c17e4a5566f7dda4743a3c36128`은 유지됐으며 파일도 덮어쓰지 않았습니다. 결과는 `runtime-global-market-training/dryrun_metrics.json`, 종목별 exposure는 `runtime-global-market-training/symbol_exposure.csv`에 저장됩니다.
 
-This validates the loader and bounded CUDA dry-run on corrected ITCH snapshots; it is not broad-market training or proof of profitable policy. The included normalized-source adapter is the common entry point for other market feeds; provider-specific source parsers and longer multi-regime training/evaluation still need to be added before claiming cross-market readiness.
+이 결과는 수정된 ITCH snapshot으로 loader와 제한된 CUDA dry-run을 확인한 것입니다. 광범위한 시장 학습이나 수익성 있는 정책을 증명하지 않습니다. 포함된 정규화 source adapter는 다른 시장 feed가 사용하는 공통 진입점입니다. 여러 시장을 지원한다고 주장하려면 provider별 parser와 더 긴 다중 국면 학습·평가를 추가해야 합니다.
