@@ -1,0 +1,1636 @@
+{
+  "description": "Paper observation universe: 80 Korean equities, 64 US equities, and 26 ETFs, indices, futures, FX, yields, commodities, volatility and crypto context instruments. Registered instruments are not proof of a live quote.",
+  "universe_source": "Korean equities: FinanceDataReader KOSPI/KOSDAQ turnover list with 5 checkpoint symbols retained. US equities: explicit liquid cross-sector observation list. Symbols can be changed in this shared market config. US action symbols are restricted to distinct IDs already present in the current champion checkpoint.",
+  "instruments": [
+    {
+      "symbol": "005930.KS",
+      "provider_symbol": "005930.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성전자"
+    },
+    {
+      "symbol": "000660.KS",
+      "provider_symbol": "000660.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "SK하이닉스"
+    },
+    {
+      "symbol": "035420.KS",
+      "provider_symbol": "035420.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "NAVER"
+    },
+    {
+      "symbol": "005380.KS",
+      "provider_symbol": "005380.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "현대차"
+    },
+    {
+      "symbol": "051910.KS",
+      "provider_symbol": "051910.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "LG화학"
+    },
+    {
+      "symbol": "005935.KS",
+      "provider_symbol": "005935.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성전자우"
+    },
+    {
+      "symbol": "402340.KS",
+      "provider_symbol": "402340.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "SK스퀘어"
+    },
+    {
+      "symbol": "0010S0.KQ",
+      "provider_symbol": "0010S0.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "와이즈플래닛컴퍼니"
+    },
+    {
+      "symbol": "009150.KS",
+      "provider_symbol": "009150.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성전기"
+    },
+    {
+      "symbol": "034020.KS",
+      "provider_symbol": "034020.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "두산에너빌리티"
+    },
+    {
+      "symbol": "240810.KQ",
+      "provider_symbol": "240810.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "원익IPS"
+    },
+    {
+      "symbol": "356680.KQ",
+      "provider_symbol": "356680.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "엑스게이트"
+    },
+    {
+      "symbol": "0161M0.KQ",
+      "provider_symbol": "0161M0.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "네오사피엔스"
+    },
+    {
+      "symbol": "006400.KS",
+      "provider_symbol": "006400.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성SDI"
+    },
+    {
+      "symbol": "030530.KQ",
+      "provider_symbol": "030530.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "원익홀딩스"
+    },
+    {
+      "symbol": "353200.KS",
+      "provider_symbol": "353200.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "대덕전자"
+    },
+    {
+      "symbol": "036930.KQ",
+      "provider_symbol": "036930.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "주성엔지니어링"
+    },
+    {
+      "symbol": "047040.KS",
+      "provider_symbol": "047040.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "대우건설"
+    },
+    {
+      "symbol": "072950.KQ",
+      "provider_symbol": "072950.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "빛샘전자"
+    },
+    {
+      "symbol": "010170.KQ",
+      "provider_symbol": "010170.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "대한광통신"
+    },
+    {
+      "symbol": "096770.KS",
+      "provider_symbol": "096770.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "SK이노베이션"
+    },
+    {
+      "symbol": "000720.KS",
+      "provider_symbol": "000720.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "현대건설"
+    },
+    {
+      "symbol": "478340.KQ",
+      "provider_symbol": "478340.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "나라스페이스테크놀로지"
+    },
+    {
+      "symbol": "012450.KS",
+      "provider_symbol": "012450.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한화에어로스페이스"
+    },
+    {
+      "symbol": "387690.KQ",
+      "provider_symbol": "387690.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "레메디"
+    },
+    {
+      "symbol": "003490.KS",
+      "provider_symbol": "003490.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "대한항공"
+    },
+    {
+      "symbol": "000150.KS",
+      "provider_symbol": "000150.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "두산"
+    },
+    {
+      "symbol": "105560.KS",
+      "provider_symbol": "105560.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "KB금융"
+    },
+    {
+      "symbol": "066570.KS",
+      "provider_symbol": "066570.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "LG전자"
+    },
+    {
+      "symbol": "009830.KS",
+      "provider_symbol": "009830.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한화솔루션"
+    },
+    {
+      "symbol": "028050.KS",
+      "provider_symbol": "028050.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성E&A"
+    },
+    {
+      "symbol": "058470.KQ",
+      "provider_symbol": "058470.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "리노공업"
+    },
+    {
+      "symbol": "007660.KS",
+      "provider_symbol": "007660.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "이수페타시스"
+    },
+    {
+      "symbol": "093370.KS",
+      "provider_symbol": "093370.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "후성"
+    },
+    {
+      "symbol": "003670.KS",
+      "provider_symbol": "003670.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "포스코퓨처엠"
+    },
+    {
+      "symbol": "440110.KQ",
+      "provider_symbol": "440110.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "파두"
+    },
+    {
+      "symbol": "028260.KS",
+      "provider_symbol": "028260.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성물산"
+    },
+    {
+      "symbol": "055550.KS",
+      "provider_symbol": "055550.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "신한지주"
+    },
+    {
+      "symbol": "046970.KQ",
+      "provider_symbol": "046970.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "우리로"
+    },
+    {
+      "symbol": "001440.KS",
+      "provider_symbol": "001440.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "대한전선"
+    },
+    {
+      "symbol": "000270.KS",
+      "provider_symbol": "000270.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "기아"
+    },
+    {
+      "symbol": "001820.KS",
+      "provider_symbol": "001820.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼화콘덴서"
+    },
+    {
+      "symbol": "042700.KS",
+      "provider_symbol": "042700.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한미반도체"
+    },
+    {
+      "symbol": "010060.KS",
+      "provider_symbol": "010060.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "OCI홀딩스"
+    },
+    {
+      "symbol": "222800.KQ",
+      "provider_symbol": "222800.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "심텍"
+    },
+    {
+      "symbol": "086790.KS",
+      "provider_symbol": "086790.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "하나금융지주"
+    },
+    {
+      "symbol": "329180.KS",
+      "provider_symbol": "329180.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "HD현대중공업"
+    },
+    {
+      "symbol": "006360.KS",
+      "provider_symbol": "006360.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "GS건설"
+    },
+    {
+      "symbol": "103590.KS",
+      "provider_symbol": "103590.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "일진전기"
+    },
+    {
+      "symbol": "386380.KQ",
+      "provider_symbol": "386380.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "스카이랩스"
+    },
+    {
+      "symbol": "115440.KQ",
+      "provider_symbol": "115440.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "우리넷"
+    },
+    {
+      "symbol": "950260.KQ",
+      "provider_symbol": "950260.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "인제니아테라퓨틱스(Reg.S)"
+    },
+    {
+      "symbol": "319660.KQ",
+      "provider_symbol": "319660.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "피에스케이"
+    },
+    {
+      "symbol": "298040.KS",
+      "provider_symbol": "298040.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "효성중공업"
+    },
+    {
+      "symbol": "373220.KS",
+      "provider_symbol": "373220.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "LG에너지솔루션"
+    },
+    {
+      "symbol": "034730.KS",
+      "provider_symbol": "034730.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "SK"
+    },
+    {
+      "symbol": "067310.KQ",
+      "provider_symbol": "067310.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "하나마이크론"
+    },
+    {
+      "symbol": "403870.KQ",
+      "provider_symbol": "403870.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "HPSP"
+    },
+    {
+      "symbol": "043260.KQ",
+      "provider_symbol": "043260.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "성호전자"
+    },
+    {
+      "symbol": "201490.KQ",
+      "provider_symbol": "201490.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "미투온"
+    },
+    {
+      "symbol": "396300.KQ",
+      "provider_symbol": "396300.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "HT로보틱스"
+    },
+    {
+      "symbol": "272210.KS",
+      "provider_symbol": "272210.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한화시스템"
+    },
+    {
+      "symbol": "042660.KS",
+      "provider_symbol": "042660.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한화오션"
+    },
+    {
+      "symbol": "080220.KQ",
+      "provider_symbol": "080220.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "제주반도체"
+    },
+    {
+      "symbol": "419050.KQ",
+      "provider_symbol": "419050.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼기에너지솔루션즈"
+    },
+    {
+      "symbol": "003230.KS",
+      "provider_symbol": "003230.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼양식품"
+    },
+    {
+      "symbol": "012330.KS",
+      "provider_symbol": "012330.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "현대모비스"
+    },
+    {
+      "symbol": "010120.KS",
+      "provider_symbol": "010120.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "LS ELECTRIC"
+    },
+    {
+      "symbol": "278470.KS",
+      "provider_symbol": "278470.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "에이피알"
+    },
+    {
+      "symbol": "128940.KS",
+      "provider_symbol": "128940.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한미약품"
+    },
+    {
+      "symbol": "032830.KS",
+      "provider_symbol": "032830.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "삼성생명"
+    },
+    {
+      "symbol": "089970.KQ",
+      "provider_symbol": "089970.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "브이엠"
+    },
+    {
+      "symbol": "036540.KQ",
+      "provider_symbol": "036540.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "SFA반도체"
+    },
+    {
+      "symbol": "108490.KQ",
+      "provider_symbol": "108490.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "로보티즈"
+    },
+    {
+      "symbol": "052690.KS",
+      "provider_symbol": "052690.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "한전기술"
+    },
+    {
+      "symbol": "393210.KQ",
+      "provider_symbol": "393210.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "토마토시스템"
+    },
+    {
+      "symbol": "005490.KS",
+      "provider_symbol": "005490.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "POSCO홀딩스"
+    },
+    {
+      "symbol": "011070.KS",
+      "provider_symbol": "011070.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "LG이노텍"
+    },
+    {
+      "symbol": "010950.KS",
+      "provider_symbol": "010950.KS",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "S-Oil"
+    },
+    {
+      "symbol": "095610.KQ",
+      "provider_symbol": "095610.KQ",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "테스"
+    },
+    {
+      "symbol": "AAPL",
+      "provider_symbol": "AAPL",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MSFT",
+      "provider_symbol": "MSFT",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "NVDA",
+      "provider_symbol": "NVDA",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "AMZN",
+      "provider_symbol": "AMZN",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GOOGL",
+      "provider_symbol": "GOOGL",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GOOG",
+      "provider_symbol": "GOOG",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CRM",
+      "provider_symbol": "CRM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "TSLA",
+      "provider_symbol": "TSLA",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "AVGO",
+      "provider_symbol": "AVGO",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "COST",
+      "provider_symbol": "COST",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "NFLX",
+      "provider_symbol": "NFLX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "AMD",
+      "provider_symbol": "AMD",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "INTC",
+      "provider_symbol": "INTC",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "QCOM",
+      "provider_symbol": "QCOM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CSCO",
+      "provider_symbol": "CSCO",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ADBE",
+      "provider_symbol": "ADBE",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "TXN",
+      "provider_symbol": "TXN",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "AMAT",
+      "provider_symbol": "AMAT",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MU",
+      "provider_symbol": "MU",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "KLAC",
+      "provider_symbol": "KLAC",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "LRCX",
+      "provider_symbol": "LRCX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ASML",
+      "provider_symbol": "ASML",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ADP",
+      "provider_symbol": "ADP",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "BKNG",
+      "provider_symbol": "BKNG",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "PDD",
+      "provider_symbol": "PDD",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "INTU",
+      "provider_symbol": "INTU",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ISRG",
+      "provider_symbol": "ISRG",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "REGN",
+      "provider_symbol": "REGN",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "VRTX",
+      "provider_symbol": "VRTX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GILD",
+      "provider_symbol": "GILD",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "AMGN",
+      "provider_symbol": "AMGN",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "SBUX",
+      "provider_symbol": "SBUX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "PYPL",
+      "provider_symbol": "PYPL",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "DIS",
+      "provider_symbol": "DIS",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "PANW",
+      "provider_symbol": "PANW",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "HD",
+      "provider_symbol": "HD",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MDB",
+      "provider_symbol": "MDB",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "JNJ",
+      "provider_symbol": "JNJ",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "KO",
+      "provider_symbol": "KO",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "PEP",
+      "provider_symbol": "PEP",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MAR",
+      "provider_symbol": "MAR",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MCD",
+      "provider_symbol": "MCD",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MELI",
+      "provider_symbol": "MELI",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "LULU",
+      "provider_symbol": "LULU",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CHTR",
+      "provider_symbol": "CHTR",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "TEAM",
+      "provider_symbol": "TEAM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "PCAR",
+      "provider_symbol": "PCAR",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ORLY",
+      "provider_symbol": "ORLY",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ROST",
+      "provider_symbol": "ROST",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "KDP",
+      "provider_symbol": "KDP",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "NXPI",
+      "provider_symbol": "NXPI",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "FANG",
+      "provider_symbol": "FANG",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "MCHP",
+      "provider_symbol": "MCHP",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "FAST",
+      "provider_symbol": "FAST",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "HON",
+      "provider_symbol": "HON",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "IBM",
+      "provider_symbol": "IBM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "JPM",
+      "provider_symbol": "JPM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "BAC",
+      "provider_symbol": "BAC",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "WMT",
+      "provider_symbol": "WMT",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "XOM",
+      "provider_symbol": "XOM",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CVX",
+      "provider_symbol": "CVX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "UNH",
+      "provider_symbol": "UNH",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CAT",
+      "provider_symbol": "CAT",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GS",
+      "provider_symbol": "GS",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "equity",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "SPY",
+      "provider_symbol": "SPY",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "index_etf",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "QQQ",
+      "provider_symbol": "QQQ",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "index_etf",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^GSPC",
+      "provider_symbol": "^GSPC",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^IXIC",
+      "provider_symbol": "^IXIC",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^DJI",
+      "provider_symbol": "^DJI",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^KS11",
+      "provider_symbol": "^KS11",
+      "provider": "yahoo",
+      "market": "KRX",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "코스피 지수"
+    },
+    {
+      "symbol": "^KQ11",
+      "provider_symbol": "^KQ11",
+      "provider": "yahoo",
+      "market": "KOSDAQ",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60,
+      "name": "코스닥 지수"
+    },
+    {
+      "symbol": "^N225",
+      "provider_symbol": "^N225",
+      "provider": "yahoo",
+      "market": "Japan",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^HSI",
+      "provider_symbol": "^HSI",
+      "provider": "yahoo",
+      "market": "HongKong",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^GDAXI",
+      "provider_symbol": "^GDAXI",
+      "provider": "yahoo",
+      "market": "Germany",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^FTSE",
+      "provider_symbol": "^FTSE",
+      "provider": "yahoo",
+      "market": "UK",
+      "asset_class": "index",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "ES=F",
+      "provider_symbol": "ES=F",
+      "provider": "yahoo",
+      "market": "CME",
+      "asset_class": "index_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "NQ=F",
+      "provider_symbol": "NQ=F",
+      "provider": "yahoo",
+      "market": "CME",
+      "asset_class": "index_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GC=F",
+      "provider_symbol": "GC=F",
+      "provider": "yahoo",
+      "market": "COMEX",
+      "asset_class": "commodity_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "SI=F",
+      "provider_symbol": "SI=F",
+      "provider": "yahoo",
+      "market": "COMEX",
+      "asset_class": "commodity_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "CL=F",
+      "provider_symbol": "CL=F",
+      "provider": "yahoo",
+      "market": "NYMEX",
+      "asset_class": "commodity_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "HG=F",
+      "provider_symbol": "HG=F",
+      "provider": "yahoo",
+      "market": "COMEX",
+      "asset_class": "commodity_future",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "EURUSD=X",
+      "provider_symbol": "EURUSD=X",
+      "provider": "yahoo",
+      "market": "FX",
+      "asset_class": "currency",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "KRW=X",
+      "provider_symbol": "KRW=X",
+      "provider": "yahoo",
+      "market": "FX",
+      "asset_class": "currency",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "JPY=X",
+      "provider_symbol": "JPY=X",
+      "provider": "yahoo",
+      "market": "FX",
+      "asset_class": "currency",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "GBPUSD=X",
+      "provider_symbol": "GBPUSD=X",
+      "provider": "yahoo",
+      "market": "FX",
+      "asset_class": "currency",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^TNX",
+      "provider_symbol": "^TNX",
+      "provider": "yahoo",
+      "market": "US_Treasury",
+      "asset_class": "yield",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^FVX",
+      "provider_symbol": "^FVX",
+      "provider": "yahoo",
+      "market": "US_Treasury",
+      "asset_class": "yield",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^IRX",
+      "provider_symbol": "^IRX",
+      "provider": "yahoo",
+      "market": "US_Treasury",
+      "asset_class": "yield",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^TYX",
+      "provider_symbol": "^TYX",
+      "provider": "yahoo",
+      "market": "US_Treasury",
+      "asset_class": "yield",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "^VIX",
+      "provider_symbol": "^VIX",
+      "provider": "yahoo",
+      "market": "US",
+      "asset_class": "volatility",
+      "interval": "1m",
+      "refresh_seconds": 60
+    },
+    {
+      "symbol": "BTC-USD",
+      "provider_symbol": "XBTUSD",
+      "provider": "kraken",
+      "market": "CRYPTO",
+      "asset_class": "crypto",
+      "interval": 1,
+      "refresh_seconds": 15
+    },
+    {
+      "symbol": "ETH-USD",
+      "provider_symbol": "ETHUSD",
+      "provider": "kraken",
+      "market": "CRYPTO",
+      "asset_class": "crypto",
+      "interval": 1,
+      "refresh_seconds": 15
+    }
+  ]
+}

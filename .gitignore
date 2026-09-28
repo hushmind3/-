@@ -1,0 +1,27 @@
+﻿__pycache__/
+*.py[cod]
+.venv/
+checkpoints/*.pt
+runtime-global-desktop/
+runtime-global-live-test/
+logs/
+runtime-global-web/
+
+# Model weights and persistent runtime state live outside this source repository.
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+runtime-global-*/
+replay*.csv
+replay*.pt
+*.sqlite3
+*.log
+cache/
+data/cache/
+
+# High-volume model and training state, browsable in github-large-files/
+/github-large-files/
+/runtime-global-korea-live/live/agent/
+/runtime-global-korea-epoch1/
+/runtime-global-korea-epoch1-compact/

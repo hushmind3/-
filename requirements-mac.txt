@@ -1,0 +1,11 @@
+numpy>=1.26
+pandas>=2.1
+torch>=2.2
+psutil>=5.9
+requests>=2.31
+keyring>=25.6
+websockets>=12.0
+stable-baselines3>=2.3
+sb3-contrib>=2.3
+gymnasium>=0.29
+scikit-learn>=1.2

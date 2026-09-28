@@ -1,0 +1,8 @@
+[
+  {"name":"maksimprivalov_ppo","type":"public_maksim_ppo","path":"models/teachers/maksimprivalov_ppo_trader.zip","weight":1.0},
+  {"name":"jk2500_pfe_recurrent_ppo","type":"public_recurrent_ppo","path":"models/teachers/jk2500_pfizer_recurrentppo_lstm.zip","weight":1.0},
+  {"name":"adilbai_hf_ppo","type":"public_hf_ppo","path":"models/teachers/adilbai_final_model.zip","scaler_path":"models/teachers/adilbai_scaler.pkl","weight":1.0},
+  {"name":"deepbiolab_dqn_fold1","type":"public_deepbio_dqn","path":"models/teachers/model_fold_1_deepbiolab.pth","weight":1.0},
+  {"name":"deepbiolab_dqn_fold2","type":"public_deepbio_dqn","path":"models/teachers/model_fold_2_deepbiolab.pth","weight":1.0},
+  {"name":"deepbiolab_dqn_base","type":"public_deepbio_dqn","path":"models/teachers/checkpoint_deepbiolab.pth","weight":1.0}
+]
