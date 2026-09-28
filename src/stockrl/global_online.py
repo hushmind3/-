@@ -250,13 +250,17 @@ class OnlineGlobalAgent:
         # Optional teacher input is read-only; the live agent never persists a replay file.
         if teacher_replay_path: self.replay.load(Path(teacher_replay_path))
         self.champion_path=self.model_dir/"champion.pt"
-        if not self.champion_path.exists() and initial_champion and Path(initial_champion).is_file():
+        if initial_champion is not None and not Path(initial_champion).is_file():
+            raise FileNotFoundError(f"configured champion checkpoint does not exist: {initial_champion}")
+        if not self.champion_path.exists() and initial_champion:
             # Seed this isolated runtime from a prior verified champion without
             # writing to or replacing the source checkpoint.
             shutil.copy2(initial_champion,self.champion_path)
         if self.champion_path.exists():
             self.champion,self.cfg=load_model(self.champion_path,self.device)
         else:
+            if model_dir is not None or initial_champion is not None:
+                raise FileNotFoundError(f"configured champion checkpoint does not exist: {self.champion_path}")
             self.champion=GlobalMarketTransformer(self.cfg)
             if self.device.type=="cuda": self.champion=self.champion.half()
             self.champion=self.champion.to(self.device).eval()
