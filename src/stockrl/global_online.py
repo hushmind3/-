@@ -630,6 +630,7 @@ class OnlineGlobalAgent:
                       "candidate_validation_inference_seconds_total":0.0,
                       "candidate_replay_rows_held_for_validation":0,
                       "candidate_replay_rows_consumed":0,
+                      "candidate_replay_rows_audit_status":"tracked",
                       "candidate_replay_cleanup_pending":False,
                       "update_losses":[],"inference_seconds":[],
                       "update_seconds":[],"weight_delta_l1":[]}
@@ -708,8 +709,22 @@ class OnlineGlobalAgent:
             validation_state["replay_rows_consumed"]=consumed
             validation_state["replay_rows_finalized"]=True
             self.metrics["candidate_replay_rows_consumed"]=consumed
+            self.metrics["candidate_replay_rows_held_for_validation"]=0
+            self.metrics["candidate_replay_rows_audit_status"]="tracked"
             self.metrics["candidate_replay_cleanup_pending"]=False
             _atomic_json(validation_state,self.validation_state_path)
+        elif validation_state.get("status")=="collecting":
+            if "trained_replay_row_ids" in validation_state:
+                self.metrics["candidate_replay_rows_held_for_validation"]=len(
+                    validation_state.get("trained_replay_row_ids",[]))
+                self.metrics["candidate_replay_rows_consumed"]=0
+                self.metrics["candidate_replay_rows_audit_status"]="tracked"
+            else:
+                # Older validations deleted rows before the stable IDs were
+                # recorded; their exact consumed-row count cannot be recovered.
+                self.metrics["candidate_replay_rows_held_for_validation"]=0
+                self.metrics["candidate_replay_rows_consumed"]=None
+                self.metrics["candidate_replay_rows_audit_status"]="legacy_untracked"
         self.validation_meta_path=self.state_dir/"validation_config.json"
         saved_validation_config={}
         try:
@@ -1747,6 +1762,7 @@ class OnlineGlobalAgent:
         # interrupted candidate must not erase the only copy of its experience.
         self.metrics["candidate_replay_rows_held_for_validation"]=len(trained_replay_row_ids)
         self.metrics["candidate_replay_rows_consumed"]=0
+        self.metrics["candidate_replay_rows_audit_status"]="tracked"
         self.last_train_replay_size=len(self.replay)
         self.metrics["last_train_replay_size"]=self.last_train_replay_size
         self.metrics["paper_experiences_since_candidate"]=max(
@@ -1940,6 +1956,11 @@ class OnlineGlobalAgent:
             prior_state={}
             try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
             except (OSError,json.JSONDecodeError): pass
+            self.metrics["candidate_replay_rows_held_for_validation"]=0
+            self.metrics["candidate_replay_rows_consumed"]=(
+                0 if "trained_replay_row_ids" in prior_state else None)
+            self.metrics["candidate_replay_rows_audit_status"]=(
+                "tracked" if "trained_replay_row_ids" in prior_state else "legacy_untracked")
             self._atomic_json({**prior_state,"status":"rejected","reason":error,
                                "bars":self.validation_bars,
                                "source_champion_sha256":source_sha,
@@ -1964,6 +1985,11 @@ class OnlineGlobalAgent:
                 prior_state={}
                 try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
                 except (OSError,json.JSONDecodeError): pass
+                self.metrics["candidate_replay_rows_held_for_validation"]=0
+                self.metrics["candidate_replay_rows_consumed"]=(
+                    0 if "trained_replay_row_ids" in prior_state else None)
+                self.metrics["candidate_replay_rows_audit_status"]=(
+                    "tracked" if "trained_replay_row_ids" in prior_state else "legacy_untracked")
                 self._atomic_json({**prior_state,"status":"rejected","reason":error,
                                    "bars":self.validation_bars,
                                    "source_champion_sha256":source_sha,
@@ -1974,6 +2000,9 @@ class OnlineGlobalAgent:
                     try:
                         consumed=self.replay.discard_row_ids(state.get("trained_replay_row_ids",[]))
                         self.metrics["candidate_replay_rows_consumed"]=consumed
+                        self.metrics["candidate_replay_rows_held_for_validation"]=0
+                        self.metrics["candidate_replay_rows_audit_status"]="tracked"
+                        self.metrics["candidate_replay_cleanup_pending"]=False
                         state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
                         state["replay_rows_consumed"]=consumed
                         state["replay_rows_finalized"]=True
@@ -1985,6 +2014,8 @@ class OnlineGlobalAgent:
                         self.metrics["last_candidate_replay_cleanup_error"]=f"{type(exc).__name__}: {exc}"[:1200]
                 else:
                     self.metrics["candidate_replay_rows_consumed"]=0
+                    self.metrics["candidate_replay_rows_held_for_validation"]=0
+                    self.metrics["candidate_replay_rows_audit_status"]="tracked"
             self.validation_active=False
         self.metrics["candidate_training"]=False
         self.metrics["candidate_stage"]="waiting"
