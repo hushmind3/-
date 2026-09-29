@@ -528,7 +528,7 @@ def load_model(path:Path,device:torch.device):
 class OnlineGlobalAgent:
     def __init__(self, state_dir: str|Path, device="auto", config:TransformerConfig|None=None,
                  capacity=4_096, window=128, horizon=1, fee=.001, slippage_bps=1.0,
-                 min_replay=8, batch_size=4, updates_per_candidate=4, lr=2e-6, seed=7,
+                 min_replay=8, batch_size=4, updates_per_candidate=8, lr=2e-6, seed=7,
                  candidate_interval=16, initial_champion: str|Path|None=None,
                  teacher_replay_path: str|Path|None=None,
                  model_dir: str|Path|None=None):

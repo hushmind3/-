@@ -338,7 +338,7 @@ class Supervisor:
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
                 "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
-                "--candidate-every", str(self.candidate_every), "--batch-size", "4", "--updates", "4",
+                "--candidate-every", str(self.candidate_every), "--batch-size", "4", "--updates", "8",
                 "--fee", str(self.fee), "--horizon", self.horizon,
                 "--device", self._device()]
         seed = self.initial_champion or (self.model_dir / "champion.pt")

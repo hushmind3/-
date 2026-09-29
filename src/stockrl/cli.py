@@ -213,7 +213,7 @@ def main() -> None:
       help="outcome horizon: 30s, 1m, 5m, 1bar, 5bars. Durations resolve to the next observed bar at/after the target time.")
     go.add_argument("--fee",type=float,default=.001); go.add_argument("--slippage-bps",type=float,default=1.0)
     go.add_argument("--min-replay",type=int,default=8); go.add_argument("--batch-size",type=int,default=2)
-    go.add_argument("--updates",type=int,default=4); go.add_argument("--lr",type=float,default=2e-6)
+    go.add_argument("--updates",type=int,default=8); go.add_argument("--lr",type=float,default=2e-6)
     go.add_argument("--replay-capacity",type=int,default=4096); go.add_argument("--max-observations",type=int,default=None)
     go.add_argument("--teacher-decisions",default=None,help="optional normalized CSV with date,action from public-teacher inference")
     go.add_argument("--teacher-replay",default=None,help="optional saved warm-start replay; its sampling share decays to zero after 10k self outcomes")

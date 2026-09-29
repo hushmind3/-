@@ -7,6 +7,7 @@
 - feed 파일이 추론 중 계속 갱신돼도, agent가 읽어 처리한 시점까지 cursor를 완료하면 candidate 학습을 허용합니다. 새로 도착한 시세는 다음 읽기에서 이어 처리하며 파일이 멈출 때까지 학습을 막지 않습니다.
 - 성숙한 replay 경험을 5분 경과만으로 삭제하던 경로를 제거했습니다. 미결 outcome 대기는 실시간 우선 정책에 따라 5분이 지나면 만료될 수 있습니다. replay는 설정된 용량 한도로 관리하고 검증이 끝나 승격된 학습 행만 소비합니다.
 - 과거 `train`, `continuous`, `replay` CLI 명령은 추가 checkpoint/replay 파일 생성을 막기 위해 비활성화했습니다. 현재 운영 학습은 8766 paper runtime의 candidate를 갱신합니다.
+- 직전 실측 학습은 replay 16건, batch 4, optimizer 4회로 732초가 걸렸습니다. 학습량이 적어 다음 candidate update부터 batch 4는 유지하고 optimizer를 8회로 늘려 고유 replay 표본 32건을 사용합니다. CUDA peak와 학습시간은 다음 update에서 다시 측정합니다.
 - 코드 변경 후 8766을 재시작해 상태를 확인합니다. 실주문은 OFF이며 champion/candidate 가중치 파일은 수정하지 않습니다. SHA256은 각 검증 구간의 champion 계보를 기록하는 값이며 고정 허용목록이나 승격 잠금으로 쓰지 않습니다.
 ## 프로젝트 방향
 
