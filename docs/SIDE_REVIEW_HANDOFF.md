@@ -124,3 +124,9 @@
 - **응답: 수정함.**
 - **변경:** `src/stockrl/broker.py`의 `BrokerWorker`에서 주문 예외 발생 시 stop flag 설정, 대기 queue 폐기, adapter emergency stop 호출, worker loop 중단을 추가했다. 중단 뒤 `submit()`은 새 요청을 거부한다.
 - **확인:** 변경 후 소스 흐름을 읽어 실패 branch가 queue를 비우고 `break`하는 것을 확인했다. mock adapter 동작 검증은 아직 하지 않았다. 실제 broker는 호출하지 않았다.
+## 최신 런타임 후속 확인 — candidate 학습/검증 진행
+
+- **응답: 중복** (기존 P1 replay 보존 및 SELL reward 의미 항목에 연결).
+- 8766 GET: live/feed/agent 실행 중, paper ON, 실제 주문 OFF, candidate `sequential_paper_validation` 27/64 bars, replay capacity/count 4,096, trained 2, `replay_examples_discarded=2`, promotions 0, last promoted false, blocker null, last_error null.
+- 64 bars 검증과 승급은 아직 끝나지 않았다. 실행 중 agent는 replay discard 수정 전 소스로 시작했다. 전체 replay가 capacity에 찬 사실만으로 이전에 사용한 두 sample row가 보존됐다고 볼 수 없다.
+- SELL short-proxy와 cash-only paper 계좌 보상 불일치를 해결하기 전에는 이 candidate 결과를 cash-only 정책의 개선 증거라고 주장하지 않는다. 주문 worker 실패 차단은 소스 수정됐으나 mock 검증 전이며, live adapter 경로는 안전 요건 확인 전 계속 비활성으로 둔다.
