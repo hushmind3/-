@@ -231,3 +231,10 @@
 - `Supervisor.__init__()`의 `self.runtime.mkdir(parents=True, exist_ok=True)` 때문에 외부 절대 경로가 전달되면 실제 외부 폴더 생성으로 이어지는 코드 경로가 확인된다. 외부 디렉터리를 만들지는 않았다.
 - `paths.default_runtime_dir()` 및 `start_stockrl.py`의 기본 runtime 경계 검사는 있지만, CLI override에서는 호출되지 않는다. 이는 다른 외부 경로 우회 지적과 중복될 수 있으나 web CLI의 직접 생성 지점으로 별도 기록한다.
 - 재확인 조건: `serve()` 경계 검사를 추가해 프로젝트 밖 경로를 생성 전에 거부하고, 거부 동작을 확인한다.
+
+## P1 GitHub snapshot과 live runtime 시점 차이 — 2026-09-29 KST
+
+- **응답: 수정함.** `da5dd24` runtime snapshot은 15:53:18 KST였고 이후 11개 tracked 파일이 달라진 것을 확인했다. 새 온라인 snapshot을 `c98ef4c`(16:05:57 KST)에 비공개 GitHub `main`으로 올렸다.
+- `replay.sqlite3`와 `market.csv.sqlite3`는 실행 중인 파일을 복사하지 않고 SQLite online backup API로 메모리 snapshot을 만들었다. 두 DB 모두 `PRAGMA integrity_check=ok`; 업로드한 snapshot 크기는 각각 13,438,976 bytes와 5,767,168 bytes였다.
+- **현재 재확인:** 16:07:48 KST에 live writer가 다시 여섯 파일을 갱신했다: `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`. 현재 온라인 DB snapshot도 integrity `ok`지만 저장된 DB blob과 내용이 다르다. 따라서 c98ef4c는 특정 시점 복구본이며 live runtime은 그 뒤에도 계속 변한다.
+- GitHub runtime snapshot을 다시 만들 때 온라인 DB backup을 유지한다. live tail의 자동 동기화는 설정하지 않았다. 별도 백업 실행 시점이 정해지면 그때 새 snapshot으로 기록한다.

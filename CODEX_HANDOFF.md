@@ -146,3 +146,10 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - `src/stockrl/web_app.py`의 `Supervisor.__init__()`은 전달된 `runtime`에 `mkdir(parents=True, exist_ok=True)`를 실행하므로, 외부 경로를 명시하면 프로젝트 밖 폴더를 생성할 수 있다. 실제 외부 경로 실행은 하지 않았다.
 - `paths.default_runtime_dir()`와 `start_stockrl.py` 기본 runtime 검사는 프로젝트 경계를 확인하지만, CLI 명시 인자 경로는 그 검사를 거치지 않는다. 코드 변경 없이 정적 소스 경로만 확인했다.
 - 재확인 조건: `serve()`에서 모든 runtime 경로가 PROJECT_ROOT 내부인지 검사하도록 수정하고, 경계 밖 값은 디렉터리 생성 전에 거부한 뒤 안전한 검증을 수행한다.
+
+## Runtime snapshot drift follow-up — 2026-09-29 KST
+
+- **응답: 수정함.** `da5dd24`(15:53:18 KST) 이후 tracked runtime 차이를 `c98ef4c`(16:05:57 KST)에 새 비공개 GitHub snapshot으로 저장했다.
+- SQLite는 파일 복사 대신 온라인 백업했다. replay DB 13,438,976 bytes와 market DB 5,767,168 bytes 모두 당시 `integrity_check=ok`였다.
+- 16:07:48 KST 재확인 때 live 기록으로 `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`가 다시 바뀌었다. 현재 온라인 백업도 두 DB 모두 integrity `ok`지만 GitHub `c98ef4c`의 DB blob과 다르다. GitHub는 16:05:57 시점 복구 snapshot이고 이후 live tail은 로컬 변경분이다.
+- server/feed/agent는 계속 실행 중이며 actual orders OFF다. 서버를 중지하거나 원본 DB를 직접 복사하지 않았다.

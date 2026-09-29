@@ -278,3 +278,9 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 격리 candidate는 optimizer update를 마치고 저장·재로드됐습니다. 재로드 출력은 유한값이었고 logits은 `[1,128,3]`, values는 `[1,128]`이었습니다. 30초 held-out validation minibatch에는 reward를 계산할 수 있는 instrument 11개가 있었습니다. 기대 net return 평균은 champion `-0.00128370`, candidate `-0.00128072`였습니다. 이 작은 minibatch 하나만으로는 개선을 입증할 수 **없으므로** candidate를 승격하지 않았습니다. 기존 champion의 SHA-256 `4100da96158c777426008f6c1a874951de160c17e4a5566f7dda4743a3c36128`은 유지됐으며 파일도 덮어쓰지 않았습니다. 결과는 `runtime-global-market-training/dryrun_metrics.json`, 종목별 exposure는 `runtime-global-market-training/symbol_exposure.csv`에 저장됩니다.
 
 이 결과는 수정된 ITCH snapshot으로 loader와 제한된 CUDA dry-run을 확인한 것입니다. 광범위한 시장 학습이나 수익성 있는 정책을 증명하지 않습니다. 포함된 정규화 source adapter는 다른 시장 feed가 사용하는 공통 진입점입니다. 여러 시장을 지원한다고 주장하려면 provider별 parser와 더 긴 다중 국면 학습·평가를 추가해야 합니다.
+
+## Runtime snapshot status — 2026-09-29 KST
+
+- 마지막 runtime 포함 GitHub 커밋은 `c98ef4c`이며 16:05:57 KST에 저장됐다.
+- live 실행이 이어져 16:07:48 KST 확인 때 다음 tracked 파일이 snapshot 이후 다시 바뀌어 로컬 변경으로 남았다: `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`.
+- SQLite 두 파일은 원본 복사 없이 read-only 온라인 백업으로 확인했다. 둘 다 `PRAGMA integrity_check=ok`였지만 현재 백업 내용은 GitHub snapshot과 달랐다. 현재 replay 백업 13,438,976 bytes, market DB 백업 5,808,128 bytes; GitHub market DB snapshot은 5,767,168 bytes다. 따라서 GitHub는 `c98ef4c` 시점 복구본이며 그 이후 live 기록은 로컬에 남아 있다.
