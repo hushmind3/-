@@ -5,13 +5,14 @@ import csv
 from collections import deque
 import json
 import os
+import sqlite3
 import shutil
 import subprocess
 import sys
 import threading
 import time
 import webbrowser
-from datetime import datetime, time as day_time
+from datetime import datetime, time as day_time, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -27,6 +28,72 @@ def _json(path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
+
+
+def _utc_datetime(value: object) -> datetime | None:
+    if not value:
+        return None
+    try:
+        stamp = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    return stamp.replace(tzinfo=timezone.utc) if stamp.tzinfo is None else stamp.astimezone(timezone.utc)
+
+
+def _agent_progress_health(data_path: Path, state_dir: Path,
+                           process_running: bool) -> dict:
+    """Compare the persisted agent cursor with the newest indexed feed bar."""
+    cursor = _utc_datetime(_json(state_dir / "live_cursor.json").get("last_timestamp"))
+    latest = None
+    lag_bars = None
+    lookup_error = None
+    index_path = data_path.with_suffix(data_path.suffix + ".sqlite3")
+    if index_path.exists():
+        connection = None
+        try:
+            connection = sqlite3.connect(
+                f"{index_path.resolve().as_uri()}?mode=ro", uri=True, timeout=0.5
+            )
+            connection.execute("PRAGMA query_only=ON")
+            cursor_ns = int(cursor.timestamp() * 1_000_000_000) if cursor else -1
+            latest_ns, lag_bars = connection.execute(
+                "SELECT MAX(stamp_ns), COUNT(DISTINCT CASE WHEN stamp_ns > ? "
+                "THEN stamp_ns END) FROM seen",
+                (cursor_ns,),
+            ).fetchone()
+            if latest_ns is not None:
+                latest = datetime.fromtimestamp(latest_ns / 1_000_000_000, timezone.utc)
+        except (OSError, sqlite3.Error) as exc:
+            lookup_error = f"market index unavailable: {type(exc).__name__}"
+        finally:
+            if connection is not None:
+                connection.close()
+
+    lag_seconds = max(0, int((latest - cursor).total_seconds())) if latest and cursor else None
+    if not process_running:
+        health = "stopped"
+        reason = "agent process is stopped"
+    elif lookup_error:
+        health = "unknown"
+        reason = lookup_error
+    elif latest is None or cursor is None:
+        health = "unknown"
+        reason = "feed timestamp or agent cursor is unavailable"
+    elif lag_seconds is not None and lag_seconds > 300:
+        health = "stale"
+        reason = f"agent cursor trails feed by {lag_seconds}s across {lag_bars} bars"
+    else:
+        health = "healthy"
+        reason = "agent cursor is within five minutes of the newest feed bar"
+    return {
+        "status": health,
+        "reason": reason,
+        "latest_feed_timestamp_utc": latest.isoformat() if latest else None,
+        "agent_cursor_timestamp_utc": cursor.isoformat() if cursor else None,
+        "lag_seconds": lag_seconds,
+        "lag_bars": lag_bars,
+        "threshold_seconds": 300,
+    }
 
 
 def _market_group(item: dict) -> str:
@@ -546,15 +613,30 @@ class Supervisor:
                 gpu += f" VRAM {metrics.get('cuda_memory_allocated_bytes',0)/1024**3:.1f}/{metrics['cuda_total_memory_bytes']/1024**3:.1f} GB"
             provider_status=__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime)
             feed_running=bool(self.children.get("feed") and self.children["feed"].poll() is None)
+            agent_process_running=bool(self.children.get("agent") and self.children["agent"].poll() is None)
+            if self.mode == "live":
+                agent_health=_agent_progress_health(data,state,agent_process_running)
+            else:
+                agent_health={"status":"healthy" if agent_process_running else "stopped",
+                              "reason":"mock agent process status" if agent_process_running else "agent process is stopped",
+                              "latest_feed_timestamp_utc":None,"agent_cursor_timestamp_utc":None,
+                              "lag_seconds":None,"lag_bars":None,"threshold_seconds":300}
+            agent_running=(agent_process_running and agent_health["status"]=="healthy")
             feed_metrics["broker_provider"]=provider_status["provider"]
             feed_metrics["provider_environment"]=provider_status["environment"]
             if not feed_running:
                 feed_metrics["broker_connected"]=False
+            status_logs=self.log_tail[-8:]
+            if agent_health["status"] in ("stale","unknown"):
+                alert=f"AGENT ALERT: process {'alive' if agent_process_running else 'stopped'}, progress {agent_health['status']}: {agent_health['reason']}"
+                status_logs=[alert]+status_logs[-7:]
             return {"running": self.run_requested, "stopping": self.stopping,
                     "restarting": self.restart_request is not None,
                     "mode": self.mode, "horizon": self.horizon,
                     "feed_running": feed_running,
-                    "agent_running": bool(self.children.get("agent") and self.children["agent"].poll() is None),
+                    "agent_running": agent_running,
+                    "agent_process_running": agent_process_running,
+                    "agent_health": agent_health,
                     "feed_rows": max(0, rows),
                     "configured_instruments": len(instruments),
                     "markets": _market_overview(instruments,list(latest_decisions.values()),
@@ -585,7 +667,7 @@ class Supervisor:
                     "paper_financials": paper_financials, "paper_account": paper_account, "gpu": gpu,
                     "real_orders_enabled": False,
                     "physical_gpu": self._physical_gpu(),
-                    "logs": "\n".join(self.log_tail[-8:]) or "Broker API is not connected; orders remain OFF."}
+                    "logs": "\n".join(status_logs) or "Broker API is not connected; orders remain OFF."}
 
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,

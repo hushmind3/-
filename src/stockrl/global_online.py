@@ -489,6 +489,10 @@ class OnlineGlobalAgent:
                 validation_state={"status":"discarded","reason":"champion changed during validation"}
                 _atomic_json(validation_state,self.validation_state_path)
         self.metrics["candidate_skip_reason"]="새 paper 경험과 검증 시각을 기다리는 중"
+        # A lineage hold blocks champion promotion only. Older metrics may have
+        # persisted it as a candidate stage; that must not disable learning.
+        if self.metrics.get("candidate_stage") == "promotion_held":
+            self.metrics["candidate_stage"] = "waiting"
         # New observations are journaled in bounded SQLite replay and trigger candidate learning.
         self.last_train_replay_size=int(self.metrics.get("last_train_replay_size",0))
         self.validation_meta_path=self.state_dir/"validation_config.json"
@@ -1037,10 +1041,6 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
-            if self.promotion_lineage_hold or self.metrics.get("candidate_stage")=="promotion_held":
-                self.metrics["candidate_skip_reason"]=(
-                    "champion lineage is unresolved; candidate promotion and retraining are held")
-                continue
             new_experiences=int(self.metrics.get("paper_experiences_since_candidate",0))
             self.metrics["candidate_replay_since_last_update"]=new_experiences
             # Do not spend GPU time on legacy isolated-action samples. The
@@ -1369,8 +1369,13 @@ class OnlineGlobalAgent:
             self.metrics["promotion_blocked_reason"]=reason
             self.metrics["candidate_validation_error"]=reason
             self.metrics["candidate_training"]=False
-            self.metrics["candidate_stage"]="promotion_held"
-            self.metrics["candidate_skip_reason"]=reason
+            self.metrics["candidate_stage"]="waiting"
+            self.metrics["candidate_skip_reason"]=(
+                "candidate learning remains enabled; champion promotion is held by lineage")
+            # Keep the trained candidate checkpoint. Clearing only the in-memory
+            # validation object lets later replay experiences start another
+            # candidate cycle without opening the champion promotion gate.
+            self.candidate=None
             self.validation_active=False
             self.metrics.setdefault("candidate_gate_history",[]).append({
                 "time_utc":datetime.now(timezone.utc).isoformat(),"applied":False,
@@ -1424,7 +1429,8 @@ class OnlineGlobalAgent:
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
                           source_champion_sha256:str)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
-        promote=(validation_bars>=self.validation_window_bars
+        promote=(not self.promotion_lineage_hold
+                 and validation_bars>=self.validation_window_bars
                  and source_champion_sha256.upper()==PROTECTED_PROMOTION_CHAMPION_SHA256
                  and self._sha256_file(self.champion_path)==source_champion_sha256
                  and should_promote(score_new,score_old,1e-9))
@@ -1473,8 +1479,7 @@ class OnlineGlobalAgent:
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
-          "candidate_learning_enabled":(not self.promotion_lineage_hold and
-                                         metrics.get("candidate_stage")!="promotion_held"),
+          "candidate_learning_enabled":True,
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
           "candidate_batch_size":self.batch_size,
@@ -1487,8 +1492,7 @@ class OnlineGlobalAgent:
           "candidate_validation_queue_delay_limit_seconds":self.validation_queue_delay_limit_seconds,
           "candidate_replay_since_last_update":int(self.metrics.get("candidate_replay_since_last_update",0)),
           "last_train_replay_size":self.last_train_replay_size,
-          "candidate_stage":("promotion_held" if metrics.get("candidate_stage")=="promotion_held" else
-                             "sequential_paper_validation" if self.validation_active else
+          "candidate_stage":("sequential_paper_validation" if self.validation_active else
                              "training" if self.metrics.get("candidate_training") else "waiting"),
           "validation_window_dates":len(self.validation_dates),
           "portfolio_validation_window_dates":len(self.portfolio_validation_dates),
