@@ -25,6 +25,7 @@ from .paper_account import PaperAccount
 
 REWARD_VERSION="symbol_and_portfolio_v4"
 PAPER_EXPLORATION_EPSILON=0.05
+ONLINE_TRAINABLE_BLOCKS=4
 REWARD_DEFINITION=("symbol_and_portfolio_v4: sampled-policy action probabilities with clipped importance weighting; "
                    "per-symbol net PnL trains action/allocation contribution; "
                    "normalized whole-account net equity change is a separate portfolio-value target")
@@ -1583,11 +1584,44 @@ class OnlineGlobalAgent:
             try: torch.cuda.empty_cache()
             except RuntimeError: pass
 
+    def _configure_candidate_trainables(self,candidate):
+        """Fine-tune the upper transformer blocks and small policy adapters only."""
+        backbone=getattr(candidate,"backbone",candidate)
+        for parameter in candidate.parameters():
+            parameter.requires_grad_(False)
+        blocks=list(getattr(backbone,"blocks",()))
+        trainable_blocks=blocks[-ONLINE_TRAINABLE_BLOCKS:]
+        modules=list(trainable_blocks)
+        modules.extend(getattr(backbone,name,None) for name in
+                       ("final_norm","policy_head","value_head"))
+        modules.extend(getattr(candidate,name,None) for name in
+                       ("context_policy","context_value","portfolio_action",
+                        "portfolio_allocation","portfolio_cash"))
+        for module in modules:
+            if module is not None:
+                for parameter in module.parameters():
+                    parameter.requires_grad_(True)
+        trainable=[parameter for parameter in candidate.parameters() if parameter.requires_grad]
+        if not trainable:
+            raise RuntimeError("candidate has no trainable parameters")
+        self.metrics["candidate_trainable_transformer_blocks"]=len(trainable_blocks)
+        self.metrics["candidate_trainable_parameter_count"]=sum(
+            parameter.numel() for parameter in trainable)
+        self.metrics["candidate_total_parameter_count"]=sum(
+            parameter.numel() for parameter in candidate.parameters())
+        return trainable
+
     def _train_candidate(self):
         from datetime import datetime, timezone
+        training_started=time.perf_counter()
         trigger_experience_count=int(self.metrics.get("paper_experiences_since_candidate",0))
         self.metrics["candidate_training"]=True
         self.metrics["candidate_skip_reason"] = None
+        self.metrics["last_candidate_compute_seconds"]=0.0
+        self.metrics["last_candidate_step_compute_seconds"]=0.0
+        self.metrics["last_candidate_total_seconds"]=0.0
+        self.metrics["last_candidate_peak_allocated_bytes"]=None
+        self.metrics["last_candidate_peak_reserved_bytes"]=None
         with self.lock: source_champion=self.champion
         candidate_path=self.model_dir/"candidate.pt"
         self.candidate=None
@@ -1607,8 +1641,10 @@ class OnlineGlobalAgent:
         # is reset and is never the starting point of the next attempt.
         self.candidate.load_state_dict(source_champion.state_dict())
         original=self.champion
-        candidate=self.candidate.train(); opt=torch.optim.AdamW(
-            candidate.parameters(),lr=self.lr,weight_decay=.01,
+        candidate=self.candidate.train()
+        trainable_parameters=self._configure_candidate_trainables(candidate)
+        opt=torch.optim.AdamW(
+            trainable_parameters,lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8,foreach=False)
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
@@ -1616,15 +1652,23 @@ class OnlineGlobalAgent:
             training_baseline_allocated=int(torch.cuda.memory_allocated(self.device))
         else:
             training_baseline_allocated=0
-        elapsed=[]
+        elapsed=[]; compute_elapsed=[]
         candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
         sampled_ids=set()
+        with self.replay.lock:
+            replay_items=list(self.replay.items)
+        incompatible_ids={id(experience) for experience in replay_items
+            if ((experience.portfolio_state is not None and
+                 np.shape(experience.portfolio_state)!=(experience.features.shape[1],8)) or
+                (experience.account_state is not None and
+                 np.shape(experience.account_state)!=(8,)))}
         self.metrics["last_candidate_optimizer_steps"]=0
         self.metrics["last_candidate_samples_trained"]=0
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
-            batch=self.replay.sample(self.batch_size,exclude_ids=sampled_ids)
+            batch=self.replay.sample(self.batch_size,
+                exclude_ids=sampled_ids|incompatible_ids)
             if not batch: break
             sampled_ids.update(id(e) for e in batch)
             candidate_sample_keys.update((e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
@@ -1632,6 +1676,12 @@ class OnlineGlobalAgent:
             self.metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in batch)
             self.metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in batch)
             ti=time.perf_counter(); opt.zero_grad(set_to_none=True); valid_samples=0; loss_values=[]
+            if self.device.type=="cuda":
+                compute_start=torch.cuda.Event(enable_timing=True)
+                compute_end=torch.cuda.Event(enable_timing=True)
+                compute_start.record()
+            else:
+                compute_ti=time.perf_counter()
             use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
             # Accumulate the requested replay batch as one optimizer update,
             # while holding only one sequence's activations on the 8 GB GPU.
@@ -1694,12 +1744,26 @@ class OnlineGlobalAgent:
             if not valid_samples:
                 continue
             nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
+            if self.device.type=="cuda":
+                compute_end.record()
+            else:
+                compute_elapsed.append(time.perf_counter()-compute_ti)
             candidate_samples+=valid_samples
             used_experiences.extend(successful_batch)
             self.metrics["update_losses"].append(float(np.mean(loss_values)))
             self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
-            if self.device.type=="cuda": torch.cuda.synchronize(self.device)
+            if self.device.type=="cuda":
+                torch.cuda.synchronize(self.device)
+                compute_elapsed.append(compute_start.elapsed_time(compute_end)/1000.0)
+                self.metrics["last_candidate_peak_allocated_bytes"]=int(
+                    torch.cuda.max_memory_allocated(self.device))
+                self.metrics["last_candidate_peak_reserved_bytes"]=int(
+                    torch.cuda.max_memory_reserved(self.device))
             elapsed.append(time.perf_counter()-ti); self.steps+=1
+            self.metrics["last_candidate_compute_seconds"]=float(sum(compute_elapsed))
+            self.metrics["last_candidate_step_compute_seconds"]=(
+                float(sum(compute_elapsed)/len(compute_elapsed)) if compute_elapsed else 0.0)
+            self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
         self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
         self.metrics["last_candidate_update_seconds"]=float(sum(elapsed))
         if self.device.type=="cuda":
@@ -1768,6 +1832,7 @@ class OnlineGlobalAgent:
             self.metrics["paper_experiences_since_candidate"])
         self.metrics["candidate_training"]=False
         self.metrics["candidate_stage"]="sequential_paper_validation"
+        self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
