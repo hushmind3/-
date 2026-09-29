@@ -26,9 +26,6 @@ data/cache/
 /runtime-global-korea-epoch1/
 /runtime-global-korea-epoch1-compact/
 
-# Preserve this project's complete local operating state in GitHub, except weights.
-!runtime-global-korea-live/
-!runtime-global-korea-live/**
-!runtime-global-korea-live/live/agent/
-!runtime-global-korea-live/live/agent/**
-runtime-global-korea-live/**/*.pt
+
+# Live runtime data stays local; it changes while the agent runs.
+runtime-global-korea-live/
