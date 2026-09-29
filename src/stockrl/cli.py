@@ -205,8 +205,8 @@ def main() -> None:
     go.add_argument("--window",type=int,default=128); go.add_argument("--horizon",type=str,default="1bar",
       help="outcome horizon: 30s, 1m, 5m, 1bar, 5bars. Durations resolve to the next observed bar at/after the target time.")
     go.add_argument("--fee",type=float,default=.001); go.add_argument("--slippage-bps",type=float,default=1.0)
-    go.add_argument("--min-replay",type=int,default=8); go.add_argument("--batch-size",type=int,default=1)
-    go.add_argument("--updates",type=int,default=1); go.add_argument("--lr",type=float,default=2e-6)
+    go.add_argument("--min-replay",type=int,default=8); go.add_argument("--batch-size",type=int,default=2)
+    go.add_argument("--updates",type=int,default=2); go.add_argument("--lr",type=float,default=2e-6)
     go.add_argument("--replay-capacity",type=int,default=4096); go.add_argument("--max-observations",type=int,default=None)
     go.add_argument("--teacher-decisions",default=None,help="optional normalized CSV with date,action from public-teacher inference")
     go.add_argument("--teacher-replay",default=None,help="optional saved warm-start replay; its sampling share decays to zero after 10k self outcomes")
@@ -216,7 +216,7 @@ def main() -> None:
     go.add_argument("--poll-seconds",type=float,default=5.0)
     go.add_argument("--initial-lookback-bars",type=int,default=0,
                     help="on first boot only, paper-process this many latest existing bars before following new ones")
-    go.add_argument("--candidate-every",type=int,default=4096,
+    go.add_argument("--candidate-every",type=int,default=512,
                     help="launch one asynchronous candidate update after this many additional replay experiences")
     go.add_argument("--initial-champion",default=None,
                     help="use this initial champion when absent, or migrate an incompatible legacy checkpoint safely")

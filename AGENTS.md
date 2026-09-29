@@ -18,5 +18,5 @@ This instruction applies to every agent and contributor working in this project.
 - Store each market's StockRL runtime under the project root at `runtime/markets/<market>/live` (for example, `runtime/markets/korea/live` or `runtime/markets/nasdaq/live`).
 - Launchers must reject runtime paths outside this project instead of silently creating them.
 - Update `README.md` whenever project paths, runtime behavior, or operating rules change.
-- Never promote a candidate while the champion lineage is unresolved. The protected SHA256 is `2D0D45702C30EE167B0E982628D21D48CD54C00F572495B06585E326AC37797A`; completing 64 validation bars does not lift this hold.
+- Treat the current live champion as the baseline: SHA256 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`. Persist the baseline under the project runtime and advance it only together with a candidate that passes at least 64 identical future paper-account bars with higher net return. Any other champion hash change holds promotion.
 - Keep runtime state local under the project directory and exclude it from Git; exclude model weight files (`.pt`, `.pth`, `.ckpt`, `.safetensors`) as well. Historical commits may still contain older runtime snapshots.

@@ -22,7 +22,7 @@ def main() -> None:
         # A 0.5B update is deliberately amortized over a larger experience
         # tranche so the observer can keep up with one-minute bars. The
         # candidate learner remains asynchronous and is still automatic.
-        candidate_every=4096, fee=0.001, auto_start=not dashboard_only,
+        candidate_every=512, fee=0.001, auto_start=not dashboard_only,
         open_browser=not server_only,
         horizon="1m", config="configs/live_symbols_korea.json",
         initial_champion=str(initial_champion), model_dir=str(model_dir),

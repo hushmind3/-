@@ -47,7 +47,7 @@ class PaperAccount:
             "books": {currency: {
                 "initial_cash": seed, "cash": seed, "positions": {}, "marks": {},
                 "fees": 0.0, "slippage": 0.0, "spread": 0.0,
-                "sell_tax": 0.0, "realized_pnl": 0.0, "trade_count": 0,
+                "sell_tax": 0.0, "realized_pnl": 0.0, "symbol_realized_pnl": {}, "trade_count": 0,
             } for currency, seed in SEED_CASH.items()},
         }
 
@@ -68,6 +68,18 @@ class PaperAccount:
     def normalized_equity(self) -> float:
         return float(sum(self._equity(c) / max(float(self.state["books"][c]["initial_cash"]), 1e-9)
                          for c in SEED_CASH))
+
+    def symbol_net_pnl(self, symbol: str) -> float:
+        """Realized plus open-position PnL for one symbol, normalized by seed cash."""
+        for book in self.state["books"].values():
+            realized = float(book.get("symbol_realized_pnl", {}).get(symbol, 0.0))
+            position = book["positions"].get(symbol)
+            unrealized = 0.0
+            if position:
+                mark = float(book["marks"].get(symbol, position["average_cost"]))
+                unrealized = int(position["quantity"]) * (mark - float(position["average_cost"]))
+            return (realized + unrealized) / max(float(book["initial_cash"]), 1e-9)
+        return 0.0
 
     def model_inputs(self, panel, index: int):
         """Return per-symbol [N,8] and account [8] state for the portfolio heads."""
@@ -118,7 +130,7 @@ class PaperAccount:
         execution_cost = half_spread + self.slippage
         position = book["positions"].get(symbol)
         if action == "BUY":
-            if position or budget <= 0:
+            if budget <= 0:
                 return
             quantity = math.floor(min(float(budget), float(book["cash"])) /
                                   (price * (1.0 + execution_cost) * (1.0 + self.fee)))
@@ -130,14 +142,23 @@ class PaperAccount:
             if notional + fee > book["cash"] + 1e-8:
                 return
             book["cash"] -= notional + fee
-            book["positions"][symbol] = {"quantity": quantity,
-                                          "average_cost": (notional + fee) / quantity}
+            if position:
+                old_quantity = int(position["quantity"])
+                old_cost = old_quantity * float(position["average_cost"])
+                position["quantity"] = old_quantity + quantity
+                position["average_cost"] = (old_cost + notional + fee) / (old_quantity + quantity)
+            else:
+                book["positions"][symbol] = {"quantity": quantity,
+                                              "average_cost": (notional + fee) / quantity}
             tax = 0.0
             realized = 0.0
         elif action == "SELL":
             if not position:
                 return  # cash-only: no naked short sale
-            quantity = int(position["quantity"])
+            requested = int(budget) if budget > 0 else int(position["quantity"])
+            quantity = min(int(position["quantity"]), requested)
+            if quantity <= 0:
+                return
             fill_price = price * max(0.0, 1.0 - execution_cost)
             notional = quantity * fill_price
             fee = notional * self.fee
@@ -145,7 +166,11 @@ class PaperAccount:
             realized = notional - fee - tax - quantity * float(position["average_cost"])
             book["cash"] += notional - fee - tax
             book["realized_pnl"] += realized
-            del book["positions"][symbol]
+            symbol_realized = book.setdefault("symbol_realized_pnl", {})
+            symbol_realized[symbol] = float(symbol_realized.get(symbol, 0.0)) + realized
+            position["quantity"] = int(position["quantity"]) - quantity
+            if position["quantity"] <= 0:
+                del book["positions"][symbol]
         else:
             return
         book["trade_count"] += 1
@@ -214,13 +239,29 @@ class PaperAccount:
             if currency is None:
                 continue
             action = int(probabilities[j].argmax())
-            owned = symbol in self.state["books"][currency]["positions"]
-            if action == 0 and owned:
-                self.state["pending"][symbol] = {"date": timestamp, "action": "SELL"}
-            elif action == 2 and not owned:
-                score = (max(float(probabilities[j, 2]), 0.0) if allocation is None
-                         else full_weights[j] if full_weights is not None else 0.0)
-                buys[currency].append((symbol, max(score, 0.0)))
+            book = self.state["books"][currency]
+            position = book["positions"].get(symbol)
+            current_quantity = int(position["quantity"]) if position else 0
+            if full_weights is None:
+                if action == 0 and current_quantity:
+                    self.state["pending"][symbol] = {"date": timestamp, "action": "SELL"}
+                elif action == 2:
+                    buys[currency].append((symbol, max(float(probabilities[j, 2]), 0.0)))
+                continue
+            if action == 1:
+                continue
+            price = float(panel.closes[index, j])
+            equity = max(0.0, self._equity(currency))
+            current_weight = current_quantity * price / equity if equity > 0 else 0.0
+            model_weight = full_weights[j]
+            target_weight = max(current_weight, model_weight) if action == 2 else min(current_weight, model_weight)
+            target_quantity = max(0, int(equity * target_weight / price))
+            delta = target_quantity - current_quantity
+            if delta > 0:
+                buys[currency].append((symbol, delta * price))
+            elif delta < 0:
+                self.state["pending"][symbol] = {"date": timestamp, "action": "SELL",
+                                                  "budget": -delta}
         for currency, signals in buys.items():
             cash = float(self.state["books"][currency]["cash"])
             if cash <= 0:
@@ -232,16 +273,18 @@ class PaperAccount:
                 total=sum(score for _,score in valid_signals)
                 targets=[(symbol,cash*score/total) for symbol,score in valid_signals]
             else:
-                # Allocation is applied to this currency's own current equity;
-                # KRW and USD balances are not converted or transferred.
-                equity=max(0.0,self._equity(currency))
-                targets=[(symbol,equity*score) for symbol,score in valid_signals]
+                # These are positive target-weight deltas. KRW and USD remain
+                # separate; proceeds from queued sells are not spent early.
+                targets=valid_signals
                 target_total=sum(budget for _,budget in targets)
                 # Enforce one shared cash cap while preserving the model's
                 # relative weights across this currency's BUY orders.
                 scale=min(1.0,cash/target_total) if target_total>0 else 0.0
                 targets=[(symbol,budget*scale) for symbol,budget in targets]
             for symbol,budget in targets:
+                existing=self.state["pending"].get(symbol)
+                if existing and existing.get("date")==timestamp and existing.get("action")=="SELL":
+                    continue
                 self.state["pending"][symbol] = {
                     "date": timestamp, "action": "BUY", "budget": budget}
 
@@ -254,7 +297,7 @@ class PaperAccount:
                 "holdings_value": equity - float(book["cash"])}
         return {**self.state, "books": books,
                 "execution": "next completed bar close; cash-only equities and ETFs",
-                "allocation": "model cash-inclusive portfolio_allocation head; legacy fallback is BUY probability",
+                "allocation": "model cash-inclusive target weights; action-gated partial buys and sells",
                 "kr_sell_tax_assumption": KR_SELL_TAX_ASSUMPTION}
 
     def save(self) -> None:

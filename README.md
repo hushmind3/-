@@ -1,10 +1,22 @@
 # StockRL 금융매매 모델
 
+## 현재 운영 기준 (2026-09-29)
+
+- 현재 champion SHA256은 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`이며 candidate는 이 champion의 복사본에서 시작한다. champion은 candidate 학습 중 바꾸지 않는다. candidate는 같은 미학습 paper-account 구간의 비용 차감 순손익이 더 높을 때만 승격한다.
+- 2026-09-29 재가동 때 과거 구간은 따라잡지 않았다. 기존 replay SQLite 하나 안의 경험 4,096건, window 671건, pending 1,532건을 비우고 같은 DB를 재사용했다. cursor를 당시 feed 최신 시각 `2026-09-29T12:28:00Z`로 옮겼으며 그 뒤 새 feed만 관찰한다. replay 파일을 추가 생성하지 않았다.
+- 종목별 실현·평가 손익 변화는 해당 종목 action reward로 저장한다. 계좌 전체 순손익 변화는 같은 시각당 한 건의 별도 portfolio transition으로 저장해 allocation 학습에 쓴다.
+- paper account는 모델 목표 비중과 BUY/SELL 신호에 따라 보유분을 추가매수하거나 일부 매도할 수 있다. 체결은 다음 완료 bar에서 비용을 반영해 처리한다.
+- live feed CSV는 시작 때 한 번 읽고 이후 완성된 append 행만 추가로 읽는다. 재시작 시 기존 cursor를 이어서 처리하며, CSV가 압축·교체되어 cursor보다 오래된 데이터만 남으면 건너뛰지 않고 history gap으로 멈춘다.
+- 운영 경로는 프로젝트 내부 `runtime/markets/<market>/live`; 모델 폴더에는 `champion.pt`, `candidate.pt` 두 파일만 둔다. replay와 account state는 runtime에 두며 Git에는 올리지 않는다.
+- 실주문은 계속 OFF다. provider가 연결돼 있어도 paper account 체결만 수행한다.
+
+아래의 이전 실험·복구 메모에 적힌 SHA, batch 설정, candidate 상태는 각각 해당 기록 당시 값이다. 현재 운영 기준과 다르면 이 절의 내용을 따른다.
+
 이 프로젝트의 목표는 특정 trader나 고정 전략을 영구 모방하는 것이 아니라, 시장 경험과 비용 차감 순손익으로 정책을 발전시키는 자율 트레이딩 에이전트다. 모델은 시장·종목·시간축·포트폴리오 상태를 바탕으로 종목 선택, BUY/HOLD/SELL, 자금 배분, 포지션 유지·교체·청산을 학습한다.
 
 수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
 
-운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. source는 결과 대기 중인 `pending` 경험도 replay SQLite에 저장하고, 결과 반영과 pending 제거를 한 DB transaction으로 처리한다. 다만 현재 실행 중인 구버전 agent의 메모리 경험은 아직 저장되지 않았다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
+운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. 결과를 기다리는 새 경험도 같은 replay SQLite에 저장해 재시작 후 이어간다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
 
 
 ## 현재 운영 기준 및 2026-09-29 복구 기록

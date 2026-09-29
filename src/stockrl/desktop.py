@@ -218,7 +218,7 @@ class GlobalAgentWindow(QMainWindow):
         agent_args=["-u","-m","stockrl","global-online","--data",str(data),"--state-dir",str(state),
             "--model-dir",str(self.model_dir),
             "--follow","--poll-seconds","1","--initial-lookback-bars","128","--candidate-every",str(self.candidate_every),
-            "--fee",str(self.fee),"--device",self.device]
+            "--batch-size","2","--updates","2","--fee",str(self.fee),"--device",self.device]
         seed=self.model_dir/"champion.pt"
         if seed.is_file(): agent_args.extend(["--initial-champion",str(seed)])
         self.agent_proc=self._new_process("global-online",agent_args)
@@ -257,7 +257,7 @@ class GlobalAgentWindow(QMainWindow):
             args=["-u","-m","stockrl","global-online","--data",str(data),"--state-dir",str(state),
                   "--model-dir",str(self.model_dir),
                   "--follow","--poll-seconds","1","--initial-lookback-bars","128","--candidate-every",str(self.candidate_every),
-                  "--fee",str(self.fee),"--device",self.device]
+                  "--batch-size","2","--updates","2","--fee",str(self.fee),"--device",self.device]
             seed=self.model_dir/"champion.pt"
             if seed.is_file(): args.extend(["--initial-champion",str(seed)])
             self.agent_proc=self._new_process("global-online",args)

@@ -242,8 +242,9 @@ class GlobalMarketPanel:
                  symbol_map: dict[str, int] | None = None,
                  context_stale_seconds: int = 60,
                  recent_timestamps: int | None = None,
-                 active_stale_seconds: int | None = None):
-        raw = pd.read_csv(path)
+                 active_stale_seconds: int | None = None,
+                 raw_frame=None):
+        raw = pd.read_csv(path) if raw_frame is None else raw_frame.copy()
         self.recent_cutoff = None
         if recent_timestamps is not None and recent_timestamps > 0 and len(raw):
             stamps = pd.to_datetime(raw["date"], errors="raise", utc=True)

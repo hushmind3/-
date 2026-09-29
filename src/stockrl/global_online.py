@@ -9,7 +9,7 @@ from collections import deque, OrderedDict
 from contextlib import closing
 from dataclasses import asdict, dataclass
 from pathlib import Path
-import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue
+import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io
 import re
 import hashlib
 
@@ -23,11 +23,66 @@ from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTr
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
 from .paper_account import PaperAccount
 
-REWARD_VERSION="net_trade_v2"
-PROTECTED_PROMOTION_CHAMPION_SHA256=(
-    "2D0D45702C30EE167B0E982628D21D48CD54C00F572495B06585E326AC37797A")
-REWARD_DEFINITION=("net_trade_v2: one equal-notional isolated horizon trade; BUY/SELL realize signed price return, "
-                   "minus entry+exit fees and slippage; HOLD remains cash")
+REWARD_VERSION="symbol_and_portfolio_v3"
+REWARD_DEFINITION=("symbol_and_portfolio_v3: per-symbol realized plus unrealized net PnL is the action reward; "
+                   "whole-account net equity change is stored once per timestamp for allocation learning")
+
+
+class IncrementalMarketCSV:
+    """Read an append-only feed once, then parse only complete appended rows."""
+    def __init__(self, path: str | Path, retain_timestamps: int = 4096):
+        self.path=Path(path); self.retain_timestamps=retain_timestamps
+        self.frame=None; self.offset=0; self.partial=b""; self.header=b""; self.fingerprint=None
+
+    def _fingerprint(self):
+        stat=self.path.stat()
+        with self.path.open("rb") as stream:
+            prefix=stream.read(2048)
+        return stat.st_size,stat.st_mtime_ns,getattr(stat,"st_ino",0),hashlib.sha256(prefix).digest()
+
+    def _trim(self, frame):
+        import pandas as pd
+        if frame.empty or "date" not in frame or "symbol" not in frame:
+            return frame
+        stamps=pd.to_datetime(frame["date"],utc=True,errors="coerce")
+        unique=stamps.dropna().drop_duplicates().sort_values()
+        if len(unique)<=self.retain_timestamps:
+            return frame
+        cutoff=unique.iloc[-self.retain_timestamps]
+        recent=frame.loc[stamps>=cutoff]
+        reference=~frame.get("asset_class",pd.Series("equity",index=frame.index)).astype(str).str.casefold().eq("equity")
+        carry=frame.loc[(stamps<cutoff)&reference].groupby("symbol",sort=False).tail(20)
+        return pd.concat((carry,recent),ignore_index=True).sort_values(
+            ["date","symbol"],kind="stable").reset_index(drop=True)
+
+    def refresh(self):
+        import pandas as pd
+        signature=self._fingerprint()
+        reset=(self.frame is None or signature[0]<self.offset or
+               (self.fingerprint is not None and signature[2:]!=self.fingerprint[2:]))
+        if reset:
+            data=self.path.read_bytes()
+            end=data.rfind(b"\n")+1
+            complete=data[:end]
+            self.partial=data[end:]
+            self.header=complete.splitlines(keepends=True)[0] if complete else b""
+            self.frame=pd.read_csv(io.BytesIO(complete)) if complete else pd.DataFrame()
+            self.offset=len(data)
+            self.frame=self._trim(self.frame)
+        elif signature[0]>self.offset:
+            with self.path.open("rb") as stream:
+                stream.seek(self.offset); appended=stream.read()
+            self.offset+=len(appended)
+            combined=self.partial+appended
+            end=combined.rfind(b"\n")+1
+            complete=combined[:end]; self.partial=combined[end:]
+            if complete:
+                fresh=pd.read_csv(io.BytesIO(self.header+complete))
+                self.frame=pd.concat((self.frame,fresh),ignore_index=True)
+                self.frame=self.frame.drop_duplicates(["date","symbol"],keep="last")
+                self.frame=self._trim(self.frame)
+        self.fingerprint=signature
+        return self.frame,signature
 
 
 @dataclass
@@ -43,7 +98,7 @@ class Experience:
     timestamp: str
     source: str = "paper"
     regime: float = 0.0
-    reward_version: str = "net_trade_v2"
+    reward_version: str = "symbol_and_portfolio_v3"
     market_context: np.ndarray | None = None
     portfolio_state: np.ndarray | None = None
     account_state: np.ndarray | None = None
@@ -175,6 +230,12 @@ class GlobalReplayBuffer:
         with self.lock: self.paper_outcomes_seen+=1
     def add(self, exp: Experience, pending_ack: tuple[str,str]|None=None) -> None:
         with self.lock:
+            if exp.portfolio_transition and any(
+                    row.portfolio_transition and row.timestamp==exp.timestamp for row in self.items):
+                if pending_ack is not None:
+                    with closing(self._connect()) as db:
+                        with db: db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
+                return
             row_id=self._journal_add(exp,pending_ack)
             self.items.append(exp)
             if row_id is not None:self.row_ids[id(exp)]=row_id
@@ -218,12 +279,22 @@ class GlobalReplayBuffer:
         recent=paper[-max(int(len(paper)*.2),1):]
         older=paper[:-len(recent)] or paper
         extreme=[x for x in paper if abs(x.regime)>.025 or abs(x.reward)>.02] or paper
-        chosen=[]
+        chosen=[]; chosen_ids=set()
         for _ in range(n):
-            if teachers and (not valid_paper or self.rng.random()<teacher_fraction):
-                chosen.append(self.rng.choice(teachers)); continue
-            bucket=self.rng.choices((recent,older,extreme),weights=(.5,.3,.2),k=1)[0]
-            chosen.append(self.rng.choice(bucket))
+            use_teacher=bool(teachers and (not valid_paper or self.rng.random()<teacher_fraction))
+            pools=[teachers] if use_teacher else [recent,older,extreme]
+            available=[[x for x in pool if id(x) not in chosen_ids] for pool in pools]
+            available=[pool for pool in available if pool]
+            if not available:
+                available=[[x for x in items if id(x) not in chosen_ids]]
+            if not available[0]:
+                break
+            if use_teacher:
+                selected=self.rng.choice(available[0])
+            else:
+                bucket=self.rng.choices(available,weights=(.5,.3,.2)[:len(available)],k=1)[0]
+                selected=self.rng.choice(bucket)
+            chosen.append(selected); chosen_ids.add(id(selected))
         return chosen
     def discard(self, experiences: list[Experience]) -> int:
         """Drop examples that a successful candidate update actually used."""
@@ -394,7 +465,9 @@ class OnlineGlobalAgent:
         self.max_pending_age_seconds=30*86400
         self.fee=fee; self.slippage=slippage_bps/10_000
         self.min_replay=min_replay; self.batch_size=batch_size; self.updates_per_candidate=updates_per_candidate
-        self.candidate_interval=max(1,candidate_interval)
+        # Keep the live learner responsive while training from a real replay
+        # minibatch; UI settings may request a shorter interval.
+        self.candidate_interval=max(1,min(int(candidate_interval),512))
         self.min_validation_dates=0
         self.lr=lr; self.seed=seed; self.lock=threading.RLock(); self.stop=threading.Event()
         self.replay=GlobalReplayBuffer(capacity,seed,self.state_dir/"replay.sqlite3")
@@ -472,13 +545,36 @@ class OnlineGlobalAgent:
                 self.metrics.update(json.loads(metrics_path.read_text(encoding="utf-8")))
             except (OSError,json.JSONDecodeError):
                 pass
+        prior_reward_definition=self.metrics.get("reward_definition")
+        if prior_reward_definition!=REWARD_DEFINITION:
+            # Counts from the previous account-wide reward are not eligible to
+            # open a training cycle for the new symbol-level reward schema.
+            self.metrics["paper_experiences_since_candidate"]=0
+            self.metrics["reward_schema_reset_from"]=prior_reward_definition
+        self.metrics["reward_definition"]=REWARD_DEFINITION
         for key in ("update_losses","update_seconds","weight_delta_l1"):
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
-        self.promotion_lineage_hold=(
-            self._sha256_file(self.champion_path).upper()!=PROTECTED_PROMOTION_CHAMPION_SHA256)
+        self.promotion_baseline_path=self.state_dir/"promotion_baseline.json"
+        current_champion_sha=self._sha256_file(self.champion_path).upper()
+        try:
+            saved_baseline=json.loads(self.promotion_baseline_path.read_text(encoding="utf-8"))
+            self.protected_champion_sha256=str(saved_baseline["sha256"]).upper()
+        except (OSError,ValueError,KeyError,TypeError):
+            # The user selected the currently installed champion as the new
+            # baseline; persist that decision once for future restarts.
+            self.protected_champion_sha256=current_champion_sha
+            _atomic_json({"sha256":current_champion_sha,"set_reason":"current champion selected as baseline"},
+                         self.promotion_baseline_path)
+        self.promotion_lineage_hold=current_champion_sha!=self.protected_champion_sha256
         if self.promotion_lineage_hold:
             self.metrics["promotion_blocked_reason"]=(
                 "champion lineage unresolved: current SHA256 does not match the protected reference")
+        elif (str(self.metrics.get("promotion_blocked_reason", "")).startswith(
+                ("champion lineage unresolved", "promotion held: champion lineage",
+                 "sequential paper-account validator is not implemented",
+                 "순차 paper-account 검증기가 구현되지 않아 자동 승급을 막고 있습니다."))):
+            self.metrics["promotion_blocked_reason"]=None
+            self.metrics["candidate_validation_error"]=None
         self.metrics.setdefault("paper_experiences_seen",
                                 int(self.metrics.get("paper_examples_trained",0)))
         self.replay.paper_outcomes_seen=int(self.metrics["paper_experiences_seen"])
@@ -702,7 +798,7 @@ class OnlineGlobalAgent:
                     else abs(float(panel.features[dec["index"],i,6])))
             self.replay.add(Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                 dec["valid_mask"],i,action,float(reward),dec["timestamp"],"paper",max(regime,abs(forward)),
-                market_context=dec.get("market_context")),
+                reward_version="net_trade_v2",market_context=dec.get("market_context")),
                 pending_ack=("regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
         return keep
 
@@ -716,7 +812,7 @@ class OnlineGlobalAgent:
         if not pending:
             return pending
         now = float(self.paper_account.normalized_equity())
-        keep=[]
+        keep=[]; account_transition_added=set()
         for dec in pending:
             stamp=np.datetime64(dec["timestamp"]); current=panel.dates[end_index]
             if float((current-stamp)/np.timedelta64(1,"s"))>self.max_pending_age_seconds:
@@ -736,8 +832,9 @@ class OnlineGlobalAgent:
                 matured=current>=stamp+np.timedelta64(self.horizon_amount,"s")
             if not matured:
                 keep.append(dec); continue
-            reward = now - float(dec.get("equity_before", now))
-            self.metrics["paper_account_reward"] = float(self.metrics.get("paper_account_reward", 0.0)) + reward
+            account_reward = now - float(dec.get("equity_before", now))
+            symbol_reward = (self.paper_account.symbol_net_pnl(symbol)
+                             - float(dec.get("symbol_pnl_before", 0.0)))
             if dec.get("promotion_holdout",False):
                 self.metrics["promotion_validation_outcomes"] = int(
                     self.metrics.get("promotion_validation_outcomes",0))+1
@@ -746,11 +843,10 @@ class OnlineGlobalAgent:
             entry=float(dec.get("entry_price",0.0)); exit_price=float(panel.closes[end_index,symbol_ix])
             forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
             exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(reward),
-                    dec["timestamp"],"paper_account",float(dec.get("regime",0.0)),
+                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),
+                    dec["timestamp"],"paper_account_symbol",float(dec.get("regime",0.0)),
                     market_context=dec.get("market_context"), portfolio_state=dec.get("portfolio_state"),
-                    account_state=dec.get("account_state"), portfolio_reward=float(reward),
-                    portfolio_transition=True,forward_return=forward_return)
+                    account_state=dec.get("account_state"),forward_return=forward_return)
             if dec.get("is_validation",False):
                 self._append_validation(self.portfolio_validation,self.portfolio_validation_dates,
                                         exp.timestamp,exp)
@@ -758,12 +854,25 @@ class OnlineGlobalAgent:
             else:
                 self.replay.add(exp,pending_ack=("portfolio",
                     f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
+                timestamp=dec["timestamp"]
+                if timestamp not in account_transition_added:
+                    account_transition_added.add(timestamp)
+                    account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
+                        dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(account_reward),timestamp,
+                        "paper_account_portfolio",float(dec.get("regime",0.0)),
+                        market_context=dec.get("market_context"),portfolio_state=dec.get("portfolio_state"),
+                        account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
+                        portfolio_transition=True,forward_return=forward_return)
+                    self.replay.add(account_exp)
+                    self.metrics["paper_account_reward"] = float(
+                        self.metrics.get("paper_account_reward",0.0))+account_reward
+                    self.metrics["portfolio_experiences"] = int(
+                        self.metrics.get("portfolio_experiences",0))+1
                 self.metrics["paper_experiences_seen"]=int(
                     self.metrics.get("paper_experiences_seen",0))+1
                 self.metrics["paper_experiences_since_candidate"]=int(
                     self.metrics.get("paper_experiences_since_candidate",0))+1
                 self.replay.note_paper_outcome()
-            self.metrics["portfolio_experiences"] = int(self.metrics.get("portfolio_experiences",0)) + 1
         return keep
 
     def follow_csv(self, data_path:str|Path, poll_seconds:float=5.0, initial_lookback_bars:int=0):
@@ -783,6 +892,7 @@ class OnlineGlobalAgent:
         if account_cursor and (cursor is None or account_cursor>cursor): cursor=account_cursor
         pending=self.replay.load_pending("regular")
         portfolio_pending=self.replay.load_pending("portfolio")
+        market_reader=IncrementalMarketCSV(data_path,retain_timestamps=4096)
         self.metrics["pending_experiences"] = len(pending) + len(portfolio_pending)
         self.start()
         try:
@@ -793,11 +903,12 @@ class OnlineGlobalAgent:
                     self.stop.wait(poll_seconds); continue
                 try:
                     stat=data_path.stat()
-                    file_signature=(stat.st_size,stat.st_mtime_ns)
+                    file_signature=(stat.st_size,stat.st_mtime_ns,getattr(stat,"st_ino",0))
                     if file_signature==last_file_signature:
                         self.stop.wait(poll_seconds); continue
                     self.metrics["observation_caught_up"]=False
                     self.metrics["agent_health"]="catching_up"
+                    raw_frame,_reader_signature=market_reader.refresh()
                     panel=GlobalMarketPanel(data_path, max_symbols=self.cfg.max_symbols,
                         symbol_map=getattr(self.champion,"_stockrl_symbol_map",None),
                         # Keep closed-session indices, futures, yields, and other
@@ -805,7 +916,8 @@ class OnlineGlobalAgent:
                         # known quote. The dashboard still marks their quote as
                         # stale; dropping them here hid their BUY/HOLD/SELL
                         # output entirely whenever their venue was closed.
-                        recent_timestamps=4096, active_stale_seconds=604800)
+                        recent_timestamps=4096, active_stale_seconds=604800,
+                        raw_frame=raw_frame)
                 except (OSError,ValueError) as exc:
                     # A producer may be in the middle of appending a CSV batch.
                     # Expose a stable error per file version; otherwise an
@@ -982,6 +1094,7 @@ class OnlineGlobalAgent:
                               "regime":abs(float(panel.features[ti,j,6])),
                                "is_validation":False,"promotion_holdout":validation,
                               "equity_before":self.paper_account.normalized_equity(),
+                              "symbol_pnl_before":self.paper_account.symbol_net_pnl(symbol),
                               })
                         rows.append({"date":stamp,"symbol":symbol,"action":ACTION_NAMES[action],"value":float(values[j]),
                           "p_sell":float(probs[j,0]),"p_hold":float(probs[j,1]),"p_buy":float(probs[j,2])})
@@ -1001,7 +1114,9 @@ class OnlineGlobalAgent:
                     _atomic_json({"last_timestamp":cursor},cursor_path)
                     _atomic_json({str(k):v for k,v in self.positions.items()},self.state_dir/"live_positions.json")
                 try:
-                    newest_signature=(data_path.stat().st_size,data_path.stat().st_mtime_ns)
+                    newest_stat=data_path.stat()
+                    newest_signature=(newest_stat.st_size,newest_stat.st_mtime_ns,
+                                      getattr(newest_stat,"st_ino",0))
                 except OSError:
                     newest_signature=None
                 caught_up = (cursor is not None and np.datetime64(cursor) >= panel.dates[-1]
@@ -1240,7 +1355,9 @@ class OnlineGlobalAgent:
                 self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
                 self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"
                 self.metrics["paper_experiences_since_candidate"]=0
-                try: self._write_metrics()
+                try:
+                    self._reset_candidate_file()
+                    self._write_metrics()
                 except Exception: pass
 
     def _train_candidate(self):
@@ -1268,8 +1385,11 @@ class OnlineGlobalAgent:
         original=self.champion
         candidate=self.candidate.train(); opt=torch.optim.AdamW(candidate.parameters(),lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8)
+        if self.device.type=="cuda":
+            torch.cuda.synchronize(self.device)
+            torch.cuda.reset_peak_memory_stats(self.device)
         elapsed=[]
-        candidate_samples=0
+        candidate_samples=0; candidate_sample_keys=set()
         self.metrics["last_candidate_optimizer_steps"]=0
         self.metrics["last_candidate_samples_trained"]=0
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
@@ -1277,47 +1397,68 @@ class OnlineGlobalAgent:
         for update_ix in range(self.updates_per_candidate):
             batch=self.replay.sample(self.batch_size)
             if not batch: break
+            candidate_sample_keys.update((e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
+                                         for e in batch)
             self.metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in batch)
             self.metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in batch)
-            args,pstate,astate=self._pack(batch); ti=time.perf_counter()
-            use_portfolio=all(e.portfolio_state is not None and e.account_state is not None for e in batch) \
-                          and getattr(candidate,"_stockrl_uses_market_context",False)
-            if use_portfolio:
-                logits,values,allocations=candidate(*args,portfolio_state=pstate,
-                                                     account_state=astate,return_allocation=True)
-            else:
-                logits,values=candidate(*args); allocations=None
-            if self.device.type=="cuda": torch.cuda.synchronize(self.device)
-            rows=torch.arange(len(batch),device=self.device)
-            act=torch.as_tensor([e.action for e in batch],device=self.device,dtype=torch.long)
-            reward=torch.as_tensor([e.portfolio_reward if e.portfolio_reward is not None else e.reward
-                                    for e in batch],device=self.device,dtype=torch.float32)
-            chosen=logits[rows,torch.as_tensor([e.symbol_index for e in batch],device=self.device)].float()
-            predicted=values[rows,torch.as_tensor([e.symbol_index for e in batch],device=self.device)].float()
-            if not torch.isfinite(chosen).all() or not torch.isfinite(predicted).all():
-                self.metrics["nonfinite_updates"]+=1
+            ti=time.perf_counter(); opt.zero_grad(set_to_none=True); valid_samples=0; loss_values=[]
+            use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
+            # Accumulate the requested replay batch as one optimizer update,
+            # while holding only one sequence's activations on the 8 GB GPU.
+            for experience in batch:
+                args,pstate,astate=self._pack([experience])
+                if use_portfolio:
+                    logits,values,allocations=candidate(*args,portfolio_state=pstate,
+                                                         account_state=astate,return_allocation=True)
+                else:
+                    logits,values=candidate(*args); allocations=None
+                chosen=logits[0,int(experience.symbol_index)].float()
+                predicted=values[0,int(experience.symbol_index)].float()
+                if not torch.isfinite(chosen).all() or not torch.isfinite(predicted).all():
+                    self.metrics["nonfinite_updates"]+=1
+                    continue
+                action=torch.as_tensor([experience.action],device=self.device,dtype=torch.long)
+                dist=Categorical(logits=chosen[None])
+                symbol_reward=torch.as_tensor(float(experience.reward),device=self.device,dtype=torch.float32)
+                loss=chosen.sum()*0
+                if not experience.portfolio_transition:
+                    advantage=(symbol_reward-predicted.detach()).clamp(-1,1)
+                    loss=(-(dist.log_prob(action)*advantage).mean()
+                          +.5*nn.functional.smooth_l1_loss(predicted[None],symbol_reward[None])
+                          -.005*dist.entropy().mean())
+                if experience.source.startswith("teacher"):
+                    loss=loss+nn.functional.cross_entropy(chosen[None],action)
+                if allocations is not None and experience.portfolio_transition:
+                    account_reward=torch.as_tensor(float(experience.portfolio_reward or 0.0),
+                                                    device=self.device,dtype=torch.float32)
+                    selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
+                    loss=loss-.10*account_reward.detach().clamp(-1,1)*torch.log(selected)
+                if not torch.isfinite(loss):
+                    self.metrics["nonfinite_updates"]+=1
+                    continue
+                (loss/len(batch)).backward()
+                valid_samples+=1
+                loss_values.append(float(loss.detach().cpu()))
+                del args,pstate,astate,logits,values,allocations,chosen,predicted,dist,loss
+            if not valid_samples:
                 continue
-            dist=Categorical(logits=chosen); advantage=(reward-predicted.detach()).clamp(-1,1)
-            teacher=torch.as_tensor([e.source.startswith("teacher") for e in batch],device=self.device,dtype=torch.bool)
-            pg=-(dist.log_prob(act)*advantage).mean()+.5*nn.functional.smooth_l1_loss(predicted,reward)-.005*dist.entropy().mean()
-            imitation=nn.functional.cross_entropy(chosen[teacher],act[teacher]) if teacher.any() else pg*0
-            allocation_loss=pg*0
-            if allocations is not None:
-                alloc_selected=allocations[rows,torch.as_tensor([e.symbol_index for e in batch],device=self.device)]
-                allocation_loss=-(reward.detach().clamp(-1,1)*torch.log(alloc_selected.clamp_min(1e-7))).mean()
-            loss=pg+imitation+0.10*allocation_loss
-            if not torch.isfinite(loss):
-                self.metrics["nonfinite_updates"]+=1
-                continue
-            opt.zero_grad(set_to_none=True); loss.backward(); nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
-            candidate_samples+=len(batch)
-            self.metrics["update_losses"].append(float(loss.detach().cpu()))
+            nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
+            candidate_samples+=valid_samples
+            self.metrics["update_losses"].append(float(np.mean(loss_values)))
             self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
             if self.device.type=="cuda": torch.cuda.synchronize(self.device)
             elapsed.append(time.perf_counter()-ti); self.steps+=1
         self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
+        self.metrics["last_candidate_update_seconds"]=float(sum(elapsed))
+        if self.device.type=="cuda":
+            torch.cuda.synchronize(self.device)
+            self.metrics["last_candidate_peak_allocated_bytes"]=int(
+                torch.cuda.max_memory_allocated(self.device))
+            self.metrics["last_candidate_peak_reserved_bytes"]=int(
+                torch.cuda.max_memory_reserved(self.device))
         self.metrics["last_candidate_optimizer_steps"]=len(elapsed)
         self.metrics["last_candidate_samples_trained"]=candidate_samples
+        self.metrics["last_candidate_unique_samples_trained"]=len(candidate_sample_keys)
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         self.metrics["update_seconds"]=self.metrics["update_seconds"][-2000:]
@@ -1530,10 +1671,10 @@ class OnlineGlobalAgent:
             state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
             if state.get("source_champion_sha256")!=source_sha:
                 error="champion changed during candidate validation"
-        if error is None and source_sha.upper()!=PROTECTED_PROMOTION_CHAMPION_SHA256:
+        if error is None and source_sha.upper()!=self.protected_champion_sha256:
             from datetime import datetime,timezone
             reason=("promotion held: champion lineage is unresolved; protected SHA256 "
-                    f"{PROTECTED_PROMOTION_CHAMPION_SHA256}, current SHA256 {source_sha.upper()}")
+                    f"{self.protected_champion_sha256}, current SHA256 {source_sha.upper()}")
             self.metrics["last_candidate_validation_score"]=float(candidate_score)
             self.metrics["last_champion_validation_score"]=float(champion_score)
             self.metrics["last_candidate_promoted"]=False
@@ -1556,7 +1697,7 @@ class OnlineGlobalAgent:
             self._atomic_json({"status":"promotion_held","bars":self.validation_bars,
                 "candidate_score":float(candidate_score),"champion_score":float(champion_score),
                 "applied":False,"source_champion_sha256":source_sha,
-                "protected_champion_sha256":PROTECTED_PROMOTION_CHAMPION_SHA256,
+                "protected_champion_sha256":self.protected_champion_sha256,
                 "reason":reason},self.validation_state_path)
             self.validation_generation+=1
             self._write_metrics()
@@ -1602,7 +1743,7 @@ class OnlineGlobalAgent:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
         promote=(not self.promotion_lineage_hold
                  and validation_bars>=self.validation_window_bars
-                 and source_champion_sha256.upper()==PROTECTED_PROMOTION_CHAMPION_SHA256
+                and source_champion_sha256.upper()==self.protected_champion_sha256
                  and self._sha256_file(self.champion_path)==source_champion_sha256
                  and should_promote(score_new,score_old,1e-9))
         self.metrics["last_candidate_validation_score"]=score_new
@@ -1611,10 +1752,17 @@ class OnlineGlobalAgent:
         if promote:
             staged=self.state_dir/"champion.next"
             save_model(staged,candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
+            promoted_sha=self._sha256_file(staged).upper()
+            baseline_next=self.state_dir/"promotion_baseline.next"
+            self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed sequential paper gate"},
+                              baseline_next)
             with self.lock:
                 if self._sha256_file(self.champion_path)!=source_champion_sha256:
                     raise RuntimeError("champion changed before atomic promotion")
                 os.replace(staged,self.champion_path)
+                os.replace(baseline_next,self.promotion_baseline_path)
+                self.protected_champion_sha256=promoted_sha
+                self.promotion_lineage_hold=False
                 self.champion=candidate.eval(); self.metrics["promotions"]+=1
                 from datetime import datetime, timezone
                 self.metrics["last_promotion_utc"]=datetime.now(timezone.utc).isoformat()
@@ -1650,6 +1798,7 @@ class OnlineGlobalAgent:
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
+          "protected_champion_sha256":self.protected_champion_sha256,
           "candidate_learning_enabled":bool(self.metrics.get("observation_caught_up",False)),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
