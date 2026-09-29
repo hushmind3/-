@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import json
 from pathlib import Path
+import re
 import socket
 import subprocess
 import sys
@@ -20,8 +21,11 @@ URL = f"http://127.0.0.1:{PORT}/"
 
 def default_runtime_dir() -> Path:
     configured = os.environ.get("STOCKRL_RUNTIME_DIR")
+    market = os.environ.get("STOCKRL_MARKET", "korea").strip().lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", market):
+        raise ValueError("STOCKRL_MARKET must be a simple market name such as 'korea' or 'nasdaq'")
     candidate = (Path(configured).expanduser() if configured else
-                 ROOT / "runtime-global-korea-live")
+                 ROOT / "runtime" / "markets" / market)
     resolved = candidate.resolve()
     if not resolved.is_relative_to(ROOT.resolve()):
         raise ValueError(f"StockRL runtime must stay inside the project folder: {ROOT}")

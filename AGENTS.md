@@ -15,8 +15,8 @@ This instruction applies to every agent and contributor working in this project.
 ## Project storage boundary
 
 - Do not create folders outside this project directory.
-- Store StockRL runtime files under the project root at `runtime-global-korea-live`.
+- Store each market's StockRL runtime under the project root at `runtime/markets/<market>/live` (for example, `runtime/markets/korea/live` or `runtime/markets/nasdaq/live`).
 - Launchers must reject runtime paths outside this project instead of silently creating them.
 - Update `README.md` whenever project paths, runtime behavior, or operating rules change.
 - Never promote a candidate while the champion lineage is unresolved. The protected SHA256 is `2D0D45702C30EE167B0E982628D21D48CD54C00F572495B06585E326AC37797A`; completing 64 validation bars does not lift this hold.
-- Keep runtime files in the private project backup, but exclude model weight files (`.pt`, `.pth`, `.ckpt`, `.safetensors`).
+- Keep runtime state local under the project directory and exclude it from Git; exclude model weight files (`.pt`, `.pth`, `.ckpt`, `.safetensors`) as well. Historical commits may still contain older runtime snapshots.

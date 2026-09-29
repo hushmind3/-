@@ -188,3 +188,26 @@
 
 - **응답: 중복.** 현재 HEAD에서 runtime 추적이 빠졌고 로컬 파일은 보존됐다는 항목과 연결한다. 이전 커밋 613c330에는 21개 runtime 파일(43,897,551 bytes)이 남아 있다. 따라서 현재 main 트리에서 제외된 것이며 Git 이력 전체에서 제거된 것은 아니다.
 - **처리:** 커밋 이력을 다시 쓰거나 이전 snapshot을 지우지 않았다. 전체 이력에서 제거할지는 영향 범위를 검토한 뒤 별도 결정이 필요하다.
+
+## 시장별 runtime 디렉터리 변경 및 최신 확인 — 2026-09-29 KST
+
+### 시장별 runtime 경로
+
+- **응답: 수정함.** 기존 프로젝트 runtime을 `runtime/markets/korea`로 이동했다. runtime API 기준 경로는 `runtime/markets/<market>/`; 실제 live 상태는 그 안의 `live/`다. NASDAQ용 경로는 `runtime/markets/nasdaq/live/`가 된다.
+- `STOCKRL_MARKET`은 `korea` 또는 `nasdaq` 같은 안전한 시장 이름을 받아 경로를 나눈다. 외부 경로 차단은 유지된다. `run_global_paper.ps1`은 `-Market`을 지원하고 현재 한국 launcher들은 korea를 지정한다.
+- 이동한 runtime은 22개 파일, 46,029,050 bytes다. replay와 market SQLite `integrity_check=ok`, `.pt` 0개. Git 추적에서 제외되며 로컬 파일은 보존된다.
+
+### side-review 항목별 응답
+
+- **P1 생성 파일 추적 — 수정함:** `__pycache__/*.pyc` 18개와 `src/stockrl_distill.egg-info/*` 5개를 Git index에서 제외했다. `.gitignore` 규칙을 유지·보강했다. 로컬 생성물은 남아 있다.
+- **P1 GitHub runtime 이력 설명 — 중복:** 현재 HEAD는 runtime을 추적하지 않지만 기존 `613c330` commit history에는 21-file snapshot이 있다. README와 앞선 인수인계 항목에 구분해 기록했다.
+- **P2 전체 소스 폴더 정리 — 보류:** `src`, `configs`, `data`, `scripts`, `docs`, `backups`는 유지한다. 41개 script를 이동하기 전에는 용도 index와 상대경로 참조 조사가 필요하므로 이번 runtime 변경에 포함하지 않았다.
+- **P2 diagnostics/backups 정리 — 보류:** dashboard 백업 5개 및 diagnostics 자료는 참조·복구 가치를 확인하기 전에는 지우거나 옮기지 않는다.
+- **정지 후 재기동 상태 — 수정함:** 정지 당시 paper/observe 설정은 true였으나 시스템은 멈춰 있었다. 현재는 새 경로로 8766/feed/agent/paper/observe가 다시 ON이다.
+
+### 새 경로에서 확인한 최신 상태
+
+- 8766 listener PID 31776, feed PID 17576, agent PID 8572. process command line과 API feed output은 `runtime/markets/korea/live`를 가리킨다.
+- API: system/feed/agent/paper/observe ON, real_orders=false, `candidate_stage=promotion_held`, bars=0, replay=4096, promotions=0, candidate_learning=false, protected-SHA blocker 유지.
+- 이동 직전 검증은 64/64였지만 승급은 차단되어 0회였다. 재시작 후 API bars=0을 별도 현재 시점으로 기록한다.
+- **Relaunch report response: 수정함.** server/feed/agent runtime path와 promotion blocker를 새 프로세스에서 다시 확인했다. 8767 listener는 없다.

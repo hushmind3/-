@@ -3,7 +3,8 @@
 setlocal
 cd /d "%~dp0"
 set "PYTHONPATH=%CD%\src;%PYTHONPATH%"
-set "STOCKRL_RUNTIME_DIR=%CD%\runtime-global-korea-live"
+set "STOCKRL_MARKET=korea"
+set "STOCKRL_RUNTIME_DIR=%CD%\runtime\markets\korea"
 set "STOCKRL_MODEL_DIR=%USERPROFILE%\Desktop\모델"
 set "STOCKRL_WEB_PORT=8766"
 set "PY_CMD=python"

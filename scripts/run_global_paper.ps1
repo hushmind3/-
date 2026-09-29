@@ -3,6 +3,7 @@ param(
     [string]$Data = "",
     [string]$State = "",
     [string]$ModelDir = "",
+    [string]$Market = "korea",
     [string]$Config = "configs/live_symbols_korea.json",
     [string]$Device = "auto"
 )
@@ -10,7 +11,10 @@ param(
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $root
-$runtimeRoot = Join-Path $root "runtime-global-korea-live"
+$Market = $Market.Trim().ToLowerInvariant()
+if ($Market -notmatch '^[a-z0-9][a-z0-9_-]*$') { throw "Market must be a simple name such as korea or nasdaq." }
+$env:STOCKRL_MARKET = $Market
+$runtimeRoot = Join-Path $root "runtime\markets\$Market"
 $projectPrefix = [IO.Path]::GetFullPath($root).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 function Assert-ProjectPath([string]$Path) {
     $full = [IO.Path]::GetFullPath($Path)

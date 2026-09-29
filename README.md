@@ -10,7 +10,9 @@
 
 - 이 프로젝트 폴더에는 소스 코드, 설정, 문서와 정적 연구 데이터가 있다.
 - Windows 모델 폴더 `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt`만 둔다.
-- runtime 데이터는 프로젝트 폴더의 runtime-global-korea-live에 보관한다. 실행기는 프로젝트 밖에 runtime 경로를 만들지 않는다. runtime 데이터와 모델 가중치는 현재 Git 추적에서 제외한다. 다만 이전 커밋 613c330의 runtime snapshot은 Git 이력에 남아 있다.
+- runtime은 프로젝트 폴더의 `runtime/markets/<market>/live`에 둔다. 현재 한국 운영 데이터는 `runtime/markets/korea/live`를 사용한다. NASDAQ 운영을 추가하면 `runtime/markets/nasdaq/live`를 쓴다. 실행기는 프로젝트 밖에 runtime 경로를 만들지 않는다. runtime 데이터와 모델 가중치는 현재 Git 추적에서 제외한다. 과거 커밋에는 이전 runtime snapshot이 남아 있다.
+- `StockRL Start.bat`은 `STOCKRL_MARKET=korea`로 시작한다. `scripts/run_global_paper.ps1`에는 `-Market nasdaq`처럼 시장 이름을 줄 수 있다. 시장별 시세 설정도 해당 시장 설정 파일로 지정해야 한다.
+- replay와 가상계좌 등 실제 한국 runtime은 `runtime/markets/korea/live`에 있으며 Git에서 제외한다. 과거 커밋 `613c330`에 들어간 이전 위치 snapshot은 Git 이력에 남아 있다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
 - 웹 실행기는 새 경험 약 4,096개마다 candidate를 한 번 학습한다. 설정은 batch 1, update 1이다. 재시작하면 replay와 미완료 판단은 사라지고 candidate는 champion에서 다시 시작한다.
@@ -170,7 +172,7 @@ python -m stockrl global-info --data data/global_market_daily.csv --device auto
 프로젝트 루트에서 PowerShell로 다음 명령을 실행합니다. runtime 경로는 프로젝트 내부로 고정되어 있습니다.
 
 ```powershell
-$runtimeDir = Join-Path (Get-Location) 'runtime-global-korea-live'
+$runtimeDir = Join-Path (Get-Location) 'runtime/markets/korea'
 python -m stockrl global-online --data "$runtimeDir/live/market.csv" --state-dir "$runtimeDir/live/agent" --model-dir "$env:USERPROFILE/Desktop/모델" --follow --poll-seconds 1 --device auto
 ```
 
@@ -179,7 +181,7 @@ python -m stockrl global-online --data "$runtimeDir/live/market.csv" --state-dir
 공개 teacher 판단은 runtime 폴더 안에 생성해 글로벌 에이전트에 연결할 수 있습니다.
 
 ```powershell
-$runtimeDir = Join-Path (Get-Location) 'runtime-global-korea-live'
+$runtimeDir = Join-Path (Get-Location) 'runtime/markets/korea'
 python -m stockrl teacher-dataset --data data/msft_real_daily.csv --teachers configs/teachers.json --output "$runtimeDir/public-teachers"
 python -m stockrl global-online --data "$runtimeDir/live/market.csv" --state-dir "$runtimeDir/live/agent" --model-dir "$env:USERPROFILE/Desktop/모델" --follow --teacher-decisions "$runtimeDir/public-teachers/ensemble.csv" --teacher-symbol MSFT --device auto
 ```
@@ -237,7 +239,7 @@ python -m pip install -e .
 python -m stockrl web
 ```
 
-또는 파일 탐색기에서 `StockRL Start.bat`을 실행하세요. 운영 대시보드 기준 포트는 `8766`입니다. 실행 상태와 replay는 프로젝트 안 `runtime-global-korea-live`에 저장하고 비공개 GitHub에 보존합니다. 모델 가중치만 사용자가 지정한 모델 폴더에 두며 GitHub에서 제외합니다. 창에는 시세/모델 연결, champion, BUY/HOLD/SELL 판단, 가상 포지션, reward, replay 건수, candidate 승격/기각 기록, GPU/VRAM이 표시됩니다.
+또는 파일 탐색기에서 `StockRL Start.bat`을 실행하세요. 운영 대시보드 기준 포트는 `8766`입니다. 실행 상태와 replay는 시장별 프로젝트 runtime 경로(현재 `runtime/markets/korea/live`)에 저장합니다. runtime과 모델 가중치는 현재 Git 추적에서 제외합니다. 창에는 시세/모델 연결, champion, BUY/HOLD/SELL 판단, 가상 포지션, reward, replay 건수, candidate 승격/기각 기록, GPU/VRAM이 표시됩니다.
 
 같은 PC의 휴대폰 브라우저에서 보려면 LAN 연결에서 `python -m stockrl web --host 0.0.0.0`로 실행하고 PC의 사설 LAN 주소를 여세요. 현재 웹판은 인증/HTTPS가 없으므로 인터넷에 직접 공개하거나 클라우드에 바로 배포하지 마세요. 클라우드 운영은 인증, HTTPS reverse proxy, persistent volume을 앞에 둬야 합니다. 실시간 데이터는 무료 공개 API의 best-effort 제공이며, 실제 브로커 주문 기능은 웹판에 연결하지 않았습니다.
 

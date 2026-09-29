@@ -19,7 +19,7 @@
 - Windows 소스 프로젝트: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델`
 - Portable backup: 보존된 이전 실행본이며 현재 기본 소스 경로가 아니다.
 - 웹 UI: `http://127.0.0.1:8766/`
-- 런타임: 프로젝트 폴더의 `runtime-global-korea-live`
+- 런타임: 프로젝트의 `runtime/markets/korea` 아래. live 자료는 `runtime/markets/korea/live`
 - champion: `C:\Users\hushm\Desktop\모델\champion.pt`
 - candidate: `C:\Users\hushm\Desktop\모델\candidate.pt`
 - replay는 runtime의 bounded SQLite, 계좌와 검증 상태는 JSON으로 보존한다. 미성숙 pending 경험은 메모리에 있어 재시작 전에 주의가 필요하다.
@@ -101,7 +101,7 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 2026-09-29 현재 8766은 agent=true, paper=false, observe=false, validation 60/64, promotions 0, actual orders OFF로 일시 정지했다. runtime 이전과 승급 hold 적용 전까지 관찰/paper를 다시 켜지 않는다.
 
 
-## 최신 실행 상태 기록 — 2026-09-29 KST
+## 기존 실행 상태 기록 — 2026-09-29 KST
 
 이 항목이 위의 과거 실행 상태 기록보다 최신이다.
 
@@ -109,7 +109,21 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - paper와 관찰은 켜져 있고 실제 주문은 꺼져 있다.
 - side-monitor 최신 확인에서 순차 paper validation은 12/64, replay는 4,096건, 승급은 0회였다.
 - 보호 champion SHA와 현재 champion SHA가 다르다. 보호 장치가 candidate 학습과 승급을 막고 있다.
-- runtime은 프로젝트의 runtime-global-korea-live를 사용한다. feed 출력 경로도 이 위치다.
+- 당시 runtime은 프로젝트의 runtime-global-korea-live를 사용했다. 아래 디렉터리 이전 후에는 이 경로가 아니다.
 - champion과 candidate 파일은 수정하지 않았다. champion SHA256은 F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02다.
 - 기존 %LOCALAPPDATA%\StockRL\runtime-global-korea-live 복사본은 남아 있다. 현재 실행에서 사용하지 않지만, 삭제 시도는 도구 정책에 거부되어 미완료다.
 
+## 현재 디렉터리 구조 — 2026-09-29 KST
+
+- 시장별 runtime 기준 경로는 `runtime/markets/<market>/`이다. 한국은 `runtime/markets/korea/live/`, 나스닥은 별도 운영을 추가할 때 `runtime/markets/nasdaq/live/`를 사용한다.
+- `STOCKRL_MARKET`으로 시장 이름을 지정하고, Windows 시작 파일과 한국 실행기는 `korea`를 기본값으로 둔다. `run_global_paper.ps1`은 `-Market` 값을 받을 수 있다.
+- 기존 프로젝트 runtime의 `runtime-global-korea-live`는 `runtime/markets/korea`로 이동했다. SQLite/계좌/replay 파일을 삭제하거나 모델 checkpoint를 수정하지 않았다.
+- runtime 이동 직전 validation은 64/64였으나 보호 SHA 불일치로 승급 0회, candidate 학습 OFF, 실제 주문 OFF였다.
+- 이후 새 구조로 8766을 재시작했다. 아래 최신 확인 상태를 따른다. 기존 %LOCALAPPDATA%\StockRL\runtime-global-korea-live 삭제 요청은 별도 정책 차단으로 아직 미완료다.
+
+## 재구성 후 운영 확인 — 2026-09-29 KST
+
+- 새 runtime 기준 경로는 `runtime/markets/korea`; 실제 live 상태는 `runtime/markets/korea/live`다. 22개 파일, 46,029,050 bytes가 이동됐고 replay.sqlite3와 market.csv.sqlite3 모두 `integrity_check=ok`, runtime 안 `.pt` 없음이다.
+- 8766 listener PID 31776, feed PID 17576, agent PID 8572다. API와 프로세스 command line의 feed/state 경로가 모두 `runtime/markets/korea/live`를 가리킨다.
+- system/feed/agent/paper/observe는 켜져 있고 실제 주문은 OFF다. `candidate_stage=promotion_held`, validation bars=0, replay=4096, promotions=0, candidate_learning=false. champion lineage blocker가 유지된다. 이동 직전의 64/64 완료 기록과 재시작 뒤 bars=0은 서로 다른 시점이다.
+- champion SHA256은 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`로 유지됐다. 8767 listener는 없다.

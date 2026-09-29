@@ -5,7 +5,8 @@
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 $env:PYTHONPATH = "$repoRoot\src;$env:PYTHONPATH"
-$runtime = Join-Path $repoRoot 'runtime-global-korea-live'
+$env:STOCKRL_MARKET = 'korea'
+$runtime = Join-Path $repoRoot 'runtime\markets\korea'
 $env:STOCKRL_RUNTIME_DIR = $runtime
 $modelDir = Join-Path ([Environment]::GetFolderPath('Desktop')) '모델'
 

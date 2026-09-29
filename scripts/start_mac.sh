@@ -4,7 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
-RUNTIME_DIR="$ROOT/runtime-global-korea-live"
+export STOCKRL_MARKET="korea"
+RUNTIME_DIR="$ROOT/runtime/markets/korea"
 export STOCKRL_RUNTIME_DIR="$RUNTIME_DIR"
 MODEL_DIR="${STOCKRL_MODEL_DIR:-$HOME/Desktop/모델}"
 
