@@ -13,13 +13,20 @@ import torch
 from .core import (Config, TemporalActorCritic, device_for, evaluate, infer, load_checkpoint,
                    load_market, make_teachers, observations, ppo_finetune, save_checkpoint,
                    seed_all, split_indices, teacher_targets, train_distill)
-from .continuous import run_continuous, run_replay
 from .global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig, parameter_count
 from .global_online import OnlineGlobalAgent, benchmark_model, load_model
 from .paths import default_runtime_dir
 
 
+def legacy_checkpoint_command(args: argparse.Namespace) -> None:
+    raise SystemExit(
+        f"'{args.command}' is an archived research command and is disabled because it creates "
+        "additional checkpoint/replay .pt files. Use the 8766 paper-trading runtime instead."
+    )
+
+
 def train(args: argparse.Namespace) -> None:
+    legacy_checkpoint_command(args)
     cfg=Config(window=args.window,fee=args.fee,seed=args.seed,device=args.device,epochs=args.epochs,
                batch_size=args.batch_size,ppo_updates=args.ppo_updates)
     seed_all(cfg.seed); device=device_for(cfg.device); print(f"device={device}")
@@ -187,14 +194,14 @@ def main() -> None:
     c.add_argument("--min-replay",type=int,default=32); c.add_argument("--replay-capacity",type=int,default=10000)
     c.add_argument("--seed",type=int,default=7); c.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"])
     c.add_argument("--once",action="store_true",help="process current feed once for verification")
-    c.set_defaults(func=run_continuous)
+    c.set_defaults(func=legacy_checkpoint_command)
     r=sub.add_parser("replay",help="replay historical rows through the paper decision/outcome loop")
     r.add_argument("--data",required=True); r.add_argument("--checkpoint",default=str(default_runtime_dir()/"baseline-checkpoints"/"final.pt"))
     r.add_argument("--state-dir",default=str(default_runtime_dir()/"replay")); r.add_argument("--window",type=int,default=32)
     r.add_argument("--fee",type=float,default=.001); r.add_argument("--horizon",type=int,default=5)
     r.add_argument("--stride",type=int,default=1); r.add_argument("--replay-capacity",type=int,default=10000)
     r.add_argument("--seed",type=int,default=7); r.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"])
-    r.set_defaults(func=run_replay)
+    r.set_defaults(func=legacy_checkpoint_command)
     gi=sub.add_parser("global-info",help="report the fixed 0.5B global Transformer size and optional real-panel inference timing")
     gi.add_argument("--data",default=None); gi.add_argument("--window",type=int,default=8); gi.add_argument("--repeats",type=int,default=3)
     gi.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"]); gi.set_defaults(func=global_info)

@@ -576,6 +576,7 @@ class OnlineGlobalAgent:
         self.candidate=None; self.optimizer=None; self.steps=0; self.updates=0
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self.policy_rng=random.Random(seed+1)
+        self.validation_policy_rng=random.Random(seed+2)
         self.validation=[]
         self.portfolio_validation=[]
         self.validation_lock=threading.Lock()
@@ -864,6 +865,16 @@ class OnlineGlobalAgent:
         if len(self.metrics["inference_seconds"])>2000: self.metrics["inference_seconds"]=self.metrics["inference_seconds"][-2000:]
         return (logits[0].cpu().numpy(),values[0].cpu().numpy(),
                 allocation[0].cpu().float().numpy() if allocation is not None else None)
+
+    @staticmethod
+    def _sample_actions(probabilities,uniforms):
+        """Sample normalized SELL/HOLD/BUY rows with caller-supplied common noise."""
+        probabilities=np.asarray(probabilities,dtype=np.float64)
+        uniforms=np.asarray(uniforms,dtype=np.float64)
+        if probabilities.ndim!=2 or probabilities.shape[1]!=3 or uniforms.shape!=(len(probabilities),):
+            raise ValueError("action probabilities and uniforms have incompatible shapes")
+        cumulative=np.cumsum(probabilities,axis=1)
+        return np.minimum((uniforms[:,None]>=cumulative).sum(axis=1),2).astype(int).tolist()
 
     def _window(self,panel,index):
         contextual=getattr(self.champion,"_stockrl_uses_market_context",False)
@@ -1164,10 +1175,8 @@ class OnlineGlobalAgent:
                     return restored
                 pending=restore_pending(pending,False)
                 portfolio_pending=restore_pending(portfolio_pending,True)
-                # Minute-live operation favors current observations over
-                # replaying a stale feed backlog. Expire unresolved outcomes
-                # older than five minutes and remove their old reward rows
-                # from the same bounded journal before learning can resume.
+                # Minute-live operation expires unresolved outcomes older than
+                # five minutes, while matured replay remains until promotion.
                 live_cutoff=panel.dates[-1]-np.timedelta64(300,"s")
                 stale_regular=[dec for dec in pending
                     if np.datetime64(dec.get("timestamp"))<live_cutoff]
@@ -1182,15 +1191,6 @@ class OnlineGlobalAgent:
                     self.metrics["live_stale_pending_discarded"]=int(
                         self.metrics.get("live_stale_pending_discarded",0))+len(stale_regular)+len(stale_portfolio)
                     self.replay.save_pending(pending,portfolio_pending)
-                stale_replay=[exp for exp in self.replay.items
-                    if np.datetime64(exp.timestamp)<live_cutoff and not exp.source.startswith("teacher")]
-                if stale_replay:
-                    stale_account_rows=sum(exp.source=="paper_account_symbol" for exp in stale_replay)
-                    removed=self.replay.discard(stale_replay)
-                    self.metrics["live_stale_replay_discarded"]=int(
-                        self.metrics.get("live_stale_replay_discarded",0))+removed
-                    self.metrics["paper_experiences_since_candidate"]=max(
-                        0,int(self.metrics.get("paper_experiences_since_candidate",0))-stale_account_rows)
                 if expired_regular or expired_portfolio:
                     self.metrics["pending_expired_after_window"] = int(
                         self.metrics.get("pending_expired_after_window",0))+expired_regular
@@ -1263,8 +1263,8 @@ class OnlineGlobalAgent:
                     logits,values,allocation=self._infer(panel,ti,pstate,astate)
                     model_probs=torch.softmax(torch.as_tensor(logits),-1).numpy()
                     probs=(1.0-PAPER_EXPLORATION_EPSILON)*model_probs+PAPER_EXPLORATION_EPSILON/3.0
-                    actions=[self.policy_rng.choices((0,1,2),weights=row.tolist(),k=1)[0]
-                             for row in probs]
+                    actions=self._sample_actions(
+                        probs,[self.policy_rng.random() for _ in range(len(probs))])
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
                     stamp=str(panel.dates[ti]); validation=self.validation_active
@@ -1879,6 +1879,7 @@ class OnlineGlobalAgent:
             self._finish_candidate_validation(None,None,"validation market timestamps are not increasing")
             return
         completion_scores=None
+        common_action_uniforms=[self.validation_policy_rng.random() for _ in panel.symbols]
         try:
             # Both evaluators start from identical seed cash and see this same
             # chronological bar. Existing paper positions and live orders are
@@ -1904,13 +1905,17 @@ class OnlineGlobalAgent:
                         allocation=allocation[0].float().cpu().numpy()
                     else:
                         logits,_=model(*model_args); allocation=None
-                    probabilities=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                    model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                    probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
+                                   +PAPER_EXPLORATION_EPSILON/3.0)
                 elapsed=time.perf_counter()-inference_started
                 prefix=("champion" if model is champion else "candidate")+"_validation_inference_"
                 self.metrics[prefix+"count"]=(int(self.metrics.get(prefix+"count",0))+1)
                 self.metrics[prefix+"seconds_total"]=(
                     float(self.metrics.get(prefix+"seconds_total",0.0))+elapsed)
-                account.queue_decisions(panel,index,probabilities,True,allocation=allocation)
+                actions=self._sample_actions(probabilities,common_action_uniforms)
+                account.queue_decisions(panel,index,probabilities,True,
+                                        allocation=allocation,actions=actions)
                 account.save()
             self.validation_bars+=1
             self.metrics["candidate_validation_bars"]=self.validation_bars

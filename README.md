@@ -1,5 +1,12 @@
 # StockRL 금융매매 모델
 
+## 2026-09-30 현재 운영 수정
+
+- 직전 64-bar candidate 비교는 champion과 candidate 모두 체결 0건, 순손익 0으로 끝났습니다. 기존 live 판단은 확률 기반 BUY/HOLD/SELL 샘플링을 했지만 비교 검증은 argmax만 사용해 HOLD에 고정될 수 있었습니다. live와 validation이 같은 확률 정책을 쓰고, 두 비교 모델에는 같은 난수 표본을 적용하도록 맞췄습니다.
+- allocation은 각 paper 계좌의 통화별 현금과 현재 관측 가능한 거래 종목만을 기준으로 계산합니다. 주문은 수수료·스프레드·슬리피지를 포함해 감당 가능한 정수 주식 수로 다음 bar에 체결합니다.
+- 성숙한 replay 경험을 5분 경과만으로 삭제하던 경로를 제거했습니다. 미결 outcome 대기는 실시간 우선 정책에 따라 5분이 지나면 만료될 수 있습니다. replay는 설정된 용량 한도로 관리하고 검증이 끝나 승격된 학습 행만 소비합니다.
+- 과거 `train`, `continuous`, `replay` CLI 명령은 추가 checkpoint/replay 파일 생성을 막기 위해 비활성화했습니다. 현재 운영 학습은 8766 paper runtime의 candidate를 갱신합니다.
+- 코드 변경 후 8766을 재시작해 상태를 확인합니다. 실주문은 OFF이며 champion/candidate 가중치 파일은 수정하지 않습니다. SHA256은 각 검증 구간의 champion 계보를 기록하는 값이며 고정 허용목록이나 승격 잠금으로 쓰지 않습니다.
 ## 프로젝트 방향
 
 이 프로젝트는 특정 trader나 고정 전략을 계속 따라 하는 모델이 아니라, 시장 경험과 비용을 뺀 순손익을 바탕으로 스스로 매매 정책을 발전시키는 자율 트레이딩 에이전트입니다.
@@ -30,6 +37,8 @@
 
 candidate 검증 상태는 학습 표본의 replay 행 ID, 검증 중 보류 행 수, 승격 뒤 실제 삭제 행 수를 기록한다. 이전 방식으로 시작해 행 ID가 없는 진행 중 검증은 과거 삭제 수를 복원할 수 없으므로 API 지표에서 `legacy_untracked`로 구분한다.
 
+5분이 지난 미성숙 outcome 대기는 최신 운영 기준에 따라 만료될 수 있지만, 이미 성숙해 SQLite replay에 들어간 경험에는 5분 시간 만료를 적용하지 않는다. replay 경험은 bounded capacity로 관리하고, candidate가 paper 검증에서 승격된 뒤에만 해당 학습 행을 소비한다.
+
 
 ### 이전 설계 및 운영 기록 (현재 상태 아님)
 ## 2026-09-29 당시 운영·복구 기록 (현재 상태 아님)
@@ -51,7 +60,7 @@ candidate 검증 상태는 학습 표본의 replay 행 ID, 검증 중 보류 행
 - 이전 위치 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`도 아직 남아 있다(확인 시 22개 파일, 43,960,537 bytes). 현재 feed/agent는 이 폴더를 사용하지 않고 프로젝트 runtime을 사용한다. 기존 폴더 삭제는 자동 도구 검토가 거부해 미완료이며, 삭제 완료로 간주하지 않는다.
 - `web --runtime`, `STOCKRL_RUNTIME_DIR`, `STOCKRL_LOCAL_CONFIG_DIR`은 프로젝트 폴더 밖 경로를 거부한다. `STOCKRL_MODEL_DIR`은 바탕화면 `모델` 폴더만 허용한다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
-- 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
+- 실패해 쓰지 못한 경험은 재시도용으로 남는다. 현재 운영 replay는 최대 4,096개 행과 64MiB journal 예산으로 관리하고, 검증 경험은 최근 64개 검증 시각까지만 유지한다.
 - 과거 복구 당시의 4,096건 간격·batch 설정은 과거 상태 기록이다. 현재 소스 기준은 성숙 경험 16건 간격, batch 4, optimizer update 4이며, 미성숙 경험은 runtime SQLite에 보존한다.
 - candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작하며, 이번 candidate가 학습한 replay 행은 다음 학습에서 다시 사용할 수 있도록 보존한다.
 - 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르므로 승격은 계속 차단한다. candidate 학습은 허용하며 champion 가중치는 변경하지 않는다.
@@ -113,7 +122,7 @@ python -m stockrl predict --data PATH.csv --device auto
 
 ## 예전 GRU baseline 지속 관찰 기능 (현재 운영에 사용하지 않음)
 
-아래 `continuous`와 `replay` 명령은 초기 GRU baseline의 예전 연구 기능이다. 이 명령들은 별도 replay/checkpoint 파일을 만들 수 있어 현재 운영 구조와 맞지 않는다. 현재 가상매매를 시작할 때는 웹 실행기만 사용한다. 현재 online agent는 성숙한 replay를 bounded SQLite에 보존하고 미성숙 outcome 대기 목록은 메모리에 둔다. validation ledger와 비교 계좌는 JSON으로 보존되며 validation 작업 queue는 메모리에서 동작한다. 모델 폴더에는 champion과 candidate만 둔다.
+아래 `train`, `continuous`, `replay` 명령은 초기 GRU baseline의 과거 연구 기록이다. 이 명령은 추가 `.pt` checkpoint나 replay 파일을 만들 수 있어 현재 CLI에서 실행을 차단한다. 아래에 남은 해당 명령 예시는 기록용이며 실행되지 않는다. 현재 paper 운영은 8766 웹 실행기를 사용한다. online agent는 성숙 경험을 bounded SQLite replay에 보존하고, 미성숙 outcome 대기는 같은 SQLite의 pending_records에 저장한다. validation ledger와 비교 계좌는 JSON으로 보존되며 validation 작업 queue는 메모리에서 동작한다. 모델 폴더에는 champion과 candidate만 둔다.
 
 초기 모델을 한 번 만든 뒤, 툴/피드가 최신 봉을 계속 추가하는 CSV를 감시할 수 있습니다.
 

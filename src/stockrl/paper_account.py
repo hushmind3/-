@@ -145,16 +145,20 @@ class PaperAccount:
         return pstate, account
 
     def _fill(self, symbol: str, currency: str, action: str, price: float,
-              spread_rate: float, budget: float, timestamp: str) -> None:
+              spread_rate: float, budget: float, timestamp: str,
+              requested_quantity: int | None = None) -> None:
         book = self.state["books"][currency]
         half_spread = max(0.0, min(float(spread_rate) / 2.0, 0.025))
         execution_cost = half_spread + self.slippage
         position = book["positions"].get(symbol)
         if action == "BUY":
-            if budget <= 0:
+            if budget <= 0 and requested_quantity is None:
                 return
-            quantity = math.floor(min(float(budget), float(book["cash"])) /
-                                  (price * (1.0 + execution_cost) * (1.0 + self.fee)))
+            unit_cost=price*(1.0+execution_cost)*(1.0+self.fee)
+            affordable=math.floor(float(book["cash"])/unit_cost)
+            quantity=(min(max(0,int(requested_quantity)),affordable)
+                      if requested_quantity is not None else
+                      math.floor(min(float(budget),float(book["cash"]))/unit_cost))
             if quantity < 1:
                 return
             fill_price = price * (1.0 + execution_cost)
@@ -231,7 +235,9 @@ class PaperAccount:
                 # could not trade on its own observation bar.
                 spread_bps = max(0.0, float(panel.features[index, j, 7]))
                 self._fill(symbol, currency, order["action"], price,
-                           spread_bps / 10_000.0, float(order.get("budget", 0.0)), timestamp)
+                           spread_bps / 10_000.0, float(order.get("budget", 0.0)), timestamp,
+                           requested_quantity=(int(order["requested_quantity"])
+                                               if order.get("requested_quantity") is not None else None))
                 del self.state["pending"][symbol]
         self.state["last_timestamp"] = timestamp
 
@@ -241,6 +247,9 @@ class PaperAccount:
             return
         timestamp = str(panel.dates[index])
         buys: dict[str, list[tuple[str, float]]] = {key: [] for key in SEED_CASH}
+        buy_quantities: dict[str,int] = {}
+        buy_prices: dict[str,float] = {}
+        buy_spreads: dict[str,float] = {}
         full_weights = None
         if allocation is not None:
             candidate_weights = [float(value) for value in allocation]
@@ -252,6 +261,26 @@ class PaperAccount:
                     # Normalize only numerical drift; never renormalize the BUY
                     # subset, since that would silently spend the cash weight.
                     full_weights = [value / weight_total for value in candidate_weights]
+        currency_weights=None
+        if full_weights is not None:
+            currency_indices={key:[] for key in SEED_CASH}
+            for j,symbol in enumerate(panel.symbols):
+                market,asset=panel.groups[symbol]
+                currency=_currency(market,asset)
+                price=float(panel.closes[index,j])
+                if (currency is not None and panel.observed[index,j]
+                        and math.isfinite(price) and price>0):
+                    currency_indices[currency].append(j)
+            cash_weight=full_weights[-1]
+            currency_weights=[0.0]*len(panel.symbols)
+            for currency,indices in currency_indices.items():
+                # Each paper ledger has its own seed cash. Remove weight assigned
+                # to other currencies and non-tradable assets before converting
+                # the model's ranking into this ledger's target weights.
+                denominator=cash_weight+sum(full_weights[j] for j in indices)
+                if denominator>0:
+                    for j in indices:
+                        currency_weights[j]=full_weights[j]/denominator
         for j, symbol in enumerate(panel.symbols):
             if not panel.observed[index, j] or symbol in self.state["pending"]:
                 continue
@@ -274,12 +303,15 @@ class PaperAccount:
             price = float(panel.closes[index, j])
             equity = max(0.0, self._equity(currency))
             current_weight = current_quantity * price / equity if equity > 0 else 0.0
-            model_weight = full_weights[j]
+            model_weight = currency_weights[j]
             target_weight = max(current_weight, model_weight) if action == 2 else min(current_weight, model_weight)
             target_quantity = max(0, int(equity * target_weight / price))
             delta = target_quantity - current_quantity
             if delta > 0:
                 buys[currency].append((symbol, delta * price))
+                buy_quantities[symbol]=delta
+                buy_prices[symbol]=price
+                buy_spreads[symbol]=max(0.0,float(panel.features[index,j,7]))/10_000.0
             elif delta < 0:
                 self.state["pending"][symbol] = {"date": timestamp, "action": "SELL",
                                                   "budget": -delta}
@@ -292,22 +324,39 @@ class PaperAccount:
                 continue
             if full_weights is None:
                 total=sum(score for _,score in valid_signals)
-                targets=[(symbol,cash*score/total) for symbol,score in valid_signals]
+                targets=[(symbol,cash*score/total,None) for symbol,score in valid_signals]
             else:
-                # These are positive target-weight deltas. KRW and USD remain
-                # separate; proceeds from queued sells are not spent early.
-                targets=valid_signals
-                target_total=sum(budget for _,budget in targets)
-                # Enforce one shared cash cap while preserving the model's
-                # relative weights across this currency's BUY orders.
+                # Preserve the model's BUY allocation pool, then round it to
+                # whole shares against estimated spread, slippage, and fees.
+                # Largest fractional shares get first claim on available cash.
+                target_total=sum(budget for _,budget in valid_signals)
                 scale=min(1.0,cash/target_total) if target_total>0 else 0.0
-                targets=[(symbol,budget*scale) for symbol,budget in targets]
-            for symbol,budget in targets:
+                base=[]; remaining_cash=cash
+                for symbol,budget in sorted(valid_signals,key=lambda item:(-item[1],item[0])):
+                    price=buy_prices[symbol]
+                    spread=max(0.0,min(buy_spreads[symbol]/2.0,0.025))
+                    unit_cost=price*(1.0+spread+self.slippage)*(1.0+self.fee)
+                    exact=buy_quantities[symbol]*scale
+                    wanted=math.floor(exact+1e-12)
+                    units=min(wanted,math.floor(remaining_cash/unit_cost))
+                    if units:
+                        remaining_cash-=units*unit_cost
+                    base.append([symbol,budget*scale,units,wanted,
+                                 exact-math.floor(exact+1e-12),unit_cost])
+                for row in sorted(base,key=lambda item:(-item[4],-item[1],item[0])):
+                    symbol,scaled_budget,units,wanted,remainder,unit_cost=row
+                    if remainder>1e-12 and units<wanted+1 and remaining_cash+1e-8>=unit_cost:
+                        row[2]+=1; remaining_cash-=unit_cost
+                targets=[(symbol,scaled_budget,units if units>0 else None)
+                         for symbol,scaled_budget,units,_,_,_ in base if units>0]
+            for symbol,budget,requested_quantity in targets:
                 existing=self.state["pending"].get(symbol)
                 if existing and existing.get("date")==timestamp and existing.get("action")=="SELL":
                     continue
-                self.state["pending"][symbol] = {
-                    "date": timestamp, "action": "BUY", "budget": budget}
+                order={"date":timestamp,"action":"BUY","budget":budget}
+                if requested_quantity is not None:
+                    order["requested_quantity"]=requested_quantity
+                self.state["pending"][symbol]=order
 
     def snapshot(self) -> dict:
         books = {}
@@ -318,7 +367,7 @@ class PaperAccount:
                 "holdings_value": equity - float(book["cash"])}
         return {**self.state, "books": books,
                 "execution": "next completed bar close; cash-only equities and ETFs",
-                "allocation": "model cash-inclusive target weights; action-gated partial buys and sells",
+                "allocation": "per-currency tradable model weights; action-gated whole-share orders with cost-aware cash limits",
                 "kr_sell_tax_assumption": KR_SELL_TAX_ASSUMPTION}
 
     def save(self) -> None:
