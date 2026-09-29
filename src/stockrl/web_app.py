@@ -338,7 +338,7 @@ class Supervisor:
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
                 "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
-                "--candidate-every", str(self.candidate_every), "--batch-size", "2", "--updates", "2",
+                "--candidate-every", str(self.candidate_every), "--batch-size", "4", "--updates", "4",
                 "--fee", str(self.fee), "--horizon", self.horizon,
                 "--device", self._device()]
         seed = self.initial_champion or (self.model_dir / "champion.pt")
@@ -672,7 +672,7 @@ class Supervisor:
 
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
-          device: str = "auto", candidate_every: int = 512, fee: float = .001,
+          device: str = "auto", candidate_every: int = 16, fee: float = .001,
           auto_start: bool = True, open_browser: bool = True, horizon: str = "1m",
           config: str = "configs/live_symbols.json", initial_champion: str | None = None,
           model_dir: str | None = None, settings_dir: str | None = None):

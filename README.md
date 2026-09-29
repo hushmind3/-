@@ -1,18 +1,34 @@
 # StockRL 금융매매 모델
+## ?? ?? ??
+
+- ???? ??? ?? champion? ?? ????. SHA256? ?? ? champion ?? ??? ????, ?? SHA? ???? ??? ???? ??? ??? ???.
+- champion? ??? ??? ?? candidate? replay ??? ??? ???.
+- candidate? ??? ??? bar? ?? paper account? ????. ?? 64? bar?? ?? ?? ???? champion?? ?? ?? ????. ?? ? champion? ??? ??? ??? ??.
+- ?? runtime? ???? ?? `runtime/markets/<market>/live`? ??. ?? ???? `champion.pt`? `candidate.pt`? ??. ?? ???? runtime? ?? Git?? ????.
+- ?? ??? ???? ????? ???? ??? OFF?.
+
 
 ## 현재 운영 기준 (2026-09-29)
 
-- 현재 champion SHA256은 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`이며 candidate는 이 champion의 복사본에서 시작한다. champion은 candidate 학습 중 바꾸지 않는다. candidate는 같은 미학습 paper-account 구간의 비용 차감 순손익이 더 높을 때만 승격한다.
 - 2026-09-29 재가동 때 과거 구간은 따라잡지 않았다. 기존 replay SQLite 하나 안의 경험 4,096건, window 671건, pending 1,532건을 비우고 같은 DB를 재사용했다. cursor를 당시 feed 최신 시각 `2026-09-29T12:28:00Z`로 옮겼으며 그 뒤 새 feed만 관찰한다. replay 파일을 추가 생성하지 않았다.
-- 종목별 실현·평가 손익 변화는 해당 종목 action reward로 저장한다. 계좌 전체 순손익 변화는 같은 시각당 한 건의 별도 portfolio transition으로 저장해 allocation 학습에 쓴다.
+- 종목별 실현·평가 손익 변화는 해당 종목 action reward로 저장한다. 계좌 전체 순손익은 timestamp마다 한 건만 portfolio value 목표로 학습하고, 종목별 allocation 보상에는 그 종목의 기여 손익을 쓴다.
 - paper account는 모델 목표 비중과 BUY/SELL 신호에 따라 보유분을 추가매수하거나 일부 매도할 수 있다. 체결은 다음 완료 bar에서 비용을 반영해 처리한다.
-- live feed CSV는 시작 때 한 번 읽고 이후 완성된 append 행만 추가로 읽는다. 재시작 시 기존 cursor를 이어서 처리하며, CSV가 압축·교체되어 cursor보다 오래된 데이터만 남으면 건너뛰지 않고 history gap으로 멈춘다.
+- live feed CSV는 시작 때 한 번 읽고 이후 완성된 append 행만 추가로 읽는다. 재시작 시 기존 cursor를 이어서 처리하되 5분 넘게 밀린 구간은 재생하지 않고 최신 시각으로 건너뛴다. 그 구간의 미성숙 경험과 replay도 버려 실시간 관측을 우선한다.
 - 운영 경로는 프로젝트 내부 `runtime/markets/<market>/live`; 모델 폴더에는 `champion.pt`, `candidate.pt` 두 파일만 둔다. replay와 account state는 runtime에 두며 Git에는 올리지 않는다.
 - 실주문은 계속 OFF다. provider가 연결돼 있어도 paper account 체결만 수행한다.
+- candidate는 성숙한 paper 경험 16건마다 자동 학습을 시도한다. paper 행동은 모델 확률에 5% 탐색을 섞어 뽑고, 행동 당시 log-probability를 저장해 PPO clipped ratio로 학습한다. 종목별 체결 기여 손익은 해당 행동·배분 학습에 쓰고, 계좌 전체 순손익은 별도 portfolio value 목표로 쓴다. replay에서 중복 없이 최대 16건을 뽑아 4개씩 4회의 optimizer update를 수행한다. 성공적으로 candidate checkpoint에 반영한 replay 행은 제거하고, 실패하면 경험 카운터와 replay를 유지한 채 메모리 회복 후 재시도한다. reward schema와 맞지 않는 과거 replay 행은 다음 agent 시작 때 같은 SQLite 안에서 제거·압축하며, 밀린 시장구간은 재생하지 않는다. replay는 단일 SQLite이며 4,096행·64MiB 상한과 8MiB WAL 상한을 둔다. 검증 중에도 별도 관측 루프는 시장을 계속 처리한다. 학습 시 Transformer block 활성값을 checkpoint 방식으로 재계산하고 AdamW의 CUDA 임시 버퍼를 끈다. 추론용 champion은 계속 GPU에 상주할 수 있다.
+- 미국·한국 손익은 각각 USD·KRW 시작자본 기준으로 정규화한다. 모델 계좌 입력의 현금·보유자산·손익·비용도 통화별 시작자본 단위로 정규화한 뒤 합쳐 통화 금액을 직접 더하지 않는다. 포트폴리오 replay는 종목별 기여 손익과 계좌 전체 순손익을 별도 필드로 보존한다.
+- 일반 paper 행동 결과는 현재 reward schema와 행동 당시 확률을 함께 저장해 candidate actor 학습에 들어간다. 종목별 실현 기여 손익과 계좌 전체 순손익은 별도 학습 신호다. 이전 schema의 replay 행은 agent 시작 때 제거하고 5분 넘은 대기 결과는 버린다. 가상매매는 학습 경험 생성을 위해 켜고, 실주문은 OFF다. 보호 champion SHA와 실제 SHA가 다르므로 승격은 차단한다.
+- Portfolio replay는 같은 시각에 여러 종목이 성숙해도 전체 계좌 보상으로 critic을 한 번만 갱신한다. 종목별 allocation loss는 각 종목의 기여 손익으로 계속 계산한다. 이전 replay도 로드할 때 시각별 한 행만 portfolio value transition으로 표시한다.
+
+### 운영실에서 확인하는 모델 설정값
+
+운영실의 ‘모델 설정값 자세히 보기’ 접이식 패널에 현재 모델 구성을 한글 설명과 영문 기술 용어를 함께 표시한다. 기준 설정은 파라미터 약 512M(초기 기준값 511,848,836). 운영실은 현재 로드된 모델의 실제 수를 API `metrics.parameters`에서 받아 보여주며, 초기 기준값과는 따로 구분한다.  hidden size 1,408, attention head 16개(각 88차원), FFN 5,632, Transformer 21개(시간축 11개·종목 간 10개), 시간축 128개, 종목별 특징 17개, 시장 맥락 16개, FP16이다. 128은 종목 수가 아니라 시점 수이며, 종목 수는 동적으로 입력한다. 출력은 종목별 SELL/HOLD/BUY 점수·가치와 포트폴리오 자금 배분이다.
+
 
 아래의 이전 실험·복구 메모에 적힌 SHA, batch 설정, candidate 상태는 각각 해당 기록 당시 값이다. 현재 운영 기준과 다르면 이 절의 내용을 따른다.
 
-이 프로젝트의 목표는 특정 trader나 고정 전략을 영구 모방하는 것이 아니라, 시장 경험과 비용 차감 순손익으로 정책을 발전시키는 자율 트레이딩 에이전트다. 모델은 시장·종목·시간축·포트폴리오 상태를 바탕으로 종목 선택, BUY/HOLD/SELL, 자금 배분, 포지션 유지·교체·청산을 학습한다.
+이 프로젝트는 **지속학습형 온라인 강화학습 트레이딩 에이전트**, 쉽게 말해 시장 경험과 순손익으로 계속 레벨업하는 금융 모델을 목표로 한다. 1티어 champion은 현재 기준 모델이고, 2티어 candidate는 같은 설정과 champion 가중치에서 출발해 paper 경험을 학습하는 성장 모델이다. candidate가 같은 미학습 구간에서 비용 차감 순손익으로 champion을 이길 때만 교체한다. 특정 trader나 고정 전략을 영구 모방하는 것이 목적은 아니다. 모델은 시장·종목·시간축·포트폴리오 상태를 바탕으로 종목 선택, BUY/HOLD/SELL, 자금 배분, 포지션 유지·교체·청산을 학습한다.
 
 수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
 
@@ -39,10 +55,9 @@
 - `web --runtime`, `STOCKRL_RUNTIME_DIR`, `STOCKRL_LOCAL_CONFIG_DIR`은 프로젝트 폴더 밖 경로를 거부한다. `STOCKRL_MODEL_DIR`은 바탕화면 `모델` 폴더만 허용한다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
-- 웹 실행기는 설정상 새 경험 약 4,096개마다 candidate 학습을 시도한다. 설정은 batch 1, optimizer update 1이다. 재시작 후 bounded SQLite replay, cursor, paper 계좌, validation ledger와 새 source가 기록한 미성숙 경험은 남는다. 현재 실행 중인 구버전 프로세스의 미성숙 경험은 메모리에만 있어, 안전한 인계 전에는 재시작하지 않는다.
-- 현재 비교기는 같은 검증 bar를 champion과 candidate의 별도 paper account에 순차 적용해 비용 차감 순손익을 비교한다. 보호 champion SHA 불일치는 승격을 막는다. 소스에서는 lineage hold 때문에 candidate 학습까지 막지 않도록 수정했지만, 실행 중인 8766 프로세스에는 아직 반영되지 않았다.
+- 과거 복구 당시의 4,096건 간격·batch 설정은 과거 상태 기록이다. 현재 소스 기준은 성숙 경험 16건 간격, batch 4, optimizer update 4이며, 미성숙 경험은 runtime SQLite에 보존한다.
 - candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작한다.
-- 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르다. 실행 중인 프로세스가 새 소스를 불러오기 전까지 승격과 학습 동작은 이전 코드 상태다. 미성숙 경험의 재시작 손실 위험을 해소하기 전까지 8766 프로세스를 재시작하지 않는다.
+- 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르므로 승격은 계속 차단한다. candidate 학습은 허용하며 champion 가중치는 변경하지 않는다.
 
 ## 초기 연구 / 부트스트랩 기록
 
@@ -333,20 +348,16 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 
 ## P0: agent 지연과 candidate 학습 분리
 
-- **수정함:** `global_online.py`에서 보호 champion SHA lineage 문제가 candidate 학습까지 막던 조건을 제거했다. candidate 학습은 이어가되 `_commit_candidate()`는 보호 SHA가 일치할 때까지 승격을 계속 차단한다. 검증이 lineage 문제로 끝나도 학습된 candidate 파일은 남겨 다음 경험에 사용할 수 있게 했다.
-- **확인함:** Python 컴파일과 격리된 동작 확인을 통과했다. lineage hold 상태에서도 학습 루프가 paper 경험 대기로 진행하고, 보호 SHA가 불일치하면 승격을 거절하며 모델 파일을 쓰지 않는다.
 - **수정함:** `web_app.py`가 market SQLite의 최신 bar와 agent `live_cursor.json`을 비교한다. 5분보다 뒤처지면 API health를 `stale`로 표시하고 agent 건강 상태를 반영한다. dashboard HTML은 바꾸지 않았다.
 - **확인함:** 당시 feed 최신 시각은 `2026-09-29T09:50:00Z`, agent cursor는 `2026-09-29T08:00:00Z`였다. 차이는 6,600초, 1,183개 bar였다. agent 프로세스는 살아 있었지만 판단 기록은 오래되어 최신 source health 판정은 `stale`이다.
 - **수정함:** 새 source는 미성숙 판단과 portfolio 경험을 replay SQLite에 저장하며, 성숙 경험을 replay에 넣는 처리와 pending 제거를 같은 DB transaction으로 묶는다. 입력 window를 feed CSV에서 복원해 pending 저장 크기를 줄인다.
 - **보류:** 8766 프로세스 재시작. 현재 구버전 프로세스가 이미 메모리에 쌓은 pending을 새 저장 형식으로 내보내지 못한다. 이를 잃지 않도록 재시작 전 agent 처리 상태를 별도 확인한다. 새 pending 저장은 프로세스가 새 source로 시작한 뒤부터 적용된다.
 - 후속 API 확인에서 PID 8572의 구버전 agent가 `candidate_learning_enabled=false`, `candidate_stage=promotion_held`, `updates=2`, `paper_examples_trained=2`, `candidate_validation_bars=0`을 반환했다. 이 수치는 당시 기록이며, champion 보호 SHA 변경이나 가중치 교체는 하지 않았다.
-- champion SHA256 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`, candidate SHA256 `5A9E8B8027EC739CDBD01422FB18A9E7FB0934321773DA51671CE0FDE675F0E5`는 기록 당시 값이다. 검증 중 모델 파일을 수정하지 않았고 실제 주문은 OFF였다.
 
 ## 2026-09-29 경로 검토 반영
 
 - runtime, feed CSV와 SQLite, 웹 설정, provider 설정, stop marker는 금융매매모델 프로젝트 폴더 안에서만 생성한다. 외부 runtime 환경변수와 외부 provider 설정 경로는 시작 단계에서 거부한다.
 - checkpoint 경로는 `C:\Users\hushm\Desktop\모델`로 제한한다. 웹 실행기, 데스크톱 실행기, online agent, Windows paper launcher에 같은 규칙을 적용한다.
 - `scripts/run_global_paper.ps1`은 Data·State·로그·설정 경로를 먼저 확인한 뒤 폴더를 만든다.
-- 보호 champion과의 lineage 불일치는 candidate 승격을 차단한다. candidate 학습은 계속할 수 있도록 소스를 고쳤다. 실행 중인 8766 프로세스에는 이 변경이 아직 반영되지 않았다. 미성숙 경험 손실 위험을 해소하기 전까지 재시작을 보류한다.
 - feed 최신 bar와 저장된 agent cursor 차이를 API health에 반영하는 소스를 추가했다. 현재 상태에서 둘 사이 6,600초, 1,183 bar 차이가 확인됐지만 health 변경도 실행 중 프로세스에는 반영되지 않았다.
 - OS 자격 증명 보관함은 조회·변경하지 않았다. 실주문은 OFF다.

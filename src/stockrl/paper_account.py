@@ -72,6 +72,9 @@ class PaperAccount:
     def symbol_net_pnl(self, symbol: str) -> float:
         """Realized plus open-position PnL for one symbol, normalized by seed cash."""
         for book in self.state["books"].values():
+            if (symbol not in book["positions"] and
+                    symbol not in book.get("symbol_realized_pnl", {})):
+                continue
             realized = float(book.get("symbol_realized_pnl", {}).get(symbol, 0.0))
             position = book["positions"].get(symbol)
             unrealized = 0.0
@@ -85,9 +88,6 @@ class PaperAccount:
         """Return per-symbol [N,8] and account [8] state for the portfolio heads."""
         n = len(panel.symbols)
         pstate = [[0.0] * 8 for _ in range(n)]
-        total_equity = max(self.total_equity(), 1e-9)
-        total_cash = sum(float(self.state["books"][c]["cash"]) for c in SEED_CASH)
-        total_positions = total_unreal = 0.0
         for j, symbol in enumerate(panel.symbols):
             if not panel.observed[index, j] and not panel.observed[:index + 1, j].any():
                 continue
@@ -113,14 +113,35 @@ class PaperAccount:
                          float(book["trade_count"]) / 1000.0,
                          float(book["fees"]) / max(equity, 1.0),
                          float(book["sell_tax"]) / max(equity, 1.0)]
-            total_positions += value; total_unreal += unreal
-        account = [total_cash / total_equity, total_positions / total_equity,
-                   total_unreal / total_equity,
-                   sum(float(self.state["books"][c]["trade_count"]) for c in SEED_CASH) / 1000.0,
-                   sum(float(self.state["books"][c]["fees"]) for c in SEED_CASH) / total_equity,
-                   sum(float(self.state["books"][c]["slippage"]) for c in SEED_CASH) / total_equity,
-                   sum(float(self.state["books"][c]["spread"]) for c in SEED_CASH) / total_equity,
-                   1.0 - total_cash / total_equity]
+        # KRW and USD are separate paper ledgers. Express each amount in its
+        # own book's seed-cash units before combining account features.
+        normalized_equity = max(self.normalized_equity(), 1e-9)
+        normalized_cash = normalized_positions = normalized_unreal = 0.0
+        normalized_fees = normalized_slippage = normalized_spread = 0.0
+        trade_count = 0.0
+        for book in self.state["books"].values():
+            seed = max(float(book["initial_cash"]), 1e-9)
+            normalized_cash += float(book["cash"]) / seed
+            normalized_positions += sum(
+                float(position["quantity"]) * float(book["marks"].get(symbol, position["average_cost"]))
+                for symbol, position in book["positions"].items()) / seed
+            normalized_unreal += sum(
+                float(position["quantity"]) * (
+                    float(book["marks"].get(symbol, position["average_cost"]))
+                    - float(position["average_cost"]))
+                for symbol, position in book["positions"].items()) / seed
+            normalized_fees += float(book["fees"]) / seed
+            normalized_slippage += float(book["slippage"]) / seed
+            normalized_spread += float(book["spread"]) / seed
+            trade_count += float(book["trade_count"])
+        account = [normalized_cash / normalized_equity,
+                   normalized_positions / normalized_equity,
+                   normalized_unreal / normalized_equity,
+                   trade_count / 1000.0,
+                   normalized_fees / normalized_equity,
+                   normalized_slippage / normalized_equity,
+                   normalized_spread / normalized_equity,
+                   normalized_positions / normalized_equity]
         return pstate, account
 
     def _fill(self, symbol: str, currency: str, action: str, price: float,
@@ -215,7 +236,7 @@ class PaperAccount:
         self.state["last_timestamp"] = timestamp
 
     def queue_decisions(self, panel, index: int, probabilities, enabled: bool,
-                        allocation=None) -> None:
+                        allocation=None, actions=None) -> None:
         if not enabled:
             return
         timestamp = str(panel.dates[index])
@@ -238,7 +259,7 @@ class PaperAccount:
             currency = _currency(market, asset)
             if currency is None:
                 continue
-            action = int(probabilities[j].argmax())
+            action = int(actions[j]) if actions is not None else int(probabilities[j].argmax())
             book = self.state["books"][currency]
             position = book["positions"].get(symbol)
             current_quantity = int(position["quantity"]) if position else 0

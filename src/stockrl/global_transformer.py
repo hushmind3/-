@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torch import nn
+from torch.utils.checkpoint import checkpoint
 
 GLOBAL_FEATURES = (
     "ret1", "ret5", "ret20", "range", "volume_z", "rsi", "volatility",
@@ -123,14 +124,22 @@ class GlobalMarketTransformer(nn.Module):
                 # MHA returns NaNs for fully masked rows. Give them one safe key.
                 all_pad = mask.all(-1)
                 if all_pad.any(): mask[all_pad, 0] = False
-                z = block(z, mask)
+                if self.training and torch.is_grad_enabled():
+                    z = checkpoint(lambda value, layer=block, pad_mask=mask: layer(value, pad_mask),
+                                   z, use_reentrant=False)
+                else:
+                    z = block(z, mask)
                 x = z.reshape(b, n, t, -1).permute(0, 2, 1, 3)
             else:  # cross-asset/cross-market attention at each timestamp
                 z = x.reshape(b*t, n, -1)
                 mask = (~valid).reshape(b*t, n)
                 all_pad = mask.all(-1)
                 if all_pad.any(): mask[all_pad, 0] = False
-                z = block(z, mask)
+                if self.training and torch.is_grad_enabled():
+                    z = checkpoint(lambda value, layer=block, pad_mask=mask: layer(value, pad_mask),
+                                   z, use_reentrant=False)
+                else:
+                    z = block(z, mask)
                 x = z.reshape(b, t, n, -1)
             x = x * valid[..., None]
         x = self.final_norm(x[:, -1])

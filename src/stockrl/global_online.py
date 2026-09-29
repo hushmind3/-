@@ -9,7 +9,7 @@ from collections import deque, OrderedDict
 from contextlib import closing
 from dataclasses import asdict, dataclass
 from pathlib import Path
-import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io
+import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc
 import re
 import hashlib
 
@@ -23,9 +23,11 @@ from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTr
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
 from .paper_account import PaperAccount
 
-REWARD_VERSION="symbol_and_portfolio_v3"
-REWARD_DEFINITION=("symbol_and_portfolio_v3: per-symbol realized plus unrealized net PnL is the action reward; "
-                   "whole-account net equity change is stored once per timestamp for allocation learning")
+REWARD_VERSION="symbol_and_portfolio_v4"
+PAPER_EXPLORATION_EPSILON=0.05
+REWARD_DEFINITION=("symbol_and_portfolio_v4: sampled-policy action probabilities with clipped importance weighting; "
+                   "per-symbol net PnL trains action/allocation contribution; "
+                   "normalized whole-account net equity change is a separate portfolio-value target")
 
 
 class IncrementalMarketCSV:
@@ -98,17 +100,20 @@ class Experience:
     timestamp: str
     source: str = "paper"
     regime: float = 0.0
-    reward_version: str = "symbol_and_portfolio_v3"
+    reward_version: str = "symbol_and_portfolio_v4"
     market_context: np.ndarray | None = None
     portfolio_state: np.ndarray | None = None
     account_state: np.ndarray | None = None
     portfolio_reward: float | None = None
     portfolio_transition: bool = False
+    portfolio_value_transition: bool = False
     forward_return: float | None = None
+    behavior_log_prob: float | None = None
 
 
 class GlobalReplayBuffer:
     """Bounded replay with explicit recent/old/extreme regime mixture."""
+    max_journal_bytes=64*1024*1024
     def __init__(self, capacity: int = 4_096, seed: int = 7,
                  journal_path: str|Path|None = None):
         self.capacity=capacity; self.items: deque[Experience]=deque(maxlen=capacity)
@@ -122,7 +127,9 @@ class GlobalReplayBuffer:
     def _connect(self):
         assert self.journal_path is not None
         self.journal_path.parent.mkdir(parents=True,exist_ok=True)
-        return sqlite3.connect(self.journal_path,timeout=30)
+        db=sqlite3.connect(self.journal_path,timeout=30)
+        db.execute("PRAGMA journal_size_limit=8388608")
+        return db
 
     @staticmethod
     def _window_key(exp:Experience):
@@ -151,12 +158,15 @@ class GlobalReplayBuffer:
     def _metadata(exp:Experience):
         metadata={name:getattr(exp,name) for name in (
             "symbol_index","action","reward","timestamp","source","regime",
-            "reward_version","portfolio_reward","portfolio_transition","forward_return")}
+            "reward_version","portfolio_reward","portfolio_transition",
+            "portfolio_value_transition","forward_return",
+            "behavior_log_prob")}
         return pickle.dumps(metadata,protocol=5)
 
     def _load_journal(self):
         with closing(self._connect()) as db:
             db.execute("PRAGMA journal_mode=WAL")
+            db.execute("PRAGMA journal_size_limit=8388608")
             db.execute("CREATE TABLE IF NOT EXISTS windows (key TEXT PRIMARY KEY, payload BLOB NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS experiences (id INTEGER PRIMARY KEY AUTOINCREMENT, window_key TEXT NOT NULL, metadata BLOB NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL, record_key TEXT NOT NULL, metadata BLOB NOT NULL, PRIMARY KEY(kind,record_key))")
@@ -165,8 +175,15 @@ class GlobalReplayBuffer:
                 db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
             rows=db.execute("SELECT e.id,e.window_key,e.metadata,w.payload FROM experiences e JOIN windows w ON w.key=e.window_key ORDER BY e.id DESC LIMIT ?",(self.capacity,)).fetchall()
         decoded_windows={}
+        portfolio_value_timestamps=set()
         for row_id,window_key,metadata_blob,payload_blob in reversed(rows):
             metadata=pickle.loads(metadata_blob)
+            if metadata.get("portfolio_transition") and "portfolio_value_transition" not in metadata:
+                stamp=metadata.get("timestamp")
+                metadata["portfolio_value_transition"]=stamp not in portfolio_value_timestamps
+                portfolio_value_timestamps.add(stamp)
+            elif metadata.get("portfolio_value_transition"):
+                portfolio_value_timestamps.add(metadata.get("timestamp"))
             arrays=decoded_windows.get(window_key)
             if arrays is None:
                 arrays=pickle.loads(zlib.decompress(payload_blob))
@@ -231,7 +248,8 @@ class GlobalReplayBuffer:
     def add(self, exp: Experience, pending_ack: tuple[str,str]|None=None) -> None:
         with self.lock:
             if exp.portfolio_transition and any(
-                    row.portfolio_transition and row.timestamp==exp.timestamp for row in self.items):
+                    row.portfolio_transition and row.timestamp==exp.timestamp and
+                    row.symbol_index==exp.symbol_index for row in self.items):
                 if pending_ack is not None:
                     with closing(self._connect()) as db:
                         with db: db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
@@ -240,6 +258,7 @@ class GlobalReplayBuffer:
             self.items.append(exp)
             if row_id is not None:self.row_ids[id(exp)]=row_id
             self._prune_row_ids()
+            self._enforce_disk_limit_locked()
 
     def acknowledge_pending(self, kind: str, decision: dict) -> None:
         if self.journal_path is None:
@@ -251,17 +270,51 @@ class GlobalReplayBuffer:
     def _prune_row_ids(self):
         live={id(item) for item in self.items}
         self.row_ids={key:value for key,value in self.row_ids.items() if key in live}
+    def disk_bytes(self)->int:
+        if self.journal_path is None:return 0
+        return sum(path.stat().st_size for path in (
+            self.journal_path,Path(str(self.journal_path)+"-wal"),Path(str(self.journal_path)+"-shm"))
+            if path.exists())
+    def _enforce_disk_limit_locked(self):
+        """Prune oldest records and compact only after the journal cap is crossed."""
+        if self.journal_path is None or self.disk_bytes()<=self.max_journal_bytes:return
+        keep_ids=set(); seen_windows=set(); logical_bytes=0
+        budget=self.max_journal_bytes-4*1024*1024
+        with closing(self._connect()) as db:
+            rows=db.execute("SELECT e.id,e.window_key,length(e.metadata),length(w.payload) "
+                            "FROM experiences e JOIN windows w ON w.key=e.window_key "
+                            "ORDER BY e.id DESC").fetchall()
+            for row_id,key,metadata_bytes,payload_bytes in rows:
+                extra=int(metadata_bytes)+(0 if key in seen_windows else int(payload_bytes))
+                if not keep_ids and extra>budget:break
+                if keep_ids and logical_bytes+extra>budget:break
+                keep_ids.add(int(row_id)); logical_bytes+=extra; seen_windows.add(key)
+            oldest_kept=min(keep_ids) if keep_ids else 2**63-1
+            with db:
+                db.execute("DELETE FROM experiences WHERE id<?",(oldest_kept,))
+                db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
+            db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            db.execute("VACUUM")
+        survivors=[]
+        for item in self.items:
+            row_id=self.row_ids.get(id(item))
+            if row_id is None or row_id in keep_ids:survivors.append(item)
+            else:self.row_ids.pop(id(item),None)
+        self.items=deque(survivors,maxlen=self.capacity)
+        self._prune_row_ids()
     def __len__(self):
         with self.lock: return len(self.items)
-    def sample(self, batch_size: int) -> list[Experience]:
+    def sample(self, batch_size: int, exclude_ids: set[int]|None=None) -> list[Experience]:
         with self.lock: items=list(self.items)
+        if exclude_ids:
+            items=[item for item in items if id(item) not in exclude_ids]
         if not items: return []
         teachers=[x for x in items if x.source.startswith("teacher")]
         # Candidate learning must optimize the same cash-only account used by
         # paper validation. The isolated per-action proxy can assign a short
         # reward to SELL, while PaperAccount forbids naked shorts; keep those
         # rows in the journal for audit, but do not sample them for training.
-        paper=[x for x in items if x.source.startswith("paper_account")
+        paper=[x for x in items if x.source.startswith("paper")
                and getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION]
         # Keep old samples on disk for auditability, but don't mix their former
         # position-transition rewards with the new isolated-horizon trade target.
@@ -309,6 +362,7 @@ class GlobalReplayBuffer:
                     with db:
                         db.executemany("DELETE FROM experiences WHERE id=?",((row_id,) for row_id in row_ids))
                         db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
+                    db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
             self.items=deque((item for item in self.items if id(item) not in consumed),
                              maxlen=self.capacity)
             return before-len(self.items)
@@ -324,7 +378,7 @@ class GlobalReplayBuffer:
     def trainable_count(self)->int:
         with self.lock:
             return sum(x.source.startswith("teacher") or
-                       (x.source.startswith("paper_account") and
+                       (x.source.startswith("paper") and
                         getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION)
                        for x in self.items)
     def load(self,path:Path,manifest_path:Path|None=None):
@@ -365,7 +419,9 @@ def _atomic_save(obj, path: Path, temp_dir: Path | None = None):
 
 def _atomic_json(obj,path:Path):
     path.parent.mkdir(parents=True,exist_ok=True); tmp=path.with_suffix(path.suffix+".tmp")
-    tmp.write_text(json.dumps(obj,indent=2),encoding="utf-8"); os.replace(tmp,path)
+    tmp.write_text(json.dumps(obj,indent=2,
+                              default=lambda value: value.item() if isinstance(value,np.generic) else str(value)),
+                   encoding="utf-8"); os.replace(tmp,path)
 
 
 def should_promote(candidate_score:float, champion_score:float, minimum_delta:float=0.0)->bool:
@@ -445,8 +501,8 @@ def load_model(path:Path,device:torch.device):
 class OnlineGlobalAgent:
     def __init__(self, state_dir: str|Path, device="auto", config:TransformerConfig|None=None,
                  capacity=4_096, window=128, horizon=1, fee=.001, slippage_bps=1.0,
-                 min_replay=8, batch_size=2, updates_per_candidate=1, lr=2e-6, seed=7,
-                 candidate_interval=256, initial_champion: str|Path|None=None,
+                 min_replay=8, batch_size=4, updates_per_candidate=4, lr=2e-6, seed=7,
+                 candidate_interval=16, initial_champion: str|Path|None=None,
                  teacher_replay_path: str|Path|None=None,
                  model_dir: str|Path|None=None):
         from .core import device_for
@@ -491,6 +547,8 @@ class OnlineGlobalAgent:
             self.champion=self.champion.to(self.device).eval()
             save_model(self.champion_path,self.champion,self.cfg,temp_dir=self.state_dir)
         self.candidate=None; self.optimizer=None; self.steps=0; self.updates=0
+        self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
+        self.policy_rng=random.Random(seed+1)
         self.validation=[]
         self.portfolio_validation=[]
         self.validation_lock=threading.Lock()
@@ -545,6 +603,21 @@ class OnlineGlobalAgent:
                 self.metrics.update(json.loads(metrics_path.read_text(encoding="utf-8")))
             except (OSError,json.JSONDecodeError):
                 pass
+        stale_replay=[x for x in self.replay.items
+                      if not x.source.startswith("teacher") and
+                      getattr(x,"reward_version","legacy_transition_v1")!=REWARD_VERSION]
+        if stale_replay:
+            removed=self.replay.discard(stale_replay)
+            # The old rows no longer contribute learning. Compact the same
+            # replay journal in place; preserve its pending records and window
+            # continuity, and never create a second replay file.
+            with closing(self.replay._connect()) as db:
+                db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                db.execute("VACUUM")
+            self.metrics["legacy_replay_rows_discarded"] = int(
+                self.metrics.get("legacy_replay_rows_discarded",0))+removed
+            self.metrics["paper_experiences_seen"]=0
+            self.metrics["paper_experiences_since_candidate"]=0
         prior_reward_definition=self.metrics.get("reward_definition")
         if prior_reward_definition!=REWARD_DEFINITION:
             # Counts from the previous account-wide reward are not eligible to
@@ -556,27 +629,27 @@ class OnlineGlobalAgent:
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
         self.promotion_baseline_path=self.state_dir/"promotion_baseline.json"
         current_champion_sha=self._sha256_file(self.champion_path).upper()
-        try:
-            saved_baseline=json.loads(self.promotion_baseline_path.read_text(encoding="utf-8"))
-            self.protected_champion_sha256=str(saved_baseline["sha256"]).upper()
-        except (OSError,ValueError,KeyError,TypeError):
-            # The user selected the currently installed champion as the new
-            # baseline; persist that decision once for future restarts.
-            self.protected_champion_sha256=current_champion_sha
-            _atomic_json({"sha256":current_champion_sha,"set_reason":"current champion selected as baseline"},
-                         self.promotion_baseline_path)
-        self.promotion_lineage_hold=current_champion_sha!=self.protected_champion_sha256
-        if self.promotion_lineage_hold:
-            self.metrics["promotion_blocked_reason"]=(
-                "champion lineage unresolved: current SHA256 does not match the protected reference")
-        elif (str(self.metrics.get("promotion_blocked_reason", "")).startswith(
-                ("champion lineage unresolved", "promotion held: champion lineage",
-                 "sequential paper-account validator is not implemented",
-                 "순차 paper-account 검증기가 구현되지 않아 자동 승급을 막고 있습니다."))):
+        # SHA identifies the champion captured for a validation window; it is
+        # not a fixed allowlist. Clear obsolete fixed-SHA hold messages.
+        self.promotion_baseline_sha256=current_champion_sha
+        if str(self.metrics.get("promotion_blocked_reason", "")).startswith(
+                ("champion lineage unresolved", "promotion held: champion lineage")):
             self.metrics["promotion_blocked_reason"]=None
             self.metrics["candidate_validation_error"]=None
         self.metrics.setdefault("paper_experiences_seen",
                                 int(self.metrics.get("paper_examples_trained",0)))
+        last_update=self.metrics.get("last_update_utc")
+        if last_update:
+            try:
+                last_update_ts=np.datetime64(last_update)
+                unconsumed_account_rows=sum(
+                    exp.source=="paper_account_symbol" and exp.reward_version==REWARD_VERSION and
+                    np.datetime64(exp.timestamp)>last_update_ts for exp in self.replay.items)
+                self.metrics["paper_experiences_since_candidate"]=max(
+                    int(self.metrics.get("paper_experiences_since_candidate",0)),
+                    unconsumed_account_rows)
+            except (TypeError,ValueError):
+                pass
         self.replay.paper_outcomes_seen=int(self.metrics["paper_experiences_seen"])
         self.metrics["legacy_reward_examples_ignored"]=sum(
             not x.source.startswith("teacher") and getattr(x,"reward_version","legacy_transition_v1")!=REWARD_VERSION
@@ -591,6 +664,19 @@ class OnlineGlobalAgent:
             validation_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
         except (OSError,json.JSONDecodeError):
             pass
+        self.validation_meta_path=self.state_dir/"validation_config.json"
+        saved_validation_config={}
+        try:
+            saved_validation_config=json.loads(self.validation_meta_path.read_text(encoding="utf-8"))
+        except (OSError,json.JSONDecodeError):
+            pass
+        if saved_validation_config.get("reward_version")!=REWARD_VERSION:
+            if validation_state.get("status")=="collecting":
+                validation_state={"status":"discarded","reason":"paper reward schema changed"}
+                _atomic_json(validation_state,self.validation_state_path)
+            # A candidate trained with the old, currency-bugged reward cannot
+            # be carried into the new policy cycle.
+            shutil.copy2(self.champion_path,self.model_dir/"candidate.pt")
         if validation_state.get("status")=="collecting":
             if validation_state.get("source_champion_sha256")==self._sha256_file(self.champion_path):
                 candidate_path=self.model_dir/"candidate.pt"
@@ -637,13 +723,12 @@ class OnlineGlobalAgent:
                 validation_state={"status":"discarded","reason":"champion changed during validation"}
                 _atomic_json(validation_state,self.validation_state_path)
         self.metrics["candidate_skip_reason"]="새 paper 경험과 검증 시각을 기다리는 중"
-        # A lineage hold blocks champion promotion only. Older metrics may have
-        # persisted it as a candidate stage; that must not disable learning.
+        # Older runtime metrics may contain an obsolete held stage; resume the
+        # normal candidate cycle without discarding replay or validation state.
         if self.metrics.get("candidate_stage") == "promotion_held":
             self.metrics["candidate_stage"] = "waiting"
         # New observations are journaled in bounded SQLite replay and trigger candidate learning.
         self.last_train_replay_size=int(self.metrics.get("last_train_replay_size",0))
-        self.validation_meta_path=self.state_dir/"validation_config.json"
         _atomic_json({"reward_version":REWARD_VERSION,"horizon":str(self.horizon)},self.validation_meta_path)
         self.thread=threading.Thread(target=self._learner,name="global-learner",daemon=True)
 
@@ -798,7 +883,8 @@ class OnlineGlobalAgent:
                     else abs(float(panel.features[dec["index"],i,6])))
             self.replay.add(Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                 dec["valid_mask"],i,action,float(reward),dec["timestamp"],"paper",max(regime,abs(forward)),
-                reward_version="net_trade_v2",market_context=dec.get("market_context")),
+                reward_version=REWARD_VERSION,market_context=dec.get("market_context"),
+                behavior_log_prob=dec.get("behavior_log_prob")),
                 pending_ack=("regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
         return keep
 
@@ -846,7 +932,8 @@ class OnlineGlobalAgent:
                     dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),
                     dec["timestamp"],"paper_account_symbol",float(dec.get("regime",0.0)),
                     market_context=dec.get("market_context"), portfolio_state=dec.get("portfolio_state"),
-                    account_state=dec.get("account_state"),forward_return=forward_return)
+                    account_state=dec.get("account_state"),forward_return=forward_return,
+                    behavior_log_prob=dec.get("behavior_log_prob"))
             if dec.get("is_validation",False):
                 self._append_validation(self.portfolio_validation,self.portfolio_validation_dates,
                                         exp.timestamp,exp)
@@ -855,15 +942,25 @@ class OnlineGlobalAgent:
                 self.replay.add(exp,pending_ack=("portfolio",
                     f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
                 timestamp=dec["timestamp"]
-                if timestamp not in account_transition_added:
+                # Keep one allocation-credit row per symbol. It carries that
+                # symbol's realized contribution separately from the shared
+                # whole-account result; never attach the whole account return
+                # to whichever symbol happened to mature first.
+                with self.replay.lock:
+                    first_account_transition=(timestamp not in account_transition_added and not any(
+                        item.portfolio_value_transition and item.timestamp==timestamp
+                        for item in self.replay.items))
+                account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
+                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),timestamp,
+                    "paper_account_portfolio",float(dec.get("regime",0.0)),
+                    market_context=dec.get("market_context"),portfolio_state=dec.get("portfolio_state"),
+                    account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
+                    portfolio_transition=True,portfolio_value_transition=first_account_transition,
+                    forward_return=forward_return,
+                    behavior_log_prob=dec.get("behavior_log_prob"))
+                self.replay.add(account_exp)
+                if first_account_transition:
                     account_transition_added.add(timestamp)
-                    account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                        dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(account_reward),timestamp,
-                        "paper_account_portfolio",float(dec.get("regime",0.0)),
-                        market_context=dec.get("market_context"),portfolio_state=dec.get("portfolio_state"),
-                        account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
-                        portfolio_transition=True,forward_return=forward_return)
-                    self.replay.add(account_exp)
                     self.metrics["paper_account_reward"] = float(
                         self.metrics.get("paper_account_reward",0.0))+account_reward
                     self.metrics["portfolio_experiences"] = int(
@@ -1001,6 +1098,33 @@ class OnlineGlobalAgent:
                     return restored
                 pending=restore_pending(pending,False)
                 portfolio_pending=restore_pending(portfolio_pending,True)
+                # Minute-live operation favors current observations over
+                # replaying a stale feed backlog. Expire unresolved outcomes
+                # older than five minutes and remove their old reward rows
+                # from the same bounded journal before learning can resume.
+                live_cutoff=panel.dates[-1]-np.timedelta64(300,"s")
+                stale_regular=[dec for dec in pending
+                    if np.datetime64(dec.get("timestamp"))<live_cutoff]
+                stale_portfolio=[dec for dec in portfolio_pending
+                    if np.datetime64(dec.get("timestamp"))<live_cutoff]
+                if stale_regular or stale_portfolio:
+                    stale_regular_ids={id(dec) for dec in stale_regular}
+                    stale_portfolio_ids={id(dec) for dec in stale_portfolio}
+                    pending=[dec for dec in pending if id(dec) not in stale_regular_ids]
+                    portfolio_pending=[dec for dec in portfolio_pending
+                                       if id(dec) not in stale_portfolio_ids]
+                    self.metrics["live_stale_pending_discarded"]=int(
+                        self.metrics.get("live_stale_pending_discarded",0))+len(stale_regular)+len(stale_portfolio)
+                    self.replay.save_pending(pending,portfolio_pending)
+                stale_replay=[exp for exp in self.replay.items
+                    if np.datetime64(exp.timestamp)<live_cutoff and not exp.source.startswith("teacher")]
+                if stale_replay:
+                    stale_account_rows=sum(exp.source=="paper_account_symbol" for exp in stale_replay)
+                    removed=self.replay.discard(stale_replay)
+                    self.metrics["live_stale_replay_discarded"]=int(
+                        self.metrics.get("live_stale_replay_discarded",0))+removed
+                    self.metrics["paper_experiences_since_candidate"]=max(
+                        0,int(self.metrics.get("paper_experiences_since_candidate",0))-stale_account_rows)
                 if expired_regular or expired_portfolio:
                     self.metrics["pending_expired_after_window"] = int(
                         self.metrics.get("pending_expired_after_window",0))+expired_regular
@@ -1032,7 +1156,17 @@ class OnlineGlobalAgent:
                         pending.clear(); portfolio_pending.clear()
                         start=max(0,len(panel.dates)-1)
                     else:
-                        start=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
+                        cursor_index=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
+                        lag_seconds=float((panel.dates[-1]-cursor_dt)/np.timedelta64(1,"s"))
+                        if lag_seconds>300:
+                            skipped=max(0,len(panel.dates)-cursor_index)
+                            self.metrics["live_backlog_skipped_timestamps"]=int(
+                                self.metrics.get("live_backlog_skipped_timestamps",0))+skipped
+                            pending=[]; portfolio_pending=[]
+                            self.replay.save_pending(pending,portfolio_pending)
+                            start=max(0,len(panel.dates)-1)
+                        else:
+                            start=cursor_index
                 for ti in range(start,len(panel.dates)):
                     if self.stop.is_set(): break
                     self.current_market_timestamp=str(panel.dates[ti])
@@ -1061,7 +1195,10 @@ class OnlineGlobalAgent:
                         continue
                     pstate,astate=self.paper_account.model_inputs(panel,ti)
                     logits,values,allocation=self._infer(panel,ti,pstate,astate)
-                    probs=torch.softmax(torch.as_tensor(logits),-1).numpy()
+                    model_probs=torch.softmax(torch.as_tensor(logits),-1).numpy()
+                    probs=(1.0-PAPER_EXPLORATION_EPSILON)*model_probs+PAPER_EXPLORATION_EPSILON/3.0
+                    actions=[self.policy_rng.choices((0,1,2),weights=row.tolist(),k=1)[0]
+                             for row in probs]
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
                     stamp=str(panel.dates[ti]); validation=self.validation_active
@@ -1079,10 +1216,13 @@ class OnlineGlobalAgent:
                         # for a visible BUY/HOLD/SELL decision, while the
                         # observed mask remains untouched for reward maturity.
                         if not panel.observed[:ti + 1, j].any(): continue
-                        action=int(np.argmax(probs[j])); previous=self.positions.get(symbol,0)
+                        action=int(actions[j])
+                        behavior_log_prob=float(np.log(max(float(probs[j,action]),1e-12)))
+                        previous=self.positions.get(symbol,0)
                         if panel.observed[ti,j]:
                             pending.append({**pending_inputs,"index":ti,"symbol_index":j,"action":action,"previous_position":previous,
                               "timestamp":stamp,"symbol":symbol,"entry_price":float(panel.closes[ti,j]),
+                              "behavior_log_prob":behavior_log_prob,
                               "bars_elapsed":0,"regime":abs(float(panel.features[ti,j,6])),
                               "is_validation":False,
                               "promotion_holdout":validation,
@@ -1090,6 +1230,7 @@ class OnlineGlobalAgent:
                         if paper_enabled and panel.observed[ti,j]:
                             portfolio_pending.append({**portfolio_inputs,"index":ti,"symbol_index":j,"symbol":symbol,
                               "action":action,"timestamp":stamp,
+                              "behavior_log_prob":behavior_log_prob,
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
                                "is_validation":False,"promotion_holdout":validation,
@@ -1101,7 +1242,8 @@ class OnlineGlobalAgent:
                         self.metrics["decisions"]+=1
                         if paper_enabled:
                             self.positions[symbol]=action-1
-                    self.paper_account.queue_decisions(panel,ti,probs,paper_enabled,allocation=allocation)
+                    self.paper_account.queue_decisions(panel,ti,probs,paper_enabled,
+                                                       allocation=allocation,actions=actions)
                     self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
                     self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
@@ -1343,6 +1485,9 @@ class OnlineGlobalAgent:
                     f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기"
                     if self.validation_active else "candidate 학습 진행 중")
                 continue
+            if time.monotonic()<self.candidate_retry_after:
+                self.metrics["candidate_skip_reason"]="candidate 학습 오류 후 메모리 회복 대기"
+                continue
             if new_experiences<max(self.min_replay,self.candidate_interval):
                 self.metrics["candidate_skip_reason"] = f"다음 candidate까지 새 경험 {new_experiences}/{max(self.min_replay,self.candidate_interval)}건"
                 continue
@@ -1353,15 +1498,31 @@ class OnlineGlobalAgent:
             except Exception as exc:
                 self.metrics["candidate_training"]=False; self.candidate=None
                 self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
-                self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"
-                self.metrics["paper_experiences_since_candidate"]=0
+                self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"[:1200]
+                exc.__traceback__=None
+                del exc
+                self._schedule_candidate_retry()
+                self._release_cuda_cache()
                 try:
                     self._reset_candidate_file()
                     self._write_metrics()
                 except Exception: pass
 
+    def _schedule_candidate_retry(self):
+        self.candidate_retry_attempts+=1
+        delay=min(300.0,15.0*(2**min(self.candidate_retry_attempts-1,5)))
+        self.candidate_retry_after=time.monotonic()+delay
+        self.metrics["candidate_retry_delay_seconds"]=delay
+
+    def _release_cuda_cache(self):
+        gc.collect()
+        if self.device.type=="cuda":
+            try: torch.cuda.empty_cache()
+            except RuntimeError: pass
+
     def _train_candidate(self):
         from datetime import datetime, timezone
+        trigger_experience_count=int(self.metrics.get("paper_experiences_since_candidate",0))
         self.metrics["candidate_training"]=True
         self.metrics["candidate_skip_reason"] = None
         with self.lock: source_champion=self.champion
@@ -1383,20 +1544,23 @@ class OnlineGlobalAgent:
         # is reset and is never the starting point of the next attempt.
         self.candidate.load_state_dict(source_champion.state_dict())
         original=self.champion
-        candidate=self.candidate.train(); opt=torch.optim.AdamW(candidate.parameters(),lr=self.lr,weight_decay=.01,
-            eps=1e-4 if self.device.type=="cuda" else 1e-8)
+        candidate=self.candidate.train(); opt=torch.optim.AdamW(
+            candidate.parameters(),lr=self.lr,weight_decay=.01,
+            eps=1e-4 if self.device.type=="cuda" else 1e-8,foreach=False)
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
             torch.cuda.reset_peak_memory_stats(self.device)
         elapsed=[]
-        candidate_samples=0; candidate_sample_keys=set()
+        candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
+        sampled_ids=set()
         self.metrics["last_candidate_optimizer_steps"]=0
         self.metrics["last_candidate_samples_trained"]=0
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
-            batch=self.replay.sample(self.batch_size)
+            batch=self.replay.sample(self.batch_size,exclude_ids=sampled_ids)
             if not batch: break
+            sampled_ids.update(id(e) for e in batch)
             candidate_sample_keys.update((e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
                                          for e in batch)
             self.metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in batch)
@@ -1405,6 +1569,7 @@ class OnlineGlobalAgent:
             use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
             # Accumulate the requested replay batch as one optimizer update,
             # while holding only one sequence's activations on the 8 GB GPU.
+            successful_batch=[]
             for experience in batch:
                 args,pstate,astate=self._pack([experience])
                 if use_portfolio:
@@ -1418,32 +1583,53 @@ class OnlineGlobalAgent:
                     self.metrics["nonfinite_updates"]+=1
                     continue
                 action=torch.as_tensor([experience.action],device=self.device,dtype=torch.long)
-                dist=Categorical(logits=chosen[None])
+                action_probs=(1.0-PAPER_EXPLORATION_EPSILON)*torch.softmax(chosen,dim=-1)
+                action_probs=action_probs+PAPER_EXPLORATION_EPSILON/3.0
+                dist=Categorical(probs=action_probs[None])
                 symbol_reward=torch.as_tensor(float(experience.reward),device=self.device,dtype=torch.float32)
                 loss=chosen.sum()*0
                 if not experience.portfolio_transition:
                     advantage=(symbol_reward-predicted.detach()).clamp(-1,1)
-                    loss=(-(dist.log_prob(action)*advantage).mean()
+                    if experience.behavior_log_prob is not None:
+                        new_log_prob=dist.log_prob(action)[0]
+                        old_log_prob=torch.as_tensor(float(experience.behavior_log_prob),
+                                                     device=self.device,dtype=torch.float32)
+                        ratio=torch.exp((new_log_prob-old_log_prob).clamp(-20,20))
+                        clipped=ratio.clamp(.8,1.2)
+                        policy_loss=-torch.minimum(ratio*advantage,clipped*advantage)
+                    else:
+                        # Legacy deterministic actions have no valid behavior
+                        # probability; use their outcome only for the critic.
+                        policy_loss=chosen.sum()*0
+                    loss=(policy_loss
                           +.5*nn.functional.smooth_l1_loss(predicted[None],symbol_reward[None])
                           -.005*dist.entropy().mean())
+                else:
+                    loss=chosen.sum()*0
+                    if experience.portfolio_value_transition:
+                        account_reward=torch.as_tensor(float(experience.portfolio_reward or 0.0),
+                                                        device=self.device,dtype=torch.float32)
+                        portfolio_value=values[0].float().mean()
+                        loss=loss+.25*nn.functional.smooth_l1_loss(portfolio_value,account_reward)
+                    if allocations is not None:
+                        selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
+                        contribution=symbol_reward.detach().clamp(-1,1)
+                        loss=loss-.10*contribution*torch.log(selected)
                 if experience.source.startswith("teacher"):
                     loss=loss+nn.functional.cross_entropy(chosen[None],action)
-                if allocations is not None and experience.portfolio_transition:
-                    account_reward=torch.as_tensor(float(experience.portfolio_reward or 0.0),
-                                                    device=self.device,dtype=torch.float32)
-                    selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
-                    loss=loss-.10*account_reward.detach().clamp(-1,1)*torch.log(selected)
                 if not torch.isfinite(loss):
                     self.metrics["nonfinite_updates"]+=1
                     continue
                 (loss/len(batch)).backward()
                 valid_samples+=1
+                successful_batch.append(experience)
                 loss_values.append(float(loss.detach().cpu()))
                 del args,pstate,astate,logits,values,allocations,chosen,predicted,dist,loss
             if not valid_samples:
                 continue
             nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
             candidate_samples+=valid_samples
+            used_experiences.extend(successful_batch)
             self.metrics["update_losses"].append(float(np.mean(loss_values)))
             self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
             if self.device.type=="cuda": torch.cuda.synchronize(self.device)
@@ -1467,16 +1653,17 @@ class OnlineGlobalAgent:
             self.metrics["candidate_training"]=False
             self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
             self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
-            self.metrics["paper_experiences_since_candidate"]=0
+            self._schedule_candidate_retry()
             self.candidate=None
             self._reset_candidate_file()
             self._write_metrics()
             del candidate,opt
+            self._release_cuda_cache()
             return
         if not all(torch.isfinite(p).all() for p in candidate.parameters()):
             self.metrics["nonfinite_updates"]+=1
             self.metrics["rejections"]+=1
-            self.metrics["paper_experiences_since_candidate"]=0
+            self._schedule_candidate_retry()
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
             history=self.metrics.setdefault("candidate_gate_history",[])
             history.append({"time_utc":self.metrics["last_rejection_utc"],"applied":False,
@@ -1488,6 +1675,7 @@ class OnlineGlobalAgent:
             self._reset_candidate_file()
             self._write_metrics()
             del candidate,opt
+            self._release_cuda_cache()
             return
         delta=sum((candidate.state_dict()[k].float()-v.detach().float()).abs().sum().item()
                   for k,v in original.state_dict().items())
@@ -1499,15 +1687,19 @@ class OnlineGlobalAgent:
         # omit it from the artifact so evaluation/recovery only loads weights.
         save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
         self._begin_candidate_validation(candidate)
-        # Keep successfully trained examples in the bounded replay journal so
-        # later candidates can revisit older market conditions. Capacity
-        # pruning in GlobalReplayBuffer.add remains responsible for eviction.
+        # Replay is a temporary workbook: once its samples are durably reflected
+        # in candidate.pt, consume those rows so the same experience does not
+        # accumulate or get trained forever.
+        self.metrics["candidate_replay_rows_consumed"] = self.replay.discard(used_experiences)
         self.last_train_replay_size=len(self.replay)
         self.metrics["last_train_replay_size"]=self.last_train_replay_size
-        self.metrics["paper_experiences_since_candidate"]=0
-        self.metrics["candidate_replay_since_last_update"]=0
+        self.metrics["paper_experiences_since_candidate"]=max(
+            0,int(self.metrics.get("paper_experiences_since_candidate",0))-trigger_experience_count)
+        self.metrics["candidate_replay_since_last_update"]=int(
+            self.metrics["paper_experiences_since_candidate"])
         self.metrics["candidate_training"]=False
         self.metrics["candidate_stage"]="sequential_paper_validation"
+        self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
 
@@ -1671,37 +1863,6 @@ class OnlineGlobalAgent:
             state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
             if state.get("source_champion_sha256")!=source_sha:
                 error="champion changed during candidate validation"
-        if error is None and source_sha.upper()!=self.protected_champion_sha256:
-            from datetime import datetime,timezone
-            reason=("promotion held: champion lineage is unresolved; protected SHA256 "
-                    f"{self.protected_champion_sha256}, current SHA256 {source_sha.upper()}")
-            self.metrics["last_candidate_validation_score"]=float(candidate_score)
-            self.metrics["last_champion_validation_score"]=float(champion_score)
-            self.metrics["last_candidate_promoted"]=False
-            self.metrics["promotion_blocked_reason"]=reason
-            self.metrics["candidate_validation_error"]=reason
-            self.metrics["candidate_training"]=False
-            self.metrics["candidate_stage"]="waiting"
-            self.metrics["candidate_skip_reason"]=(
-                "candidate learning remains enabled; champion promotion is held by lineage")
-            # Keep the trained candidate checkpoint. Clearing only the in-memory
-            # validation object lets later replay experiences start another
-            # candidate cycle without opening the champion promotion gate.
-            self.candidate=None
-            self.validation_active=False
-            self.metrics.setdefault("candidate_gate_history",[]).append({
-                "time_utc":datetime.now(timezone.utc).isoformat(),"applied":False,
-                "reason":reason,"candidate_score":float(candidate_score),
-                "champion_score":float(champion_score)})
-            self.metrics["candidate_gate_history"]=self.metrics["candidate_gate_history"][-20:]
-            self._atomic_json({"status":"promotion_held","bars":self.validation_bars,
-                "candidate_score":float(candidate_score),"champion_score":float(champion_score),
-                "applied":False,"source_champion_sha256":source_sha,
-                "protected_champion_sha256":self.protected_champion_sha256,
-                "reason":reason},self.validation_state_path)
-            self.validation_generation+=1
-            self._write_metrics()
-            return
         if error is not None:
             self.metrics["promotion_blocked_reason"]=error
             self.metrics["candidate_validation_error"]=error
@@ -1737,13 +1898,13 @@ class OnlineGlobalAgent:
         self.metrics["candidate_skip_reason"]=None
         self.validation_generation+=1
         self._write_metrics()
+        del candidate
+        self._release_cuda_cache()
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
                           source_champion_sha256:str)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
-        promote=(not self.promotion_lineage_hold
-                 and validation_bars>=self.validation_window_bars
-                and source_champion_sha256.upper()==self.protected_champion_sha256
+        promote=(validation_bars>=self.validation_window_bars
                  and self._sha256_file(self.champion_path)==source_champion_sha256
                  and should_promote(score_new,score_old,1e-9))
         self.metrics["last_candidate_validation_score"]=score_new
@@ -1761,8 +1922,7 @@ class OnlineGlobalAgent:
                     raise RuntimeError("champion changed before atomic promotion")
                 os.replace(staged,self.champion_path)
                 os.replace(baseline_next,self.promotion_baseline_path)
-                self.protected_champion_sha256=promoted_sha
-                self.promotion_lineage_hold=False
+                self.promotion_baseline_sha256=promoted_sha
                 self.champion=candidate.eval(); self.metrics["promotions"]+=1
                 from datetime import datetime, timezone
                 self.metrics["last_promotion_utc"]=datetime.now(timezone.utc).isoformat()
@@ -1798,7 +1958,7 @@ class OnlineGlobalAgent:
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
-          "protected_champion_sha256":self.protected_champion_sha256,
+          "promotion_baseline_sha256":self.promotion_baseline_sha256,
           "candidate_learning_enabled":bool(self.metrics.get("observation_caught_up",False)),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
@@ -1819,8 +1979,7 @@ class OnlineGlobalAgent:
           "horizon":str(self.horizon),"fee_rate":self.fee,"slippage_bps":self.slippage*10000,
           "rss_bytes":proc.memory_info().rss,"replay_count":len(self.replay),
           "trainable_replay_count":self.replay.trainable_count(),
-          "replay_file_bytes":(self.replay.journal_path.stat().st_size
-                               if self.replay.journal_path and self.replay.journal_path.exists() else 0),
+          "replay_file_bytes":self.replay.disk_bytes(),
           "champion_path":str(self.champion_path),"candidate_path":str(self.model_dir/"candidate.pt")})
         if self.device.type=="cuda":
             metrics.update({"cuda_device":torch.cuda.get_device_name(self.device),
