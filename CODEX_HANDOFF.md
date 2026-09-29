@@ -139,3 +139,10 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`는 아직 존재한다. 읽기 전용 확인에서 22개 파일, 43,960,537 bytes였으며 `feed.stop`, replay SQLite와 SQLite WAL/SHM sidecar가 있다.
 - 실행 중인 feed/agent command line은 모두 프로젝트 `runtime/markets/korea/live`를 가리킨다. AppData runtime은 현재 프로세스가 사용하지 않는다.
 - 삭제 요청은 있었으나 이전 재귀 삭제 요청이 자동 도구 검토에 거부되어 미완료다. 정책을 우회하지 않았고, 폴더 삭제 완료로 보고하지 않는다.
+
+## P1 CLI runtime 경계 점검 — 2026-09-29 KST
+
+- **응답: 보류.** `src/stockrl/cli.py`의 `web --runtime` 인자는 임의 경로를 받고 `run_web()`에서 `serve()`로 전달한다. `serve()`는 절대 경로를 프로젝트 내부로 제한하지 않는다.
+- `src/stockrl/web_app.py`의 `Supervisor.__init__()`은 전달된 `runtime`에 `mkdir(parents=True, exist_ok=True)`를 실행하므로, 외부 경로를 명시하면 프로젝트 밖 폴더를 생성할 수 있다. 실제 외부 경로 실행은 하지 않았다.
+- `paths.default_runtime_dir()`와 `start_stockrl.py` 기본 runtime 검사는 프로젝트 경계를 확인하지만, CLI 명시 인자 경로는 그 검사를 거치지 않는다. 코드 변경 없이 정적 소스 경로만 확인했다.
+- 재확인 조건: `serve()`에서 모든 runtime 경로가 PROJECT_ROOT 내부인지 검사하도록 수정하고, 경계 밖 값은 디렉터리 생성 전에 거부한 뒤 안전한 검증을 수행한다.

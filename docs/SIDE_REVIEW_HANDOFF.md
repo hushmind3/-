@@ -224,3 +224,10 @@
 - **응답: 보류.** `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`가 여전히 존재한다. 읽기 전용 확인 결과 22개 파일, 43,960,537 bytes이며 `feed.stop`, `replay.sqlite3` 및 `-wal`/`-shm` sidecar가 포함된다.
 - 현재 feed/agent의 process command line은 프로젝트 `runtime/markets/korea/live`를 사용하며 AppData 복사본을 참조하지 않는다.
 - 삭제가 완료되지 않은 이유: 이전 재귀 삭제 실행이 자동 도구 검토에 의해 거부됐다. 재시도나 정책 우회 삭제는 하지 않았으며 완료라고 표현하지 않는다. 자동 검토가 허용하는 명시적 삭제 수단을 사용할 수 있게 되면, 현재 미사용 상태와 DB sidecar를 재확인한 뒤 제거한다.
+
+## P1 CLI runtime 경계 우회 가능성 — 2026-09-29 KST
+
+- **응답: 보류.** `cli.py`의 `web --runtime`은 임의 값을 받고, `run_web()`이 이를 `web_app.serve()`에 넘긴다. `serve()`는 절대 경로를 프로젝트 경계로 제한하지 않는다.
+- `Supervisor.__init__()`의 `self.runtime.mkdir(parents=True, exist_ok=True)` 때문에 외부 절대 경로가 전달되면 실제 외부 폴더 생성으로 이어지는 코드 경로가 확인된다. 외부 디렉터리를 만들지는 않았다.
+- `paths.default_runtime_dir()` 및 `start_stockrl.py`의 기본 runtime 경계 검사는 있지만, CLI override에서는 호출되지 않는다. 이는 다른 외부 경로 우회 지적과 중복될 수 있으나 web CLI의 직접 생성 지점으로 별도 기록한다.
+- 재확인 조건: `serve()` 경계 검사를 추가해 프로젝트 밖 경로를 생성 전에 거부하고, 거부 동작을 확인한다.
