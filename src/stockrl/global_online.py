@@ -458,6 +458,10 @@ class OnlineGlobalAgent:
                       "rejections":0,"nonfinite_updates":0,"teacher_examples_trained":0,"paper_examples_trained":0,
                       "paper_experiences_seen":0,"paper_experiences_since_candidate":0,
                       "paper_net_reward":0.0,"last_market_timestamp":None,"candidate_training":False,
+                      "agent_health":"starting","agent_input_errors":0,
+                      "agent_last_input_error":None,"agent_last_input_error_utc":None,
+                      "observation_caught_up":False,"unmatched_live_symbols":[],
+                      "unmatched_live_symbol_count":0,
                       "last_update_utc":None,"last_promotion_utc":None,"last_rejection_utc":None,
                       "inference_during_candidate":0,"reward_definition":REWARD_DEFINITION,
                       "update_losses":[],"inference_seconds":[],
@@ -773,6 +777,7 @@ class OnlineGlobalAgent:
         decisions_path=self.state_dir/"decisions.csv"
         cursor=None
         last_file_signature=None
+        last_error_signature=None
         if cursor_path.exists(): cursor=json.loads(cursor_path.read_text(encoding="utf-8")).get("last_timestamp")
         account_cursor=self.paper_account.state.get("last_timestamp")
         if account_cursor and (cursor is None or account_cursor>cursor): cursor=account_cursor
@@ -791,6 +796,8 @@ class OnlineGlobalAgent:
                     file_signature=(stat.st_size,stat.st_mtime_ns)
                     if file_signature==last_file_signature:
                         self.stop.wait(poll_seconds); continue
+                    self.metrics["observation_caught_up"]=False
+                    self.metrics["agent_health"]="catching_up"
                     panel=GlobalMarketPanel(data_path, max_symbols=self.cfg.max_symbols,
                         symbol_map=getattr(self.champion,"_stockrl_symbol_map",None),
                         # Keep closed-session indices, futures, yields, and other
@@ -798,12 +805,57 @@ class OnlineGlobalAgent:
                         # known quote. The dashboard still marks their quote as
                         # stale; dropping them here hid their BUY/HOLD/SELL
                         # output entirely whenever their venue was closed.
-                        recent_timestamps=512, active_stale_seconds=604800)
-                except (OSError,ValueError):
+                        recent_timestamps=4096, active_stale_seconds=604800)
+                except (OSError,ValueError) as exc:
                     # A producer may be in the middle of appending a CSV batch.
+                    # Expose a stable error per file version; otherwise an
+                    # input failure looks like a healthy but idle agent.
+                    if file_signature != last_error_signature:
+                        from datetime import datetime, timezone
+                        self.metrics["agent_health"]="input_error"
+                        self.metrics["agent_input_errors"]=int(
+                            self.metrics.get("agent_input_errors",0))+1
+                        self.metrics["agent_last_input_error"]=f"{type(exc).__name__}: {exc}"
+                        self.metrics["agent_last_input_error_utc"]=datetime.now(timezone.utc).isoformat()
+                        self.metrics["observation_caught_up"]=False
+                        error_record={
+                            "time_utc":self.metrics["agent_last_input_error_utc"],
+                            "file_bytes":stat.st_size,"file_mtime_ns":stat.st_mtime_ns,
+                            "error":self.metrics["agent_last_input_error"],
+                        }
+                        with (self.state_dir/"agent_errors.jsonl").open("a",encoding="utf-8") as log:
+                            log.write(json.dumps(error_record,ensure_ascii=False)+"\n")
+                            log.flush(); os.fsync(log.fileno())
+                        self._write_metrics()
+                        last_error_signature=file_signature
                     self.stop.wait(min(poll_seconds,1.0)); continue
+                if last_error_signature is not None:
+                    self.metrics["agent_health"]="catching_up"
+                    self.metrics["agent_last_input_error"]=None
+                    self.metrics["agent_last_input_error_utc"]=None
+                    last_error_signature=None
+                self.metrics["unmatched_live_symbols"] = list(
+                    getattr(panel,"unmatched_symbols",()))
+                self.metrics["unmatched_live_symbol_count"] = len(
+                    self.metrics["unmatched_live_symbols"])
                 if not len(panel.dates):
                     self.stop.wait(poll_seconds); continue
+                oldest_available=(panel.recent_cutoff if panel.recent_cutoff is not None
+                                  else panel.dates[0])
+                if cursor is not None and np.datetime64(cursor) < oldest_available:
+                    self.metrics["agent_health"]="history_gap"
+                    self.metrics["observation_caught_up"]=False
+                    self.metrics["agent_history_gap"]={
+                        "saved_cursor":str(cursor),"oldest_available":str(oldest_available),
+                        "retained_timestamps":4096,
+                    }
+                    self.metrics["candidate_skip_reason"]=(
+                        "저장 cursor가 보존된 시세 범위보다 오래되어 연속 처리를 대기 중")
+                    self._write_metrics()
+                    last_file_signature=file_signature
+                    self.stop.wait(poll_seconds)
+                    continue
+                self.metrics["agent_history_gap"]=None
                 restore_windows={}
                 expired_regular=expired_portfolio=0
                 def restore_pending(items, is_portfolio):
@@ -948,6 +1000,18 @@ class OnlineGlobalAgent:
                     self.metrics["last_market_timestamp"]=stamp
                     _atomic_json({"last_timestamp":cursor},cursor_path)
                     _atomic_json({str(k):v for k,v in self.positions.items()},self.state_dir/"live_positions.json")
+                try:
+                    newest_signature=(data_path.stat().st_size,data_path.stat().st_mtime_ns)
+                except OSError:
+                    newest_signature=None
+                caught_up = (cursor is not None and np.datetime64(cursor) >= panel.dates[-1]
+                             and newest_signature == file_signature)
+                self.metrics["observation_caught_up"]=bool(caught_up)
+                if caught_up:
+                    self.metrics["agent_health"]=("observing_with_unmapped_symbols"
+                        if self.metrics["unmatched_live_symbol_count"] else "observing")
+                else:
+                    self.metrics["agent_health"]="catching_up"
                 self._write_metrics()
                 last_file_signature=file_signature
                 self.stop.wait(poll_seconds)
@@ -1145,6 +1209,9 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
+            if not bool(self.metrics.get("observation_caught_up",False)):
+                self.metrics["candidate_skip_reason"]="시장 데이터 따라잡기 완료 전 candidate 학습 대기"
+                continue
             new_experiences=int(self.metrics.get("paper_experiences_since_candidate",0))
             self.metrics["candidate_replay_since_last_update"]=new_experiences
             # Do not spend GPU time on legacy isolated-action samples. The
@@ -1583,7 +1650,7 @@ class OnlineGlobalAgent:
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
-          "candidate_learning_enabled":True,
+          "candidate_learning_enabled":bool(self.metrics.get("observation_caught_up",False)),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
           "candidate_batch_size":self.batch_size,

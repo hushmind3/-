@@ -6,13 +6,23 @@
 
 운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. source는 결과 대기 중인 `pending` 경험도 replay SQLite에 저장하고, 결과 반영과 pending 제거를 한 DB transaction으로 처리한다. 다만 현재 실행 중인 구버전 agent의 메모리 경험은 아직 저장되지 않았다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
 
+
+## 현재 운영 기준 및 2026-09-29 복구 기록
+
+- 프로젝트 폴더에는 소스·설정·문서를 둡니다. runtime의 시세, replay, 계좌, 판단 기록, 로그, 백업 snapshot은 이 프로젝트 안에서만 보관하고 Git에는 넣지 않습니다. 기존 Git 이력에 남아 있는 runtime은 과거 기록이며 새 커밋의 저장 대상이 아닙니다.
+- 모델 폴더에는 `champion.pt`와 `candidate.pt`만 둡니다. 보호 기준 SHA256과 champion SHA256이 다르면 승급을 계속 막습니다.
+- live panel은 학습된 symbol map과 일치하는 종목을 128개로 자르지 않고 모두 추론합니다. 모델에 없는 feed 종목은 조용히 제외하지 않도록 API metrics의 `unmatched_live_symbols`와 `unmatched_live_symbol_count`에 표시합니다.
+- agent는 최대 4,096개 시세 timestamp를 유지해 cursor부터 순서대로 처리합니다. 저장 cursor가 이 범위보다 오래된 경우에는 최신 시각으로 건너뛰지 않고 `agent_health=history_gap`과 API 경고를 남기며 candidate 학습을 멈춥니다. 입력 오류는 `agent_errors.jsonl`과 API metrics에 기록합니다.
+- agent API health는 프로세스 생존만으로 healthy를 표시하지 않습니다. `agent_health`, 마지막 입력 오류, feed와 agent cursor 차이를 함께 확인합니다. 시세 따라잡기가 끝나기 전에는 candidate 학습을 보류하고, cursor가 feed 최신 시각까지 진행하면 기존 경험 카운터를 유지한 채 학습 조건을 다시 평가합니다.
+- 2026-09-29 복구 전 기존 agent의 마지막 저장 cursor는 `2026-09-29T08:00:00Z`였고, 당시 replay DB에는 미성숙 경험용 `pending_records` 테이블이 없었습니다. 그 시점 `decisions.csv`에는 110건이 기록돼 있었지만, 실행 중 메모리에만 남은 미결 경험의 정확한 수량과 계좌 입력은 복구할 저장 근거가 없었습니다. 이전 512 timestamp 제한으로 최신 bar까지 건너뛴 뒤에는 이 복구 불가 범위를 기록하고, 정상 cursor 상태를 담은 `runtime/markets/korea/snapshots/20260929T112728Z`로 agent 계좌·replay·cursor·판단 기록을 되돌려 다시 처리하도록 했습니다. 이후 재가동 직전 상태는 `runtime/markets/korea/snapshots/20260929T113540Z`에도 보존했습니다.
+
 ## 현재 파일 배치
 
 - 이 프로젝트 폴더에는 소스 코드, 설정, 문서와 정적 연구 데이터가 있다.
 - Windows 모델 폴더 `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt`만 둔다.
 - runtime은 프로젝트 폴더 안 `runtime/markets/<market>/live`에 저장한다. 현재 한국 운영 데이터는 `runtime/markets/korea/live`에 둔다. NASDAQ 운영을 추가하면 `runtime/markets/nasdaq/live`를 쓴다. 기본 runtime 경로와 웹 실행기의 `--runtime`, feed 출력, provider 설정 경로는 프로젝트 폴더 밖을 거부한다. checkpoint 경로는 바탕화면 `모델` 폴더로 제한한다. 이 비공개 저장소에는 복구를 위한 runtime snapshot을 포함하고, 모델 가중치(`.pt`, `.pth`, `.ckpt`, `.safetensors`)는 제외한다. 실행 중 변경된 runtime 자료는 이후 GitHub 저장 시점의 snapshot으로 반영된다.
 - `StockRL Start.bat`은 `STOCKRL_MARKET=korea`로 시작한다. `scripts/run_global_paper.ps1`에는 `-Market nasdaq`처럼 시장 이름을 줄 수 있다. 시장별 시세 설정도 해당 시장 설정 파일로 지정해야 한다.
-- replay와 가상계좌 등 실제 한국 runtime은 `runtime/markets/korea/live`에 있으며 비공개 GitHub 복구 snapshot에 포함한다. 과거 커밋 `613c330`에는 이전 위치의 runtime snapshot도 남아 있다.
+- 예전 commit에는 recovery용 runtime snapshot이 추적돼 있습니다. 로컬 runtime 데이터는 현재 `.gitignore` 규칙에 따라 Git에 저장하지 않으며, 기존 추적 파일은 로컬에서 보존한 채 저장소 추적만 해제했습니다.
 - 이전 위치 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`도 아직 남아 있다(확인 시 22개 파일, 43,960,537 bytes). 현재 feed/agent는 이 폴더를 사용하지 않고 프로젝트 runtime을 사용한다. 기존 폴더 삭제는 자동 도구 검토가 거부해 미완료이며, 삭제 완료로 간주하지 않는다.
 - `web --runtime`, `STOCKRL_RUNTIME_DIR`, `STOCKRL_LOCAL_CONFIG_DIR`은 프로젝트 폴더 밖 경로를 거부한다. `STOCKRL_MODEL_DIR`은 바탕화면 `모델` 폴더만 허용한다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.

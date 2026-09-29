@@ -26,14 +26,6 @@ data/cache/
 /runtime-global-korea-epoch1/
 /runtime-global-korea-epoch1-compact/
 
-# The private repository stores a recovery snapshot of project runtime data.
-!/runtime/**
-/runtime/**/*.pt
-/runtime/**/*.pth
-/runtime/**/*.ckpt
-/runtime/**/*.safetensors
-/runtime/**/*.sqlite3-shm
-/runtime/**/*.sqlite3-wal
-# Mutable live runtime is saved to versioned snapshots, never committed in place.
-/runtime/markets/*/live/**
+# Runtime databases, market data, logs, snapshots, and account state stay local.
+/runtime/
 *.egg-info/

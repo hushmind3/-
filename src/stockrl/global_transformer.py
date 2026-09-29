@@ -272,6 +272,7 @@ class GlobalMarketPanel:
         self._map_symbol_ids: dict[str, int] = {}
         self._map_market_ids: dict[str, int] = {}
         self._map_asset_ids: dict[str, int] = {}
+        self.unmatched_symbols: list[str] = []
         if symbol_map:
             canonical_by_ticker: dict[str, list[tuple[str, int]]] = {}
             canonical_by_identity: dict[str, tuple[str, int]] = {}
@@ -289,6 +290,7 @@ class GlobalMarketPanel:
             asset_aliases = {"yield": "treasury_yield", "indexfuture": "index_future",
                              "commodityfuture": "commodity_future"}
             symbol_rows = []
+            unmatched_symbols = []
             for symbol, group in df.groupby("symbol", sort=True):
                 last = group.iloc[-1]
                 market = str(last.market).upper()
@@ -303,6 +305,7 @@ class GlobalMarketPanel:
                     if len(candidates) == 1:
                         qualified, direct = candidates[0]
                 if direct is None:
+                    unmatched_symbols.append(str(symbol))
                     continue
                 parts = qualified.split("|", 2)
                 if len(parts) != 3:
@@ -312,12 +315,14 @@ class GlobalMarketPanel:
             self._map_symbol_ids = {row[0]: row[1] for row in symbol_rows}
             self._map_market_ids = {row[0]: row[2] for row in symbol_rows}
             self._map_asset_ids = {row[0]: row[3] for row in symbol_rows}
+            self.unmatched_symbols = sorted(unmatched_symbols)
             if not self.symbols:
                 raise ValueError("no live instruments match the candidate's trained symbol map")
-            inference_width = 128
-            if len(symbol_rows) > inference_width:
-                raise ValueError(f"candidate inference currently batches {inference_width} live symbols; "
-                                 "reduce the configured universe or enable batched inference")
+            # Keep the training-era minimum width for small live universes,
+            # while allowing every matched trained instrument when the live
+            # market has grown beyond 128 symbols. The model's symbol axis is
+            # dynamic; its learned symbol IDs remain bounded by max_symbols.
+            inference_width = max(128, len(symbol_rows))
             ids_in_use = {row[1] for row in symbol_rows}
             by_id = sorted(((int(sid), name) for name, sid in symbol_map.items()))
             for sid, qualified in by_id:
