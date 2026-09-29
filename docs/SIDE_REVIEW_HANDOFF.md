@@ -137,3 +137,35 @@
 - **학습 오염 재확인 응답: 보류 (표본 출처를 지표에서 판별할 수 없음).** active agent PID 7068은 2026-09-29 11:40:53 KST 시작했고 `global_online.py` 현재 파일은 12:44:44 KST 수정된 것으로 확인됐다. runtime 지표는 사용 경험 2, 직전 update 표본 1, optimizer step 1, 누적 discard 2를 기록한다. 현재 소스는 `paper_account`의 `net_trade_v2` 경험과 teacher만 학습하며 성공 update 뒤 replay 표본을 버리지 않는다. 실행 중 프로세스는 수정 전 모듈을 메모리에 적재했을 수 있다. SQLite에는 현재 4096행이 있지만, 이것만으로 discard된 두 표본의 원래 출처나 재보존을 증명하지 못한다. 이번 읽기 전용 확인에서는 pickle payload를 실행·역직렬화하지 않았으며, 샘플별 provenance도 runtime 지표에 없다.
 - **평가 영향 판단:** 현재 검증 ledger는 `start_after=2026-09-29T03:27:00Z` 이후의 순차 bar로 candidate/champion을 각각 paper account에서 평가 중이고 50/64 bar다. 따라서 학습 reward 불일치는 candidate 학습 근거의 한계지만, 현재 순차 paper-account net-return 평가 자체가 오염됐다는 증거는 확인되지 않았다. 다만 완료 전 결과로 승급을 판단할 수 없고, 이 candidate를 수정된 학습 코드의 결과라고 표시할 수도 없다. 64개 완료 및 비교 결과, active source generation을 다시 대조한다.
 - **champion 보호 확인:** 사용자가 지정했던 SHA256 `2D0D45702C30EE167B0E982628D21D48CD54C00F572495B06585E326AC37797A`와 현재 `Desktop\\모델\\champion.pt` SHA256은 일치하지 않는다. 현재 파일은 1,025,823,889 bytes, SHA256 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`; validation state도 이 현재 SHA를 비교 시작 champion으로 기록한다. metrics는 promotions 0, last promoted false이며 파일 수정 시각은 2026-09-28 22:19:53 KST다. 불일치 원인은 이번 확인에서 규명되지 않았고 어떤 checkpoint도 수정하지 않았다. 비교 결과를 보고하기 전에 사용자가 보호 대상으로 지목한 파일/버전을 다시 확인해야 한다.
+
+## 운영 지침 — champion 계보 확인 전 승급 보류
+
+- **응답: 수정함.** 사용자의 지침에 따라 보호 SHA256 `2D0D…37797A`와 현재 champion SHA256 `F0B1…D7725F02`의 계보가 확인될 때까지, 64/64가 되어도 candidate를 champion으로 승급하지 않는다.
+- **변경:** `src/stockrl/global_online.py`는 비교 기준 champion SHA가 보호 SHA와 다르면 candidate를 유지한 채 `promotion_held`로 전환하고 추가 candidate 학습/승급을 막는다. 그 전에는 8766의 `observe=false`, `paper=false`로 구버전 agent의 60/64 검증 진행을 멈췄다.
+- **현재 적용 상태:** API는 `agent=true`, `paper=false`, `observe=false`, validation 60/64, `promotions=0`, `last_candidate_promoted=false`, `real_orders=false`를 반환했다. 실행 중인 PID 7068은 guard 이전에 시작한 구버전이므로 source/runtime 경로 이전과 함께 새 코드로 재시작하기 전까지 API의 `promotion_blocked_reason=null`은 보호가 적용됐다는 증거가 아니다. 관찰/paper를 다시 켜지 않는다.
+- **재확인 조건:** runtime을 프로젝트 폴더로 이전한 뒤 새 agent를 시작하고, 64/64 이후에도 `candidate_stage=promotion_held`, 명시적 blocker, 승격 0회를 확인한다. SHA 계보를 확인하고 보호 기준을 정하기 전에는 checkpoint를 수정하거나 교체하지 않는다.
+
+## Runtime 위치 이전
+
+- **응답: 수정 진행 중.** 사용자가 기존 LocalAppData runtime을 프로젝트 폴더로 옮기고, 성공 확인 뒤 기존 외부 복사본을 정리하라고 지시했다. 프로젝트 밖에는 새 폴더를 만들지 않는다.
+- 실행기 기본 경로와 `STOCKRL_RUNTIME_DIR` 검증을 프로젝트 내부 `runtime-global-korea-live`로 통일했다. 현재 8766의 agent는 아직 외부 runtime 경로의 old process다.
+- migration 전 API 상태: feed/agent 실행 중, `paper=false`, `observe=false`, 실제 주문 OFF. runtime DB/CSV/JSON 파일은 agent/feed를 정지한 뒤 복사·무결성을 확인하고, 새 launcher가 프로젝트 경로를 쓰는 것을 확인한 다음에만 기존 복사본을 지운다.
+- SQLite replay는 파일로 보존되지만, 현재 agent 메모리의 미성숙 경험 목록은 runtime 폴더 안에 있지 않아 이전할 수 없다. 정지 시 이 미성숙 경험이 남아 있으면 소실될 수 있으며, 이를 막는 persistence 기능은 후속 작업이다.
+
+
+## ?? ???? ?? ? 2026-09-29 KST
+
+### P0: ??/API ?? ??? ?? agent ?? ??
+
+- **??: ???.** protected SHA ??? guard? `src/stockrl/global_online.py`? ????, ? agent? ??? ? API?? blocker? `candidate_learning_enabled=false`? ????.
+- **?? ??:** 8766 system/feed/agent ?? ?, paper=true, observe=true, ?? ??=false. ?? ?? 7/64, replay 4,096, promotions=0. provider? Kiwoom real ?? feed ?? ???? ?? adapter ?? ??? ??? ???.
+
+### runtime ??
+
+- **??: ???.** 22? ??, ?? ?? 43,960,537 bytes? ???? ??? `runtime-global-korea-live`? ???? ??? SHA256? ????. ? SQLite DB ?? `integrity_check=ok`; runtime ?? `.pt` ??? ???. ?? ???? metrics ??? ???? runtime? ????.
+- **?? ?? ??: ??.** `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`? ?? ????? ???? ??? ??? ?? ??. ??? ??? ??? ??? ???? ??? ????? ?? ?? ??? ??? ????. ?? ??? ?? ???.
+
+### candidate ?? ??
+
+- **??: ?? ? ? / ?? ?? ??.** ?? side snapshot? 3/64 ?? 60/64? ?? ???? ???. ??? ?? ? ? ?? ??? ???? feed cursor ??? ??? bar?? ?? ??? ???, ?? 7/64?.
+- **?? ??:** ?? SHA ???? ?? ? ?? candidate ?? ?? ?. candidate/champion checkpoint? ???? ???.

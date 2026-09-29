@@ -19,10 +19,10 @@
 - Windows 소스 프로젝트: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델`
 - Portable backup: 보존된 이전 실행본이며 현재 기본 소스 경로가 아니다.
 - 웹 UI: `http://127.0.0.1:8766/`
-- 런타임: `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`
+- 런타임: 프로젝트 폴더의 `runtime-global-korea-live`
 - champion: `C:\Users\hushm\Desktop\모델\champion.pt`
 - candidate: `C:\Users\hushm\Desktop\모델\candidate.pt`
-- replay/pending/validation: 실행 중 메모리에서만 처리하며 `.pt`로 저장하지 않는다.
+- replay는 runtime의 bounded SQLite, 계좌와 검증 상태는 JSON으로 보존한다. 미성숙 pending 경험은 메모리에 있어 재시작 전에 주의가 필요하다.
 - API provider: Kiwoom real environment
 - 실제 주문: OFF
 
@@ -36,6 +36,7 @@
 - candidate 학습 중에도 champion 추론은 계속된다.
 - 현재 승급 점수는 paper-account를 순차 실행한 최종 순자산이 아니라 수익률 합산 근사치다. 실제 paper-account 순손익 비교는 아직 구현·검증되지 않았다.
 - champion은 정지 시 다시 저장하지 않는다. promotion gate만 champion을 교체한다.
+- 사용자가 보호한 champion SHA256 `2D0D…37797A`와 현재 파일 SHA256 `F0B1…D7725F02`가 다르다. 계보를 확인할 때까지 64-bar 결과와 무관하게 promotion을 보류한다.
 - 현재 metrics에는 `candidate_training`, `updates`, `promotions`, `rejections`, `replay_count`, `last_update_utc`가 있다.
 
 ## 현재 시장 입력
@@ -97,3 +98,17 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 실전 주문 adapter는 아직 OFF이며, 현재 Kiwoom 연결은 체결 시세 수집 중심이다.
 - US 개별주식은 거래 시간과 무료 API 갱신 시각에 따라 판단이 없거나 오래된 시세로 표시될 수 있다.
 - champion은 candidate가 같은 미학습 검증 구간에서 이길 때만 교체한다. 정지 시 checkpoint를 다시 저장하지 않는다.
+- 2026-09-29 현재 8766은 agent=true, paper=false, observe=false, validation 60/64, promotions 0, actual orders OFF로 일시 정지했다. runtime 이전과 승급 hold 적용 전까지 관찰/paper를 다시 켜지 않는다.
+
+
+## ?? ?? ?? ?? ? 2026-09-29 KST
+
+? ??? ?? ?? ?? ?? ???? ????.
+
+- 8766?? system/feed/agent ?? ?. provider? Kiwoom ??? ?? ?????.
+- `paper_enabled=true`, `observe_enabled=true`, ?? ??? `false`?.
+- ?? ?? paper validation? 7/64 bar, replay 4,096?, promotions 0??.
+- protected champion SHA? ?? champion SHA? ?????. ? guard? `promotion_blocked_reason`? ???? `candidate_learning_enabled=false`? ?????? ???.
+- runtime ?? ?? ??: ??? ??? `runtime-global-korea-live`. feed/agent ??? ?? ??? ? ??? ????.
+- ?? ??? champion/candidate checkpoint? ??????? ???. ?? champion SHA? `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`?.
+- ?? `%LOCALAPPDATA%\StockRL\runtime-global-korea-live` ???? ?? ??. ?? ????? ???? ???, ?? ??? ?? ?? ??? ?? ???? ???? ???.

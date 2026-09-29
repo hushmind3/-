@@ -24,6 +24,8 @@ from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTr
 from .paper_account import PaperAccount
 
 REWARD_VERSION="net_trade_v2"
+PROTECTED_PROMOTION_CHAMPION_SHA256=(
+    "2D0D45702C30EE167B0E982628D21D48CD54C00F572495B06585E326AC37797A")
 REWARD_DEFINITION=("net_trade_v2: one equal-notional isolated horizon trade; BUY/SELL realize signed price return, "
                    "minus entry+exit fees and slippage; HOLD remains cash")
 
@@ -420,6 +422,11 @@ class OnlineGlobalAgent:
                 pass
         for key in ("update_losses","update_seconds","weight_delta_l1"):
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
+        self.promotion_lineage_hold=(
+            self._sha256_file(self.champion_path).upper()!=PROTECTED_PROMOTION_CHAMPION_SHA256)
+        if self.promotion_lineage_hold:
+            self.metrics["promotion_blocked_reason"]=(
+                "champion lineage unresolved: current SHA256 does not match the protected reference")
         self.metrics.setdefault("paper_experiences_seen",
                                 int(self.metrics.get("paper_examples_trained",0)))
         self.replay.paper_outcomes_seen=int(self.metrics["paper_experiences_seen"])
@@ -1030,6 +1037,10 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
+            if self.promotion_lineage_hold or self.metrics.get("candidate_stage")=="promotion_held":
+                self.metrics["candidate_skip_reason"]=(
+                    "champion lineage is unresolved; candidate promotion and retraining are held")
+                continue
             new_experiences=int(self.metrics.get("paper_experiences_since_candidate",0))
             self.metrics["candidate_replay_since_last_update"]=new_experiences
             # Do not spend GPU time on legacy isolated-action samples. The
@@ -1348,6 +1359,32 @@ class OnlineGlobalAgent:
             state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
             if state.get("source_champion_sha256")!=source_sha:
                 error="champion changed during candidate validation"
+        if error is None and source_sha.upper()!=PROTECTED_PROMOTION_CHAMPION_SHA256:
+            from datetime import datetime,timezone
+            reason=("promotion held: champion lineage is unresolved; protected SHA256 "
+                    f"{PROTECTED_PROMOTION_CHAMPION_SHA256}, current SHA256 {source_sha.upper()}")
+            self.metrics["last_candidate_validation_score"]=float(candidate_score)
+            self.metrics["last_champion_validation_score"]=float(champion_score)
+            self.metrics["last_candidate_promoted"]=False
+            self.metrics["promotion_blocked_reason"]=reason
+            self.metrics["candidate_validation_error"]=reason
+            self.metrics["candidate_training"]=False
+            self.metrics["candidate_stage"]="promotion_held"
+            self.metrics["candidate_skip_reason"]=reason
+            self.validation_active=False
+            self.metrics.setdefault("candidate_gate_history",[]).append({
+                "time_utc":datetime.now(timezone.utc).isoformat(),"applied":False,
+                "reason":reason,"candidate_score":float(candidate_score),
+                "champion_score":float(champion_score)})
+            self.metrics["candidate_gate_history"]=self.metrics["candidate_gate_history"][-20:]
+            self._atomic_json({"status":"promotion_held","bars":self.validation_bars,
+                "candidate_score":float(candidate_score),"champion_score":float(champion_score),
+                "applied":False,"source_champion_sha256":source_sha,
+                "protected_champion_sha256":PROTECTED_PROMOTION_CHAMPION_SHA256,
+                "reason":reason},self.validation_state_path)
+            self.validation_generation+=1
+            self._write_metrics()
+            return
         if error is not None:
             self.metrics["promotion_blocked_reason"]=error
             self.metrics["candidate_validation_error"]=error
@@ -1388,6 +1425,7 @@ class OnlineGlobalAgent:
                           source_champion_sha256:str)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
         promote=(validation_bars>=self.validation_window_bars
+                 and source_champion_sha256.upper()==PROTECTED_PROMOTION_CHAMPION_SHA256
                  and self._sha256_file(self.champion_path)==source_champion_sha256
                  and should_promote(score_new,score_old,1e-9))
         self.metrics["last_candidate_validation_score"]=score_new
@@ -1435,7 +1473,8 @@ class OnlineGlobalAgent:
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
-          "candidate_learning_enabled":True,
+          "candidate_learning_enabled":(not self.promotion_lineage_hold and
+                                         metrics.get("candidate_stage")!="promotion_held"),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
           "candidate_batch_size":self.batch_size,
@@ -1448,8 +1487,9 @@ class OnlineGlobalAgent:
           "candidate_validation_queue_delay_limit_seconds":self.validation_queue_delay_limit_seconds,
           "candidate_replay_since_last_update":int(self.metrics.get("candidate_replay_since_last_update",0)),
           "last_train_replay_size":self.last_train_replay_size,
-          "candidate_stage":("sequential_paper_validation" if self.validation_active else
-                              "training" if self.metrics.get("candidate_training") else "waiting"),
+          "candidate_stage":("promotion_held" if metrics.get("candidate_stage")=="promotion_held" else
+                             "sequential_paper_validation" if self.validation_active else
+                             "training" if self.metrics.get("candidate_training") else "waiting"),
           "validation_window_dates":len(self.validation_dates),
           "portfolio_validation_window_dates":len(self.portfolio_validation_dates),
           "horizon":str(self.horizon),"fee_rate":self.fee,"slippage_bps":self.slippage*10000,

@@ -10,8 +10,15 @@ param(
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $root
-$runtimeRoot = $env:STOCKRL_RUNTIME_DIR
-if (-not $runtimeRoot) { $runtimeRoot = Join-Path $env:LOCALAPPDATA "StockRL\runtime-global-korea-live" }
+$runtimeRoot = Join-Path $root "runtime-global-korea-live"
+$projectPrefix = [IO.Path]::GetFullPath($root).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+function Assert-ProjectPath([string]$Path) {
+    $full = [IO.Path]::GetFullPath($Path)
+    if (-not $full.StartsWith($projectPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Runtime files must stay inside the project folder: $root"
+    }
+}
+Assert-ProjectPath $runtimeRoot
 if (-not $Data) { $Data = Join-Path $runtimeRoot "live\market.csv" }
 if (-not $State) { $State = Join-Path $runtimeRoot "live\agent" }
 if (-not $ModelDir) { $ModelDir = $env:STOCKRL_MODEL_DIR }
@@ -36,6 +43,9 @@ function Start-Worker([string]$Name, [string[]]$Arguments) {
 
 $dataPath = [IO.Path]::GetFullPath($Data)
 $statePath = [IO.Path]::GetFullPath($State)
+$env:STOCKRL_RUNTIME_DIR = $runtimeRoot
+Assert-ProjectPath $dataPath
+Assert-ProjectPath $statePath
 $modelPath = [IO.Path]::GetFullPath($ModelDir)
 $configPath = [IO.Path]::GetFullPath($Config)
 $feedStopPath = Join-Path (Split-Path -Parent $dataPath) "feed.stop"

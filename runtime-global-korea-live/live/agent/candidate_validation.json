@@ -1,0 +1,8 @@
+{
+  "status": "collecting",
+  "start_after": "2026-09-29T04:43:00.000000000",
+  "last_timestamp": "2026-09-29T04:59:00.000000000",
+  "bars": 10,
+  "source_champion_sha256": "f0b1759a30262c81c957ccba555048ac0c4b993587d795f30c59be96d7725f02",
+  "generation": 2
+}

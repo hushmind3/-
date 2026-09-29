@@ -20,11 +20,12 @@ URL = f"http://127.0.0.1:{PORT}/"
 
 def default_runtime_dir() -> Path:
     configured = os.environ.get("STOCKRL_RUNTIME_DIR")
-    if configured:
-        return Path(configured).expanduser()
-    local = os.environ.get("LOCALAPPDATA")
-    base = Path(local) if local else Path.home() / "AppData" / "Local"
-    return base / "StockRL" / "runtime-global-korea-live"
+    candidate = (Path(configured).expanduser() if configured else
+                 ROOT / "runtime-global-korea-live")
+    resolved = candidate.resolve()
+    if not resolved.is_relative_to(ROOT.resolve()):
+        raise ValueError(f"StockRL runtime must stay inside the project folder: {ROOT}")
+    return resolved
 
 
 def ready() -> bool:

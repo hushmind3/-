@@ -5,7 +5,8 @@
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 $env:PYTHONPATH = "$repoRoot\src;$env:PYTHONPATH"
-$runtime = Join-Path $env:LOCALAPPDATA 'StockRL\runtime-global-korea-live'
+$runtime = Join-Path $repoRoot 'runtime-global-korea-live'
+$env:STOCKRL_RUNTIME_DIR = $runtime
 $modelDir = Join-Path ([Environment]::GetFolderPath('Desktop')) '모델'
 
 Write-Host "Starting StockRL dashboard at http://127.0.0.1:8766/"
