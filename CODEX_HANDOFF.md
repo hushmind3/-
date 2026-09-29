@@ -206,5 +206,6 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 
 - `src/stockrl/paths.py`에 프로젝트 내부 경로와 바탕화면 모델 디렉터리 검증을 모았다. runtime, 웹 설정, provider 설정, feed 출력은 프로젝트 밖 경로를 거부한다.
 - `web_app.Supervisor`, `OnlineGlobalAgent`, `GlobalAgentWindow`, `LiveMarketCollector`, Windows paper launcher가 폴더 생성 전에 해당 경로를 검증한다.
-- 8766 프로세스는 변경 소스를 아직 불러오지 않았다. 미성숙 pending 경험의 재시작 손실 위험이 있어 재시작은 보류 중이다.
+- 8766의 PID 8572 agent는 구버전이다. 후속 API에서 `candidate_learning_enabled=false`, `candidate_stage=promotion_held`, `updates=2`, `paper_examples_trained=2`, `candidate_validation_bars=0`을 확인했다. 미성숙 pending이 아직 메모리에 있을 수 있어 재시작은 보류 중이다.
+- 새 source는 pending/portfolio_pending metadata를 replay SQLite에 저장하고, 성숙 경험 replay 추가와 pending 제거를 같은 transaction으로 처리한다. 큰 입력 window는 retained feed CSV에서 복원한다. 구버전 live agent의 메모리 pending은 새 저장형식에 아직 인계되지 않았다.
 - `%LOCALAPPDATA%\StockRL\runtime-global-korea-live` 삭제는 자동 검토가 거부해 미완료다. 프로젝트 안 archive에 보존했으며 삭제했다고 보고하지 않는다.

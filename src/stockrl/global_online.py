@@ -104,6 +104,7 @@ class GlobalReplayBuffer:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("CREATE TABLE IF NOT EXISTS windows (key TEXT PRIMARY KEY, payload BLOB NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS experiences (id INTEGER PRIMARY KEY AUTOINCREMENT, window_key TEXT NOT NULL, metadata BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL, record_key TEXT NOT NULL, metadata BLOB NOT NULL, PRIMARY KEY(kind,record_key))")
             with db:
                 db.execute("DELETE FROM experiences WHERE id NOT IN (SELECT id FROM experiences ORDER BY id DESC LIMIT ?)",(self.capacity,))
                 db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
@@ -118,7 +119,37 @@ class GlobalReplayBuffer:
             exp=Experience(**arrays,**metadata)
             self.items.append(exp); self.row_ids[id(exp)]=int(row_id)
 
-    def _journal_add(self,exp:Experience)->int|None:
+    def load_pending(self, kind: str) -> list[dict]:
+        if self.journal_path is None:
+            return []
+        with closing(self._connect()) as db:
+            db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL, record_key TEXT NOT NULL, metadata BLOB NOT NULL, PRIMARY KEY(kind,record_key))")
+            rows=db.execute("SELECT metadata FROM pending_records WHERE kind=? ORDER BY record_key",(kind,)).fetchall()
+        return [pickle.loads(row[0]) for row in rows]
+
+    def save_pending(self, regular: list[dict], portfolio: list[dict]) -> None:
+        if self.journal_path is None:
+            return
+        transient_arrays={"features","symbol_ids","market_ids","asset_ids","valid_mask","market_context"}
+        records=[]
+        for kind,items in (("regular",regular),("portfolio",portfolio)):
+            for item in items:
+                metadata={key:value for key,value in item.items() if key not in transient_arrays}
+                record_key=f"{metadata.get('timestamp','')}|{metadata.get('symbol',metadata.get('symbol_index',''))}"
+                records.append((kind,record_key,pickle.dumps(metadata,protocol=5)))
+        with closing(self._connect()) as db:
+            db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL, record_key TEXT NOT NULL, metadata BLOB NOT NULL, PRIMARY KEY(kind,record_key))")
+            with db:
+                db.executemany("INSERT OR REPLACE INTO pending_records(kind,record_key,metadata) VALUES(?,?,?)",
+                               ((kind,key,sqlite3.Binary(metadata)) for kind,key,metadata in records))
+                for kind,items in (("regular",regular),("portfolio",portfolio)):
+                    keys=[f"{item.get('timestamp','')}|{item.get('symbol',item.get('symbol_index',''))}" for item in items]
+                    keep={key for key in keys}
+                    existing=db.execute("SELECT record_key FROM pending_records WHERE kind=?",(kind,)).fetchall()
+                    stale=[(kind,row[0]) for row in existing if row[0] not in keep]
+                    db.executemany("DELETE FROM pending_records WHERE kind=? AND record_key=?",stale)
+
+    def _journal_add(self,exp:Experience,pending_ack:tuple[str,str]|None=None)->int|None:
         if self.journal_path is None:return None
         key=self._window_key(exp)
         payload=self.window_cache.get(key)
@@ -135,17 +166,27 @@ class GlobalReplayBuffer:
                 cursor=db.execute("INSERT INTO experiences(window_key,metadata) VALUES(?,?)",
                                   (key,sqlite3.Binary(metadata)))
                 row_id=int(cursor.lastrowid)
+                if pending_ack is not None:
+                    db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
                 db.execute("DELETE FROM experiences WHERE id NOT IN (SELECT id FROM experiences ORDER BY id DESC LIMIT ?)",(self.capacity,))
                 db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
         return row_id
     def note_paper_outcome(self) -> None:
         with self.lock: self.paper_outcomes_seen+=1
-    def add(self, exp: Experience) -> None:
+    def add(self, exp: Experience, pending_ack: tuple[str,str]|None=None) -> None:
         with self.lock:
-            row_id=self._journal_add(exp)
+            row_id=self._journal_add(exp,pending_ack)
             self.items.append(exp)
             if row_id is not None:self.row_ids[id(exp)]=row_id
             self._prune_row_ids()
+
+    def acknowledge_pending(self, kind: str, decision: dict) -> None:
+        if self.journal_path is None:
+            return
+        key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+        with closing(self._connect()) as db:
+            with db:
+                db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",(kind,key))
     def _prune_row_ids(self):
         live={id(item) for item in self.items}
         self.row_ids={key:value for key,value in self.row_ids.items() if key in live}
@@ -630,12 +671,14 @@ class OnlineGlobalAgent:
             if dec.get("promotion_holdout",False):
                 self.metrics["promotion_validation_outcomes"] = int(
                     self.metrics.get("promotion_validation_outcomes",0))+1
+                self.replay.acknowledge_pending("regular",dec)
                 continue
             if dec.get("is_validation",False):
                 self._append_validation(self.validation,self.validation_dates,dec["timestamp"],
                     (dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                     dec["valid_mask"],i,forward,dec["timestamp"],dec.get("previous_position",0),
                     dec.get("market_context")))
+                self.replay.acknowledge_pending("regular",dec)
                 continue
             action=dec["action"]
             reward,fee_cost,slippage_cost=net_action_reward(action,forward,dec.get("previous_position",0),
@@ -655,7 +698,8 @@ class OnlineGlobalAgent:
                     else abs(float(panel.features[dec["index"],i,6])))
             self.replay.add(Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                 dec["valid_mask"],i,action,float(reward),dec["timestamp"],"paper",max(regime,abs(forward)),
-                market_context=dec.get("market_context")))
+                market_context=dec.get("market_context")),
+                pending_ack=("regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
         return keep
 
     def _mature_portfolio(self, pending, panel, end_index: int):
@@ -693,6 +737,7 @@ class OnlineGlobalAgent:
             if dec.get("promotion_holdout",False):
                 self.metrics["promotion_validation_outcomes"] = int(
                     self.metrics.get("promotion_validation_outcomes",0))+1
+                self.replay.acknowledge_pending("portfolio",dec)
                 continue
             entry=float(dec.get("entry_price",0.0)); exit_price=float(panel.closes[end_index,symbol_ix])
             forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
@@ -705,8 +750,10 @@ class OnlineGlobalAgent:
             if dec.get("is_validation",False):
                 self._append_validation(self.portfolio_validation,self.portfolio_validation_dates,
                                         exp.timestamp,exp)
+                self.replay.acknowledge_pending("portfolio",dec)
             else:
-                self.replay.add(exp)
+                self.replay.add(exp,pending_ack=("portfolio",
+                    f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
                 self.metrics["paper_experiences_seen"]=int(
                     self.metrics.get("paper_experiences_seen",0))+1
                 self.metrics["paper_experiences_since_candidate"]=int(
@@ -729,7 +776,9 @@ class OnlineGlobalAgent:
         if cursor_path.exists(): cursor=json.loads(cursor_path.read_text(encoding="utf-8")).get("last_timestamp")
         account_cursor=self.paper_account.state.get("last_timestamp")
         if account_cursor and (cursor is None or account_cursor>cursor): cursor=account_cursor
-        pending=[]; portfolio_pending=[]
+        pending=self.replay.load_pending("regular")
+        portfolio_pending=self.replay.load_pending("portfolio")
+        self.metrics["pending_experiences"] = len(pending) + len(portfolio_pending)
         self.start()
         try:
             while not self.stop.is_set():
@@ -755,6 +804,46 @@ class OnlineGlobalAgent:
                     self.stop.wait(min(poll_seconds,1.0)); continue
                 if not len(panel.dates):
                     self.stop.wait(poll_seconds); continue
+                restore_windows={}
+                expired_regular=expired_portfolio=0
+                def restore_pending(items, is_portfolio):
+                    nonlocal expired_regular, expired_portfolio
+                    restored=[]
+                    for dec in items:
+                        if "features" in dec:
+                            restored.append(dec)
+                            continue
+                        symbol=dec.get("symbol")
+                        if symbol not in panel.symbols:
+                            restored.append(dec)
+                            continue
+                        stamp=np.datetime64(dec["timestamp"])
+                        index=int(np.searchsorted(panel.dates,stamp,side="left"))
+                        if index>=len(panel.dates) or panel.dates[index]!=stamp:
+                            if is_portfolio: expired_portfolio+=1
+                            else: expired_regular+=1
+                            continue
+                        window=restore_windows.get(index)
+                        if window is None:
+                            window=self._window(panel,index)
+                            restore_windows[index]=window
+                        x0,sid0,mid0,aid0,mask0=window[:5]
+                        dec.update({"index":index,"symbol_index":panel.symbols.index(symbol),
+                            "features":x0[0].numpy().astype(np.float16),"symbol_ids":sid0[0].numpy(),
+                            "market_ids":mid0[0].numpy(),"asset_ids":aid0[0].numpy(),
+                            "valid_mask":mask0[0].numpy(),
+                            "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
+                        restored.append(dec)
+                    return restored
+                pending=restore_pending(pending,False)
+                portfolio_pending=restore_pending(portfolio_pending,True)
+                if expired_regular or expired_portfolio:
+                    self.metrics["pending_expired_after_window"] = int(
+                        self.metrics.get("pending_expired_after_window",0))+expired_regular
+                    self.metrics["portfolio_pending_expired_after_window"] = int(
+                        self.metrics.get("portfolio_pending_expired_after_window",0))+expired_portfolio
+                    self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
+                    self.replay.save_pending(pending,portfolio_pending)
                 # The first feed batch establishes the ordered symbol universe;
                 # migrate legacy integer-keyed paper positions to symbols.
                 if any(isinstance(k,int) for k in self.positions):
@@ -801,6 +890,8 @@ class OnlineGlobalAgent:
                     if not observe_enabled:
                         cursor=str(panel.dates[ti]); self.metrics["observations"]+=1
                         self.metrics["last_market_timestamp"]=cursor
+                        self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
+                        self.replay.save_pending(pending,portfolio_pending)
                         self.paper_account.save()
                         _atomic_json({"last_timestamp":cursor},cursor_path)
                         continue
@@ -811,6 +902,13 @@ class OnlineGlobalAgent:
                     x,sid,mid,aid,mask=window[:5]
                     stamp=str(panel.dates[ti]); validation=self.validation_active
                     rows=[]
+                    pending_inputs={"features":x[0].numpy().astype(np.float16),
+                        "symbol_ids":sid[0].numpy(),"market_ids":mid[0].numpy(),
+                        "asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
+                        "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None}
+                    portfolio_inputs={**pending_inputs,
+                        "portfolio_state":np.asarray(pstate,dtype=np.float16),
+                        "account_state":np.asarray(astate,dtype=np.float32)}
                     for j,symbol in enumerate(panel.symbols):
                         # A closed venue may not print a bar at the current
                         # global timestamp. Use its forward-filled last quote
@@ -819,31 +917,28 @@ class OnlineGlobalAgent:
                         if not panel.observed[:ti + 1, j].any(): continue
                         action=int(np.argmax(probs[j])); previous=self.positions.get(symbol,0)
                         if panel.observed[ti,j]:
-                            pending.append({"index":ti,"symbol_index":j,"action":action,"previous_position":previous,
+                            pending.append({**pending_inputs,"index":ti,"symbol_index":j,"action":action,"previous_position":previous,
                               "timestamp":stamp,"symbol":symbol,"entry_price":float(panel.closes[ti,j]),
                               "bars_elapsed":0,"regime":abs(float(panel.features[ti,j,6])),
-                              "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
-                              "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),
-                              "valid_mask":mask[0].numpy(),"is_validation":False,
+                              "is_validation":False,
                               "promotion_holdout":validation,
-                              "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
+                              })
                         if paper_enabled and panel.observed[ti,j]:
-                            portfolio_pending.append({"index":ti,"symbol_index":j,"symbol":symbol,
+                            portfolio_pending.append({**portfolio_inputs,"index":ti,"symbol_index":j,"symbol":symbol,
                               "action":action,"timestamp":stamp,
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
                                "is_validation":False,"promotion_holdout":validation,
                               "equity_before":self.paper_account.normalized_equity(),
-                              "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
-                              "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
-                              "portfolio_state":np.asarray(pstate,dtype=np.float16),"account_state":np.asarray(astate,dtype=np.float32),
-                              "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
+                              })
                         rows.append({"date":stamp,"symbol":symbol,"action":ACTION_NAMES[action],"value":float(values[j]),
                           "p_sell":float(probs[j,0]),"p_hold":float(probs[j,1]),"p_buy":float(probs[j,2])})
                         self.metrics["decisions"]+=1
                         if paper_enabled:
                             self.positions[symbol]=action-1
                     self.paper_account.queue_decisions(panel,ti,probs,paper_enabled,allocation=allocation)
+                    self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
+                    self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
                     self._collect_candidate_validation(panel,ti)
                     import pandas as pd
@@ -864,6 +959,8 @@ class OnlineGlobalAgent:
             if self.validation_queue_thread.is_alive():
                 self.validation_queue_thread.join(timeout=300)
             self.metrics["candidate_training"]=False
+            self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
+            self.replay.save_pending(pending,portfolio_pending)
             self.checkpoint()
             (self.state_dir/"stop.request").unlink(missing_ok=True)
 

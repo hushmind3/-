@@ -291,12 +291,14 @@
 - **확인함:** Python 컴파일과 격리된 동작 확인을 통과했다. lineage hold 상태에서도 학습 루프가 paper 경험 대기로 진행하고, 보호 SHA가 불일치하면 승격을 거절하며 모델 파일을 쓰지 않는다.
 - **수정함:** `web_app.py`가 market SQLite의 최신 bar와 agent `live_cursor.json`을 비교한다. 5분보다 뒤처지면 API health를 `stale`로 표시하고 agent 건강 상태를 반영한다. dashboard HTML은 바꾸지 않았다.
 - **확인함:** 당시 feed 최신 시각은 `2026-09-29T09:50:00Z`, agent cursor는 `2026-09-29T08:00:00Z`였다. 차이는 6,600초, 1,183개 bar였다. agent 프로세스는 살아 있었지만 판단 기록은 오래되어 최신 source health 판정은 `stale`이다.
+- **중복:** 후속 API 읽기에서도 `candidate_learning_enabled=false`, `candidate_stage=promotion_held`, replay 4,096개, 승격 차단 사유가 확인됐다. 추가로 `updates=2`, `paper_examples_trained=2`, `candidate_validation_bars=0`, `replay-since-update=96`, agent PID 8572가 보고됐다. 이는 위 candidate 학습 차단 항목과 같은 원인이다. 새 source에서 학습 차단은 제거했지만 API를 제공하는 8766 프로세스는 구버전이라 변경을 아직 반영하지 않았다.
 - **보류:** 8766 프로세스 재시작. 미성숙 `pending` 경험이 메모리에만 있어 재시작하면 결과를 잃을 수 있다. 복구 저장이 준비되기 전까지 새 source는 live에 반영되지 않는다.
 - champion SHA256 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`, candidate SHA256 `5A9E8B8027EC739CDBD01422FB18A9E7FB0934321773DA51671CE0FDE675F0E5`는 기록 당시 값이다. 검증 중 모델 파일을 수정하지 않았고 실제 주문은 OFF였다.
 
 ## P1 경로 경계 및 P2 설계 항목 (2026-09-29)
 
 - **수정함:** `paths.py`, `web_app.py`, `provider_credentials.py`, `global_online.py`, `desktop.py`, `live_feed.py`, `scripts/run_global_paper.ps1`. 외부 runtime/provider 설정/feed 출력 경로를 거부하고 checkpoint를 바탕화면 모델 폴더로 제한한다. Windows launcher는 경로 검증을 디렉터리 생성보다 앞에 둔다.
-- **보류:** 실행 중 8766 feed/agent 재시작. `pending`과 `portfolio_pending`은 메모리에만 있어 재시작 시 경험 손실 가능성이 확인됐다. 미성숙 경험 복구 저장을 먼저 구현하고, 현재 pending 건수를 보존 가능한 방식으로 확인한 뒤 재시작한다.
+- **수정함:** `global_online.py`가 `pending`과 `portfolio_pending` metadata를 replay SQLite에 저장한다. 입력 window는 보존된 feed CSV에서 복원해 pending 저장이 전체 feature 배열을 다시 복제하지 않게 했다. 성숙한 경험의 replay 추가와 pending 제거는 같은 DB transaction으로 처리한다. 판단 시각과 종목을 키로 upsert하므로 bar 재처리 시 중복 pending row를 만들지 않는다.
+- **보류:** 실행 중 8766 agent 재시작. 현재 프로세스는 이전 source로 시작되어 이미 메모리에 쌓인 pending을 새 SQLite 형식으로 내보내지 못한다. 신 source가 앞으로 쌓는 pending은 보존되지만, 기존 메모리 pending은 재시작 전 별도 상태 확인이 필요하다.
 - **보류:** transformer의 선택적 `time_scale_ids`를 live inference에 연결하는 설계 작업. 현재 feed는 주로 1분 bar이고 inference에서 time-scale ID를 넘기지 않는다. 다중 시간축 사용은 목표와 현재 동작을 README에 구분한다.
 - **확인함:** feed 최신 bar와 agent cursor 사이는 6,600초, 1,183 bar였다. agent 프로세스는 살아 있으나 최신 코드로 재시작하지 않아 API health 개선은 live에 반영되지 않았다.

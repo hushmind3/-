@@ -4,7 +4,7 @@
 
 수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
 
-운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. 결과를 기다리는 `pending` 경험은 현재 메모리에만 있어 재시작 후 복구되지 않는다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
+운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. source는 결과 대기 중인 `pending` 경험도 replay SQLite에 저장하고, 결과 반영과 pending 제거를 한 DB transaction으로 처리한다. 다만 현재 실행 중인 구버전 agent의 메모리 경험은 아직 저장되지 않았다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
 
 ## 현재 파일 배치
 
@@ -17,7 +17,7 @@
 - `web --runtime`, `STOCKRL_RUNTIME_DIR`, `STOCKRL_LOCAL_CONFIG_DIR`은 프로젝트 폴더 밖 경로를 거부한다. `STOCKRL_MODEL_DIR`은 바탕화면 `모델` 폴더만 허용한다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
-- 웹 실행기는 설정상 새 경험 약 4,096개마다 candidate 학습을 시도한다. 설정은 batch 1, optimizer update 1이다. 재시작 후 bounded SQLite replay, cursor, paper 계좌와 저장된 validation ledger는 남는다. 결과 미성숙 `pending` 목록은 메모리뿐이라 복구되지 않는다.
+- 웹 실행기는 설정상 새 경험 약 4,096개마다 candidate 학습을 시도한다. 설정은 batch 1, optimizer update 1이다. 재시작 후 bounded SQLite replay, cursor, paper 계좌, validation ledger와 새 source가 기록한 미성숙 경험은 남는다. 현재 실행 중인 구버전 프로세스의 미성숙 경험은 메모리에만 있어, 안전한 인계 전에는 재시작하지 않는다.
 - 현재 비교기는 같은 검증 bar를 champion과 candidate의 별도 paper account에 순차 적용해 비용 차감 순손익을 비교한다. 보호 champion SHA 불일치는 승격을 막는다. 소스에서는 lineage hold 때문에 candidate 학습까지 막지 않도록 수정했지만, 실행 중인 8766 프로세스에는 아직 반영되지 않았다.
 - candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작한다.
 - 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르다. 실행 중인 프로세스가 새 소스를 불러오기 전까지 승격과 학습 동작은 이전 코드 상태다. 미성숙 경험의 재시작 손실 위험을 해소하기 전까지 8766 프로세스를 재시작하지 않는다.
@@ -315,7 +315,9 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - **확인함:** Python 컴파일과 격리된 동작 확인을 통과했다. lineage hold 상태에서도 학습 루프가 paper 경험 대기로 진행하고, 보호 SHA가 불일치하면 승격을 거절하며 모델 파일을 쓰지 않는다.
 - **수정함:** `web_app.py`가 market SQLite의 최신 bar와 agent `live_cursor.json`을 비교한다. 5분보다 뒤처지면 API health를 `stale`로 표시하고 agent 건강 상태를 반영한다. dashboard HTML은 바꾸지 않았다.
 - **확인함:** 당시 feed 최신 시각은 `2026-09-29T09:50:00Z`, agent cursor는 `2026-09-29T08:00:00Z`였다. 차이는 6,600초, 1,183개 bar였다. agent 프로세스는 살아 있었지만 판단 기록은 오래되어 최신 source health 판정은 `stale`이다.
-- **보류:** 8766 프로세스 재시작. 미성숙 `pending` 경험이 메모리에만 있어 재시작하면 결과를 잃을 수 있다. 복구 저장이 준비되기 전까지 새 source는 live에 반영되지 않는다.
+- **수정함:** 새 source는 미성숙 판단과 portfolio 경험을 replay SQLite에 저장하며, 성숙 경험을 replay에 넣는 처리와 pending 제거를 같은 DB transaction으로 묶는다. 입력 window를 feed CSV에서 복원해 pending 저장 크기를 줄인다.
+- **보류:** 8766 프로세스 재시작. 현재 구버전 프로세스가 이미 메모리에 쌓은 pending을 새 저장 형식으로 내보내지 못한다. 이를 잃지 않도록 재시작 전 agent 처리 상태를 별도 확인한다. 새 pending 저장은 프로세스가 새 source로 시작한 뒤부터 적용된다.
+- 후속 API 확인에서 PID 8572의 구버전 agent가 `candidate_learning_enabled=false`, `candidate_stage=promotion_held`, `updates=2`, `paper_examples_trained=2`, `candidate_validation_bars=0`을 반환했다. 이 수치는 당시 기록이며, champion 보호 SHA 변경이나 가중치 교체는 하지 않았다.
 - champion SHA256 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`, candidate SHA256 `5A9E8B8027EC739CDBD01422FB18A9E7FB0934321773DA51671CE0FDE675F0E5`는 기록 당시 값이다. 검증 중 모델 파일을 수정하지 않았고 실제 주문은 OFF였다.
 
 ## 2026-09-29 경로 검토 반영
