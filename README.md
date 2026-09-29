@@ -4,21 +4,21 @@
 
 수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
 
-운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 경험을 메모리 replay에 임시 보관 → candidate 학습 → 사용한 경험 정리 → champion과 같은 미학습 구간의 순손익 비교 → 개선 시에만 승격`. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
+운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. 결과를 기다리는 `pending` 경험은 현재 메모리에만 있어 재시작 후 복구되지 않는다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
 
 ## 현재 파일 배치
 
 - 이 프로젝트 폴더에는 소스 코드, 설정, 문서와 정적 연구 데이터가 있다.
 - Windows 모델 폴더 `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt`만 둔다.
-- runtime은 프로젝트 폴더의 `runtime/markets/<market>/live`에 둔다. 현재 한국 운영 데이터는 `runtime/markets/korea/live`를 사용한다. NASDAQ 운영을 추가하면 `runtime/markets/nasdaq/live`를 쓴다. 실행기는 프로젝트 밖에 runtime 경로를 만들지 않는다. 이 비공개 저장소에는 복구를 위한 runtime snapshot을 포함하고, 모델 가중치(`.pt`, `.pth`, `.ckpt`, `.safetensors`)는 제외한다. 실행 중 변경된 runtime 자료는 이후 GitHub 저장 시점의 snapshot으로 반영된다.
+- runtime은 프로젝트 폴더의 `runtime/markets/<market>/live`에 둔다. 현재 한국 운영 데이터는 `runtime/markets/korea/live`를 사용한다. NASDAQ 운영을 추가하면 `runtime/markets/nasdaq/live`를 쓴다. 기본 launcher 경로는 프로젝트 안이지만, `web --runtime` 명시 인자에는 아직 경계 검사 누락이 있다(아래 제한 항목 참조). 이 비공개 저장소에는 복구를 위한 runtime snapshot을 포함하고, 모델 가중치(`.pt`, `.pth`, `.ckpt`, `.safetensors`)는 제외한다. 실행 중 변경된 runtime 자료는 이후 GitHub 저장 시점의 snapshot으로 반영된다.
 - `StockRL Start.bat`은 `STOCKRL_MARKET=korea`로 시작한다. `scripts/run_global_paper.ps1`에는 `-Market nasdaq`처럼 시장 이름을 줄 수 있다. 시장별 시세 설정도 해당 시장 설정 파일로 지정해야 한다.
 - replay와 가상계좌 등 실제 한국 runtime은 `runtime/markets/korea/live`에 있으며 비공개 GitHub 복구 snapshot에 포함한다. 과거 커밋 `613c330`에는 이전 위치의 runtime snapshot도 남아 있다.
 - 이전 위치 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`도 아직 남아 있다(확인 시 22개 파일, 43,960,537 bytes). 현재 feed/agent는 이 폴더를 사용하지 않고 프로젝트 runtime을 사용한다. 기존 폴더 삭제는 자동 도구 검토가 거부해 미완료이며, 삭제 완료로 간주하지 않는다.
 - `web --runtime` 명령행 인자는 프로젝트 경계 검사를 우회할 수 있다. 이 인자로 프로젝트 밖 경로를 실행하지 말 것; CLI 경로 검사 보완 전에는 기본값 또는 프로젝트 내부 경로만 사용한다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
-- 웹 실행기는 새 경험 약 4,096개마다 candidate를 한 번 학습한다. 설정은 batch 1, update 1이다. 재시작하면 replay와 미완료 판단은 사라지고 candidate는 champion에서 다시 시작한다.
-- 현재는 잘못된 승격을 막기 위해 자동 승격을 멈춰 둔다. 지금 점수는 두 모델을 같은 미사용 구간의 실제 가상계좌로 순서대로 돌린 최종 순손익이 아니라 근사치다.
+- 웹 실행기는 설정상 새 경험 약 4,096개마다 candidate 학습을 시도한다. 설정은 batch 1, optimizer update 1이다. 재시작 후 bounded SQLite replay, cursor, paper 계좌와 저장된 validation ledger는 남는다. 결과 미성숙 `pending` 목록은 메모리뿐이라 복구되지 않는다.
+- 현재 비교기는 같은 검증 bar를 champion과 candidate의 별도 paper account에 순차 적용해 비용 차감 순손익을 비교한다. 보호 champion SHA 불일치로 candidate 학습과 승격은 현재 보류 상태다.
 - candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작한다.
 - 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르다. 계보가 확인될 때까지 64개 bar 검증이 끝나도 candidate 승급과 다음 candidate 학습을 보류한다.
 
@@ -79,7 +79,7 @@ python -m stockrl predict --data PATH.csv --device auto
 
 ## 예전 GRU baseline 지속 관찰 기능 (현재 운영에 사용하지 않음)
 
-아래 `continuous`와 `replay` 명령은 초기 GRU baseline의 예전 연구 기능이다. 이 명령들은 별도 replay/checkpoint 파일을 만들 수 있어 현재 운영 구조와 맞지 않는다. 현재 가상매매를 시작할 때는 웹 실행기만 사용한다. 현재 online agent는 replay/pending/validation을 메모리에서 처리하고, 모델 폴더에는 champion과 candidate만 둔다.
+아래 `continuous`와 `replay` 명령은 초기 GRU baseline의 예전 연구 기능이다. 이 명령들은 별도 replay/checkpoint 파일을 만들 수 있어 현재 운영 구조와 맞지 않는다. 현재 가상매매를 시작할 때는 웹 실행기만 사용한다. 현재 online agent는 성숙한 replay를 bounded SQLite에 보존하고 미성숙 outcome 대기 목록은 메모리에 둔다. validation ledger와 비교 계좌는 JSON으로 보존되며 validation 작업 queue는 메모리에서 동작한다. 모델 폴더에는 champion과 candidate만 둔다.
 
 초기 모델을 한 번 만든 뒤, 툴/피드가 최신 봉을 계속 추가하는 CSV를 감시할 수 있습니다.
 
@@ -192,7 +192,7 @@ teacher 연결 확인에서는 public teacher ensemble 435행 중 시간순 학�
 
 ### 과거 온라인 학습 실험 기록
 
-아래 경로와 `.pt` 산출물 목록은 당시 연구 실행 기록이다. 현재 운영 실행기는 이 파일들을 만들거나 읽지 않는다. 현재 모델 폴더에는 `champion.pt`, `candidate.pt`만 두고, replay와 검증 경험은 메모리에서 처리한다.
+아래 경로와 `.pt` 산출물 목록은 당시 연구 실행 기록이다. 현재 운영 실행기는 이 파일들을 만들거나 읽지 않는다. 현재 모델 폴더에는 `champion.pt`, `candidate.pt`만 둔다. 현재 운영 replay는 bounded SQLite, paper 계좌와 validation ledger는 JSON, 미성숙 outcome 대기 목록과 validation 작업 queue는 메모리에 둔다.
 
 아래 benchmark와 파일 목록은 당시 실험 산출물 기록이다. 지금의 저장 구조를 설명하지 않는다. 현재 경로와 저장 원칙은 README 상단의 `현재 파일 배치`를 따른다.
 

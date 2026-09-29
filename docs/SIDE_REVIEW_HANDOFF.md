@@ -1,5 +1,7 @@
 # 사이드 검토 인수인계 목록
 
+> 이 문서는 시간순 검토 기록이다. 각 실행 상태와 경로/Git 정책은 적힌 시점 기준이며, 뒤에 추가된 날짜 있는 정정·후속 확인이 앞선 상태를 대체한다. 아래의 예전 runtime 경로와 Git 제외 정책을 현재값으로 사용하지 않는다.
+
 최종 갱신: 2026-09-29 KST
 
 사이드 검토는 메인 작업이 멈추거나 결과를 보고한 뒤 우선순위 순서로 확인한다. 각 항목은 `수정함`, `재현 안 됨`, `보류`, `중복` 중 하나로 응답하고 근거를 기록한다.
@@ -145,7 +147,7 @@
 - **현재 적용 상태:** API는 `agent=true`, `paper=false`, `observe=false`, validation 60/64, `promotions=0`, `last_candidate_promoted=false`, `real_orders=false`를 반환했다. 실행 중인 PID 7068은 guard 이전에 시작한 구버전이므로 source/runtime 경로 이전과 함께 새 코드로 재시작하기 전까지 API의 `promotion_blocked_reason=null`은 보호가 적용됐다는 증거가 아니다. 관찰/paper를 다시 켜지 않는다.
 - **재확인 조건:** runtime을 프로젝트 폴더로 이전한 뒤 새 agent를 시작하고, 64/64 이후에도 `candidate_stage=promotion_held`, 명시적 blocker, 승격 0회를 확인한다. SHA 계보를 확인하고 보호 기준을 정하기 전에는 checkpoint를 수정하거나 교체하지 않는다.
 
-## Runtime 위치 이전
+## Runtime 위치 이전 — 과거 중간 상태 (이후 시장별 경로로 대체)
 
 - **응답: 수정 진행 중.** 사용자가 기존 LocalAppData runtime을 프로젝트 폴더로 옮기고, 성공 확인 뒤 기존 외부 복사본을 정리하라고 지시했다. 프로젝트 밖에는 새 폴더를 만들지 않는다.
 - 실행기 기본 경로와 `STOCKRL_RUNTIME_DIR` 검증을 프로젝트 내부 `runtime-global-korea-live`로 통일했다. 현재 8766의 agent는 아직 외부 runtime 경로의 old process다.
@@ -169,7 +171,7 @@
 - **응답: 수정함.** runtime 22개 파일, 43,960,537 bytes를 프로젝트의 runtime-global-korea-live로 복사했고 복사 당시 SHA256이 일치했다. 두 SQLite DB는 integrity_check=ok였고 복사본에 .pt는 없었다. 현재 8766의 feed 출력 경로는 프로젝트 runtime이다.
 - **기존 LocalAppData 삭제: 보류.** 기존 %LOCALAPPDATA%\StockRL\runtime-global-korea-live는 현재 프로세스가 쓰지 않지만 남아 있다. 삭제 요청은 도구 정책에 거부됐다. 우회 삭제는 하지 않았다.
 
-### GitHub runtime snapshot과 추적
+### GitHub runtime snapshot과 추적 — 과거 중간 정책 (이후 정정)
 
 - **응답: 수정함.** 기존 커밋 613c330에는 runtime 21개 파일, 43,897,551 bytes가 포함됐다. 각 파일은 100MB 미만이며 .pt는 없다. 현재 로컬 runtime은 실행 중 갱신되어 44,139,072 bytes다.
 - 기존 커밋과 이력은 되돌리거나 다시 쓰지 않는다. 로컬 runtime 파일은 그대로 두고, Git 추적에서 제외해 향후 변경분이 자동으로 커밋되지 않게 했다. 이전 snapshot은 과거 커밋에 남는다.
@@ -184,7 +186,7 @@
 
 
 
-### GitHub 이력에 남은 runtime snapshot — side-monitor 재확인
+### GitHub 이력에 남은 runtime snapshot — 과거 side-monitor 시점 확인
 
 - **응답: 중복.** 현재 HEAD에서 runtime 추적이 빠졌고 로컬 파일은 보존됐다는 항목과 연결한다. 이전 커밋 613c330에는 21개 runtime 파일(43,897,551 bytes)이 남아 있다. 따라서 현재 main 트리에서 제외된 것이며 Git 이력 전체에서 제거된 것은 아니다.
 - **처리:** 커밋 이력을 다시 쓰거나 이전 snapshot을 지우지 않았다. 전체 이력에서 제거할지는 영향 범위를 검토한 뒤 별도 결정이 필요하다.
@@ -195,7 +197,7 @@
 
 - **응답: 수정함.** 기존 프로젝트 runtime을 `runtime/markets/korea`로 이동했다. runtime API 기준 경로는 `runtime/markets/<market>/`; 실제 live 상태는 그 안의 `live/`다. NASDAQ용 경로는 `runtime/markets/nasdaq/live/`가 된다.
 - `STOCKRL_MARKET`은 `korea` 또는 `nasdaq` 같은 안전한 시장 이름을 받아 경로를 나눈다. 외부 경로 차단은 유지된다. `run_global_paper.ps1`은 `-Market`을 지원하고 현재 한국 launcher들은 korea를 지정한다.
-- 이동한 runtime은 22개 파일, 46,029,050 bytes다. replay와 market SQLite `integrity_check=ok`, `.pt` 0개. Git 추적에서 제외되며 로컬 파일은 보존된다.
+- 최초 이동 기록 당시 runtime은 Git 추적에서 제외된 상태였다. 그 정책은 사용자의 “모델 가중치만 제외하고 비공개 GitHub에 보관” 지시에 따라 후속 정정됐다. runtime snapshot은 `da5dd24`에 처음 포함됐고 `c98ef4c`에서 온라인 SQLite 백업으로 갱신됐다. 이동 당시 파일 수·크기 및 SQLite 무결성 결과는 그 시점의 기록이다.
 
 ### side-review 항목별 응답
 
@@ -246,3 +248,11 @@
 - cursor는 처리한 bar마다 저장되고 재시작 시 이후 bar부터 계속한다. 따라서 재시작 전에 아직 horizon outcome을 기다리던 experience는 복구되지 않아 replay에 성숙 경험으로 들어가지 못할 가능성이 있다.
 - 이는 데이터 유실 가능성의 코드 근거이며 실제 유실이 발생한 건수는 확인하지 못했다. 재시작 이력과 당시 pending 목록이 영속 기록에 없으므로 실제 손실이라고 단정하지 않는다.
 - 재확인 조건: pending experience를 SQLite에 영속화하고, 재시작 후 중복 없이 한 번만 replay에 반영되는지 검증한다.
+
+## P2 README/CODEX 인수인계 문서 드리프트 — 2026-09-29 KST
+
+- **응답: 수정함.** `README.md`와 `CODEX_HANDOFF.md`의 현재형 설명을 현재 source와 대조해 고쳤다: mature replay는 bounded SQLite, live cursor/account/validation ledger는 runtime JSON, outcome `pending`과 portfolio pending 및 validation work queue는 memory-only, 미성숙 경험은 restart 후 복구되지 않는다.
+- 승급 비교 설명은 현재 sequential paper-account net return 비교로 수정했고, champion lineage hold 때문에 현재 학습/승급이 보류 중이라는 점을 구분했다.
+- 경로 및 보관 정책은 `runtime/markets/korea/live`, private GitHub 시점 snapshot, 모델 checkpoint 제외로 정리했다. `web --runtime` 외부 경로 누락도 주의사항에 유지했다.
+- SIDE_REVIEW_HANDOFF 맨 앞에 시간순 상태 안내를 추가했다. 이전 runtime-global 경로와 당시 Git 제외 정책을 삭제하지 않고 과거 중간 상태로 표시했으며, 후속 `da5dd24`/`c98ef4c` 보관 이력을 연결했다.
+- **확인:** source `GlobalReplayBuffer`/`follow_csv()`/`PaperAccount.save()`/validation state code와 대조했다. 코드·모델·dashboard HTML은 바꾸지 않았다.

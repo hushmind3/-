@@ -7,7 +7,7 @@
 - 약 5억 파라미터 Transformer 기반 글로벌 시장 트레이딩 에이전트
 - BUY / HOLD / SELL과 가치평가 출력
 - 수수료·슬리피지를 뺀 실제 순손익을 보상으로 사용
-- 실시간 시장 관찰, 가상매매, 메모리 replay, candidate 학습, 검증 승격
+- 실시간 시장 관찰, 가상매매, bounded SQLite replay, candidate 학습과 검증 승격
 - champion은 추론 담당, candidate는 별도 학습
 - candidate가 미학습 검증 구간에서 champion보다 좋아질 때만 자동 승격
 - teacher·기존 거래기록은 초기 지식이며 장기적으로는 자기 경험과 보상으로 독립
@@ -32,9 +32,9 @@
 - 파라미터 수: 약 512.7M
 - RTX 3070 CUDA에서 실행
 - replay 경험 하나는 시장상태·행동·후속 가격·수수료·슬리피지·순손익을 가진다.
-- 현재 웹 실행기는 새 replay 경험이 4,096개 이상 쌓일 때 candidate 학습을 시작한다. 설정은 batch 1, update 1이다. 재시작하면 메모리 replay와 미완료 판단은 사라지고, 새 candidate는 champion에서 다시 시작한다.
+- 웹 실행기 설정은 새 성숙 경험 약 4,096개마다 candidate 학습을 시도하고 batch 1, optimizer update 1을 사용한다. 현재는 보호 champion SHA 불일치로 학습과 승급이 보류 중이다. 재시작 후 bounded SQLite replay·cursor·paper 계좌·validation ledger는 복구되지만, 메모리의 미성숙 outcome `pending` 목록은 복구되지 않는다.
 - candidate 학습 중에도 champion 추론은 계속된다.
-- 현재 승급 점수는 paper-account를 순차 실행한 최종 순자산이 아니라 수익률 합산 근사치다. 실제 paper-account 순손익 비교는 아직 구현·검증되지 않았다.
+- 현재 승급 비교기는 같은 검증 bar를 champion과 candidate의 별도 paper account에 순차 적용하고 비용 차감 순손익으로 비교한다. 보호 SHA 불일치가 해소되기 전에는 이 비교를 완료해도 승급하지 않는다.
 - champion은 정지 시 다시 저장하지 않는다. promotion gate만 champion을 교체한다.
 - 사용자가 보호한 champion SHA256 `2D0D…37797A`와 현재 파일 SHA256 `F0B1…D7725F02`가 다르다. 계보를 확인할 때까지 64-bar 결과와 무관하게 promotion을 보류한다.
 - 현재 metrics에는 `candidate_training`, `updates`, `promotions`, `rejections`, `replay_count`, `last_update_utc`가 있다.
@@ -85,13 +85,14 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 키 값은 채팅에 출력하지 않았다.
 - 이 Mac 폴더를 다른 사람에게 공유하지 않는다.
 
-## 주의할 점
+## 주의할 점 — 현재 소스 기준 (2026-09-29)
 
-- replay, pending, validation은 메모리에서만 처리한다. candidate update에 실제 사용한 replay 항목은 제거하고, update에 못 쓴 항목은 다음 시도까지 남긴다.
+- 현재 성숙 replay는 runtime의 bounded SQLite에 저장되고 candidate update 뒤에도 replay에서 삭제되지 않는다. 미성숙 `pending`/`portfolio_pending` 목록과 validation 작업 queue는 메모리에만 있다. cursor·paper account·candidate validation 상태/비교 계좌는 runtime 파일에 저장된다.
+- 과거 구현 기록 (작성 당시 날짜 미기록; 현재 동작 아님): replay, pending, validation을 메모리에서만 처리하고 candidate update에 사용한 replay 항목을 제거했다. 이 설명은 이후 SQLite persistence 구현 전의 상태다.
 - 검증 경험은 최근 64개 시각까지만 유지하며 candidate와 champion은 같은 검증 자료로 비교한다.
 - candidate가 champion을 이기지 못하거나 값이 잘못되면 `candidate.pt`를 champion 복사본으로 되돌린다.
 - 모델 폴더에는 `champion.pt`, `candidate.pt`만 둔다.
-- pending 경험은 판단 당시 가격을 함께 보관해 rolling CSV가 짧아져도 이어서 평가한다. 30일 동안 해당 종목의 다음 봉이 오지 않으면 만료한다.
+- 미성숙 경험은 판단 당시 가격을 함께 보관해 rolling CSV가 짧아져도 실행 중에는 이어서 평가한다. 30일 동안 해당 종목의 다음 봉이 오지 않으면 만료한다. 이 목록은 재시작 후 복구되지 않는다.
 - feed cache는 64MB 기준으로 최근 512개 시각까지만 줄이고, 오래된 참고시장 봉은 종목당 20개만 보존한다. 중복 방지 색인은 최근 8일이다.
 - 장시간 학습이 필요 없으면 UI에서 `관찰만`을 선택해 추론·수집은 유지하고 가상 포지션 반영만 멈춘다.
 - API 키가 필요 없으면 공개 Yahoo/Kraken 입력으로도 실행할 수 있다.
@@ -160,3 +161,9 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 결정 cursor는 `live_cursor.json`, paper account 상태와 가상 주문 pending은 `paper_account.json`, 이미 성숙한 replay는 `replay.sqlite3`에 각각 저장된다. 가상주문 pending과 RL outcome 대기 experience는 서로 다른 자료다.
 - cursor 이후의 새 bar부터 읽기 때문에 재시작 시 미성숙 experience가 있으면 해당 이전 판단의 outcome이 replay에 이어지지 않을 수 있다. 이 코드 경로는 확인했지만 실제 과거 유실 건수는 기록으로 증명되지 않았다.
 - 재확인 조건: 미성숙 experience를 SQLite에 저장하고 restart 복구/정확히 한 번 mature 여부를 검증한 뒤 이 항목을 닫는다.
+
+## P2 문서 드리프트 대조 — 2026-09-29 KST
+
+- **응답: 수정함.** 현재형으로 남아 있던 메모리 replay, replay 삭제, 재시작 시 replay 소실, 근사 승급 점수 문구를 현재 소스와 맞췄다. 현재 성숙 replay는 bounded SQLite이며 cursor/account/validation ledger는 runtime 파일이고 미성숙 outcome 목록·validation queue는 memory-only다.
+- `README.md`와 이 파일의 현재 경로는 `runtime/markets/korea/live`; runtime은 private GitHub의 시점 snapshot으로 보관되고 실행 중 이후 변경은 자동 동기화되지 않는다.
+- SIDE_REVIEW_HANDOFF의 중간 runtime 경로/Git 제외 문구는 날짜순 이력으로 보존하고 이후 정정이 우선임을 표시했다. 기존 실험 기록을 삭제하지 않았다.
