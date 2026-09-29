@@ -265,11 +265,12 @@ class PaperAccount:
         if full_weights is not None:
             currency_indices={key:[] for key in SEED_CASH}
             for j,symbol in enumerate(panel.symbols):
+                if not panel.observed[index,j] or symbol not in panel.groups:
+                    continue
                 market,asset=panel.groups[symbol]
                 currency=_currency(market,asset)
                 price=float(panel.closes[index,j])
-                if (currency is not None and panel.observed[index,j]
-                        and math.isfinite(price) and price>0):
+                if currency is not None and math.isfinite(price) and price>0:
                     currency_indices[currency].append(j)
             cash_weight=full_weights[-1]
             currency_weights=[0.0]*len(panel.symbols)
@@ -282,7 +283,8 @@ class PaperAccount:
                     for j in indices:
                         currency_weights[j]=full_weights[j]/denominator
         for j, symbol in enumerate(panel.symbols):
-            if not panel.observed[index, j] or symbol in self.state["pending"]:
+            if (not panel.observed[index,j] or symbol not in panel.groups
+                    or symbol in self.state["pending"]):
                 continue
             market, asset = panel.groups[symbol]
             currency = _currency(market, asset)
