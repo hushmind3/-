@@ -38,3 +38,13 @@
 {"time_utc": "2026-09-29T04:13:20.544111+00:00", "symbol": "NQ=F", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
 {"time_utc": "2026-09-29T04:18:25.603739+00:00", "symbol": "ES=F", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
 {"time_utc": "2026-09-29T04:18:25.604752+00:00", "symbol": "NQ=F", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:02.438575+00:00", "symbol": "^GDAXI", "provider": "yahoo", "retry_seconds": 15.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:02.439640+00:00", "symbol": "^FTSE", "provider": "yahoo", "retry_seconds": 15.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:18.522322+00:00", "symbol": "^GDAXI", "provider": "yahoo", "retry_seconds": 30.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:18.523391+00:00", "symbol": "^FTSE", "provider": "yahoo", "retry_seconds": 30.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:51.167812+00:00", "symbol": "^GDAXI", "provider": "yahoo", "retry_seconds": 60.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:00:51.168755+00:00", "symbol": "^FTSE", "provider": "yahoo", "retry_seconds": 60.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:01:55.720159+00:00", "symbol": "^GDAXI", "provider": "yahoo", "retry_seconds": 120.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:01:55.721172+00:00", "symbol": "^FTSE", "provider": "yahoo", "retry_seconds": 120.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:04:04.746650+00:00", "symbol": "^GDAXI", "provider": "yahoo", "retry_seconds": 240.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-29T07:04:04.747575+00:00", "symbol": "^FTSE", "provider": "yahoo", "retry_seconds": 240.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}

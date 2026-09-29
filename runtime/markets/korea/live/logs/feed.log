@@ -1640,3 +1640,61 @@
 2026-09-29 15:52:13,659 INFO polled=2 fetched=1486 appended=48 failures=0
 2026-09-29 15:52:29,502 INFO polled=2 fetched=1453 appended=13 failures=0
 2026-09-29 15:52:46,733 INFO polled=13 fetched=4534 appended=25 failures=0
+2026-09-29 15:53:02,583 INFO polled=2 fetched=1458 appended=20 failures=0
+2026-09-29 15:53:18,443 INFO polled=2 fetched=1473 appended=33 failures=0
+2026-09-29 15:53:34,261 INFO polled=2 fetched=1449 appended=9 failures=0
+2026-09-29 15:53:51,347 INFO polled=13 fetched=4540 appended=20 failures=0
+2026-09-29 15:54:07,153 INFO polled=2 fetched=1475 appended=37 failures=0
+2026-09-29 15:54:23,949 INFO polled=2 fetched=1462 appended=22 failures=0
+2026-09-29 15:54:39,812 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-29 15:54:57,213 INFO polled=13 fetched=4553 appended=22 failures=0
+2026-09-29 15:55:13,044 INFO polled=2 fetched=1490 appended=52 failures=0
+2026-09-29 15:55:28,863 INFO polled=2 fetched=1452 appended=12 failures=0
+2026-09-29 15:55:44,702 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-09-29 15:56:01,816 INFO polled=13 fetched=4572 appended=31 failures=0
+2026-09-29 15:56:17,627 INFO polled=2 fetched=1475 appended=35 failures=0
+2026-09-29 15:56:33,402 INFO polled=2 fetched=1454 appended=14 failures=0
+2026-09-29 15:56:49,187 INFO polled=2 fetched=1446 appended=6 failures=0
+2026-09-29 15:57:06,321 INFO polled=13 fetched=4604 appended=53 failures=0
+2026-09-29 15:57:22,096 INFO polled=2 fetched=1457 appended=17 failures=0
+2026-09-29 15:57:37,893 INFO polled=2 fetched=1451 appended=11 failures=0
+2026-09-29 15:57:53,657 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-29 15:58:10,743 INFO polled=13 fetched=4627 appended=56 failures=0
+2026-09-29 15:58:26,555 INFO polled=2 fetched=1458 appended=18 failures=0
+2026-09-29 15:58:42,513 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-29 15:58:58,359 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-29 15:59:15,503 INFO polled=13 fetched=4637 appended=53 failures=0
+2026-09-29 15:59:31,324 INFO polled=2 fetched=1461 appended=21 failures=0
+2026-09-29 15:59:47,120 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-09-29 16:00:02,439 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-29 16:00:02,440 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-29 16:00:02,914 INFO polled=4 fetched=1466 appended=28 failures=2
+2026-09-29 16:00:18,523 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-29 16:00:18,523 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-29 16:00:20,050 INFO polled=15 fetched=4653 appended=56 failures=2
+2026-09-29 16:00:35,852 INFO polled=2 fetched=1449 appended=9 failures=2
+2026-09-29 16:00:51,168 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-29 16:00:51,169 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-29 16:00:51,662 INFO polled=4 fetched=1443 appended=3 failures=2
+2026-09-29 16:01:07,484 INFO polled=2 fetched=1497 appended=59 failures=2
+2026-09-29 16:01:24,547 INFO polled=13 fetched=4643 appended=35 failures=2
+2026-09-29 16:01:40,350 INFO polled=2 fetched=1444 appended=4 failures=2
+2026-09-29 16:01:55,720 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-29 16:01:55,721 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-29 16:01:56,185 INFO polled=4 fetched=1441 appended=1 failures=2
+2026-09-29 16:02:12,002 INFO polled=2 fetched=1499 appended=61 failures=2
+2026-09-29 16:02:29,063 INFO polled=13 fetched=4646 appended=27 failures=2
+2026-09-29 16:02:44,861 INFO polled=2 fetched=1444 appended=4 failures=2
+2026-09-29 16:03:00,660 INFO polled=2 fetched=1454 appended=14 failures=2
+2026-09-29 16:03:16,495 INFO polled=2 fetched=1500 appended=60 failures=2
+2026-09-29 16:03:33,599 INFO polled=13 fetched=4650 appended=20 failures=2
+2026-09-29 16:03:49,390 INFO polled=2 fetched=1442 appended=2 failures=2
+2026-09-29 16:04:04,747 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-29 16:04:04,748 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-29 16:04:05,254 INFO polled=4 fetched=1489 appended=51 failures=2
+2026-09-29 16:04:21,060 INFO polled=2 fetched=1462 appended=22 failures=2
+2026-09-29 16:04:38,271 INFO polled=13 fetched=4664 appended=23 failures=2
+2026-09-29 16:04:54,062 INFO polled=2 fetched=1440 appended=0 failures=2
+2026-09-29 16:05:09,899 INFO polled=2 fetched=1497 appended=59 failures=2
+2026-09-29 16:05:25,714 INFO polled=2 fetched=1452 appended=12 failures=2
+2026-09-29 16:05:42,883 INFO polled=13 fetched=4674 appended=22 failures=2
