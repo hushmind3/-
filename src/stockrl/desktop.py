@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBo
     QPushButton, QSpinBox, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QInputDialog)
 
 from .broker import BrokerAdapter, BrokerWorker, OrderRequest
-from .paths import default_runtime_dir
+from .paths import default_runtime_dir, ensure_project_path, validate_model_dir
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -63,9 +63,11 @@ class GlobalAgentWindow(QMainWindow):
                               Path(os.environ.get("WINDIR",r"C:\Windows"))/"Fonts"/"segoeuib.ttf"):
                 if font_file.is_file(): QFontDatabase.addApplicationFont(str(font_file))
         runtime = Path(runtime) if runtime is not None else default_runtime_dir() / "desktop"
-        self.runtime = (ROOT / runtime).resolve() if not runtime.is_absolute() else runtime.resolve()
+        if not runtime.is_absolute():
+            runtime = ROOT / runtime
+        self.runtime = ensure_project_path(runtime, "runtime")
         self.runtime.mkdir(parents=True, exist_ok=True)
-        self.model_dir = Path(os.environ.get("STOCKRL_MODEL_DIR", str(Path.home()/"Desktop"/"모델"))).expanduser()
+        self.model_dir = validate_model_dir(os.environ.get("STOCKRL_MODEL_DIR"))
         self.device = device
         self.settings_path = self.runtime / "desktop_settings.json"
         self.settings = _read_json(self.settings_path)

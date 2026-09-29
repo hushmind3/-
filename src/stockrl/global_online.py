@@ -338,8 +338,15 @@ class OnlineGlobalAgent:
                  teacher_replay_path: str|Path|None=None,
                  model_dir: str|Path|None=None):
         from .core import device_for
-        self.state_dir=Path(state_dir); self.state_dir.mkdir(parents=True,exist_ok=True)
-        self.model_dir=Path(model_dir) if model_dir is not None else self.state_dir
+        from .paths import ensure_project_path, validate_model_dir
+        self.state_dir=ensure_project_path(state_dir, "runtime")
+        self.model_dir=validate_model_dir(model_dir)
+        if initial_champion is not None:
+            source = Path(initial_champion).expanduser().resolve()
+            if source.parent != self.model_dir or source.name not in {"champion.pt", "candidate.pt"}:
+                raise ValueError(f"initial champion must be an existing checkpoint in {self.model_dir}")
+            initial_champion = source
+        self.state_dir.mkdir(parents=True,exist_ok=True)
         self.model_dir.mkdir(parents=True,exist_ok=True)
         self.device=device_for(device); self.cfg=config or TransformerConfig(); self.window=window
         self.horizon=horizon; self.horizon_kind,self.horizon_amount=parse_horizon(horizon)

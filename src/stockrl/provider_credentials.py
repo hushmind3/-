@@ -6,6 +6,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .paths import ensure_project_path
+
 SERVICE = "stockrl.market-data"
 PROVIDERS = {"kiwoom": "\ud0a4\uc6c0\uc99d\uad8c"}
 
@@ -23,14 +25,18 @@ def _vault():
 
 
 def _settings_path(runtime: Path | None = None) -> Path:
-    local = Path(__file__).resolve().parents[2] / "configs" / "local"
-    return Path(os.environ.get("STOCKRL_LOCAL_CONFIG_DIR", local)) / "provider_settings.json"
+    project_root = Path(__file__).resolve().parents[2]
+    local = project_root / "configs" / "local"
+    configured = Path(os.environ.get("STOCKRL_LOCAL_CONFIG_DIR", local)).expanduser()
+    settings_dir = ensure_project_path(configured, "provider settings")
+    return ensure_project_path(settings_dir / "provider_settings.json", "provider settings")
 
 
 def _migration_credentials(runtime: Path, environment: str) -> dict:
     """Read an explicitly created cross-machine migration file when present."""
     try:
-        payload = json.loads((Path(runtime) / "credentials_migration.json").read_text(encoding="utf-8"))
+        runtime_dir = ensure_project_path(runtime, "runtime")
+        payload = json.loads((runtime_dir / "credentials_migration.json").read_text(encoding="utf-8"))
         selected = payload.get(environment, {}) if isinstance(payload, dict) else {}
         return {field: str(selected.get(field, "") or "")
                 for field in ("app_key", "secret", "account")}

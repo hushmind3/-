@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
+from .paths import ensure_project_path
 
 import pandas as pd
 import requests
@@ -110,7 +111,7 @@ class AppendOnlyMarketCSV:
     COMPACT_INDEX_BYTES = 128 * 1024 * 1024
 
     def __init__(self, path: str | Path):
-        self.path = Path(path)
+        self.path = ensure_project_path(path, "market data")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.db_path = self.path.with_suffix(self.path.suffix + ".sqlite3")
         self.db = sqlite3.connect(self.db_path, timeout=30)
@@ -239,15 +240,16 @@ class LiveMarketCollector:
                  timeout: float = 15.0, log_path: str | Path | None = None,
                  stop_file: str | Path | None = None):
         self.config_path = Path(config_path)
+        self.output = ensure_project_path(output, "market data")
+        self.stop_file = ensure_project_path(stop_file, "stop marker") if stop_file else None
+        self.errors_path = (ensure_project_path(log_path, "runtime log") if log_path
+                            else self.output.with_name("live_feed_errors.jsonl"))
         config = json.loads(self.config_path.read_text(encoding="utf-8"))
         self.instruments = config["instruments"]
-        self.output = Path(output)
-        self.index = AppendOnlyMarketCSV(output)
+        self.index = AppendOnlyMarketCSV(self.output)
         self.poll_seconds = max(1.0, poll_seconds)
         self.timeout = timeout
         self.stop = threading.Event()
-        self.stop_file=Path(stop_file) if stop_file else None
-        self.errors_path = Path(log_path) if log_path else self.output.with_name("live_feed_errors.jsonl")
         self.failures: dict[str, int] = {}
         self.next_due: dict[str, float] = {}
         self.latest_completed: dict[str, float] = {}

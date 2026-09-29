@@ -16,7 +16,7 @@ from datetime import datetime, time as day_time, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
-from .paths import default_runtime_dir
+from .paths import default_runtime_dir, ensure_project_path, validate_model_dir
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -182,7 +182,8 @@ class Supervisor:
                  horizon: str = "1m", config: str = "configs/live_symbols.json",
                  initial_champion: str | None = None, model_dir: str | Path | None = None,
                  settings_dir: str | Path | None = None):
-        self.runtime, self.device = runtime, device
+        self.runtime = ensure_project_path(runtime, "runtime")
+        self.device = device
         self.candidate_every, self.fee = candidate_every, fee
         self.config = Path(config)
         if not self.config.is_absolute():
@@ -190,10 +191,8 @@ class Supervisor:
         self.initial_champion = Path(initial_champion) if initial_champion else None
         if self.initial_champion is not None and not self.initial_champion.is_absolute():
             self.initial_champion = ROOT / self.initial_champion
-        self.model_dir = Path(model_dir) if model_dir else Path(
-            os.environ.get("STOCKRL_MODEL_DIR", str(Path.home() / "Desktop" / "모델")))
-        if not self.model_dir.is_absolute():
-            self.model_dir = ROOT / self.model_dir
+        requested_model_dir = model_dir or os.environ.get("STOCKRL_MODEL_DIR")
+        self.model_dir = validate_model_dir(requested_model_dir)
         self.lock = threading.RLock()
         self.profile: Path | None = None
         self.mode = "live"
@@ -206,8 +205,10 @@ class Supervisor:
         self._market_row_cache = {"path": None, "offset": 0, "lines": 0}
         self._latest_csv_cache = {}
         self._gpu_snapshot = {"sampled": 0.0}
+        self.settings_path = (ensure_project_path(settings_dir, "settings") / "web_settings.json"
+                              if settings_dir else ROOT / "configs" / "local" / "web_settings.json")
+        ensure_project_path(self.settings_path, "settings")
         self.runtime.mkdir(parents=True, exist_ok=True)
-        self.settings_path = Path(settings_dir) / "web_settings.json" if settings_dir else ROOT / "configs" / "local" / "web_settings.json"
         self.settings_path.parent.mkdir(parents=True, exist_ok=True)
         settings = _json(self.settings_path)
         self.mode = settings.get("mode", "live")

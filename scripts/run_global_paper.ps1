@@ -25,10 +25,24 @@ function Assert-ProjectPath([string]$Path) {
 Assert-ProjectPath $runtimeRoot
 if (-not $Data) { $Data = Join-Path $runtimeRoot "live\market.csv" }
 if (-not $State) { $State = Join-Path $runtimeRoot "live\agent" }
+$modelFolderName = ([string][char]0xBAA8) + [char]0xB378
 if (-not $ModelDir) { $ModelDir = $env:STOCKRL_MODEL_DIR }
-if (-not $ModelDir) { $ModelDir = Join-Path ([Environment]::GetFolderPath('Desktop')) "모델" }
+if (-not $ModelDir) { $ModelDir = Join-Path ([Environment]::GetFolderPath('Desktop')) $modelFolderName }
 $logDir = Join-Path $runtimeRoot "logs"
-foreach ($path in @($Data, $State, $logDir)) {
+
+$dataPath = [IO.Path]::GetFullPath($Data)
+$statePath = [IO.Path]::GetFullPath($State)
+$modelPath = [IO.Path]::GetFullPath($ModelDir)
+$configPath = [IO.Path]::GetFullPath($Config)
+Assert-ProjectPath $dataPath
+Assert-ProjectPath $statePath
+Assert-ProjectPath $logDir
+$expectedModelPath = [IO.Path]::GetFullPath((Join-Path ([Environment]::GetFolderPath('Desktop')) $modelFolderName))
+if (-not $modelPath.Equals($expectedModelPath, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Model checkpoints must stay in the Desktop model folder: $expectedModelPath"
+}
+Assert-ProjectPath $configPath
+foreach ($path in @($dataPath, $statePath, $logDir)) {
     $parent = Split-Path -Parent $path
     if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 }
@@ -45,13 +59,7 @@ function Start-Worker([string]$Name, [string[]]$Arguments) {
         -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
 }
 
-$dataPath = [IO.Path]::GetFullPath($Data)
-$statePath = [IO.Path]::GetFullPath($State)
 $env:STOCKRL_RUNTIME_DIR = $runtimeRoot
-Assert-ProjectPath $dataPath
-Assert-ProjectPath $statePath
-$modelPath = [IO.Path]::GetFullPath($ModelDir)
-$configPath = [IO.Path]::GetFullPath($Config)
 $feedStopPath = Join-Path (Split-Path -Parent $dataPath) "feed.stop"
 $agentStopPath = Join-Path $statePath "stop.request"
 foreach ($stopFile in @($feedStopPath, $agentStopPath)) {
