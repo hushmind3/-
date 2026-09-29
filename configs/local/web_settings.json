@@ -1,6 +1,6 @@
 {
   "mode": "live",
-  "horizon": "1m",
+  "horizon": "5m",
   "autonomy_enabled": true,
   "paper_enabled": true,
   "observe_enabled": true
