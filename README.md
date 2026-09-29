@@ -1,28 +1,19 @@
 # StockRL 금융매매 모델
-## ?? ?? ??
 
-- ???? ??? ?? champion? ?? ????. SHA256? ?? ? champion ?? ??? ????, ?? SHA? ???? ??? ???? ??? ??? ???.
-- champion? ??? ??? ?? candidate? replay ??? ??? ???.
-- candidate? ??? ??? bar? ?? paper account? ????. ?? 64? bar?? ?? ?? ???? champion?? ?? ?? ????. ?? ? champion? ??? ??? ??? ??.
-- ?? runtime? ???? ?? `runtime/markets/<market>/live`? ??. ?? ???? `champion.pt`? `candidate.pt`? ??. ?? ???? runtime? ?? Git?? ????.
-- ?? ??? ???? ????? ???? ??? OFF?.
+## 프로젝트 방향
 
+이 프로젝트는 특정 trader나 고정 전략을 계속 따라 하는 모델이 아니라, 시장 경험과 비용을 뺀 순손익을 바탕으로 스스로 매매 정책을 발전시키는 자율 트레이딩 에이전트입니다.
 
-## 현재 운영 기준 (2026-09-29)
+모델은 시장·종목·시간축·포트폴리오 상태를 보고 종목 선택, BUY/HOLD/SELL 판단, 자금 배분, 포지션 유지·교체·청산을 학습합니다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 목표가 아닙니다. 수수료, 거래세, 슬리피지, 스프레드, 현금·보유량·평단·손익, 유동성과 자본 규모는 환경이 제공하고, 매매전략은 경험으로 발견하게 합니다.
 
-- 운영실의 `모델 교체 기준`에는 검증 진행 bar, 최근 candidate의 replay sample 수·optimizer 횟수·학습 시간·VRAM 최고치, champion 실시간 추론 시간, 검증 중 두 모델의 추론 횟수와 시간이 항상 표시된다. 검증 점수는 비용 차감 순손익률이며, 학습 VRAM은 전체 peak와 candidate 학습이 더한 peak를 구분한다. 장치 전체 GPU 이용률을 모델별 사용량으로 표시하지 않는다.
-- VRAM 증가량 기록은 이 측정 기능 적용 후 시작되는 학습부터 가능하다. 이전 학습은 peak와 예약 VRAM만 남아 있어 시작점 대비 증가량을 소급 계산하지 않는다.
+운영 흐름은 `시장 관찰 → 판단 → 가상체결 → 비용 차감 paper 순손익 계산 → replay 저장 → candidate 학습 → champion과 같은 미학습 구간에서 paper 계좌 순손익 비교 → candidate가 개선된 경우에만 승격`입니다. 결과 추론과 candidate 학습은 분리되어 시장 관측을 계속합니다. 실주문은 기본 OFF이며 사용자가 명시적으로 켜기 전까지 실행하지 않습니다.
 
-- 2026-09-29 재가동 때 과거 구간은 따라잡지 않았다. 기존 replay SQLite 하나 안의 경험 4,096건, window 671건, pending 1,532건을 비우고 같은 DB를 재사용했다. cursor를 당시 feed 최신 시각 `2026-09-29T12:28:00Z`로 옮겼으며 그 뒤 새 feed만 관찰한다. replay 파일을 추가 생성하지 않았다.
-- 종목별 실현·평가 손익 변화는 해당 종목 action reward로 저장한다. 계좌 전체 순손익은 timestamp마다 한 건만 portfolio value 목표로 학습하고, 종목별 allocation 보상에는 그 종목의 기여 손익을 쓴다.
-- paper account는 모델 목표 비중과 BUY/SELL 신호에 따라 보유분을 추가매수하거나 일부 매도할 수 있다. 체결은 다음 완료 bar에서 비용을 반영해 처리한다.
-- live feed CSV는 시작 때 한 번 읽고 이후 완성된 append 행만 추가로 읽는다. 재시작 시 기존 cursor를 이어서 처리하되 5분 넘게 밀린 구간은 재생하지 않고 최신 시각으로 건너뛴다. 그 구간의 미성숙 경험과 replay도 버려 실시간 관측을 우선한다.
-- 운영 경로는 프로젝트 내부 `runtime/markets/<market>/live`; 모델 폴더에는 `champion.pt`, `candidate.pt` 두 파일만 둔다. replay와 account state는 runtime에 두며 Git에는 올리지 않는다.
-- 실주문은 계속 OFF다. provider가 연결돼 있어도 paper account 체결만 수행한다.
-- candidate는 성숙한 paper 경험 16건마다 자동 학습을 시도한다. paper 행동은 모델 확률에 5% 탐색을 섞어 뽑고, 행동 당시 log-probability를 저장해 PPO clipped ratio로 학습한다. 종목별 체결 기여 손익은 해당 행동·배분 학습에 쓰고, 계좌 전체 순손익은 별도 portfolio value 목표로 쓴다. replay에서 중복 없이 최대 16건을 뽑아 4개씩 4회의 optimizer update를 수행한다. 성공적으로 candidate checkpoint에 반영한 replay 행은 제거하고, 실패하면 경험 카운터와 replay를 유지한 채 메모리 회복 후 재시도한다. reward schema와 맞지 않는 과거 replay 행은 다음 agent 시작 때 같은 SQLite 안에서 제거·압축하며, 밀린 시장구간은 재생하지 않는다. replay는 단일 SQLite이며 4,096행·64MiB 상한과 8MiB WAL 상한을 둔다. 검증 중에도 별도 관측 루프는 시장을 계속 처리한다. 학습 시 Transformer block 활성값을 checkpoint 방식으로 재계산하고 AdamW의 CUDA 임시 버퍼를 끈다. 추론용 champion은 계속 GPU에 상주할 수 있다.
-- 미국·한국 손익은 각각 USD·KRW 시작자본 기준으로 정규화한다. 모델 계좌 입력의 현금·보유자산·손익·비용도 통화별 시작자본 단위로 정규화한 뒤 합쳐 통화 금액을 직접 더하지 않는다. 포트폴리오 replay는 종목별 기여 손익과 계좌 전체 순손익을 별도 필드로 보존한다.
-- 일반 paper 행동 결과는 현재 reward schema와 행동 당시 확률을 함께 저장해 candidate actor 학습에 들어간다. 종목별 실현 기여 손익과 계좌 전체 순손익은 별도 학습 신호다. 이전 schema의 replay 행은 agent 시작 때 제거하고 5분 넘은 대기 결과는 버린다. 가상매매는 학습 경험 생성을 위해 켜고, 실주문은 OFF다. 보호 champion SHA와 실제 SHA가 다르므로 승격은 차단한다.
-- Portfolio replay는 같은 시각에 여러 종목이 성숙해도 전체 계좌 보상으로 critic을 한 번만 갱신한다. 종목별 allocation loss는 각 종목의 기여 손익으로 계속 계산한다. 이전 replay도 로드할 때 시각별 한 행만 portfolio value transition으로 표시한다.
+## 현재 운영 화면과 상태
+
+- 운영 화면은 로컬 `http://127.0.0.1:8766/`에서 제공됩니다. 대시보드는 `/api/status`의 현재 응답을 5초마다 읽어 표시합니다. API 응답과 화면이 다르면 실행 중인 서버가 오래된 소스를 메모리에 읽어 둔 상태일 수 있습니다. 화면 코드를 바꾼 것만으로 실행 중 서버가 자동 갱신되지는 않습니다.
+- 가상 평가·자동 학습 영역은 API가 보고한 검증 진행, 최근 candidate 학습 표본과 optimizer 횟수, 학습 시간·VRAM, candidate/champion 비교 점수, paper 체결 건수를 표시합니다. 점수는 동일한 미학습 비교 구간의 비용 차감 순손익률입니다. 값이 아직 기록되지 않은 경우 0으로 꾸미지 않고 측정 전으로 표시합니다.
+- 장치 GPU 이용률과 VRAM은 장치 전체 측정값이며 모델 단독 사용량과 구분합니다. candidate 학습의 peak/시작/예약 VRAM은 학습 업데이트 기록이 제공하는 값입니다.
+- 운영 상태와 설정은 실행 중 API 값이 기준입니다. 아래의 과거 실험·복구 기록에 적힌 시각, 수치, 경로, 학습 설정은 해당 기록 당시의 값이며 현재 상태를 뜻하지 않습니다.
 
 ### 운영실에서 확인하는 모델 설정값
 
@@ -35,10 +26,11 @@
 
 수수료, 거래세, 슬리피지, 스프레드, 현금, 보유수량, 평단, 실현·평가손익, 유동성, 자본 규모는 환경이 제공한다. 실제 매매전략은 시장 경험으로 모델이 발견하는 것이 목표다. 공개 모델, teacher와 과거 trader 기록은 초기 금융 문법을 익히는 교육 재료이며 최종 정책이 아니다.
 
-운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. 결과를 기다리는 새 경험도 같은 replay SQLite에 저장해 재시작 후 이어간다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
+운영 루프: `시장 관찰 → 판단 → 가상체결 → 가상계좌 순손익 계산 → 결과가 성숙한 경험을 runtime의 bounded SQLite replay에 저장 → candidate 학습 → champion과 같은 미학습 구간의 paper-account 순손익 비교 → 개선 시에만 승격`. 학습에 사용한 replay 행은 검증 중 유지한다. candidate가 거절되거나 검증이 중단되면 경험을 다시 학습에 사용할 수 있고, 승격이 완료된 경우에만 해당 학습 행을 replay에서 소비한다. 이 처리 대상 행 ID는 같은 runtime의 검증 상태에 기록해 승격 직후 재시작해도 삭제를 마무리한다. 결과를 기다리는 새 경험도 같은 replay SQLite에 저장해 재시작 후 이어간다. 추론과 candidate 학습은 분리되어 시장 관측을 막지 않는다. 실제 주문은 기본 OFF이며 사용자가 명시적으로 허용하기 전까지 실행하지 않는다.
 
 
-## 현재 운영 기준 및 2026-09-29 복구 기록
+### 이전 설계 및 운영 기록 (현재 상태 아님)
+## 2026-09-29 당시 운영·복구 기록 (현재 상태 아님)
 
 - 프로젝트 폴더에는 소스·설정·문서를 둡니다. runtime의 시세, replay, 계좌, 판단 기록, 로그, 백업 snapshot은 이 프로젝트 안에서만 보관하고 Git에는 넣지 않습니다. 기존 Git 이력에 남아 있는 runtime은 과거 기록이며 새 커밋의 저장 대상이 아닙니다.
 - 모델 폴더에는 `champion.pt`와 `candidate.pt`만 둡니다. 보호 기준 SHA256과 champion SHA256이 다르면 승급을 계속 막습니다.
@@ -59,7 +51,7 @@
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
 - 과거 복구 당시의 4,096건 간격·batch 설정은 과거 상태 기록이다. 현재 소스 기준은 성숙 경험 16건 간격, batch 4, optimizer update 4이며, 미성숙 경험은 runtime SQLite에 보존한다.
-- candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작한다.
+- candidate가 기각되면 champion 복사본으로 초기화해 다음 학습을 시작하며, 이번 candidate가 학습한 replay 행은 다음 학습에서 다시 사용할 수 있도록 보존한다.
 - 현재 champion 파일 SHA256은 사용자가 보호 대상으로 지정한 기준 SHA256과 다르므로 승격은 계속 차단한다. candidate 학습은 허용하며 champion 가중치는 변경하지 않는다.
 
 ## 초기 연구 / 부트스트랩 기록
@@ -319,7 +311,7 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 
 이 결과는 수정된 ITCH snapshot으로 loader와 제한된 CUDA dry-run을 확인한 것입니다. 광범위한 시장 학습이나 수익성 있는 정책을 증명하지 않습니다. 포함된 정규화 source adapter는 다른 시장 feed가 사용하는 공통 진입점입니다. 여러 시장을 지원한다고 주장하려면 provider별 parser와 더 긴 다중 국면 학습·평가를 추가해야 합니다.
 
-## Runtime snapshot status — 2026-09-29 KST
+## 2026-09-29 당시 운영·복구 기록 (현재 상태 아님)
 
 - 마지막 runtime 포함 GitHub 커밋은 `c98ef4c`이며 16:05:57 KST에 저장됐다.
 - live 실행이 이어져 16:07:48 KST 확인 때 다음 tracked 파일이 snapshot 이후 다시 바뀌어 로컬 변경으로 남았다: `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`.
@@ -333,7 +325,7 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - 현재 확인된 파일 상태: Desktop `모델`에는 `champion.pt`, `candidate.pt`만 있고 프로젝트 및 `runtime/markets/korea` 안에는 `.pt`가 없다. 운영 launcher는 두 운영 checkpoint를 Desktop 모델 폴더에서 사용한다. 별도 연구 도구는 실행 시 다른 runtime 경로에 candidate/replay checkpoint를 만들 수 있으므로, 현재 2개 파일 원칙 아래에서는 `warmstart_*`, `pretrain_portfolio_agent.py`, `distill_*`, `continuous`, `replay`, `train`을 운영 도구로 실행하지 않는다. 이 저장 코드 경로는 실제 생성 파일이 현재 없다는 사실과 별개다.
 
 
-## 2026-09-29 runtime 경로 정리
+## 2026-09-29 당시 운영·복구 기록 (현재 상태 아님)
 
 - **확인함:** feed와 agent는 프로젝트 안 `runtime/markets/korea/live`를 사용한다. `StockRL Start.bat`, `start_stockrl.py`, `src/stockrl/paths.py`의 기본 경로도 프로젝트 runtime으로 맞췄다. 새 시장은 `runtime/markets/<market>/live`로 구분한다.
 - 당시 8766 API는 시스템·feed·agent 실행 상태를 반환했고 실제 주문은 OFF였다. 이는 프로세스 상태이며, agent 판단이 최신 feed를 따라잡았다는 증거는 아니다.
@@ -357,7 +349,7 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - **보류:** 8766 프로세스 재시작. 현재 구버전 프로세스가 이미 메모리에 쌓은 pending을 새 저장 형식으로 내보내지 못한다. 이를 잃지 않도록 재시작 전 agent 처리 상태를 별도 확인한다. 새 pending 저장은 프로세스가 새 source로 시작한 뒤부터 적용된다.
 - 후속 API 확인에서 PID 8572의 구버전 agent가 `candidate_learning_enabled=false`, `candidate_stage=promotion_held`, `updates=2`, `paper_examples_trained=2`, `candidate_validation_bars=0`을 반환했다. 이 수치는 당시 기록이며, champion 보호 SHA 변경이나 가중치 교체는 하지 않았다.
 
-## 2026-09-29 경로 검토 반영
+## 2026-09-29 당시 운영·복구 기록 (현재 상태 아님)
 
 - runtime, feed CSV와 SQLite, 웹 설정, provider 설정, stop marker는 금융매매모델 프로젝트 폴더 안에서만 생성한다. 외부 runtime 환경변수와 외부 provider 설정 경로는 시작 단계에서 거부한다.
 - checkpoint 경로는 `C:\Users\hushm\Desktop\모델`로 제한한다. 웹 실행기, 데스크톱 실행기, online agent, Windows paper launcher에 같은 규칙을 적용한다.

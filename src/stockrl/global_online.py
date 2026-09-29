@@ -366,6 +366,33 @@ class GlobalReplayBuffer:
             self.items=deque((item for item in self.items if id(item) not in consumed),
                              maxlen=self.capacity)
             return before-len(self.items)
+    def row_ids_for(self, experiences: list[Experience]) -> list[int]:
+        """Return stable journal IDs for the exact experiences selected to train."""
+        with self.lock:
+            return sorted({self.row_ids[id(item)] for item in experiences
+                           if id(item) in self.row_ids})
+    def discard_row_ids(self, row_ids: list[int]) -> int:
+        """Consume journal rows after their candidate has been promoted."""
+        ids={int(row_id) for row_id in row_ids}
+        if not ids:
+            return 0
+        with self.lock:
+            row_to_object={row_id:object_id for object_id,row_id in self.row_ids.items()}
+            removed=0
+            if self.journal_path is not None:
+                with closing(self._connect()) as db:
+                    with db:
+                        cursor=db.executemany("DELETE FROM experiences WHERE id=?",
+                                              ((row_id,) for row_id in ids))
+                        removed=max(0,int(cursor.rowcount))
+                        db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
+                    db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            removed_objects={row_to_object[row_id] for row_id in ids if row_id in row_to_object}
+            self.items=deque((item for item in self.items if id(item) not in removed_objects),
+                             maxlen=self.capacity)
+            for object_id in removed_objects:
+                self.row_ids.pop(object_id,None)
+            return removed
     def teacher_fraction(self)->float:
         with self.lock:
             teachers=any(x.source.startswith("teacher") for x in self.items)
@@ -601,6 +628,9 @@ class OnlineGlobalAgent:
                       "champion_validation_inference_seconds_total":0.0,
                       "candidate_validation_inference_count":0,
                       "candidate_validation_inference_seconds_total":0.0,
+                      "candidate_replay_rows_held_for_validation":0,
+                      "candidate_replay_rows_consumed":0,
+                      "candidate_replay_cleanup_pending":False,
                       "update_losses":[],"inference_seconds":[],
                       "update_seconds":[],"weight_delta_l1":[]}
         metrics_path=self.state_dir/"metrics.json"
@@ -670,6 +700,16 @@ class OnlineGlobalAgent:
             validation_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
         except (OSError,json.JSONDecodeError):
             pass
+        # Complete the replay-consumption half of a successful promotion if
+        # the process stopped after champion.pt was replaced but before the
+        # SQLite delete was committed.
+        if validation_state.get("status")=="promoted" and not validation_state.get("replay_rows_finalized"):
+            consumed=self.replay.discard_row_ids(validation_state.get("trained_replay_row_ids",[]))
+            validation_state["replay_rows_consumed"]=consumed
+            validation_state["replay_rows_finalized"]=True
+            self.metrics["candidate_replay_rows_consumed"]=consumed
+            self.metrics["candidate_replay_cleanup_pending"]=False
+            _atomic_json(validation_state,self.validation_state_path)
         self.validation_meta_path=self.state_dir/"validation_config.json"
         saved_validation_config={}
         try:
@@ -718,12 +758,13 @@ class OnlineGlobalAgent:
                         self.validation_start_after=latest_cursor or saved_ts
                         self.validation_bars=0
                         self.validation_generation+=1
-                        self._atomic_json({"status":"collecting",
+                        validation_state.update({"status":"collecting",
                             "start_after":self.validation_start_after,"bars":0,
                             "source_champion_sha256":self.validation_source_sha256,
                             "generation":self.validation_generation,
-                            "reset_reason":"validation ledger timestamps were inconsistent or feed advanced"},
-                            self.validation_state_path)
+                            "last_timestamp":None,
+                            "reset_reason":"validation ledger timestamps were inconsistent or feed advanced"})
+                        self._atomic_json(validation_state,self.validation_state_path)
                         self.metrics["candidate_validation_bars"]=0
             else:
                 validation_state={"status":"discarded","reason":"champion changed during validation"}
@@ -1699,12 +1740,13 @@ class OnlineGlobalAgent:
         self.state_dir.mkdir(exist_ok=True,parents=True)
         # Candidate optimizer state is intentionally ephemeral across runs;
         # omit it from the artifact so evaluation/recovery only loads weights.
+        trained_replay_row_ids=self.replay.row_ids_for(used_experiences)
         save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
-        self._begin_candidate_validation(candidate)
-        # Replay is a temporary workbook: once its samples are durably reflected
-        # in candidate.pt, consume those rows so the same experience does not
-        # accumulate or get trained forever.
-        self.metrics["candidate_replay_rows_consumed"] = self.replay.discard(used_experiences)
+        self._begin_candidate_validation(candidate,trained_replay_row_ids)
+        # Keep replay rows available through validation. A rejected or
+        # interrupted candidate must not erase the only copy of its experience.
+        self.metrics["candidate_replay_rows_held_for_validation"]=len(trained_replay_row_ids)
+        self.metrics["candidate_replay_rows_consumed"]=0
         self.last_train_replay_size=len(self.replay)
         self.metrics["last_train_replay_size"]=self.last_train_replay_size
         self.metrics["paper_experiences_since_candidate"]=max(
@@ -1717,7 +1759,7 @@ class OnlineGlobalAgent:
         self._write_metrics()
         del candidate,opt
 
-    def _begin_candidate_validation(self,candidate):
+    def _begin_candidate_validation(self,candidate,trained_replay_row_ids=None):
         """Start a fresh, future-only comparison in two identical paper ledgers."""
         self.validation_generation+=1
         generation=self.validation_generation
@@ -1739,6 +1781,8 @@ class OnlineGlobalAgent:
         self.validation_source_sha256=source_sha
         self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
                            "bars":0,"source_champion_sha256":source_sha,
+                           "trained_replay_row_ids":sorted(set(trained_replay_row_ids or [])),
+                           "replay_rows_finalized":False,
                            "generation":generation,
                            "started_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())},
                           self.validation_state_path)
@@ -1856,11 +1900,11 @@ class OnlineGlobalAgent:
             self.metrics["candidate_validation_bars"]=self.validation_bars
             self.metrics["candidate_skip_reason"]=(
                 f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기")
-            self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
-                               "last_timestamp":stamp,"bars":self.validation_bars,
-                               "source_champion_sha256":self.validation_source_sha256,
-                               "generation":generation},
-                              self.validation_state_path)
+            state.update({"status":"collecting","start_after":self.validation_start_after,
+                          "last_timestamp":stamp,"bars":self.validation_bars,
+                          "source_champion_sha256":self.validation_source_sha256,
+                          "generation":generation})
+            self._atomic_json(state,self.validation_state_path)
             if self.validation_bars>=self.validation_window_bars:
                 # KRW and USD returns are normalized by their matching seed
                 # cash, so unrelated currencies are never added as raw money.
@@ -1893,12 +1937,20 @@ class OnlineGlobalAgent:
             self._reset_candidate_file()
             self.candidate=None
             self.validation_active=False
-            self._atomic_json({"status":"rejected","reason":error,"bars":self.validation_bars,
-                               "source_champion_sha256":source_sha},self.validation_state_path)
+            prior_state={}
+            try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+            except (OSError,json.JSONDecodeError): pass
+            self._atomic_json({**prior_state,"status":"rejected","reason":error,
+                               "bars":self.validation_bars,
+                               "source_champion_sha256":source_sha,
+                               "replay_rows_consumed":0,
+                               "replay_rows_finalized":True},self.validation_state_path)
         else:
+            state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
             try:
-                self._commit_candidate(candidate,float(candidate_score),float(champion_score),
-                                       self.validation_bars,source_sha)
+                promoted=self._commit_candidate(candidate,float(candidate_score),float(champion_score),
+                                                self.validation_bars,source_sha,
+                                                state.get("trained_replay_row_ids",[]))
             except Exception as exc:
                 error=f"{type(exc).__name__}: {exc}"
                 self.metrics["promotion_blocked_reason"]=error
@@ -1909,9 +1961,30 @@ class OnlineGlobalAgent:
                 self.candidate=None
                 from datetime import datetime,timezone
                 self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
-                self._atomic_json({"status":"rejected","reason":error,
+                prior_state={}
+                try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+                except (OSError,json.JSONDecodeError): pass
+                self._atomic_json({**prior_state,"status":"rejected","reason":error,
                                    "bars":self.validation_bars,
-                                   "source_champion_sha256":source_sha},self.validation_state_path)
+                                   "source_champion_sha256":source_sha,
+                                   "replay_rows_consumed":0,
+                                   "replay_rows_finalized":True},self.validation_state_path)
+            else:
+                if promoted:
+                    try:
+                        consumed=self.replay.discard_row_ids(state.get("trained_replay_row_ids",[]))
+                        self.metrics["candidate_replay_rows_consumed"]=consumed
+                        state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+                        state["replay_rows_consumed"]=consumed
+                        state["replay_rows_finalized"]=True
+                        self._atomic_json(state,self.validation_state_path)
+                    except Exception as exc:
+                        # The champion and validation state already say promoted.
+                        # Leave the rows and recovery marker intact for next start.
+                        self.metrics["candidate_replay_cleanup_pending"]=True
+                        self.metrics["last_candidate_replay_cleanup_error"]=f"{type(exc).__name__}: {exc}"[:1200]
+                else:
+                    self.metrics["candidate_replay_rows_consumed"]=0
             self.validation_active=False
         self.metrics["candidate_training"]=False
         self.metrics["candidate_stage"]="waiting"
@@ -1922,7 +1995,7 @@ class OnlineGlobalAgent:
         self._release_cuda_cache()
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
-                          source_champion_sha256:str)->bool:
+                          source_champion_sha256:str,trained_replay_row_ids=None)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
         promote=(validation_bars>=self.validation_window_bars
                  and self._sha256_file(self.champion_path)==source_champion_sha256
@@ -1965,6 +2038,9 @@ class OnlineGlobalAgent:
         self._atomic_json({"status":"promoted" if promote else "rejected",
                            "bars":validation_bars,"candidate_score":float(score_new),
                            "champion_score":float(score_old),"applied":promote,
+                           "trained_replay_row_ids":sorted(set(trained_replay_row_ids or [])),
+                           "replay_rows_consumed":0,
+                           "replay_rows_finalized":not promote,
                            "source_champion_sha256":source_champion_sha256,
                            "result_champion_sha256":self._sha256_file(self.champion_path),
                            "reason":reason},self.validation_state_path)
