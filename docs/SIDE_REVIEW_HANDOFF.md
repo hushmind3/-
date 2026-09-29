@@ -211,3 +211,10 @@
 - API: system/feed/agent/paper/observe ON, real_orders=false, `candidate_stage=promotion_held`, bars=0, replay=4096, promotions=0, candidate_learning=false, protected-SHA blocker 유지.
 - 이동 직전 검증은 64/64였지만 승급은 차단되어 0회였다. 재시작 후 API bars=0을 별도 현재 시점으로 기록한다.
 - **Relaunch report response: 수정함.** server/feed/agent runtime path와 promotion blocker를 새 프로세스에서 다시 확인했다. 8767 listener는 없다.
+
+## GitHub runtime 정책 검토 정정 — 2026-09-29 KST
+
+- **응답: 수정함.** 사용자의 지시는 모델 가중치만 제외하고 프로젝트 전체를 비공개 GitHub에 보관하는 것이다. 이전의 “runtime은 현재 Git에서 제외”라는 분류는 이 지시와 충돌했다.
+- 직전 커밋 `ad6238e`가 `/runtime/` 전체를 제외한 것을 확인했다. README와 `.gitignore`를 정정하고, 프로젝트 안의 현재 한국 runtime snapshot을 다음 커밋에 포함한다.
+- runtime 파일을 지우거나 서버를 중지하지 않는다. `.pt`, `.pth`, `.ckpt`, `.safetensors` 가중치는 계속 제외한다.
+- 별도 검토에서 지적된 `web --runtime`, `STOCKRL_LOCAL_CONFIG_DIR`, PowerShell `Data`/`State` 외부 경로 제한 누락은 코드에서 확인했다. 이번 GitHub 백업과 별도 경로 안전성 수정으로 남긴다.

@@ -127,3 +127,9 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 8766 listener PID 31776, feed PID 17576, agent PID 8572다. API와 프로세스 command line의 feed/state 경로가 모두 `runtime/markets/korea/live`를 가리킨다.
 - system/feed/agent/paper/observe는 켜져 있고 실제 주문은 OFF다. `candidate_stage=promotion_held`, validation bars=0, replay=4096, promotions=0, candidate_learning=false. champion lineage blocker가 유지된다. 이동 직전의 64/64 완료 기록과 재시작 뒤 bars=0은 서로 다른 시점이다.
 - champion SHA256은 `F0B1759A30262C81C957CCBA555048AC0C4B993587D795F30C59BE96D7725F02`로 유지됐다. 8767 listener는 없다.
+
+## GitHub runtime 백업 정책 정정 — 2026-09-29 KST
+
+- 사용자는 모델 가중치만 제외하고 프로젝트 파일 전체를 비공개 GitHub에 보관하도록 지시했다. 따라서 현재 runtime snapshot도 추적 대상이다.
+- 직전 커밋 `ad6238e`는 실수로 `/runtime/` 전체를 Git에서 제외했다. 후속 커밋에서 이 규칙을 해제하고 현재 `runtime/markets/korea` snapshot을 추가한다.
+- `.pt`, `.pth`, `.ckpt`, `.safetensors`는 계속 제외한다. 모델 파일과 대시보드 HTML은 수정하지 않는다.

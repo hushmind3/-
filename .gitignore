@@ -7,7 +7,7 @@ runtime-global-live-test/
 logs/
 runtime-global-web/
 
-# Model weights and persistent runtime state are excluded from Git tracking.
+# Model checkpoints are excluded from Git tracking.
 *.pt
 *.pth
 *.ckpt
@@ -26,6 +26,12 @@ data/cache/
 /runtime-global-korea-epoch1/
 /runtime-global-korea-epoch1-compact/
 
-# Live runtime data stays local; it changes while the agent runs.
-/runtime/
+# The private repository stores a recovery snapshot of project runtime data.
+!/runtime/**
+/runtime/**/*.pt
+/runtime/**/*.pth
+/runtime/**/*.ckpt
+/runtime/**/*.safetensors
+/runtime/**/*.sqlite3-shm
+/runtime/**/*.sqlite3-wal
 *.egg-info/
