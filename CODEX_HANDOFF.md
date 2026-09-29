@@ -133,3 +133,9 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - 사용자는 모델 가중치만 제외하고 프로젝트 파일 전체를 비공개 GitHub에 보관하도록 지시했다. 따라서 현재 runtime snapshot도 추적 대상이다.
 - 직전 커밋 `ad6238e`는 실수로 `/runtime/` 전체를 Git에서 제외했다. 후속 커밋에서 이 규칙을 해제하고 현재 `runtime/markets/korea` snapshot을 추가한다.
 - `.pt`, `.pth`, `.ckpt`, `.safetensors`는 계속 제외한다. 모델 파일과 대시보드 HTML은 수정하지 않는다.
+
+## 이전 AppData runtime 삭제 상태 — 2026-09-29 KST
+
+- `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`는 아직 존재한다. 읽기 전용 확인에서 22개 파일, 43,960,537 bytes였으며 `feed.stop`, replay SQLite와 SQLite WAL/SHM sidecar가 있다.
+- 실행 중인 feed/agent command line은 모두 프로젝트 `runtime/markets/korea/live`를 가리킨다. AppData runtime은 현재 프로세스가 사용하지 않는다.
+- 삭제 요청은 있었으나 이전 재귀 삭제 요청이 자동 도구 검토에 거부되어 미완료다. 정책을 우회하지 않았고, 폴더 삭제 완료로 보고하지 않는다.

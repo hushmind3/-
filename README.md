@@ -13,6 +13,7 @@
 - runtime은 프로젝트 폴더의 `runtime/markets/<market>/live`에 둔다. 현재 한국 운영 데이터는 `runtime/markets/korea/live`를 사용한다. NASDAQ 운영을 추가하면 `runtime/markets/nasdaq/live`를 쓴다. 실행기는 프로젝트 밖에 runtime 경로를 만들지 않는다. 이 비공개 저장소에는 복구를 위한 runtime snapshot을 포함하고, 모델 가중치(`.pt`, `.pth`, `.ckpt`, `.safetensors`)는 제외한다. 실행 중 변경된 runtime 자료는 이후 GitHub 저장 시점의 snapshot으로 반영된다.
 - `StockRL Start.bat`은 `STOCKRL_MARKET=korea`로 시작한다. `scripts/run_global_paper.ps1`에는 `-Market nasdaq`처럼 시장 이름을 줄 수 있다. 시장별 시세 설정도 해당 시장 설정 파일로 지정해야 한다.
 - replay와 가상계좌 등 실제 한국 runtime은 `runtime/markets/korea/live`에 있으며 비공개 GitHub 복구 snapshot에 포함한다. 과거 커밋 `613c330`에는 이전 위치의 runtime snapshot도 남아 있다.
+- 이전 위치 `%LOCALAPPDATA%\StockRL\runtime-global-korea-live`도 아직 남아 있다(확인 시 22개 파일, 43,960,537 bytes). 현재 feed/agent는 이 폴더를 사용하지 않고 프로젝트 runtime을 사용한다. 기존 폴더 삭제는 자동 도구 검토가 거부해 미완료이며, 삭제 완료로 간주하지 않는다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
 - 웹 실행기는 새 경험 약 4,096개마다 candidate를 한 번 학습한다. 설정은 batch 1, update 1이다. 재시작하면 replay와 미완료 판단은 사라지고 candidate는 champion에서 다시 시작한다.
