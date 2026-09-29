@@ -10,7 +10,7 @@
 
 - 이 프로젝트 폴더에는 소스 코드, 설정, 문서와 정적 연구 데이터가 있다.
 - Windows 모델 폴더 `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt`만 둔다.
-- runtime ???? ???? ?? ???? Git ????? ????. ?? ???? ???? ??? ???.
+- runtime 데이터는 프로젝트 폴더의 runtime-global-korea-live에 보관한다. 실행기는 프로젝트 밖에 runtime 경로를 만들지 않는다. runtime 데이터와 모델 가중치는 현재 Git 추적에서 제외한다. 다만 이전 커밋 613c330의 runtime snapshot은 Git 이력에 남아 있다.
 - 시세 CSV가 64MB를 넘으면 최근 512개 시각과 참고시장별 오래된 봉 20개만 남긴다. 중복 방지 기록도 최근 8일만 둔다.
 - 실패해 쓰지 못한 경험은 재시도용으로 남고, 미사용 replay는 100,000개 한도 안에서 관리한다. 검증 경험은 최근 64개 검증 시각까지만 유지한다.
 - 웹 실행기는 새 경험 약 4,096개마다 candidate를 한 번 학습한다. 설정은 batch 1, update 1이다. 재시작하면 replay와 미완료 판단은 사라지고 candidate는 champion에서 다시 시작한다.
