@@ -1321,14 +1321,11 @@ class OnlineGlobalAgent:
                     self.metrics["last_market_timestamp"]=stamp
                     _atomic_json({"last_timestamp":cursor},cursor_path)
                     _atomic_json({str(k):v for k,v in self.positions.items()},self.state_dir/"live_positions.json")
-                try:
-                    newest_stat=data_path.stat()
-                    newest_signature=(newest_stat.st_size,newest_stat.st_mtime_ns,
-                                      getattr(newest_stat,"st_ino",0))
-                except OSError:
-                    newest_signature=None
-                caught_up = (cursor is not None and np.datetime64(cursor) >= panel.dates[-1]
-                             and newest_signature == file_signature)
+                # Catch-up means the agent finished the complete timestamp
+                # snapshot it loaded. The feed may append another bar while
+                # inference is running; waiting for an unchanged file can
+                # otherwise keep the learner disabled indefinitely.
+                caught_up = cursor is not None and np.datetime64(cursor) >= panel.dates[-1]
                 self.metrics["observation_caught_up"]=bool(caught_up)
                 if caught_up:
                     self.metrics["agent_health"]=("observing_with_unmapped_symbols"
