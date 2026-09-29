@@ -153,3 +153,10 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - SQLite는 파일 복사 대신 온라인 백업했다. replay DB 13,438,976 bytes와 market DB 5,767,168 bytes 모두 당시 `integrity_check=ok`였다.
 - 16:07:48 KST 재확인 때 live 기록으로 `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`가 다시 바뀌었다. 현재 온라인 백업도 두 DB 모두 integrity `ok`지만 GitHub `c98ef4c`의 DB blob과 다르다. GitHub는 16:05:57 시점 복구 snapshot이고 이후 live tail은 로컬 변경분이다.
 - server/feed/agent는 계속 실행 중이며 actual orders OFF다. 서버를 중지하거나 원본 DB를 직접 복사하지 않았다.
+
+## P1 미성숙 경험 복구 점검 — 2026-09-29 KST
+
+- **응답: 보류.** `src/stockrl/global_online.py::follow_csv()`는 매 시작 때 `pending=[]; portfolio_pending=[]`로 초기화하며 두 목록을 runtime에 저장하거나 복구하지 않는다.
+- 결정 cursor는 `live_cursor.json`, paper account 상태와 가상 주문 pending은 `paper_account.json`, 이미 성숙한 replay는 `replay.sqlite3`에 각각 저장된다. 가상주문 pending과 RL outcome 대기 experience는 서로 다른 자료다.
+- cursor 이후의 새 bar부터 읽기 때문에 재시작 시 미성숙 experience가 있으면 해당 이전 판단의 outcome이 replay에 이어지지 않을 수 있다. 이 코드 경로는 확인했지만 실제 과거 유실 건수는 기록으로 증명되지 않았다.
+- 재확인 조건: 미성숙 experience를 SQLite에 저장하고 restart 복구/정확히 한 번 mature 여부를 검증한 뒤 이 항목을 닫는다.

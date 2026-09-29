@@ -284,3 +284,8 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - 마지막 runtime 포함 GitHub 커밋은 `c98ef4c`이며 16:05:57 KST에 저장됐다.
 - live 실행이 이어져 16:07:48 KST 확인 때 다음 tracked 파일이 snapshot 이후 다시 바뀌어 로컬 변경으로 남았다: `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`.
 - SQLite 두 파일은 원본 복사 없이 read-only 온라인 백업으로 확인했다. 둘 다 `PRAGMA integrity_check=ok`였지만 현재 백업 내용은 GitHub snapshot과 달랐다. 현재 replay 백업 13,438,976 bytes, market DB 백업 5,808,128 bytes; GitHub market DB snapshot은 5,767,168 bytes다. 따라서 GitHub는 `c98ef4c` 시점 복구본이며 그 이후 live 기록은 로컬에 남아 있다.
+
+## 미성숙 경험의 재시작 처리
+
+- `global_online.follow_csv()`의 미성숙 판단 목록 `pending`과 포트폴리오 목록 `portfolio_pending`은 메모리에서 빈 목록으로 시작한다. cursor(`live_cursor.json`), paper 계좌(`paper_account.json`), 이미 성숙해 SQLite replay에 들어간 경험은 저장되지만, 아직 결과가 나오지 않은 판단 경험 목록은 저장·복구되지 않는다.
+- 재시작 전에 미성숙 경험이 있었고 cursor가 그 판단 bar를 지난 상태라면 이후 결과가 해당 경험에 연결되지 않을 가능성이 있다. 실제로 몇 건이 손실됐는지는 확인된 기록이 없어 단정하지 않는다.

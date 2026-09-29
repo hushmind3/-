@@ -238,3 +238,11 @@
 - `replay.sqlite3`와 `market.csv.sqlite3`는 실행 중인 파일을 복사하지 않고 SQLite online backup API로 메모리 snapshot을 만들었다. 두 DB 모두 `PRAGMA integrity_check=ok`; 업로드한 snapshot 크기는 각각 13,438,976 bytes와 5,767,168 bytes였다.
 - **현재 재확인:** 16:07:48 KST에 live writer가 다시 여섯 파일을 갱신했다: `agent/metrics.json`, `agent/replay.sqlite3`, `live_feed_metrics.json`, `logs/feed.log`, `market.csv`, `market.csv.sqlite3`. 현재 온라인 DB snapshot도 integrity `ok`지만 저장된 DB blob과 내용이 다르다. 따라서 c98ef4c는 특정 시점 복구본이며 live runtime은 그 뒤에도 계속 변한다.
 - GitHub runtime snapshot을 다시 만들 때 온라인 DB backup을 유지한다. live tail의 자동 동기화는 설정하지 않았다. 별도 백업 실행 시점이 정해지면 그때 새 snapshot으로 기록한다.
+
+## P1 재시작 시 미성숙 RL 경험 복구 — 2026-09-29 KST
+
+- **응답: 보류.** `global_online.py::follow_csv()`의 `pending`과 `portfolio_pending`은 함수 지역 목록이며 시작 때 둘 다 빈 값으로 만든다. 목록을 저장/복구하는 코드는 확인되지 않았다.
+- 지속되는 값은 `live_cursor.json`의 cursor, `paper_account.json`의 계좌 및 next-bar paper-order pending, `replay.sqlite3`에 이미 기록된 성숙 경험이다. PaperAccount의 pending 주문은 미성숙 RL experience 목록을 대신하지 않는다.
+- cursor는 처리한 bar마다 저장되고 재시작 시 이후 bar부터 계속한다. 따라서 재시작 전에 아직 horizon outcome을 기다리던 experience는 복구되지 않아 replay에 성숙 경험으로 들어가지 못할 가능성이 있다.
+- 이는 데이터 유실 가능성의 코드 근거이며 실제 유실이 발생한 건수는 확인하지 못했다. 재시작 이력과 당시 pending 목록이 영속 기록에 없으므로 실제 손실이라고 단정하지 않는다.
+- 재확인 조건: pending experience를 SQLite에 영속화하고, 재시작 후 중복 없이 한 번만 replay에 반영되는지 검증한다.
