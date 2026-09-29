@@ -256,3 +256,14 @@
 - 경로 및 보관 정책은 `runtime/markets/korea/live`, private GitHub 시점 snapshot, 모델 checkpoint 제외로 정리했다. `web --runtime` 외부 경로 누락도 주의사항에 유지했다.
 - SIDE_REVIEW_HANDOFF 맨 앞에 시간순 상태 안내를 추가했다. 이전 runtime-global 경로와 당시 Git 제외 정책을 삭제하지 않고 과거 중간 상태로 표시했으며, 후속 `da5dd24`/`c98ef4c` 보관 이력을 연결했다.
 - **확인:** source `GlobalReplayBuffer`/`follow_csv()`/`PaperAccount.save()`/validation state code와 대조했다. 코드·모델·dashboard HTML은 바꾸지 않았다.
+
+## P2 운영 외 `.pt` 생성 경로 점검 — 2026-09-29 KST
+
+- **현재 실제 상태 응답: 재현 안 됨.** `Desktop\모델`에는 `champion.pt`, `candidate.pt` 2개만 있다. 프로젝트 전체 `.pt` 검색 결과 0개이며 `runtime/markets/korea` `.pt`도 0개다. `runtime-global-cuda-final`, `runtime-global-research-pretrain`, `runtime-global-market-training` 기본 출력 디렉터리도 없다.
+- 현재 Python 프로세스는 8766 web server, `live-feed`, `global-online`뿐이다. global-online command line은 Desktop `모델`을 model-dir로 지정한다. warmstart/pretrain/distill/legacy continuous 연구 스크립트는 현재 실행 중이 아니다. 이는 과거 실행 이력이 없다는 증거는 아니다.
+- **잠재 생성 경로 응답: 보류.** 운영 launcher의 live `global-online`은 model_dir에 `candidate.pt`를 사용하고 replay는 SQLite다. 반면 비운영 코드 경로에는 추가 checkpoint 출력이 남아 있다:
+  - `warmstart_fi2010_candidate.py`: `runtime-global-research-pretrain/candidate.pt`; `warmstart_macrophft_candidate.py` 및 `build_public_teacher_replay.py`: 같은 경로의 `candidate.pt`/`teacher_replay.pt`.
+  - `pretrain_portfolio_agent.py`: `runtime-global-market-training/portfolio-pretraining/candidate.pt`.
+  - `distill_fincast_offline.py` / `distill_fincast_temporal.py`: `runtime-global-market-training/.../candidate.pt`; 일부 `distill_*`은 필수 `--runtime`에 `candidate.pt`를 쓴다.
+  - legacy `continuous` / `replay` 기본 state 경로는 `runtime/markets/<market>/...` 안에 `candidate.pt` 및 `replay.pt`를 생성할 수 있고, legacy `train`은 `baseline-checkpoints/*.pt`를 만들 수 있다.
+- 따라서 **실제 운영 폴더의 두 파일 원칙은 현재 지켜지고 있고, 프로젝트 전체에 추가 `.pt`를 만들 수 있는 잠재 경로는 남아 있다.** 요청대로 코드 수정/연구 스크립트 실행은 하지 않았다. 해당 도구를 사용할 경우 별도 승인 또는 저장 정책 변경 뒤 다시 확인한다.

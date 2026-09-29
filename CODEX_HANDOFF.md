@@ -167,3 +167,11 @@ Mac용 폴더는 바탕화면의 `StockRL-Mac-Transfer`이다.
 - **응답: 수정함.** 현재형으로 남아 있던 메모리 replay, replay 삭제, 재시작 시 replay 소실, 근사 승급 점수 문구를 현재 소스와 맞췄다. 현재 성숙 replay는 bounded SQLite이며 cursor/account/validation ledger는 runtime 파일이고 미성숙 outcome 목록·validation queue는 memory-only다.
 - `README.md`와 이 파일의 현재 경로는 `runtime/markets/korea/live`; runtime은 private GitHub의 시점 snapshot으로 보관되고 실행 중 이후 변경은 자동 동기화되지 않는다.
 - SIDE_REVIEW_HANDOFF의 중간 runtime 경로/Git 제외 문구는 날짜순 이력으로 보존하고 이후 정정이 우선임을 표시했다. 기존 실험 기록을 삭제하지 않았다.
+
+## P2 비운영 checkpoint 생성 경로 점검 — 2026-09-29 KST
+
+- **현재 파일 확인: 재현 안 됨.** `C:\Users\hushm\Desktop\모델`에는 `champion.pt`와 `candidate.pt` 정확히 2개다. 프로젝트 전체 `.pt` 검색과 `runtime/markets/korea` 검색은 0개다. 이전 실험 출력 기본 디렉터리 `runtime-global-cuda-final`, `runtime-global-research-pretrain`, `runtime-global-market-training`은 현재 존재하지 않는다.
+- **현재 실행 경로 확인:** Python 프로세스는 `stockrl.launch_web --server-only`, `stockrl live-feed`, `stockrl global-online` 3개다. global-online은 `--model-dir C:\Users\hushm\Desktop\모델`을 사용한다. 연구/증류/warmstart 스크립트 프로세스는 없다. 과거에 실행된 적이 한 번도 없다는 뜻은 아니다.
+- **운영 코드:** 웹 launcher는 Desktop 모델 폴더의 champion을 읽고 live candidate를 같은 곳에 기록한다. live replay는 SQLite다. 현재 runtime에 `.pt` 추가 생성은 확인되지 않았다.
+- **잠재 연구 출력 — 보류:** `warmstart_fi2010_candidate.py`는 `runtime-global-research-pretrain/candidate.pt`, `warmstart_macrophft_candidate.py`는 그 candidate와 `teacher_replay.pt`를 쓴다. `pretrain_portfolio_agent.py`는 `runtime-global-market-training/portfolio-pretraining/candidate.pt`를 쓴다. FinCast distillation 기본 경로도 `runtime-global-market-training/.../candidate.pt`; 일부 다른 `distill_*`은 `--runtime`으로 전달된 폴더에 candidate를 만든다. legacy `continuous`는 `runtime/markets/<market>/continuous/candidate.pt`와 `replay.pt`, `replay`는 market runtime의 `replay.pt`, legacy `train`은 `baseline-checkpoints/*.pt`를 만들 수 있다.
+- 코드 변경·연구 스크립트 실행은 하지 않았다. 이 도구들을 실행해야 한다면 두 파일 규칙을 지키도록 저장/정리 방식부터 별도 검토한다.

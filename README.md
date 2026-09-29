@@ -289,3 +289,5 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 
 - `global_online.follow_csv()`의 미성숙 판단 목록 `pending`과 포트폴리오 목록 `portfolio_pending`은 메모리에서 빈 목록으로 시작한다. cursor(`live_cursor.json`), paper 계좌(`paper_account.json`), 이미 성숙해 SQLite replay에 들어간 경험은 저장되지만, 아직 결과가 나오지 않은 판단 경험 목록은 저장·복구되지 않는다.
 - 재시작 전에 미성숙 경험이 있었고 cursor가 그 판단 bar를 지난 상태라면 이후 결과가 해당 경험에 연결되지 않을 가능성이 있다. 실제로 몇 건이 손실됐는지는 확인된 기록이 없어 단정하지 않는다.
+
+- 현재 확인된 파일 상태: Desktop `모델`에는 `champion.pt`, `candidate.pt`만 있고 프로젝트 및 `runtime/markets/korea` 안에는 `.pt`가 없다. 운영 launcher는 두 운영 checkpoint를 Desktop 모델 폴더에서 사용한다. 별도 연구 도구는 실행 시 다른 runtime 경로에 candidate/replay checkpoint를 만들 수 있으므로, 현재 2개 파일 원칙 아래에서는 `warmstart_*`, `pretrain_portfolio_agent.py`, `distill_*`, `continuous`, `replay`, `train`을 운영 도구로 실행하지 않는다. 이 저장 코드 경로는 실제 생성 파일이 현재 없다는 사실과 별개다.
