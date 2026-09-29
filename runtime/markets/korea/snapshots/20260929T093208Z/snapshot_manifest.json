@@ -1,0 +1,115 @@
+{
+  "market": "korea",
+  "created_at_utc": "2026-09-29T09:32:08.833720+00:00",
+  "source": "runtime\\markets\\korea\\live",
+  "web_running": true,
+  "active_processes": [
+    "pid=8572 C:\\Users\\hushm\\AppData\\Local\\Programs\\Python\\Python313\\python.exe -u -m stockrl global-online --data C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\runtime\\markets\\korea\\live\\market.csv --state-dir C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\runtime\\markets\\korea\\live\\agent --model-dir C:\\Users\\hushm\\Desktop\\모델 --follow --poll-seconds 1 --window 128 --initial-lookback-bars 8 --candidate-every 4096 --fee 0.001 --horizon 1m --device cuda --initial-champion C:\\Users\\hushm\\Desktop\\모델\\champion.pt",
+    "pid=17576 C:\\Users\\hushm\\AppData\\Local\\Programs\\Python\\Python313\\python.exe -u -m stockrl live-feed --config C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\configs\\live_symbols_korea.json --output C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\runtime\\markets\\korea\\live\\market.csv --poll-seconds 15 --stop-file C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\runtime\\markets\\korea\\live\\feed.stop"
+  ],
+  "live_snapshot": true,
+  "files": {
+    "agent\\autonomy.json": {
+      "kind": "file",
+      "bytes": 65,
+      "sha256": "6a076ad9133666057c088ac34b8266da73b7a5e88b949ff9c0af71ebd5e18197"
+    },
+    "agent\\candidate_validation.json": {
+      "kind": "file",
+      "bytes": 587,
+      "sha256": "88efe7add2b03408bd259b8704f82ae1c37d17e5a9e1a5a3eef42d7b6ef8cd28"
+    },
+    "agent\\candidate_validation_candidate.json": {
+      "kind": "file",
+      "bytes": 6612,
+      "sha256": "2e7ab8adad3904109461210491c3704a8a4ffec252bb11a2ff9e0a310f2f5571"
+    },
+    "agent\\candidate_validation_champion.json": {
+      "kind": "file",
+      "bytes": 6037,
+      "sha256": "4953f916381b0d9d6d076211596ff6056afdcdaf82392d295dd6f3351768e621"
+    },
+    "agent\\decisions.csv": {
+      "kind": "file",
+      "bytes": 14152118,
+      "sha256": "aa2f8fbd3125900cf9cc6aa18f756da99b5943f47b627a987ab761a16cae814f"
+    },
+    "agent\\live_cursor.json": {
+      "kind": "file",
+      "bytes": 57,
+      "sha256": "6ce6be16b02fed5be37a90803d1a39b39e1792a527acd1d71504987854942dea"
+    },
+    "agent\\live_positions.json": {
+      "kind": "file",
+      "bytes": 2839,
+      "sha256": "555fe06459aa6e72b47148822056d8bd83da45dc0d702c5102623dacdca5f237"
+    },
+    "agent\\metrics.json": {
+      "kind": "file",
+      "bytes": 41811,
+      "sha256": "64185d9de2f2353fabf0472657125ff99f9453a01dfba1d865a994138478a0ee"
+    },
+    "agent\\paper_account.json": {
+      "kind": "file",
+      "bytes": 40434,
+      "sha256": "da768675416658c2ceae8e2a2c7f1f584aa0004bc56cd397f98ba8375126e3ee"
+    },
+    "agent\\replay.sqlite3": {
+      "kind": "sqlite_online_backup",
+      "integrity_check": "ok",
+      "table_rows": {
+        "experiences": 4096,
+        "windows": 111
+      },
+      "sha256": "0a5487f8eaf47f38c21450688cc8bab6bf4f46d73a41698739da0bff8c3f75e2"
+    },
+    "agent\\validation_config.json": {
+      "kind": "file",
+      "bytes": 60,
+      "sha256": "d849705d37ec86b9bd10e10f1338676258f11011daf1646f2d824fba300e1d13"
+    },
+    "live_feed_errors.jsonl": {
+      "kind": "file",
+      "bytes": 63774,
+      "sha256": "4afc9ce38f77ab94814a525f4c1e8753e44c610bb0ba8f8fc300583a8c7e34ac"
+    },
+    "live_feed_metrics.json": {
+      "kind": "file",
+      "bytes": 4239,
+      "sha256": "555b18013373aa99479ceac175f8ae019691a0bb7d2cb1bd9680f34bbd185057"
+    },
+    "logs\\agent.log": {
+      "kind": "file",
+      "bytes": 660,
+      "sha256": "7965836c05502599c471156363ccf50bdfb74233b9a288da2d6bb07e0e9ce565"
+    },
+    "logs\\feed.log": {
+      "kind": "file",
+      "bytes": 200427,
+      "sha256": "04a16bac50896ce5e8793c6c397f5e46fc19f4f7e33bc86571385bfe2ba832f0"
+    },
+    "market.csv": {
+      "kind": "file",
+      "bytes": 12157327,
+      "sha256": "1379dcedbc1cf38daa8617a22627b3ba00fcee3bea9103a795cb22f29569dd78"
+    },
+    "market.csv.sqlite3": {
+      "kind": "sqlite_online_backup",
+      "integrity_check": "ok",
+      "table_rows": {
+        "seen": 102597
+      },
+      "sha256": "52df7b953b153137168b593bc9ae323348957cf0bcff579f63b7ef3a1143793c"
+    }
+  },
+  "excluded": {
+    "model_checkpoints": [],
+    "sqlite_sidecars": [
+      "agent\\replay.sqlite3-shm",
+      "agent\\replay.sqlite3-wal",
+      "market.csv.sqlite3-shm",
+      "market.csv.sqlite3-wal"
+    ]
+  },
+  "note": "Each SQLite database is a consistent online backup. Other files are copied only when their size and modification time stay stable; a live snapshot is not a cross-file transaction."
+}

@@ -34,4 +34,6 @@ data/cache/
 /runtime/**/*.safetensors
 /runtime/**/*.sqlite3-shm
 /runtime/**/*.sqlite3-wal
+# Mutable live runtime is saved to versioned snapshots, never committed in place.
+/runtime/markets/*/live/**
 *.egg-info/
