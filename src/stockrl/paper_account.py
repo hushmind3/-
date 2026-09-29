@@ -247,7 +247,7 @@ class PaperAccount:
             return
         timestamp = str(panel.dates[index])
         buys: dict[str, list[tuple[str, float]]] = {key: [] for key in SEED_CASH}
-        buy_quantities: dict[str,int] = {}
+        buy_quantities: dict[str,float] = {}
         buy_prices: dict[str,float] = {}
         buy_spreads: dict[str,float] = {}
         full_weights = None
@@ -305,7 +305,7 @@ class PaperAccount:
             current_weight = current_quantity * price / equity if equity > 0 else 0.0
             model_weight = currency_weights[j]
             target_weight = max(current_weight, model_weight) if action == 2 else min(current_weight, model_weight)
-            target_quantity = max(0, int(equity * target_weight / price))
+            target_quantity = max(0.0, equity * target_weight / price)
             delta = target_quantity - current_quantity
             if delta > 0:
                 buys[currency].append((symbol, delta * price))
@@ -313,8 +313,10 @@ class PaperAccount:
                 buy_prices[symbol]=price
                 buy_spreads[symbol]=max(0.0,float(panel.features[index,j,7]))/10_000.0
             elif delta < 0:
+                # Whole-share accounts cannot realize fractional target sizes.
+                target_whole_quantity=max(0,math.floor(target_quantity+0.5))
                 self.state["pending"][symbol] = {"date": timestamp, "action": "SELL",
-                                                  "budget": -delta}
+                                                  "budget": current_quantity-target_whole_quantity}
         for currency, signals in buys.items():
             cash = float(self.state["books"][currency]["cash"])
             if cash <= 0:
@@ -329,24 +331,31 @@ class PaperAccount:
                 # Preserve the model's BUY allocation pool, then round it to
                 # whole shares against estimated spread, slippage, and fees.
                 # Largest fractional shares get first claim on available cash.
-                target_total=sum(budget for _,budget in valid_signals)
-                scale=min(1.0,cash/target_total) if target_total>0 else 0.0
-                base=[]; remaining_cash=cash
-                for symbol,budget in sorted(valid_signals,key=lambda item:(-item[1],item[0])):
-                    price=buy_prices[symbol]
+                unit_costs={}
+                for symbol,_ in valid_signals:
                     spread=max(0.0,min(buy_spreads[symbol]/2.0,0.025))
-                    unit_cost=price*(1.0+spread+self.slippage)*(1.0+self.fee)
+                    unit_costs[symbol]=buy_prices[symbol]*(1.0+spread+self.slippage)*(1.0+self.fee)
+                target_cost=sum(buy_quantities[symbol]*unit_costs[symbol]
+                                for symbol,_ in valid_signals)
+                scale=min(1.0,cash/target_cost) if target_cost>0 else 0.0
+                base=[]; remaining_cash=cash; remaining_target_cost=target_cost*scale
+                for symbol,budget in sorted(valid_signals,key=lambda item:(-item[1],item[0])):
+                    unit_cost=unit_costs[symbol]
                     exact=buy_quantities[symbol]*scale
                     wanted=math.floor(exact+1e-12)
                     units=min(wanted,math.floor(remaining_cash/unit_cost))
                     if units:
-                        remaining_cash-=units*unit_cost
+                        spent=units*unit_cost
+                        remaining_cash-=spent
+                        remaining_target_cost-=spent
                     base.append([symbol,budget*scale,units,wanted,
                                  exact-math.floor(exact+1e-12),unit_cost])
                 for row in sorted(base,key=lambda item:(-item[4],-item[1],item[0])):
                     symbol,scaled_budget,units,wanted,remainder,unit_cost=row
-                    if remainder>1e-12 and units<wanted+1 and remaining_cash+1e-8>=unit_cost:
-                        row[2]+=1; remaining_cash-=unit_cost
+                    if (remainder>1e-12 and units<wanted+1
+                            and remaining_cash+1e-8>=unit_cost
+                            and remaining_target_cost+1e-8>=unit_cost):
+                        row[2]+=1; remaining_cash-=unit_cost; remaining_target_cost-=unit_cost
                 targets=[(symbol,scaled_budget,units if units>0 else None)
                          for symbol,scaled_budget,units,_,_,_ in base if units>0]
             for symbol,budget,requested_quantity in targets:
