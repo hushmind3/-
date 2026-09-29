@@ -595,6 +595,12 @@ class OnlineGlobalAgent:
                       "unmatched_live_symbol_count":0,
                       "last_update_utc":None,"last_promotion_utc":None,"last_rejection_utc":None,
                       "inference_during_candidate":0,"reward_definition":REWARD_DEFINITION,
+                      "champion_live_inference_count":0,
+                      "champion_live_inference_seconds_total":0.0,
+                      "champion_validation_inference_count":0,
+                      "champion_validation_inference_seconds_total":0.0,
+                      "candidate_validation_inference_count":0,
+                      "candidate_validation_inference_seconds_total":0.0,
                       "update_losses":[],"inference_seconds":[],
                       "update_seconds":[],"weight_delta_l1":[]}
         metrics_path=self.state_dir/"metrics.json"
@@ -793,6 +799,10 @@ class OnlineGlobalAgent:
             if self.device.type=="cuda":
                 torch.cuda.synchronize(self.device); elapsed=time.perf_counter()-t
         self.metrics["inference_seconds"].append(elapsed)
+        self.metrics["champion_live_inference_count"]=(
+            int(self.metrics.get("champion_live_inference_count",0))+1)
+        self.metrics["champion_live_inference_seconds_total"]=(
+            float(self.metrics.get("champion_live_inference_seconds_total",0.0))+elapsed)
         if self.metrics.get("candidate_training"):
             self.metrics["inference_during_candidate"]=int(self.metrics.get("inference_during_candidate",0))+1
         if len(self.metrics["inference_seconds"])>2000: self.metrics["inference_seconds"]=self.metrics["inference_seconds"][-2000:]
@@ -1550,6 +1560,9 @@ class OnlineGlobalAgent:
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
             torch.cuda.reset_peak_memory_stats(self.device)
+            training_baseline_allocated=int(torch.cuda.memory_allocated(self.device))
+        else:
+            training_baseline_allocated=0
         elapsed=[]
         candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
         sampled_ids=set()
@@ -1640,6 +1653,7 @@ class OnlineGlobalAgent:
             torch.cuda.synchronize(self.device)
             self.metrics["last_candidate_peak_allocated_bytes"]=int(
                 torch.cuda.max_memory_allocated(self.device))
+            self.metrics["last_candidate_baseline_allocated_bytes"]=training_baseline_allocated
             self.metrics["last_candidate_peak_reserved_bytes"]=int(
                 torch.cuda.max_memory_reserved(self.device))
         self.metrics["last_candidate_optimizer_steps"]=len(elapsed)
@@ -1820,6 +1834,7 @@ class OnlineGlobalAgent:
                 pstate,astate=account.model_inputs(panel,index)
                 model_args=list(args)
                 model_args[0]=model_args[0].to(dtype=next(model.parameters()).dtype)
+                inference_started=time.perf_counter()
                 with torch.inference_mode():
                     if getattr(model,"_stockrl_uses_market_context",False):
                         pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=self.device)
@@ -1830,6 +1845,11 @@ class OnlineGlobalAgent:
                     else:
                         logits,_=model(*model_args); allocation=None
                     probabilities=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                elapsed=time.perf_counter()-inference_started
+                prefix=("champion" if model is champion else "candidate")+"_validation_inference_"
+                self.metrics[prefix+"count"]=(int(self.metrics.get(prefix+"count",0))+1)
+                self.metrics[prefix+"seconds_total"]=(
+                    float(self.metrics.get(prefix+"seconds_total",0.0))+elapsed)
                 account.queue_decisions(panel,index,probabilities,True,allocation=allocation)
                 account.save()
             self.validation_bars+=1
@@ -1974,6 +1994,12 @@ class OnlineGlobalAgent:
           "last_train_replay_size":self.last_train_replay_size,
           "candidate_stage":("sequential_paper_validation" if self.validation_active else
                              "training" if self.metrics.get("candidate_training") else "waiting"),
+          "champion_model_parameter_bytes":sum(p.numel()*p.element_size() for p in self.champion.parameters()),
+          "last_candidate_peak_extra_allocated_bytes":(
+              max(0,int(self.metrics["last_candidate_peak_allocated_bytes"])-
+                      int(self.metrics["last_candidate_baseline_allocated_bytes"]))
+              if self.metrics.get("last_candidate_peak_allocated_bytes") is not None and
+                 self.metrics.get("last_candidate_baseline_allocated_bytes") is not None else None),
           "validation_window_dates":len(self.validation_dates),
           "portfolio_validation_window_dates":len(self.portfolio_validation_dates),
           "horizon":str(self.horizon),"fee_rate":self.fee,"slippage_bps":self.slippage*10000,
