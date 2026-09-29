@@ -207,7 +207,7 @@ def main() -> None:
     go.add_argument("--fee",type=float,default=.001); go.add_argument("--slippage-bps",type=float,default=1.0)
     go.add_argument("--min-replay",type=int,default=8); go.add_argument("--batch-size",type=int,default=1)
     go.add_argument("--updates",type=int,default=1); go.add_argument("--lr",type=float,default=2e-6)
-    go.add_argument("--replay-capacity",type=int,default=100000); go.add_argument("--max-observations",type=int,default=None)
+    go.add_argument("--replay-capacity",type=int,default=4096); go.add_argument("--max-observations",type=int,default=None)
     go.add_argument("--teacher-decisions",default=None,help="optional normalized CSV with date,action from public-teacher inference")
     go.add_argument("--teacher-replay",default=None,help="optional saved warm-start replay; its sampling share decays to zero after 10k self outcomes")
     go.add_argument("--teacher-symbol",default="MSFT")
@@ -216,7 +216,7 @@ def main() -> None:
     go.add_argument("--poll-seconds",type=float,default=5.0)
     go.add_argument("--initial-lookback-bars",type=int,default=0,
                     help="on first boot only, paper-process this many latest existing bars before following new ones")
-    go.add_argument("--candidate-every",type=int,default=256,
+    go.add_argument("--candidate-every",type=int,default=4096,
                     help="launch one asynchronous candidate update after this many additional replay experiences")
     go.add_argument("--initial-champion",default=None,
                     help="use this initial champion when absent, or migrate an incompatible legacy checkpoint safely")
@@ -262,7 +262,7 @@ def main() -> None:
     web.add_argument("--port",type=int,default=8766); web.add_argument("--runtime",default=str(default_runtime_dir()))
     web.add_argument("--model-dir",default=None,help="directory for champion/candidate checkpoints")
     web.add_argument("--device",default="auto",choices=["auto","cuda","mps","cpu"])
-    web.add_argument("--candidate-every",type=int,default=256); web.add_argument("--fee",type=float,default=.001)
+    web.add_argument("--candidate-every",type=int,default=4096); web.add_argument("--fee",type=float,default=.001)
     web.add_argument("--horizon",default="1m",help="paper outcome horizon: 30s, 1m, or 5m")
     web.add_argument("--config",default="configs/live_symbols.json",help="market universe/provider config")
     web.add_argument("--initial-champion",default=None,help="seed checkpoint in the model directory")

@@ -147,6 +147,8 @@ class Supervisor:
         self.horizon = settings.get("horizon", horizon)
         self.autonomy_enabled = bool(settings.get("paper_enabled", settings.get("autonomy_enabled", True)))
         self.observe_enabled = bool(settings.get("observe_enabled", True))
+        if self.autonomy_enabled:
+            self.observe_enabled = True
         self.worker = threading.Thread(target=self._monitor, daemon=True, name="web-supervisor")
         self.worker.start()
 
@@ -332,8 +334,11 @@ class Supervisor:
     def set_autonomy(self, enabled: bool) -> dict:
         with self.lock:
             self.autonomy_enabled=bool(enabled)
+            if self.autonomy_enabled:
+                self.observe_enabled=True
             self._write_autonomy()
-            return {"ok":True,"autonomy_enabled":self.autonomy_enabled}
+            return {"ok":True,"autonomy_enabled":self.autonomy_enabled,
+                    "paper_enabled":self.autonomy_enabled,"observe_enabled":self.observe_enabled}
 
     def set_modes(self, paper_enabled=None, observe_enabled=None) -> dict:
         with self.lock:
@@ -341,6 +346,12 @@ class Supervisor:
                 self.autonomy_enabled = bool(paper_enabled)
             if observe_enabled is not None:
                 self.observe_enabled = bool(observe_enabled)
+            if self.autonomy_enabled:
+                self.observe_enabled = True
+            elif not self.observe_enabled:
+                # Pending paper orders are cleared on the next bar; existing
+                # holdings remain in the paper account.
+                self.autonomy_enabled = False
             self._write_autonomy()
             return {"ok": True, "paper_enabled": self.autonomy_enabled,
                     "observe_enabled": self.observe_enabled}
@@ -462,8 +473,72 @@ class Supervisor:
                     "decision": {key: decision.get(key) for key in
                                  ("date", "action", "p_sell", "p_hold", "p_buy", "value")}
                                 if decision else None})
-            positions = _json(state / "live_positions.json")
+            action_direction = {"BUY": 1, "SELL": -1, "HOLD": 0}
+            model_directions = {
+                symbol: action_direction.get(row.get("action"), 0)
+                for symbol, row in latest_decisions.items()
+            }
             paper_account = _json(state / "paper_account.json")
+            paper_positions = {}
+            paper_financials = {}
+            for currency, book in paper_account.get("books", {}).items():
+                held = book.get("positions", {})
+                for symbol, position in held.items():
+                    quantity = float(position.get("quantity", 0.0))
+                    if quantity:
+                        paper_positions[f"{currency}:{symbol}"] = {
+                            "symbol": symbol, "currency": currency, "quantity": quantity,
+                            "average_cost": float(position.get("average_cost", 0.0)),
+                            "mark": float(book.get("marks", {}).get(symbol, position.get("average_cost", 0.0)))
+                        }
+                unrealized = sum(
+                    float(position.get("quantity", 0.0)) * (
+                        float(book.get("marks", {}).get(symbol, position.get("average_cost", 0.0)))
+                        - float(position.get("average_cost", 0.0)))
+                    for symbol, position in held.items())
+                paper_financials[currency] = {
+                    "net_pnl": float(book.get("net_pnl", 0.0)),
+                    "realized_pnl": float(book.get("realized_pnl", 0.0)),
+                    "unrealized_pnl": unrealized,
+                    "fees": float(book.get("fees", 0.0)),
+                    "sell_tax": float(book.get("sell_tax", 0.0)),
+                    "spread": float(book.get("spread", 0.0)),
+                    "slippage": float(book.get("slippage", 0.0)),
+                }
+            probability_counts = {}
+            for row in latest_decisions.values():
+                try:
+                    signature = tuple(round(float(row[key]), 6) for key in ("p_sell", "p_hold", "p_buy"))
+                except (KeyError, TypeError, ValueError):
+                    continue
+                probability_counts[signature] = probability_counts.get(signature, 0) + 1
+            repeated = max(probability_counts.values(), default=0)
+            output_diagnostics = {
+                "symbols_with_probabilities": sum(probability_counts.values()),
+                "unique_probability_vectors": len(probability_counts),
+                "largest_identical_group": repeated,
+                "warning": repeated >= 3,
+                "note": ("확률이 같은 종목이 반복됩니다. 입력·중간 출력 원인은 별도 진단이 필요하며 행동은 자동 차단하지 않습니다."
+                         if repeated >= 3 else None),
+            }
+            learning_candidate_every = int(metrics.get("candidate_every", self.candidate_every))
+            learning_min_replay = int(metrics.get("candidate_min_replay", 8))
+            learning_min_holdout = int(metrics.get("candidate_min_validation_dates", 64))
+            learning_replay = int(metrics.get("candidate_replay_since_last_update",
+                metrics.get("trainable_replay_count", metrics.get("replay_count", 0))))
+            learning_holdout = int(metrics.get("candidate_validation_bars", metrics.get("validation_window_dates", 0)))
+            learning_skip = metrics.get("candidate_skip_reason")
+            if not learning_skip:
+                if metrics.get("candidate_training"):
+                    learning_skip = "candidate 학습 진행 중"
+                elif learning_holdout < learning_min_holdout:
+                    learning_skip = f"미학습 검증 시각 {learning_holdout}/{learning_min_holdout}개 대기"
+                elif learning_replay < learning_candidate_every:
+                    learning_skip = f"candidate 학습 간격 {learning_replay}/{learning_candidate_every}건 대기"
+                else:
+                    learning_skip = "다음 candidate 실행 조건을 확인 중"
+            learning_blocker = metrics.get("promotion_blocked_reason") or (
+                "순차 paper-account 검증기가 구현되지 않아 자동 승급을 막고 있습니다.")
             rows = self._market_row_count(data)
             checkpoint = self.model_dir / "champion.pt"
             gpu = metrics.get("cuda_device", metrics.get("device", "CPU"))
@@ -490,9 +565,25 @@ class Supervisor:
                     "autonomy_enabled":self.autonomy_enabled,
                     "paper_enabled":self.autonomy_enabled,
                     "observe_enabled":self.observe_enabled,
+                    "learning": {
+                        "candidate_learning_enabled": metrics.get("candidate_learning_enabled", True),
+                        "candidate_stage": metrics.get("candidate_stage",
+                            "training" if metrics.get("candidate_training") else "waiting"),
+                        "candidate_every": learning_candidate_every,
+                        "replay_current": learning_replay,
+                        "candidate_min_replay": learning_min_replay,
+                        "holdout_timestamps_current": learning_holdout,
+                        "holdout_timestamps_required": learning_min_holdout,
+                        "candidate_skip_reason": learning_skip,
+                        "promotion_gate_ready": metrics.get("promotion_gate_ready", False),
+                        "promotion_blocked_reason": learning_blocker,
+                    },
+                    "output_diagnostics": output_diagnostics,
                     "champion_version": datetime.fromtimestamp(checkpoint.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S") if checkpoint.exists() else "seed pending",
-                    "decisions": decisions, "positions": positions,
-                    "paper_account": paper_account, "gpu": gpu,
+                    "decisions": decisions, "model_directions": model_directions,
+                    "positions": paper_positions, "paper_positions": paper_positions,
+                    "paper_financials": paper_financials, "paper_account": paper_account, "gpu": gpu,
+                    "real_orders_enabled": False,
                     "physical_gpu": self._physical_gpu(),
                     "logs": "\n".join(self.log_tail[-8:]) or "Broker API is not connected; orders remain OFF."}
 

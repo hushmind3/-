@@ -30,7 +30,16 @@ class PaperAccount:
         self.path = Path(path)
         self.fee = float(fee)
         self.slippage = float(slippage)
-        self.state = {
+        self.state = self._empty_state()
+        if self.path.exists():
+            saved = json.loads(self.path.read_text(encoding="utf-8"))
+            if saved.get("version") != 1 or set(saved.get("books", {})) != set(SEED_CASH):
+                raise ValueError("paper account state schema does not match the live ledger")
+            self.state = saved
+
+    @staticmethod
+    def _empty_state() -> dict:
+        return {
             "version": 1,
             "last_timestamp": None,
             "pending": {},
@@ -41,11 +50,11 @@ class PaperAccount:
                 "sell_tax": 0.0, "realized_pnl": 0.0, "trade_count": 0,
             } for currency, seed in SEED_CASH.items()},
         }
-        if self.path.exists():
-            saved = json.loads(self.path.read_text(encoding="utf-8"))
-            if saved.get("version") != 1 or set(saved.get("books", {})) != set(SEED_CASH):
-                raise ValueError("paper account state schema does not match the live ledger")
-            self.state = saved
+
+    def reset(self) -> None:
+        """Reset a dedicated simulation ledger to the shared starting cash."""
+        self.state = self._empty_state()
+        self.save()
 
     def _equity(self, currency: str) -> float:
         book = self.state["books"][currency]
@@ -186,6 +195,17 @@ class PaperAccount:
             return
         timestamp = str(panel.dates[index])
         buys: dict[str, list[tuple[str, float]]] = {key: [] for key in SEED_CASH}
+        full_weights = None
+        if allocation is not None:
+            candidate_weights = [float(value) for value in allocation]
+            if (len(candidate_weights) == len(panel.symbols) + 1
+                    and all(math.isfinite(value) and value >= 0 for value in candidate_weights)):
+                weight_total = sum(candidate_weights)
+                if weight_total > 0:
+                    # The final entry is the model's explicit cash allocation.
+                    # Normalize only numerical drift; never renormalize the BUY
+                    # subset, since that would silently spend the cash weight.
+                    full_weights = [value / weight_total for value in candidate_weights]
         for j, symbol in enumerate(panel.symbols):
             if not panel.observed[index, j] or symbol in self.state["pending"]:
                 continue
@@ -198,17 +218,32 @@ class PaperAccount:
             if action == 0 and owned:
                 self.state["pending"][symbol] = {"date": timestamp, "action": "SELL"}
             elif action == 2 and not owned:
-                score = (float(allocation[j]) if allocation is not None and len(allocation) > j
-                         else float(probabilities[j, 2]))
+                score = (max(float(probabilities[j, 2]), 0.0) if allocation is None
+                         else full_weights[j] if full_weights is not None else 0.0)
                 buys[currency].append((symbol, max(score, 0.0)))
         for currency, signals in buys.items():
-            total = sum(score for _, score in signals)
             cash = float(self.state["books"][currency]["cash"])
-            if total <= 0 or cash <= 0:
+            if cash <= 0:
                 continue
-            for symbol, score in signals:
+            valid_signals=[(symbol,score) for symbol,score in signals if score>0]
+            if not valid_signals:
+                continue
+            if full_weights is None:
+                total=sum(score for _,score in valid_signals)
+                targets=[(symbol,cash*score/total) for symbol,score in valid_signals]
+            else:
+                # Allocation is applied to this currency's own current equity;
+                # KRW and USD balances are not converted or transferred.
+                equity=max(0.0,self._equity(currency))
+                targets=[(symbol,equity*score) for symbol,score in valid_signals]
+                target_total=sum(budget for _,budget in targets)
+                # Enforce one shared cash cap while preserving the model's
+                # relative weights across this currency's BUY orders.
+                scale=min(1.0,cash/target_total) if target_total>0 else 0.0
+                targets=[(symbol,budget*scale) for symbol,budget in targets]
+            for symbol,budget in targets:
                 self.state["pending"][symbol] = {
-                    "date": timestamp, "action": "BUY", "budget": cash * score / total}
+                    "date": timestamp, "action": "BUY", "budget": budget}
 
     def snapshot(self) -> dict:
         books = {}

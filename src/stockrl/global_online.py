@@ -5,11 +5,13 @@ model instances. Only a held-out score improvement swaps the champion.
 """
 from __future__ import annotations
 
-from collections import deque
+from collections import deque, OrderedDict
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from pathlib import Path
-import json, os, random, shutil, threading, time
+import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue
 import re
+import hashlib
 
 import numpy as np
 import psutil
@@ -22,7 +24,6 @@ from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTr
 from .paper_account import PaperAccount
 
 REWARD_VERSION="net_trade_v2"
-PAPER_LEDGER_PROMOTION_READY=False
 REWARD_DEFINITION=("net_trade_v2: one equal-notional isolated horizon trade; BUY/SELL realize signed price return, "
                    "minus entry+exit fees and slippage; HOLD remains cash")
 
@@ -51,20 +52,112 @@ class Experience:
 
 class GlobalReplayBuffer:
     """Bounded replay with explicit recent/old/extreme regime mixture."""
-    def __init__(self, capacity: int = 100_000, seed: int = 7):
+    def __init__(self, capacity: int = 4_096, seed: int = 7,
+                 journal_path: str|Path|None = None):
         self.capacity=capacity; self.items: deque[Experience]=deque(maxlen=capacity)
         self.rng=random.Random(seed); self.lock=threading.Lock(); self.paper_outcomes_seen=0
+        self.journal_path=Path(journal_path) if journal_path is not None else None
+        self.row_ids={}
+        self.window_cache=OrderedDict()
+        if self.journal_path is not None:
+            self._load_journal()
+
+    def _connect(self):
+        assert self.journal_path is not None
+        self.journal_path.parent.mkdir(parents=True,exist_ok=True)
+        return sqlite3.connect(self.journal_path,timeout=30)
+
+    @staticmethod
+    def _window_key(exp:Experience):
+        names=("features","symbol_ids","market_ids","asset_ids","valid_mask",
+               "market_context","portfolio_state","account_state")
+        key=hashlib.sha256()
+        for name in names:
+            value=getattr(exp,name)
+            if value is None:
+                key.update(name.encode()+b"=none")
+            else:
+                array=np.ascontiguousarray(value)
+                key.update(name.encode()); key.update(str(array.dtype).encode())
+                key.update(repr(array.shape).encode()); key.update(array.tobytes())
+        return key.hexdigest()
+
+    @staticmethod
+    def _window_payload(exp:Experience):
+        names=("features","symbol_ids","market_ids","asset_ids","valid_mask",
+               "market_context","portfolio_state","account_state")
+        arrays={name:(None if getattr(exp,name) is None else
+                      np.ascontiguousarray(getattr(exp,name))) for name in names}
+        return zlib.compress(pickle.dumps(arrays,protocol=5),level=1)
+
+    @staticmethod
+    def _metadata(exp:Experience):
+        metadata={name:getattr(exp,name) for name in (
+            "symbol_index","action","reward","timestamp","source","regime",
+            "reward_version","portfolio_reward","portfolio_transition","forward_return")}
+        return pickle.dumps(metadata,protocol=5)
+
+    def _load_journal(self):
+        with closing(self._connect()) as db:
+            db.execute("PRAGMA journal_mode=WAL")
+            db.execute("CREATE TABLE IF NOT EXISTS windows (key TEXT PRIMARY KEY, payload BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS experiences (id INTEGER PRIMARY KEY AUTOINCREMENT, window_key TEXT NOT NULL, metadata BLOB NOT NULL)")
+            with db:
+                db.execute("DELETE FROM experiences WHERE id NOT IN (SELECT id FROM experiences ORDER BY id DESC LIMIT ?)",(self.capacity,))
+                db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
+            rows=db.execute("SELECT e.id,e.window_key,e.metadata,w.payload FROM experiences e JOIN windows w ON w.key=e.window_key ORDER BY e.id DESC LIMIT ?",(self.capacity,)).fetchall()
+        decoded_windows={}
+        for row_id,window_key,metadata_blob,payload_blob in reversed(rows):
+            metadata=pickle.loads(metadata_blob)
+            arrays=decoded_windows.get(window_key)
+            if arrays is None:
+                arrays=pickle.loads(zlib.decompress(payload_blob))
+                decoded_windows[window_key]=arrays
+            exp=Experience(**arrays,**metadata)
+            self.items.append(exp); self.row_ids[id(exp)]=int(row_id)
+
+    def _journal_add(self,exp:Experience)->int|None:
+        if self.journal_path is None:return None
+        key=self._window_key(exp)
+        payload=self.window_cache.get(key)
+        if payload is None:
+            payload=self._window_payload(exp)
+            self.window_cache[key]=payload
+            while len(self.window_cache)>4:self.window_cache.popitem(last=False)
+        else:
+            self.window_cache.move_to_end(key)
+        metadata=self._metadata(exp)
+        with closing(self._connect()) as db:
+            with db:
+                db.execute("INSERT OR IGNORE INTO windows(key,payload) VALUES(?,?)",(key,sqlite3.Binary(payload)))
+                cursor=db.execute("INSERT INTO experiences(window_key,metadata) VALUES(?,?)",
+                                  (key,sqlite3.Binary(metadata)))
+                row_id=int(cursor.lastrowid)
+                db.execute("DELETE FROM experiences WHERE id NOT IN (SELECT id FROM experiences ORDER BY id DESC LIMIT ?)",(self.capacity,))
+                db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
+        return row_id
     def note_paper_outcome(self) -> None:
         with self.lock: self.paper_outcomes_seen+=1
     def add(self, exp: Experience) -> None:
-        with self.lock: self.items.append(exp)
+        with self.lock:
+            row_id=self._journal_add(exp)
+            self.items.append(exp)
+            if row_id is not None:self.row_ids[id(exp)]=row_id
+            self._prune_row_ids()
+    def _prune_row_ids(self):
+        live={id(item) for item in self.items}
+        self.row_ids={key:value for key,value in self.row_ids.items() if key in live}
     def __len__(self):
         with self.lock: return len(self.items)
     def sample(self, batch_size: int) -> list[Experience]:
         with self.lock: items=list(self.items)
         if not items: return []
         teachers=[x for x in items if x.source.startswith("teacher")]
-        paper=[x for x in items if not x.source.startswith("teacher")
+        # Candidate learning must optimize the same cash-only account used by
+        # paper validation. The isolated per-action proxy can assign a short
+        # reward to SELL, while PaperAccount forbids naked shorts; keep those
+        # rows in the journal for audit, but do not sample them for training.
+        paper=[x for x in items if x.source.startswith("paper_account")
                and getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION]
         # Keep old samples on disk for auditability, but don't mix their former
         # position-transition rewards with the new isolated-horizon trade target.
@@ -96,6 +189,12 @@ class GlobalReplayBuffer:
         consumed={id(item) for item in experiences}
         with self.lock:
             before=len(self.items)
+            row_ids=[self.row_ids.pop(key) for key in consumed if key in self.row_ids]
+            if row_ids and self.journal_path is not None:
+                with closing(self._connect()) as db:
+                    with db:
+                        db.executemany("DELETE FROM experiences WHERE id=?",((row_id,) for row_id in row_ids))
+                        db.execute("DELETE FROM windows WHERE key NOT IN (SELECT DISTINCT window_key FROM experiences)")
             self.items=deque((item for item in self.items if id(item) not in consumed),
                              maxlen=self.capacity)
             return before-len(self.items)
@@ -111,7 +210,9 @@ class GlobalReplayBuffer:
     def trainable_count(self)->int:
         with self.lock:
             return sum(x.source.startswith("teacher") or
-                       getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION for x in self.items)
+                       (x.source.startswith("paper_account") and
+                        getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION)
+                       for x in self.items)
     def load(self,path:Path,manifest_path:Path|None=None):
         if path.exists():
             manifest_path=manifest_path or path.with_suffix(".manifest.json")
@@ -126,11 +227,13 @@ class GlobalReplayBuffer:
                     data=torch.load(chunk_path,map_location="cpu",weights_only=False)
                     with self.lock:
                         for x in data: self.items.append(x)
+                        self._prune_row_ids()
                     del data
             else:
                 data=torch.load(path,map_location="cpu",weights_only=False)
                 with self.lock:
                     for x in data[-self.capacity:]: self.items.append(x)
+                    self._prune_row_ids()
 
 
 def _atomic_save(obj, path: Path, temp_dir: Path | None = None):
@@ -227,7 +330,7 @@ def load_model(path:Path,device:torch.device):
 
 class OnlineGlobalAgent:
     def __init__(self, state_dir: str|Path, device="auto", config:TransformerConfig|None=None,
-                 capacity=100_000, window=128, horizon=1, fee=.001, slippage_bps=1.0,
+                 capacity=4_096, window=128, horizon=1, fee=.001, slippage_bps=1.0,
                  min_replay=8, batch_size=2, updates_per_candidate=1, lr=2e-6, seed=7,
                  candidate_interval=256, initial_champion: str|Path|None=None,
                  teacher_replay_path: str|Path|None=None,
@@ -242,12 +345,11 @@ class OnlineGlobalAgent:
         self.fee=fee; self.slippage=slippage_bps/10_000
         self.min_replay=min_replay; self.batch_size=batch_size; self.updates_per_candidate=updates_per_candidate
         self.candidate_interval=max(1,candidate_interval)
-        self.min_validation_dates=32
+        self.min_validation_dates=0
         self.lr=lr; self.seed=seed; self.lock=threading.RLock(); self.stop=threading.Event()
-        self.replay=GlobalReplayBuffer(capacity,seed)
-        # Experience, pending outcomes, and validation slices are process-local
-        # memory. The only durable model files are candidate.pt and champion.pt.
-        # Optional teacher input is read-only; the live agent never persists a replay file.
+        self.replay=GlobalReplayBuffer(capacity,seed,self.state_dir/"replay.sqlite3")
+        # Replay is a bounded SQLite journal in the local runtime; checkpoints
+        # remain the only model files. The optional teacher source is read-only.
         if teacher_replay_path: self.replay.load(Path(teacher_replay_path))
         self.champion_path=self.model_dir/"champion.pt"
         if initial_champion is not None and not Path(initial_champion).is_file():
@@ -275,6 +377,23 @@ class OnlineGlobalAgent:
         self.positions={}
         self.paper_account=PaperAccount(self.state_dir/"paper_account.json",self.fee,self.slippage)
         if not self.paper_account.path.exists(): self.paper_account.save()
+        self.validation_window_bars=64
+        self.validation_queue=queue.Queue(maxsize=2)
+        self.validation_generation=0
+        self.validation_queue_invalid_reason=None
+        self.validation_queue_delay_limit_seconds=60.0
+        self.validation_queue_thread=threading.Thread(
+            target=self._validation_worker,name="candidate-validation",daemon=True)
+        self.validation_state_path=self.state_dir/"candidate_validation.json"
+        self.validation_champion_account=PaperAccount(
+            self.state_dir/"candidate_validation_champion.json",self.fee,self.slippage)
+        self.validation_candidate_account=PaperAccount(
+            self.state_dir/"candidate_validation_candidate.json",self.fee,self.slippage)
+        self.validation_start_after=None
+        self.validation_source_sha256=None
+        self.validation_bars=0
+        self.validation_active=False
+        self.current_market_timestamp=None
         positions_path=self.state_dir/"live_positions.json"
         if positions_path.exists():
             saved_positions=json.loads(positions_path.read_text(encoding="utf-8"))
@@ -287,7 +406,7 @@ class OnlineGlobalAgent:
                 self.positions[parsed_key]=int(value)
         self.metrics={"observations":0,"decisions":0,"matured":0,"updates":0,"promotions":0,
                       "rejections":0,"nonfinite_updates":0,"teacher_examples_trained":0,"paper_examples_trained":0,
-                      "paper_experiences_seen":0,
+                      "paper_experiences_seen":0,"paper_experiences_since_candidate":0,
                       "paper_net_reward":0.0,"last_market_timestamp":None,"candidate_training":False,
                       "last_update_utc":None,"last_promotion_utc":None,"last_rejection_utc":None,
                       "inference_during_candidate":0,"reward_definition":REWARD_DEFINITION,
@@ -307,17 +426,74 @@ class OnlineGlobalAgent:
         self.metrics["legacy_reward_examples_ignored"]=sum(
             not x.source.startswith("teacher") and getattr(x,"reward_version","legacy_transition_v1")!=REWARD_VERSION
             for x in self.replay.items)
-        self.metrics["replay_persistence"]="memory_only"
+        self.metrics["replay_persistence"]="bounded_sqlite_runtime"
         self.metrics["portfolio_experiences"] = int(self.metrics.get("portfolio_experiences",0))
         self.updates=int(self.metrics.get("updates",0)); self.steps=self.updates
-        # Replay and pending examples stay in memory only; candidate weights
-        # are the durable learning state across restarts.
+        # Replay is restored from the bounded runtime journal after restart.
         self.metrics["candidate_training"]=False
-        # New observations mature into a memory-only replay and trigger candidate learning.
-        self.last_train_replay_size=0
+        validation_state={}
+        try:
+            validation_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+        except (OSError,json.JSONDecodeError):
+            pass
+        if validation_state.get("status")=="collecting":
+            if validation_state.get("source_champion_sha256")==self._sha256_file(self.champion_path):
+                candidate_path=self.model_dir/"candidate.pt"
+                if candidate_path.is_file():
+                    self.candidate,self.cfg=load_model(candidate_path,self.device)
+                    self.validation_start_after=validation_state.get("start_after")
+                    self.validation_source_sha256=validation_state.get("source_champion_sha256")
+                    self.validation_bars=int(validation_state.get("bars",0))
+                    self.validation_generation=int(validation_state.get("generation",0))
+                    self.validation_active=True
+                    self.metrics["candidate_stage"]="sequential_paper_validation"
+                    self.metrics["candidate_validation_bars"]=self.validation_bars
+                    champion_ts=self.validation_champion_account.state.get("last_timestamp")
+                    candidate_ts=self.validation_candidate_account.state.get("last_timestamp")
+                    cursor_ts=None
+                    try:
+                        cursor_ts=json.loads((self.state_dir/"live_cursor.json").read_text(
+                            encoding="utf-8")).get("last_timestamp")
+                    except (OSError,json.JSONDecodeError,AttributeError):
+                        pass
+                    account_ts=self.paper_account.state.get("last_timestamp")
+                    latest_cursor=max((str(x) for x in (cursor_ts,account_ts) if x),default=None)
+                    saved_ts=validation_state.get("last_timestamp")
+                    consistent=(champion_ts==candidate_ts==saved_ts
+                                and int(validation_state.get("bars",-1))==self.validation_bars
+                                and ((self.validation_bars==0 and saved_ts is None)
+                                     or (self.validation_bars>0 and saved_ts is not None)))
+                    missed_bars=(latest_cursor is not None and
+                                 (saved_ts is None or latest_cursor>str(saved_ts)))
+                    if not consistent or missed_bars:
+                        self.validation_champion_account.reset()
+                        self.validation_candidate_account.reset()
+                        self.validation_start_after=latest_cursor or saved_ts
+                        self.validation_bars=0
+                        self.validation_generation+=1
+                        self._atomic_json({"status":"collecting",
+                            "start_after":self.validation_start_after,"bars":0,
+                            "source_champion_sha256":self.validation_source_sha256,
+                            "generation":self.validation_generation,
+                            "reset_reason":"validation ledger timestamps were inconsistent or feed advanced"},
+                            self.validation_state_path)
+                        self.metrics["candidate_validation_bars"]=0
+            else:
+                validation_state={"status":"discarded","reason":"champion changed during validation"}
+                _atomic_json(validation_state,self.validation_state_path)
+        self.metrics["candidate_skip_reason"]="새 paper 경험과 검증 시각을 기다리는 중"
+        # New observations are journaled in bounded SQLite replay and trigger candidate learning.
+        self.last_train_replay_size=int(self.metrics.get("last_train_replay_size",0))
         self.validation_meta_path=self.state_dir/"validation_config.json"
         _atomic_json({"reward_version":REWARD_VERSION,"horizon":str(self.horizon)},self.validation_meta_path)
         self.thread=threading.Thread(target=self._learner,name="global-learner",daemon=True)
+
+    @staticmethod
+    def _sha256_file(path:Path)->str:
+        digest=hashlib.sha256()
+        with Path(path).open("rb") as stream:
+            while chunk:=stream.read(1024*1024): digest.update(chunk)
+        return digest.hexdigest()
 
     def _append_validation(self, target:list, date_order:deque, timestamp:str, item) -> None:
         """Keep a fixed, recent validation window shared by both models."""
@@ -346,24 +522,29 @@ class OnlineGlobalAgent:
         eligible=future[panel.dates[future]>=target]
         return int(eligible[0]) if len(eligible) else None
 
-    def start(self): self.thread.start()
+    def start(self):
+        if self.validation_queue_thread.ident is None: self.validation_queue_thread.start()
+        if self.thread.ident is None: self.thread.start()
     def close(self):
         self.stop.set()
         if self.thread.is_alive(): self.thread.join(timeout=300)
+        if self.validation_queue_thread.is_alive(): self.validation_queue_thread.join(timeout=300)
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
         args=[x.to(self.device) for x in self._window(panel,index)]
-        args[0]=args[0].to(dtype=next(self.champion.parameters()).dtype)
-        with self.lock,torch.inference_mode():
+        with self.lock:
+            model=self.champion
+        args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+        with torch.inference_mode():
             if self.device.type=="cuda": torch.cuda.synchronize(self.device)
             t=time.perf_counter()
-            if getattr(self.champion,"_stockrl_uses_market_context",False) and portfolio_state is not None:
+            if getattr(model,"_stockrl_uses_market_context",False) and portfolio_state is not None:
                 pstate=torch.as_tensor(np.asarray(portfolio_state,dtype=np.float32)[None],device=self.device)
                 astate=torch.as_tensor(np.asarray(account_state,dtype=np.float32)[None],device=self.device)
-                logits,values,allocation=self.champion(*args,portfolio_state=pstate,
-                                                        account_state=astate,return_allocation=True)
+                logits,values,allocation=model(*args,portfolio_state=pstate,
+                                                account_state=astate,return_allocation=True)
             else:
-                logits,values=self.champion(*args); allocation=None
+                logits,values=model(*args); allocation=None
             elapsed=time.perf_counter()-t
             if self.device.type=="cuda":
                 torch.cuda.synchronize(self.device); elapsed=time.perf_counter()-t
@@ -428,6 +609,10 @@ class OnlineGlobalAgent:
                 forward=panel.return_to(dec["index"],target,symbol_ix)
             i=symbol_ix
             self.metrics["matured"]+=1
+            if dec.get("promotion_holdout",False):
+                self.metrics["promotion_validation_outcomes"] = int(
+                    self.metrics.get("promotion_validation_outcomes",0))+1
+                continue
             if dec.get("is_validation",False):
                 self._append_validation(self.validation,self.validation_dates,dec["timestamp"],
                     (dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
@@ -487,6 +672,10 @@ class OnlineGlobalAgent:
                 keep.append(dec); continue
             reward = now - float(dec.get("equity_before", now))
             self.metrics["paper_account_reward"] = float(self.metrics.get("paper_account_reward", 0.0)) + reward
+            if dec.get("promotion_holdout",False):
+                self.metrics["promotion_validation_outcomes"] = int(
+                    self.metrics.get("promotion_validation_outcomes",0))+1
+                continue
             entry=float(dec.get("entry_price",0.0)); exit_price=float(panel.closes[end_index,symbol_ix])
             forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
             exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
@@ -502,6 +691,8 @@ class OnlineGlobalAgent:
                 self.replay.add(exp)
                 self.metrics["paper_experiences_seen"]=int(
                     self.metrics.get("paper_experiences_seen",0))+1
+                self.metrics["paper_experiences_since_candidate"]=int(
+                    self.metrics.get("paper_experiences_since_candidate",0))+1
                 self.replay.note_paper_outcome()
             self.metrics["portfolio_experiences"] = int(self.metrics.get("portfolio_experiences",0)) + 1
         return keep
@@ -513,7 +704,6 @@ class OnlineGlobalAgent:
         New bars can be minute/hourly; all instruments for a timestamp should
         be appended as a batch. Candidate training runs on the learner thread.
         """
-        from .global_transformer import stable_id
         data_path=Path(data_path); cursor_path=self.state_dir/"live_cursor.json"
         decisions_path=self.state_dir/"decisions.csv"
         cursor=None
@@ -574,6 +764,7 @@ class OnlineGlobalAgent:
                         start=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
                 for ti in range(start,len(panel.dates)):
                     if self.stop.is_set(): break
+                    self.current_market_timestamp=str(panel.dates[ti])
                     # Autonomy is distinct from the model's HOLD action. When
                     # disabled, inference and counterfactual learning continue,
                     # but directional paper positions are left unchanged.
@@ -600,7 +791,7 @@ class OnlineGlobalAgent:
                     probs=torch.softmax(torch.as_tensor(logits),-1).numpy()
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
-                    stamp=str(panel.dates[ti]); validation=stable_id(stamp,5)==0
+                    stamp=str(panel.dates[ti]); validation=self.validation_active
                     rows=[]
                     for j,symbol in enumerate(panel.symbols):
                         # A closed venue may not print a bar at the current
@@ -615,14 +806,15 @@ class OnlineGlobalAgent:
                               "bars_elapsed":0,"regime":abs(float(panel.features[ti,j,6])),
                               "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
                               "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),
-                              "valid_mask":mask[0].numpy(),"is_validation":validation,
+                              "valid_mask":mask[0].numpy(),"is_validation":False,
+                              "promotion_holdout":validation,
                               "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
                         if paper_enabled and panel.observed[ti,j]:
                             portfolio_pending.append({"index":ti,"symbol_index":j,"symbol":symbol,
                               "action":action,"timestamp":stamp,
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
-                              "is_validation":validation,
+                               "is_validation":False,"promotion_holdout":validation,
                               "equity_before":self.paper_account.normalized_equity(),
                               "features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
                               "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
@@ -635,6 +827,7 @@ class OnlineGlobalAgent:
                             self.positions[symbol]=action-1
                     self.paper_account.queue_decisions(panel,ti,probs,paper_enabled,allocation=allocation)
                     self.paper_account.save()
+                    self._collect_candidate_validation(panel,ti)
                     import pandas as pd
                     if rows:
                         pd.DataFrame(rows).to_csv(decisions_path,mode="a",header=not decisions_path.exists(),index=False)
@@ -650,6 +843,8 @@ class OnlineGlobalAgent:
         finally:
             self.stop.set()
             if self.thread.is_alive(): self.thread.join(timeout=300)
+            if self.validation_queue_thread.is_alive():
+                self.validation_queue_thread.join(timeout=300)
             self.metrics["candidate_training"]=False
             self.checkpoint()
             (self.state_dir/"stop.request").unlink(missing_ok=True)
@@ -835,28 +1030,41 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
-            validation_dates=len({item[7] for item in self.validation})
+            new_experiences=int(self.metrics.get("paper_experiences_since_candidate",0))
+            self.metrics["candidate_replay_since_last_update"]=new_experiences
             # Do not spend GPU time on legacy isolated-action samples. The
-            # live candidate is promoted only from actual paper-account
-            # transitions whose costs and allocation were executed in the
-            # virtual ledger.
+            # candidate trains on realized paper-account outcomes. Promotion
+            # uses a separate, future sequential ledger episode.
             if int(self.metrics.get("paper_experiences_seen",0)) < self.min_replay:
+                self.metrics["candidate_skip_reason"] = f"paper 경험 {self.metrics.get('paper_experiences_seen',0)}/{self.min_replay}건 대기"
                 continue
-            if (self.replay.trainable_count()<self.min_replay or validation_dates<self.min_validation_dates or self.candidate is not None
-                    or len(self.replay)-self.last_train_replay_size<max(self.min_replay,self.candidate_interval)): continue
+            if self.replay.trainable_count()<self.min_replay:
+                self.metrics["candidate_skip_reason"] = f"학습 가능 경험 {self.replay.trainable_count()}/{self.min_replay}건 대기"
+                continue
+            if self.candidate is not None:
+                self.metrics["candidate_skip_reason"] = (
+                    f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기"
+                    if self.validation_active else "candidate 학습 진행 중")
+                continue
+            if new_experiences<max(self.min_replay,self.candidate_interval):
+                self.metrics["candidate_skip_reason"] = f"다음 candidate까지 새 경험 {new_experiences}/{max(self.min_replay,self.candidate_interval)}건"
+                continue
             self.last_train_replay_size=len(self.replay)
+            self.metrics["candidate_skip_reason"] = None
             try:
                 self._train_candidate()
             except Exception as exc:
                 self.metrics["candidate_training"]=False; self.candidate=None
                 self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
                 self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"
+                self.metrics["paper_experiences_since_candidate"]=0
                 try: self._write_metrics()
                 except Exception: pass
 
     def _train_candidate(self):
         from datetime import datetime, timezone
         self.metrics["candidate_training"]=True
+        self.metrics["candidate_skip_reason"] = None
         with self.lock: source_champion=self.champion
         candidate_path=self.model_dir/"candidate.pt"
         self.candidate=None
@@ -878,7 +1086,12 @@ class OnlineGlobalAgent:
         original=self.champion
         candidate=self.candidate.train(); opt=torch.optim.AdamW(candidate.parameters(),lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8)
-        elapsed=[]; consumed=[]
+        elapsed=[]
+        candidate_samples=0
+        self.metrics["last_candidate_optimizer_steps"]=0
+        self.metrics["last_candidate_samples_trained"]=0
+        self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
+        self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
             batch=self.replay.sample(self.batch_size)
             if not batch: break
@@ -915,18 +1128,23 @@ class OnlineGlobalAgent:
                 self.metrics["nonfinite_updates"]+=1
                 continue
             opt.zero_grad(set_to_none=True); loss.backward(); nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
-            consumed.extend(batch)
+            candidate_samples+=len(batch)
             self.metrics["update_losses"].append(float(loss.detach().cpu()))
             self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
             if self.device.type=="cuda": torch.cuda.synchronize(self.device)
             elapsed.append(time.perf_counter()-ti); self.steps+=1
         self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
+        self.metrics["last_candidate_optimizer_steps"]=len(elapsed)
+        self.metrics["last_candidate_samples_trained"]=candidate_samples
+        self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
+        self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         self.metrics["update_seconds"]=self.metrics["update_seconds"][-2000:]
         self.metrics["teacher_mix_probability"]=self.replay.teacher_fraction()
         if not elapsed:
             self.metrics["candidate_training"]=False
             self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
             self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
+            self.metrics["paper_experiences_since_candidate"]=0
             self.candidate=None
             self._reset_candidate_file()
             self._write_metrics()
@@ -935,6 +1153,7 @@ class OnlineGlobalAgent:
         if not all(torch.isfinite(p).all() for p in candidate.parameters()):
             self.metrics["nonfinite_updates"]+=1
             self.metrics["rejections"]+=1
+            self.metrics["paper_experiences_since_candidate"]=0
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
             history=self.metrics.setdefault("candidate_gate_history",[])
             history.append({"time_utc":self.metrics["last_rejection_utc"],"applied":False,
@@ -952,33 +1171,225 @@ class OnlineGlobalAgent:
         self.metrics["weight_delta_l1"].append(delta)
         self.metrics["weight_delta_l1"]=self.metrics["weight_delta_l1"][-2000:]
         self.metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
-        # Candidate promotion on a deterministic, held-out chronological tail.
-        # It must beat champion in a net reward check before replacing it.
-        with self.validation_lock:
-            validation=list(self.validation)
-            portfolio_validation=list(self.portfolio_validation)
-        score_new=self._score_candidate(candidate,validation,portfolio_validation)
-        score_old=self._score_candidate(self.champion,validation,portfolio_validation)
         self.state_dir.mkdir(exist_ok=True,parents=True)
         # Candidate optimizer state is intentionally ephemeral across runs;
         # omit it from the artifact so evaluation/recovery only loads weights.
         save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
-        self._commit_candidate(candidate,score_new,score_old)
-        discarded=self.replay.discard(consumed)
-        self.metrics["replay_examples_discarded"]=int(self.metrics.get("replay_examples_discarded",0))+discarded
+        self._begin_candidate_validation(candidate)
+        # Keep successfully trained examples in the bounded replay journal so
+        # later candidates can revisit older market conditions. Capacity
+        # pruning in GlobalReplayBuffer.add remains responsible for eviction.
         self.last_train_replay_size=len(self.replay)
+        self.metrics["last_train_replay_size"]=self.last_train_replay_size
+        self.metrics["paper_experiences_since_candidate"]=0
+        self.metrics["candidate_replay_since_last_update"]=0
         self.metrics["candidate_training"]=False
+        self.metrics["candidate_stage"]="sequential_paper_validation"
         self._write_metrics()
-        del candidate,opt; self.candidate=None
+        del candidate,opt
 
-    def _commit_candidate(self,candidate,score_new:float,score_old:float)->bool:
+    def _begin_candidate_validation(self,candidate):
+        """Start a fresh, future-only comparison in two identical paper ledgers."""
+        self.validation_generation+=1
+        generation=self.validation_generation
+        self.validation_queue_invalid_reason=None
+        while True:
+            try:
+                self.validation_queue.get_nowait()
+                self.validation_queue.task_done()
+            except queue.Empty:
+                break
+        self.validation_champion_account.reset()
+        self.validation_candidate_account.reset()
+        self.validation_start_after=(self.current_market_timestamp or
+                                     self.metrics.get("last_market_timestamp"))
+        self.validation_bars=0
+        self.validation_active=True
+        self.candidate=candidate.eval()
+        source_sha=self._sha256_file(self.champion_path)
+        self.validation_source_sha256=source_sha
+        self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
+                           "bars":0,"source_champion_sha256":source_sha,
+                           "generation":generation,
+                           "started_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())},
+                          self.validation_state_path)
+        self.metrics["candidate_stage"]="sequential_paper_validation"
+        self.metrics["candidate_validation_bars"]=0
+        self.metrics["promotion_blocked_reason"]=None
+
+    @staticmethod
+    def _atomic_json(value,path):
+        temporary=Path(path).with_suffix(Path(path).suffix+".tmp")
+        temporary.parent.mkdir(parents=True,exist_ok=True)
+        temporary.write_text(json.dumps(value,ensure_ascii=False,indent=2),encoding="utf-8")
+        os.replace(temporary,path)
+
+    def _collect_candidate_validation(self,panel,index):
+        if not self.validation_active or self.candidate is None:
+            return
+        stamp=str(panel.dates[index])
+        if self.validation_start_after and stamp<=str(self.validation_start_after):
+            return
+        item=(self.validation_generation,panel,int(index),stamp,time.monotonic())
+        try:
+            self.validation_queue.put_nowait(item)
+        except queue.Full:
+            self.validation_queue_invalid_reason="검증 대기열이 가득 차 연속 시세를 놓쳤습니다"
+            self.metrics["candidate_validation_queue_overflows"]=(
+                int(self.metrics.get("candidate_validation_queue_overflows",0))+1)
+            return
+        depth=self.validation_queue.qsize()
+        self.metrics["candidate_validation_queue_depth"]=depth
+        self.metrics["candidate_validation_queue_max_depth"]=max(
+            depth,int(self.metrics.get("candidate_validation_queue_max_depth",0)))
+
+    def _validation_worker(self):
+        while not self.stop.is_set():
+            try:
+                generation,panel,index,stamp,queued_at=self.validation_queue.get(timeout=.25)
+            except queue.Empty:
+                continue
+            try:
+                if generation!=self.validation_generation or not self.validation_active:
+                    continue
+                invalid=self.validation_queue_invalid_reason
+                delay=time.monotonic()-queued_at
+                self.metrics["candidate_validation_queue_delay_seconds"]=delay
+                if invalid is None and delay>self.validation_queue_delay_limit_seconds:
+                    invalid=(f"검증 처리 지연 {delay:.1f}초가 허용 한도 "
+                             f"{self.validation_queue_delay_limit_seconds:.0f}초를 넘었습니다")
+                if invalid is not None:
+                    self.validation_queue_invalid_reason=None
+                    self._finish_candidate_validation(None,None,invalid)
+                    continue
+                self._process_candidate_validation(panel,index,generation,stamp)
+            except Exception as exc:
+                if generation==self.validation_generation and self.validation_active:
+                    self._finish_candidate_validation(None,None,
+                        f"{type(exc).__name__}: {exc}")
+            finally:
+                self.validation_queue.task_done()
+                self.metrics["candidate_validation_queue_depth"]=self.validation_queue.qsize()
+
+    def _process_candidate_validation(self,panel,index,generation,stamp):
+        if generation!=self.validation_generation or not self.validation_active or self.candidate is None:
+            return
+        champ_account=self.validation_champion_account
+        cand_account=self.validation_candidate_account
+        if champ_account.state.get("last_timestamp")!=cand_account.state.get("last_timestamp"):
+            self._finish_candidate_validation(None,None,"paper ledger timestamps diverged")
+            return
+        state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+        ledger_timestamp=champ_account.state.get("last_timestamp")
+        if state.get("bars")!=self.validation_bars or state.get("last_timestamp")!=ledger_timestamp:
+            self._finish_candidate_validation(None,None,"validation state and account timestamps diverged")
+            return
+        if ledger_timestamp==stamp:
+            return
+        if ledger_timestamp is not None and stamp<=ledger_timestamp:
+            self._finish_candidate_validation(None,None,"validation market timestamps are not increasing")
+            return
+        completion_scores=None
+        try:
+            # Both evaluators start from identical seed cash and see this same
+            # chronological bar. Existing paper positions and live orders are
+            # never used by this isolated comparison.
+            champ_account.process_bar(panel,index,True)
+            cand_account.process_bar(panel,index,True)
+            window=self._window(panel,index)
+            args=[x.to(self.device) for x in window]
+            with self.lock:
+                champion=self.champion
+            accounts=((champion,champ_account),(self.candidate,cand_account))
+            for model,account in accounts:
+                pstate,astate=account.model_inputs(panel,index)
+                model_args=list(args)
+                model_args[0]=model_args[0].to(dtype=next(model.parameters()).dtype)
+                with torch.inference_mode():
+                    if getattr(model,"_stockrl_uses_market_context",False):
+                        pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=self.device)
+                        at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=self.device)
+                        logits,_,allocation=model(*model_args,portfolio_state=pt,
+                                                  account_state=at,return_allocation=True)
+                        allocation=allocation[0].float().cpu().numpy()
+                    else:
+                        logits,_=model(*model_args); allocation=None
+                    probabilities=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                account.queue_decisions(panel,index,probabilities,True,allocation=allocation)
+                account.save()
+            self.validation_bars+=1
+            self.metrics["candidate_validation_bars"]=self.validation_bars
+            self.metrics["candidate_skip_reason"]=(
+                f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기")
+            self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
+                               "last_timestamp":stamp,"bars":self.validation_bars,
+                               "source_champion_sha256":self.validation_source_sha256,
+                               "generation":generation},
+                              self.validation_state_path)
+            if self.validation_bars>=self.validation_window_bars:
+                # KRW and USD returns are normalized by their matching seed
+                # cash, so unrelated currencies are never added as raw money.
+                candidate_score=cand_account.normalized_equity()-2.0
+                champion_score=champ_account.normalized_equity()-2.0
+                completion_scores=(candidate_score,champion_score)
+        except Exception as exc:
+            self._finish_candidate_validation(None,None,
+                f"{type(exc).__name__}: {exc}")
+            return
+        if completion_scores is not None:
+            self._finish_candidate_validation(*completion_scores,None)
+
+    def _finish_candidate_validation(self,candidate_score,champion_score,error):
+        candidate=self.candidate
+        source_sha=self._sha256_file(self.champion_path)
+        if error is None and self.validation_bars<self.validation_window_bars:
+            error="sequential paper validation window is incomplete"
+        if error is None:
+            state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+            if state.get("source_champion_sha256")!=source_sha:
+                error="champion changed during candidate validation"
+        if error is not None:
+            self.metrics["promotion_blocked_reason"]=error
+            self.metrics["candidate_validation_error"]=error
+            self.metrics["rejections"]+=1
+            from datetime import datetime,timezone
+            self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
+            self.metrics["last_candidate_promoted"]=False
+            self._reset_candidate_file()
+            self.candidate=None
+            self.validation_active=False
+            self._atomic_json({"status":"rejected","reason":error,"bars":self.validation_bars,
+                               "source_champion_sha256":source_sha},self.validation_state_path)
+        else:
+            try:
+                self._commit_candidate(candidate,float(candidate_score),float(champion_score),
+                                       self.validation_bars,source_sha)
+            except Exception as exc:
+                error=f"{type(exc).__name__}: {exc}"
+                self.metrics["promotion_blocked_reason"]=error
+                self.metrics["candidate_validation_error"]=error
+                self.metrics["rejections"]+=1
+                self.metrics["last_candidate_promoted"]=False
+                self._reset_candidate_file()
+                self.candidate=None
+                from datetime import datetime,timezone
+                self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
+                self._atomic_json({"status":"rejected","reason":error,
+                                   "bars":self.validation_bars,
+                                   "source_champion_sha256":source_sha},self.validation_state_path)
+            self.validation_active=False
+        self.metrics["candidate_training"]=False
+        self.metrics["candidate_stage"]="waiting"
+        self.metrics["candidate_skip_reason"]=None
+        self.validation_generation+=1
+        self._write_metrics()
+
+    def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
+                          source_champion_sha256:str)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
-        # Never replace the champion with the current return-sum estimate.
-        # Promotion must wait until both models are replayed through the same
-        # untouched bars in separate PaperAccount ledgers.
-        promote=(PAPER_LEDGER_PROMOTION_READY and should_promote(score_new,score_old,1e-9))
-        if not PAPER_LEDGER_PROMOTION_READY:
-            self.metrics["promotion_blocked_reason"] = "sequential paper-account validation is not implemented"
+        promote=(validation_bars>=self.validation_window_bars
+                 and self._sha256_file(self.champion_path)==source_champion_sha256
+                 and should_promote(score_new,score_old,1e-9))
         self.metrics["last_candidate_validation_score"]=score_new
         self.metrics["last_champion_validation_score"]=score_old
         self.metrics["last_candidate_promoted"]=promote
@@ -986,102 +1397,66 @@ class OnlineGlobalAgent:
             staged=self.state_dir/"champion.next"
             save_model(staged,candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
             with self.lock:
+                if self._sha256_file(self.champion_path)!=source_champion_sha256:
+                    raise RuntimeError("champion changed before atomic promotion")
                 os.replace(staged,self.champion_path)
                 self.champion=candidate.eval(); self.metrics["promotions"]+=1
                 from datetime import datetime, timezone
                 self.metrics["last_promotion_utc"]=datetime.now(timezone.utc).isoformat()
+            self.candidate=None
         else:
             self.metrics["rejections"]+=1
             self._reset_candidate_file()
+            self.candidate=None
             from datetime import datetime, timezone
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
+        self.metrics["promotion_blocked_reason"]=None
         history=self.metrics.setdefault("candidate_gate_history",[])
-        reason=("sequential paper-account validation improved" if promote else
-                "promotion blocked: sequential paper-account validation is not implemented"
-                if not PAPER_LEDGER_PROMOTION_READY else
-                "candidate paper validation did not beat champion")
+        reason=("sequential paper-account net return improved" if promote else
+                "champion changed during comparison" if self._sha256_file(self.champion_path)!=source_champion_sha256 else
+                "candidate paper-account net return did not beat champion")
         history.append({"time_utc":self.metrics["last_promotion_utc" if promote else "last_rejection_utc"],
                         "applied":promote,"reason":reason,
                         "candidate_score":float(score_new),"champion_score":float(score_old)})
         self.metrics["candidate_gate_history"]=history[-20:]
+        self._atomic_json({"status":"promoted" if promote else "rejected",
+                           "bars":validation_bars,"candidate_score":float(score_new),
+                           "champion_score":float(score_old),"applied":promote,
+                           "source_champion_sha256":source_champion_sha256,
+                           "result_champion_sha256":self._sha256_file(self.champion_path),
+                           "reason":reason},self.validation_state_path)
         return promote
-
-    def _score_candidate(self,model,validation=None,portfolio_validation=None):
-        """Net return over identical chronological holdout dates; held-out rows never train."""
-        portfolio_validation=self.portfolio_validation if portfolio_validation is None else portfolio_validation
-        validation=self.validation if validation is None else validation
-        if len(portfolio_validation) < 8:
-            # A candidate trained from paper-account rewards may not replace
-            # the incumbent on the old isolated-action metric. Wait for a
-            # genuinely unseen paper-account validation slice.
-            return float("-inf")
-        if getattr(model,"_stockrl_uses_market_context",False):
-            # Portfolio gate: replay the same validation decisions using the
-            # model's cash-inclusive allocation and the known future bar
-            # return. This is the promotion metric, rather than weight delta.
-            total=0.0; was_training=model.training; model.eval()
-            try:
-                groups={}
-                for exp in portfolio_validation:
-                    groups.setdefault(exp.timestamp,[]).append(exp)
-                with torch.inference_mode():
-                    for _, rows_exp in sorted(groups.items()):
-                        exp0=rows_exp[0]
-                        batch=[exp0]
-                        args,pstate,astate=self._pack(batch)
-                        logits,_,alloc=model(*args,portfolio_state=pstate,account_state=astate,return_allocation=True)
-                        for exp in rows_exp:
-                            j=int(exp.symbol_index)
-                            if exp.forward_return is None: continue
-                            action=int(logits[0,j].argmax())
-                            weight=float(alloc[0,j].float())
-                            turnover=2.0 if action != 1 else 0.0
-                            total += weight * float(action-1) * float(exp.forward_return)
-                            total -= turnover * (self.fee+self.slippage) * max(weight,0.0)
-            finally:
-                model.train(was_training)
-            return float(total)
-        if len(validation)<2: return float("-inf")
-        groups={}
-        for item in validation: groups.setdefault(item[7],[]).append(item)
-        dates=sorted(groups); total_net=0.0; was_training=model.training; model.eval()
-        try:
-            with torch.inference_mode():
-                for date in dates:
-                    batch=groups[date]; feats,sids,mids,aids,masks=batch[0][:5]
-                    x=torch.as_tensor(feats[None],device=self.device,dtype=next(model.parameters()).dtype)
-                    sid=torch.as_tensor(sids[None],device=self.device,dtype=torch.long)
-                    mid=torch.as_tensor(mids[None],device=self.device,dtype=torch.long)
-                    aid=torch.as_tensor(aids[None],device=self.device,dtype=torch.long)
-                    mask=torch.as_tensor(masks[None],device=self.device,dtype=torch.bool)
-                    if getattr(model,"_stockrl_uses_market_context",False):
-                        context=batch[0][9] if len(batch[0])>9 else None
-                        if context is None: context=np.zeros((self.window,16),np.float16)
-                        ctx=torch.as_tensor(context[None],device=self.device,dtype=torch.float32)
-                        logits,_=model(x,sid,mid,aid,mask,ctx)
-                    else:
-                        logits,_=model(x,sid,mid,aid,mask)
-                    rewards=[]
-                    for item in batch:
-                        j,gross=item[5],item[6]; action=int(logits[0,j].argmax())
-                        reward,_,_=net_action_reward(action,gross,0,self.fee,self.slippage)
-                        rewards.append(reward)
-                    total_net+=float(sum(rewards))
-        finally: model.train(was_training)
-        return total_net
 
     def _write_metrics(self):
         proc=psutil.Process(); metrics=dict(self.metrics)
         metrics.update({"parameters":parameter_count(self.champion),"device":str(self.device),
-          "replay_persistence":"memory_only",
-          "promotion_score_mode":"forward_return_approximation",
-          "promotion_uses_sequential_paper_account":PAPER_LEDGER_PROMOTION_READY,
+          "replay_persistence":"bounded_sqlite_runtime",
+          "promotion_score_mode":"sequential_paper_account_net_return",
+          "promotion_uses_sequential_paper_account":True,
+          "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
+          "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
+          "candidate_learning_enabled":True,
+          "candidate_every":self.candidate_interval,
+          "candidate_min_replay":self.min_replay,
+          "candidate_batch_size":self.batch_size,
+          "candidate_optimizer_steps_target":self.updates_per_candidate,
+          "candidate_samples_target":self.updates_per_candidate*self.batch_size,
+          "candidate_min_validation_dates":self.validation_window_bars,
+          "candidate_validation_bars":self.validation_bars,
+          "candidate_validation_queue_depth":self.validation_queue.qsize(),
+          "candidate_validation_queue_capacity":self.validation_queue.maxsize,
+          "candidate_validation_queue_delay_limit_seconds":self.validation_queue_delay_limit_seconds,
+          "candidate_replay_since_last_update":int(self.metrics.get("candidate_replay_since_last_update",0)),
+          "last_train_replay_size":self.last_train_replay_size,
+          "candidate_stage":("sequential_paper_validation" if self.validation_active else
+                              "training" if self.metrics.get("candidate_training") else "waiting"),
           "validation_window_dates":len(self.validation_dates),
           "portfolio_validation_window_dates":len(self.portfolio_validation_dates),
           "horizon":str(self.horizon),"fee_rate":self.fee,"slippage_bps":self.slippage*10000,
           "rss_bytes":proc.memory_info().rss,"replay_count":len(self.replay),
           "trainable_replay_count":self.replay.trainable_count(),
-          "replay_file_bytes":0,
+          "replay_file_bytes":(self.replay.journal_path.stat().st_size
+                               if self.replay.journal_path and self.replay.journal_path.exists() else 0),
           "champion_path":str(self.champion_path),"candidate_path":str(self.model_dir/"candidate.pt")})
         if self.device.type=="cuda":
             metrics.update({"cuda_device":torch.cuda.get_device_name(self.device),

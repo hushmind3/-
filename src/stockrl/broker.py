@@ -78,7 +78,16 @@ class BrokerWorker:
     def start(self):
         self.thread.start()
 
-    def submit(self, request: OrderRequest): self.inbox.put(request)
+    def submit(self, request: OrderRequest):
+        if self.stop_event.is_set():
+            return False
+        self.inbox.put(request)
+        return True
+
+    def _discard_pending(self):
+        while True:
+            try: self.inbox.get_nowait()
+            except Empty: return
 
     def emergency_stop(self):
         self.stop_event.set()
@@ -102,8 +111,19 @@ class BrokerWorker:
                 try: request=self.inbox.get(timeout=.25)
                 except Empty: continue
                 try: self.results.put({"ok":True,"stage":"order","result":self.adapter.place_order(request)})
-                except Exception as exc: self.results.put({"ok":False,"stage":"order","error":f"{type(exc).__name__}: {exc}"})
+                except Exception as exc:
+                    # Fail closed on the first order error. Do not process
+                    # requests already queued from the same decision batch.
+                    self.stop_event.set()
+                    self._discard_pending()
+                    try: self.adapter.emergency_stop()
+                    except Exception as stop_exc:
+                        self.results.put({"ok":False,"stage":"emergency_stop","error":str(stop_exc)})
+                    self.results.put({"ok":False,"stage":"order","error":f"{type(exc).__name__}: {exc}"})
+                    break
         except Exception as exc:
+            self.stop_event.set()
+            self._discard_pending()
             self.results.put({"ok":False,"stage":"connect","error":f"{type(exc).__name__}: {exc}"})
         finally:
             try: self.adapter.close()
