@@ -298,3 +298,7 @@
 {"time_utc": "2026-09-30T09:19:26.544864+00:00", "symbol": "^GSPC", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
 {"time_utc": "2026-09-30T09:19:26.545836+00:00", "symbol": "^IXIC", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
 {"time_utc": "2026-09-30T09:19:26.546986+00:00", "symbol": "^DJI", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-30T09:24:36.418500+00:00", "symbol": "ROST", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-30T09:24:36.419270+00:00", "symbol": "^GSPC", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-30T09:24:36.420165+00:00", "symbol": "^IXIC", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}
+{"time_utc": "2026-09-30T09:24:36.420958+00:00", "symbol": "^DJI", "provider": "yahoo", "retry_seconds": 300.0, "error": "RuntimeError: Yahoo chart contained no usable OHLCV bars"}

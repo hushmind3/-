@@ -1,14 +1,14 @@
 {
   "status": "observing",
-  "last_timestamp": "2026-09-30T09:19:57.000000000",
+  "last_timestamp": "2026-09-30T09:20:48.000000000",
   "candidate_version": 85,
   "candidate_training": false,
-  "last_inference_seconds": 0.9116626000031829,
-  "inference_count": 212,
+  "last_inference_seconds": 2.397322799999529,
+  "inference_count": 214,
   "last_decisions": [
     {
-      "symbol": "KLAC",
-      "action": "BUY"
+      "symbol": "PEP",
+      "action": "HOLD"
     }
   ]
 }
