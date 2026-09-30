@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "stockrl-distill"
 version = "0.1.0"
-description = "PyTorch time-series trading agent with teacher distillation and cost-aware PPO fine-tuning"
+description = "Continual-learning paper trading agent with cost-aware candidate validation"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "pandas>=2.1", "torch>=2.2", "psutil>=5.9", "requests>=2.31", "keyring>=25.6", "websockets>=12.0"]
 

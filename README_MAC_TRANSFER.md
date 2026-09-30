@@ -1,33 +1,24 @@
-# StockRL Mac 이전 폴더
+# Continual Trading Agent — Mac 실행 안내
 
-이 폴더는 Windows RTX 3070 환경에서 사용하던 StockRL 프로젝트를 Apple Silicon Mac에서 이어서 실행하기 위한 사본입니다.
+이 문서는 프로젝트를 Apple Silicon Mac에서 실행하는 방법입니다. 현재 설정·저장 규칙은 저장소 루트의 `AGENTS.md`와 `README.md`를 따릅니다. 저장소는 공개이므로 비밀 키·계좌 정보·운영 runtime을 커밋하지 마세요.
 
-## Mac에서 한 번 실행
+## 설치 및 실행
 
 ```bash
-cd "StockRL-Mac-Transfer"
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements-mac.txt
-chmod +x scripts/start_mac.sh scripts/start_mac.command
 ./scripts/start_mac.sh
 ```
 
-브라우저에서 `http://127.0.0.1:8766/`를 엽니다. runtime 파일은 이 프로젝트 폴더의 `runtime/markets/korea/live` 아래에 저장합니다. 다른 시장은 `runtime/markets/<market>/live`로 분리합니다. M5 Mac에서는 Apple Silicon용 MPS 지원 PyTorch를 설치하면 `--device auto`가 MPS를 선택하고, MPS를 사용할 수 없으면 CPU로 내려갑니다.
+대시보드는 `http://127.0.0.1:8766/`에서 엽니다. `--device auto`는 지원되는 장치를 선택하며, Apple Silicon에서는 MPS를 우선 사용하고 사용할 수 없으면 CPU로 동작합니다. MPS 성능과 안정성은 해당 Mac에서 확인해야 합니다.
 
-## 포함된 상태
+## 저장 위치와 운용
 
-- 모델 폴더의 `champion.pt`, `candidate.pt`: checkpoint 두 개
-- `runtime/markets/korea/live/agent/replay.sqlite3`: 제한 용량 replay 경험
-- `runtime/markets/korea/live/agent/paper_account.json`: 가상 계좌 상태
-- `runtime/markets/korea/live/agent/candidate_validation*.json`: 검증 상태
-- `runtime/markets/korea/live/agent/live_cursor.json`: 마지막 처리 시각
-- `runtime/markets/korea/live/market.csv`: 저장된 시장 데이터
-- `configs/live_symbols_korea.json`: 한국·미국·글로벌·선물·금리·환율·코인 설정
-
-runtime 로그와 실행 상태는 프로젝트 폴더에 둡니다. OS 자격 증명 보관함의 키를 runtime 파일로 복사하지 않습니다. 이 비공개 프로젝트 폴더를 외부에 공유하지 마세요.
-
-## Mac에서의 성능
-
-Mac에서는 CUDA를 사용하지 않습니다. M5 Apple Silicon에서는 MPS를 사용하며 CPU와 GPU가 통합 메모리를 공유합니다. 화면에는 별도 VRAM 대신 `MPS 통합 메모리`로 표시됩니다. 0.5B 모델의 candidate 학습은 RTX 3070보다 오래 걸릴 수 있으므로 처음에는 관찰/가상매매를 켜고 추론 상태를 확인한 뒤 자동 학습을 계속 실행합니다. checkpoint와 replay는 Windows 사본과 별개로 Mac 폴더에서 이어서 저장됩니다.
+- runtime은 복사된 프로젝트 안 `runtime/markets/<market>/live`에 둡니다.
+- 모델 가중치는 해당 컴퓨터의 바탕화면 `모델` 폴더에 `champion.pt`, `candidate.pt` 두 개만 지속 보관합니다.
+- OS 자격 증명 보관함에 키를 저장합니다. 자격 증명이나 runtime 파일을 Git에 추가하지 않습니다.
+- Candidate의 학습·검증·Champion 승급은 루트 README의 운영 기준을 따릅니다. 승급 검증은 같은 미래 bar와 조건에서 paper-account 순손익을 비교합니다.
+- Mac 사본은 Windows 사본과 runtime·모델 파일을 공유하지 않습니다. 각 컴퓨터의 runtime과 가중치는 별도로 관리합니다.
+- 실주문은 기본 OFF이며 명시적으로 허용하기 전까지 실행하지 않습니다.
