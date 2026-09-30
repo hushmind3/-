@@ -330,7 +330,7 @@ class GlobalReplayBuffer:
         with self.lock, closing(self._connect()) as db, db:
             db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?", (kind, key))
 
-    def pending_batch(self, batch_size, passes=2, exclude_row_ids=(), learner="candidate"):
+    def pending_batch(self, batch_size, passes=1, exclude_row_ids=(), learner="candidate"):
         if learner not in ("candidate","champion"):
             raise ValueError("unknown learner")
         uses_by_id=self._champion_memory_uses if learner=="champion" else self._memory_uses
@@ -353,7 +353,7 @@ class GlobalReplayBuffer:
         excluded = [self.row_ids.get(key, key) for key in (exclude_ids or ())]
         return self.pending_batch(batch_size, exclude_row_ids=excluded)
 
-    def acknowledge_training(self, uses_by_id, passes=2, learner="candidate"):
+    def acknowledge_training(self, uses_by_id, passes=1, learner="candidate"):
         """Consume only after every required learner confirms its checkpoint."""
         if learner not in ("candidate","champion"):
             raise ValueError("unknown learner")
@@ -402,13 +402,38 @@ class GlobalReplayBuffer:
             if free * page > 2 * 1024 * 1024:
                 db.execute("VACUUM")
 
+    def finalize_completed(self, passes):
+        """Apply a changed pass target only to already checkpoint-confirmed rows."""
+        if not self.journal_path:
+            before=len(self.items)
+            self.items=deque(row for row in self.items if self._memory_uses.get(id(row),0)<passes or
+                (self.dual_learning and self._champion_memory_uses.get(id(row),0)<passes))
+            return before-len(self.items)
+        completed=0
+        with self.lock, closing(self._connect()) as db, db:
+            count_expr="MIN(training_uses,champion_training_uses)" if self.dual_learning else "training_uses"
+            predicate=f"eligible=1 AND error IS NULL AND {count_expr}>=?"
+            groups=db.execute(f"SELECT day,COUNT(*) FROM experiences WHERE {predicate} GROUP BY day",(passes,)).fetchall()
+            for day,count in groups:
+                db.execute("UPDATE daily_learning SET completed=completed+? WHERE day=?",(count,day))
+                completed+=count
+            if completed:
+                db.execute(f"DELETE FROM experiences WHERE {predicate}",(passes,))
+                self._collect_unused_windows(db)
+                # These are decoded caches, never the durable queue.
+                self.items.clear(); self.row_ids.clear()
+            db.execute("INSERT INTO replay_settings(key,value) VALUES('required_passes',?) "
+                       "ON CONFLICT(key) DO UPDATE SET value=excluded.value",(str(passes),))
+        if completed: self.compact()
+        return completed
+
     def quarantine(self, row_ids, reason):
         if not self.journal_path:
             return
         with self.lock, closing(self._connect()) as db, db:
             db.executemany("UPDATE experiences SET error=? WHERE id=?", ((reason, int(row_id)) for row_id in row_ids))
 
-    def stats(self, passes=2):
+    def stats(self, passes=1):
         if not self.journal_path:
             remaining={name:sum(self._training_eligible(vars(row)) and uses.get(id(row),0)<passes for row in self.items)
                 for name,uses in (("candidate",self._memory_uses),("champion",self._champion_memory_uses))}

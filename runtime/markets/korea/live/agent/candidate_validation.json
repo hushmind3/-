@@ -1,13 +1,78 @@
 {
   "status": "collecting",
-  "start_after": "2026-09-30T21:22:20.000000000",
-  "bars": 36,
-  "source_champion_sha256": "caa09c883e7a0d7a87f5a867245166eb9d0959761a2a5a82a4a3028348fbcfed",
-  "source_candidate_version": 4238,
-  "source_champion_version": 3338,
+  "start_after": "2026-09-30T22:13:00.000000000",
+  "bars": 15,
+  "source_champion_sha256": "738dfcb809194eacef3f7a73535557316953d31e7a352d548352e7eb1e277049",
+  "source_candidate_version": 4458,
+  "source_champion_version": 3554,
   "source_promotion_epoch": 3,
   "both_models_frozen": true,
-  "trained_replay_row_ids": [],
+  "trained_replay_row_ids": [
+    101153,
+    101154,
+    101155,
+    101156,
+    101157,
+    101158,
+    101159,
+    101160,
+    101161,
+    101162,
+    101163,
+    101164,
+    101165,
+    101166,
+    101167,
+    101168,
+    101169,
+    101170,
+    101183,
+    101184,
+    101187,
+    101188,
+    101189,
+    101190,
+    101191,
+    101192,
+    101195,
+    101196,
+    101197,
+    101198,
+    101199,
+    101200,
+    101213,
+    101214,
+    101217,
+    101218,
+    101219,
+    101220,
+    101221,
+    101222,
+    101223,
+    101224,
+    101225,
+    101226,
+    101227,
+    101228,
+    101229,
+    101230,
+    101241,
+    101242,
+    101243,
+    101244,
+    101245,
+    101246,
+    101247,
+    101248,
+    101249,
+    101250,
+    101251,
+    101252,
+    101253,
+    101254,
+    101255,
+    101256
+  ],
   "same_market_timeline": true,
   "same_market_input": true,
   "same_action_rule": true,
@@ -15,6 +80,10 @@
   "last_decisions": {
     "champion": [
       {
+        "symbol": "AAPL",
+        "action": "HOLD"
+      },
+      {
         "symbol": "AMD",
         "action": "HOLD"
       },
@@ -23,15 +92,19 @@
         "action": "HOLD"
       },
       {
+        "symbol": "AVGO",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "BKNG",
+        "action": "HOLD"
+      },
+      {
         "symbol": "GOOGL",
         "action": "HOLD"
       },
       {
-        "symbol": "INTC",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "MSFT",
+        "symbol": "LRCX",
         "action": "HOLD"
       },
       {
@@ -43,20 +116,24 @@
         "action": "HOLD"
       },
       {
-        "symbol": "PANW",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "PEP",
+        "symbol": "QCOM",
         "action": "HOLD"
       },
       {
         "symbol": "TSLA",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "WMT",
         "action": "HOLD"
       }
     ],
     "candidate": [
       {
+        "symbol": "AAPL",
+        "action": "HOLD"
+      },
+      {
         "symbol": "AMD",
         "action": "HOLD"
       },
@@ -65,15 +142,19 @@
         "action": "HOLD"
       },
       {
+        "symbol": "AVGO",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "BKNG",
+        "action": "HOLD"
+      },
+      {
         "symbol": "GOOGL",
         "action": "HOLD"
       },
       {
-        "symbol": "INTC",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "MSFT",
+        "symbol": "LRCX",
         "action": "HOLD"
       },
       {
@@ -85,21 +166,21 @@
         "action": "HOLD"
       },
       {
-        "symbol": "PANW",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "PEP",
+        "symbol": "QCOM",
         "action": "HOLD"
       },
       {
         "symbol": "TSLA",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "WMT",
         "action": "HOLD"
       }
     ]
   },
   "replay_rows_finalized": false,
   "generation": 1,
-  "started_utc": "2026-09-30T21:25:28Z",
-  "last_timestamp": "2026-09-30T21:58:00.000000000"
+  "started_utc": "2026-09-30T22:14:59Z",
+  "last_timestamp": "2026-09-30T22:28:00.000000000"
 }

@@ -344,7 +344,7 @@ class OnlineGlobalAgent:
         self.last_validated_candidate_version=-1
         self.validation_restart_needs_fresh_trial=False
         self.candidate_trained_replay_row_ids=set()
-        self.candidate_replay_passes=2
+        self.candidate_replay_passes=1
         self.candidate_replay_uses={}
         self.candidate_lineage_path=self.state_dir/"candidate_lineage.json"
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
@@ -437,14 +437,14 @@ class OnlineGlobalAgent:
             self.metrics["reward_schema_reset_from"]=prior_reward_definition
         self.metrics["reward_definition"]=REWARD_DEFINITION
         self.metrics.pop("protected_champion_sha256",None)
-        self.metrics["runtime_code_version"]="dual-model-complete-learning-20261001"
+        self.metrics["runtime_code_version"]="dual-model-single-pass-learning-20261001"
         self.metrics["champion_training"]=False
         for key in ("champion_paper_examples_trained","champion_teacher_examples_trained"):
             self.metrics.setdefault(key,0)
         self.metrics.setdefault("champion_weight_delta_l1",[])
         champion_commit=getattr(self.champion,"_stockrl_replay_commit",{})
         if champion_commit.get("learner")=="champion":
-            self.replay.acknowledge_training(champion_commit.get("uses",{}),2,learner="champion")
+            self.replay.acknowledge_training(champion_commit.get("uses",{}),self.candidate_replay_passes,learner="champion")
         self.champion_training_version=max(int(self.metrics.get("champion_training_version",0)),
             int(champion_commit.get("model_version",0)) if champion_commit.get("learner")=="champion" else 0)
         self.metrics["agent_session_started_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
@@ -556,6 +556,7 @@ class OnlineGlobalAgent:
         # New observations enter the same durable queue and trigger learning.
         self.last_train_replay_size=int(self.metrics.get("last_train_replay_size",0))
         _atomic_json({"reward_version":REWARD_VERSION,"horizon":str(self.horizon)},self.validation_meta_path)
+        self.metrics["replay_completed_on_policy_change"]=self.replay.finalize_completed(self.candidate_replay_passes)
         self.thread=threading.Thread(target=self._learner,name="global-learner",daemon=True)
 
     @staticmethod
@@ -1132,6 +1133,8 @@ class OnlineGlobalAgent:
                     last_error_signature=None
                 self.metrics["unmatched_live_symbols"] = list(
                     getattr(panel,"unmatched_symbols",()))
+                self.metrics["model_input_symbol_count"]=sum(not str(symbol).startswith("__PAD__") for symbol in panel.symbols)
+                self.metrics["model_padding_symbol_count"]=sum(str(symbol).startswith("__PAD__") for symbol in panel.symbols)
                 self.metrics["unmatched_live_symbol_count"] = len(
                     self.metrics["unmatched_live_symbols"])
                 if not len(panel.dates):
@@ -1269,6 +1272,12 @@ class OnlineGlobalAgent:
                         width=len(TIMEFRAME_FEATURE_NAMES)
                         self.metrics["multiscale_coverage"]={
                             scale:float(multiscale_state[actual_symbols,k*width+width-1].mean())
+                            for k,scale in enumerate(TIMEFRAME_NAMES)}
+                        self.metrics["multiscale_input_status"]={
+                            scale:{"observed_symbols":int(actual_symbols.sum()),
+                                "available_symbols":int((multiscale_state[actual_symbols,k*width+4]>0).sum()),
+                                "complete_history_symbols":int((multiscale_state[actual_symbols,k*width+5]>=.999).sum()),
+                                "mean_history_coverage":float(multiscale_state[actual_symbols,k*width+5].mean())}
                             for k,scale in enumerate(TIMEFRAME_NAMES)}
                     rows=[]
                     pending_inputs={"features":x[0].numpy().astype(np.float16),
@@ -1595,7 +1604,7 @@ class OnlineGlobalAgent:
                         with self.lock: self.champion=restored.eval()
                         commit=getattr(restored,"_stockrl_replay_commit",{})
                         if commit.get("learner")=="champion":
-                            self.replay.acknowledge_training(commit.get("uses",{}),2,learner="champion")
+                            self.replay.acknowledge_training(commit.get("uses",{}),self.candidate_replay_passes,learner="champion")
                             self.champion_training_version=max(self.champion_training_version,int(commit.get("model_version",0)))
                     self._write_metrics()
                 except Exception: pass
@@ -1723,9 +1732,10 @@ class OnlineGlobalAgent:
             training_baseline_allocated=0
         elapsed=[]; compute_elapsed=[]
         candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
+        timeframe_samples=dict.fromkeys(TIMEFRAME_NAMES,0)
         sampled_ids=set()
         # The SQLite queue is authoritative; the small RAM cache is not the
-        # backlog. Finish the oldest rows, including their second pass.
+        # backlog. Each learner takes every eligible row once, oldest first.
         metrics["last_candidate_optimizer_steps"]=0
         metrics["last_candidate_samples_trained"]=0
         metrics["candidate_optimizer_steps_current"]=0
@@ -1802,6 +1812,13 @@ class OnlineGlobalAgent:
             metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in successful_batch)
             metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in successful_batch)
             used_experiences.extend(successful_batch)
+            for experience in successful_batch:
+                scale_input=experience.multiscale_state
+                if scale_input is not None:
+                    width=len(TIMEFRAME_FEATURE_NAMES)
+                    for k,scale in enumerate(TIMEFRAME_NAMES):
+                        if np.any(np.asarray(scale_input)[:,k*width+4]>0):
+                            timeframe_samples[scale]+=1
             metrics["update_losses"].append(float(np.mean(loss_values)))
             metrics["update_losses"]=metrics["update_losses"][-2000:]
             if self.device.type=="cuda":
@@ -1943,6 +1960,7 @@ class OnlineGlobalAgent:
             "peak_allocated_bytes":metrics["last_candidate_peak_allocated_bytes"],
             "completed_utc":metrics["last_update_utc"],
             "model_version":replay_commit["model_version"]}
+        metrics["candidate_last_completed_round"]["timeframe_samples"]=timeframe_samples
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
@@ -2343,6 +2361,9 @@ class OnlineGlobalAgent:
           "replay_persistence":"durable_fifo_shared_frames_sqlite",
           "learning_priority":"complete_daily_experience_coverage",
           "replay_untrained_count":replay_stats["untrained"],
+          "replay_pending_count":replay_stats.get("pending",0),
+          "replay_database_path":str(self.replay.journal_path),
+          "model_symbol_id_capacity":self.cfg.max_symbols,
           "replay_eligible_backlog":replay_stats["eligible"],
           "candidate_eligible_replay_count":replay_stats["model_remaining"]["candidate"],
           "candidate_untrained_replay_count":replay_stats["model_untrained"]["candidate"],
@@ -2365,6 +2386,7 @@ class OnlineGlobalAgent:
           "daily_learning_timezone":"Asia/Seoul",
           "replay_eviction_enabled":False,
           "candidate_replay_passes":self.candidate_replay_passes,
+          "learning_policy":"one_checkpoint_confirmed_pass_per_model",
           "promotion_score_mode":"sequential_paper_account_net_return",
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
