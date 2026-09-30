@@ -1,68 +1,105 @@
 {
   "status": "collecting",
-  "start_after": "2026-09-30T20:56:00.000000000",
-  "bars": 26,
-  "source_champion_sha256": "5d6674baa94071b7e3939af5cb4770dd9002bd78b50a1f2bf51af4ee30d8ba1b",
-  "source_candidate_version": 4129,
-  "source_champion_version": 3228,
+  "start_after": "2026-09-30T21:22:20.000000000",
+  "bars": 36,
+  "source_champion_sha256": "caa09c883e7a0d7a87f5a867245166eb9d0959761a2a5a82a4a3028348fbcfed",
+  "source_candidate_version": 4238,
+  "source_champion_version": 3338,
   "source_promotion_epoch": 3,
   "both_models_frozen": true,
-  "trained_replay_row_ids": [
-    99795,
-    99796,
-    99797,
-    99798,
-    99799,
-    99800,
-    99801,
-    99802,
-    99803,
-    99804,
-    99805,
-    99806,
-    99807,
-    99808,
-    99809,
-    99810,
-    99811,
-    99812,
-    99813,
-    99814,
-    99815,
-    99816,
-    99817,
-    99818,
-    99819,
-    99820,
-    99821,
-    99822,
-    99823,
-    99824,
-    99825,
-    99826,
-    99827,
-    99828,
-    99829,
-    99830,
-    99831,
-    99832,
-    99833,
-    99834,
-    99835,
-    99836,
-    99837,
-    99838
-  ],
+  "trained_replay_row_ids": [],
   "same_market_timeline": true,
   "same_market_input": true,
   "same_action_rule": true,
   "comparison_valid": false,
   "last_decisions": {
-    "champion": [],
-    "candidate": []
+    "champion": [
+      {
+        "symbol": "AMD",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "AMZN",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "GOOGL",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "INTC",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "MSFT",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "MU",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "NVDA",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "PANW",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "PEP",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "TSLA",
+        "action": "HOLD"
+      }
+    ],
+    "candidate": [
+      {
+        "symbol": "AMD",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "AMZN",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "GOOGL",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "INTC",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "MSFT",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "MU",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "NVDA",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "PANW",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "PEP",
+        "action": "HOLD"
+      },
+      {
+        "symbol": "TSLA",
+        "action": "HOLD"
+      }
+    ]
   },
   "replay_rows_finalized": false,
-  "generation": 5,
-  "started_utc": "2026-09-30T20:57:29Z",
-  "last_timestamp": "2026-09-30T21:22:00.000000000"
+  "generation": 1,
+  "started_utc": "2026-09-30T21:25:28Z",
+  "last_timestamp": "2026-09-30T21:58:00.000000000"
 }
