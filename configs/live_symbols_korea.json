@@ -1,6 +1,7 @@
 {
   "description": "Paper observation universe: 80 Korean equities, 64 US equities, and 26 ETFs, indices, futures, FX, yields, commodities, volatility and crypto context instruments. Registered instruments are not proof of a live quote.",
   "universe_source": "Korean equities: FinanceDataReader KOSPI/KOSDAQ turnover list with 5 checkpoint symbols retained. US equities: explicit liquid cross-sector observation list. Symbols can be changed in this shared market config. US action symbols are restricted to distinct IDs already present in the current champion checkpoint.",
+  "decision_timeframes": ["1m", "3m", "5m", "15m", "60m", "1d", "1w", "1mo"],
   "instruments": [
     {
       "symbol": "005930.KS",

@@ -161,7 +161,9 @@ def load_compatible_state_dict(model: nn.Module, state: dict, strict: bool = Tru
             migrated[key] = torch.zeros_like(target[key])
         elif (key.startswith("portfolio_action.") or
               key.startswith("portfolio_allocation.") or
-              key.startswith("portfolio_cash.")):
+              key.startswith("portfolio_cash.") or
+              key.startswith("multiscale_policy.") or
+              key.startswith("multiscale_value.")):
             # Keep adapter hidden-layer initialization; their final layers are
             # zero-initialized by ContextConditionedTransformer.__init__.
             migrated[key] = target[key]
@@ -253,6 +255,7 @@ class GlobalMarketPanel:
                  recent_timestamps: int | None = None,
                  active_stale_seconds: int | None = None,
                  raw_frame=None):
+        self.source_path = Path(path)
         raw = pd.read_csv(path) if raw_frame is None else raw_frame.copy()
         self.recent_cutoff = None
         if recent_timestamps is not None and recent_timestamps > 0 and len(raw):
@@ -276,6 +279,7 @@ class GlobalMarketPanel:
             active = set(df.groupby("symbol").date.max().loc[lambda x: x >= cutoff].index)
             df = df[df.symbol.isin(active)].copy()
         self.frame = df
+        self._multiscale_builder = None
         self.symbol_map = dict(symbol_map or {})
         self.uses_market_context = bool(symbol_map)
         self.market_context = None
@@ -386,6 +390,15 @@ class GlobalMarketPanel:
                 if not self.observed[i,j]:
                     self.features[i,j]=self.features[i-1,j]
                     self.closes[i,j]=self.closes[i-1,j]
+
+    def multiscale_at(self, index: int) -> np.ndarray:
+        """Completed 1/3/5/15/60-minute and day/week/month context as of a bar."""
+        from .multiscale import MultiscaleFeatures
+        if self._multiscale_builder is None:
+            self._multiscale_builder = MultiscaleFeatures(
+                self.frame, self.symbols,
+                self.source_path.with_name("timeframes.sqlite3"), self.dates[-1])
+        return self._multiscale_builder.at(self.dates[index])
 
     def _build_market_context(self, df: pd.DataFrame, symbol_map: dict[str, int],
                               stale_seconds: int) -> np.ndarray:

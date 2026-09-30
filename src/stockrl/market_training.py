@@ -22,6 +22,7 @@ from torch.utils.checkpoint import checkpoint
 
 from .global_transformer import (GLOBAL_FEATURES, GlobalMarketTransformer,
                                  TransformerConfig, stable_id, load_compatible_state_dict)
+from .multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_FEATURE_NAMES
 
 
 CONTEXT_FEATURES = (
@@ -143,6 +144,10 @@ class ContextConditionedTransformer(nn.Module):
         self.activation_checkpointing = False
         self.context_policy = nn.Linear(context_size, 3, bias=False)
         self.context_value = nn.Linear(context_size, 1, bias=False)
+        self.multiscale_policy = nn.Sequential(
+            nn.Linear(MULTISCALE_FEATURE_COUNT, 64), nn.GELU(), nn.Linear(64, 3))
+        self.multiscale_value = nn.Sequential(
+            nn.Linear(MULTISCALE_FEATURE_COUNT, 64), nn.GELU(), nn.Linear(64, 1))
         self.portfolio_action = nn.Sequential(
             nn.Linear(16, 64), nn.GELU(), nn.Linear(64, 3))
         self.portfolio_allocation = nn.Sequential(
@@ -151,6 +156,10 @@ class ContextConditionedTransformer(nn.Module):
             nn.Linear(8, 32), nn.GELU(), nn.Linear(32, 1))
         nn.init.zeros_(self.context_policy.weight)
         nn.init.zeros_(self.context_value.weight)
+        nn.init.zeros_(self.multiscale_policy[-1].weight)
+        nn.init.zeros_(self.multiscale_policy[-1].bias)
+        nn.init.zeros_(self.multiscale_value[-1].weight)
+        nn.init.zeros_(self.multiscale_value[-1].bias)
         nn.init.zeros_(self.portfolio_action[-1].weight)
         nn.init.zeros_(self.portfolio_action[-1].bias)
         nn.init.zeros_(self.portfolio_allocation[-1].weight)
@@ -164,7 +173,8 @@ class ContextConditionedTransformer(nn.Module):
                 time_scale_ids: torch.Tensor | None = None,
                 portfolio_state: torch.Tensor | None = None,
                 account_state: torch.Tensor | None = None,
-                return_allocation: bool = False):
+                return_allocation: bool = False,
+                multiscale_state: torch.Tensor | None = None):
         if self.activation_checkpointing and self.training:
             logits, values = self._checkpointed_backbone(
                 features, symbol_ids, market_ids, asset_ids, valid_mask, time_scale_ids)
@@ -182,6 +192,18 @@ class ContextConditionedTransformer(nn.Module):
         value_delta = (value_context[:, -1] + value_context.mean(dim=1)).to(dtype=values.dtype)
         logits = logits + policy_delta[:, None, :]
         values = values + value_delta[:, None, 0]
+        if multiscale_state is not None:
+            expected = (*logits.shape[:2], MULTISCALE_FEATURE_COUNT)
+            if multiscale_state.shape != expected:
+                raise ValueError(f"multiscale_state must have shape {expected}")
+            multi = multiscale_state.float()
+            # The fifth feature of each timeframe is freshness. Old replay
+            # rows without this input and padded symbols must not train a
+            # constant adapter bias as if they had observed long-scale bars.
+            active = (multi[..., TIMEFRAME_FEATURE_NAMES.index("freshness")::len(TIMEFRAME_FEATURE_NAMES)]
+                      .sum(dim=-1) > 0).float()
+            logits = logits + (self.multiscale_policy(multi)*active[...,None]).to(logits.dtype)
+            values = values + (self.multiscale_value(multi).squeeze(-1)*active).to(values.dtype)
         if portfolio_state is None and account_state is None:
             if return_allocation:
                 raise ValueError("portfolio_state and account_state are required for allocation output")

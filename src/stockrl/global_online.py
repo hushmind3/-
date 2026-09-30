@@ -22,6 +22,8 @@ from torch.distributions import Categorical
 from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTransformer,
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
 from .paper_account import PaperAccount, _currency
+from .multiscale import (MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES,
+                         TIMEFRAME_FEATURE_NAMES)
 
 REWARD_VERSION="symbol_and_portfolio_v5"
 PAPER_EXPLORATION_EPSILON=0.05
@@ -103,6 +105,7 @@ class Experience:
     regime: float = 0.0
     reward_version: str = "symbol_and_portfolio_v4"
     market_context: np.ndarray | None = None
+    multiscale_state: np.ndarray | None = None
     portfolio_state: np.ndarray | None = None
     account_state: np.ndarray | None = None
     portfolio_reward: float | None = None
@@ -135,7 +138,7 @@ class GlobalReplayBuffer:
     @staticmethod
     def _window_key(exp:Experience):
         names=("features","symbol_ids","market_ids","asset_ids","valid_mask",
-               "market_context","portfolio_state","account_state")
+               "market_context","multiscale_state","portfolio_state","account_state")
         key=hashlib.sha256()
         for name in names:
             value=getattr(exp,name)
@@ -150,7 +153,7 @@ class GlobalReplayBuffer:
     @staticmethod
     def _window_payload(exp:Experience):
         names=("features","symbol_ids","market_ids","asset_ids","valid_mask",
-               "market_context","portfolio_state","account_state")
+               "market_context","multiscale_state","portfolio_state","account_state")
         arrays={name:(None if getattr(exp,name) is None else
                       np.ascontiguousarray(getattr(exp,name))) for name in names}
         return zlib.compress(pickle.dumps(arrays,protocol=5),level=1)
@@ -203,7 +206,8 @@ class GlobalReplayBuffer:
     def save_pending(self, regular: list[dict], portfolio: list[dict]) -> None:
         if self.journal_path is None:
             return
-        transient_arrays={"features","symbol_ids","market_ids","asset_ids","valid_mask","market_context"}
+        transient_arrays={"features","symbol_ids","market_ids","asset_ids","valid_mask",
+                          "market_context","multiscale_state"}
         records=[]
         for kind,items in (("regular",regular),("portfolio",portfolio)):
             for item in items:
@@ -495,6 +499,8 @@ def save_model(path:Path, model:GlobalMarketTransformer, cfg:TransformerConfig, 
         payload["context_features"]=list(CONTEXT_FEATURES)
         payload["symbol_map"]=model._stockrl_symbol_map
         payload["market_context_model"]=True
+        payload["multiscale_feature_order"]=[f"{scale}:{feature}"
+            for scale in TIMEFRAME_NAMES for feature in TIMEFRAME_FEATURE_NAMES]
     _atomic_save(payload,path,temp_dir=temp_dir)
 
 
@@ -509,6 +515,10 @@ def load_model(path:Path,device:torch.device):
         from .market_training import CONTEXT_FEATURES, ContextConditionedTransformer
         if ckpt.get("context_features",list(CONTEXT_FEATURES))!=list(CONTEXT_FEATURES):
             raise ValueError("checkpoint market_context feature order does not match the inference schema")
+        multiscale_order=[f"{scale}:{feature}" for scale in TIMEFRAME_NAMES
+                          for feature in TIMEFRAME_FEATURE_NAMES]
+        if ckpt.get("multiscale_feature_order",multiscale_order)!=multiscale_order:
+            raise ValueError("checkpoint multiscale feature order does not match the inference schema")
         symbol_map=ckpt.get("symbol_map")
         if not isinstance(symbol_map,dict) or len(symbol_map)!=cfg.max_symbols:
             raise ValueError("context checkpoint must contain its complete deterministic symbol_map")
@@ -953,8 +963,10 @@ class OnlineGlobalAgent:
                                 if getattr(model,"_stockrl_uses_market_context",False):
                                     pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=device)
                                     at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=device)
+                                    mt=torch.as_tensor(panel.multiscale_at(index)[None],device=device)
                                     logits,_,allocation=model(*args,portfolio_state=pt,
-                                        account_state=at,return_allocation=True)
+                                        account_state=at,return_allocation=True,
+                                        multiscale_state=mt)
                                     allocation=allocation[0].float().cpu().numpy()
                                 else:
                                     logits,_=model(*args); allocation=None
@@ -1013,8 +1025,10 @@ class OnlineGlobalAgent:
             if getattr(model,"_stockrl_uses_market_context",False) and portfolio_state is not None:
                 pstate=torch.as_tensor(np.asarray(portfolio_state,dtype=np.float32)[None],device=self.device)
                 astate=torch.as_tensor(np.asarray(account_state,dtype=np.float32)[None],device=self.device)
+                mstate=torch.as_tensor(panel.multiscale_at(index)[None],device=self.device)
                 logits,values,allocation=model(*args,portfolio_state=pstate,
-                                                account_state=astate,return_allocation=True)
+                                                account_state=astate,return_allocation=True,
+                                                multiscale_state=mstate)
             else:
                 logits,values=model(*args); allocation=None
             elapsed=time.perf_counter()-t
@@ -1254,7 +1268,9 @@ class OnlineGlobalAgent:
                     dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),
                     dec["timestamp"],"paper_account_symbol",float(dec.get("regime",0.0)),
                     reward_version=REWARD_VERSION,
-                    market_context=dec.get("market_context"), portfolio_state=dec.get("portfolio_state"),
+                    market_context=dec.get("market_context"),
+                    multiscale_state=dec.get("multiscale_state"),
+                    portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),forward_return=forward_return,
                     behavior_log_prob=dec.get("behavior_log_prob"))
             if dec.get("is_validation",False):
@@ -1277,7 +1293,9 @@ class OnlineGlobalAgent:
                     dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),timestamp,
                     "paper_account_portfolio",float(dec.get("regime",0.0)),
                     reward_version=REWARD_VERSION,
-                    market_context=dec.get("market_context"),portfolio_state=dec.get("portfolio_state"),
+                    market_context=dec.get("market_context"),
+                    multiscale_state=dec.get("multiscale_state"),
+                    portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
                     portfolio_transition=True,portfolio_value_transition=first_account_transition,
                     forward_return=forward_return,
@@ -1400,6 +1418,7 @@ class OnlineGlobalAgent:
                     continue
                 self.metrics["agent_history_gap"]=None
                 restore_windows={}
+                restore_multiscale={}
                 expired_regular=expired_portfolio=0
                 def restore_pending(items, is_portfolio):
                     nonlocal expired_regular, expired_portfolio
@@ -1422,12 +1441,14 @@ class OnlineGlobalAgent:
                         if window is None:
                             window=self._window(panel,index)
                             restore_windows[index]=window
+                            restore_multiscale[index]=panel.multiscale_at(index).astype(np.float16)
                         x0,sid0,mid0,aid0,mask0=window[:5]
                         dec.update({"index":index,"symbol_index":panel.symbols.index(symbol),
                             "features":x0[0].numpy().astype(np.float16),"symbol_ids":sid0[0].numpy(),
                             "market_ids":mid0[0].numpy(),"asset_ids":aid0[0].numpy(),
                             "valid_mask":mask0[0].numpy(),
-                            "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None})
+                            "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
+                            "multiscale_state":restore_multiscale[index]})
                         restored.append(dec)
                     return restored
                 pending=restore_pending(pending,False)
@@ -1525,11 +1546,20 @@ class OnlineGlobalAgent:
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
                     stamp=str(panel.dates[ti]); validation=self.validation_active
+                    multiscale_state=panel.multiscale_at(ti).astype(np.float16)
+                    actual_symbols=np.asarray([
+                        not str(symbol).startswith("__PAD__") for symbol in panel.symbols],dtype=bool)
+                    if actual_symbols.any():
+                        width=len(TIMEFRAME_FEATURE_NAMES)
+                        self.metrics["multiscale_coverage"]={
+                            scale:float(multiscale_state[actual_symbols,k*width+width-1].mean())
+                            for k,scale in enumerate(TIMEFRAME_NAMES)}
                     rows=[]
                     pending_inputs={"features":x[0].numpy().astype(np.float16),
                         "symbol_ids":sid[0].numpy(),"market_ids":mid[0].numpy(),
                         "asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
-                        "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None}
+                        "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
+                        "multiscale_state":multiscale_state}
                     portfolio_inputs={**pending_inputs,
                         "portfolio_state":np.asarray(pstate,dtype=np.float16),
                         "account_state":np.asarray(astate,dtype=np.float32)}
@@ -1792,12 +1822,18 @@ class OnlineGlobalAgent:
                 rows.append(context)
             args=args+(torch.as_tensor(np.stack(rows),device=self.device,dtype=torch.float32),)
         p_rows=[]; a_rows=[]
+        m_rows=[]
         for experience in batch:
             p_rows.append(experience.portfolio_state if experience.portfolio_state is not None
                           else np.zeros((experience.features.shape[1], 8), dtype=np.float16))
             a_rows.append(experience.account_state if experience.account_state is not None
                           else np.zeros(8, dtype=np.float32))
-        return args, torch.as_tensor(np.stack(p_rows),device=self.device,dtype=torch.float32), torch.as_tensor(np.stack(a_rows),device=self.device,dtype=torch.float32)
+            m_rows.append(experience.multiscale_state if experience.multiscale_state is not None
+                          else np.zeros((experience.features.shape[1],MULTISCALE_FEATURE_COUNT),dtype=np.float16))
+        return (args,
+                torch.as_tensor(np.stack(p_rows),device=self.device,dtype=torch.float32),
+                torch.as_tensor(np.stack(a_rows),device=self.device,dtype=torch.float32),
+                torch.as_tensor(np.stack(m_rows),device=self.device,dtype=torch.float32))
 
     def _learner(self):
         while not self.stop.wait(.1):
@@ -1867,7 +1903,8 @@ class OnlineGlobalAgent:
                        ("final_norm","policy_head","value_head"))
         modules.extend(getattr(candidate,name,None) for name in
                        ("context_policy","context_value","portfolio_action",
-                        "portfolio_allocation","portfolio_cash"))
+                        "portfolio_allocation","portfolio_cash",
+                        "multiscale_policy","multiscale_value"))
         for module in modules:
             if module is not None:
                 for parameter in module.parameters():
@@ -1920,7 +1957,10 @@ class OnlineGlobalAgent:
             if ((experience.portfolio_state is not None and
                  np.shape(experience.portfolio_state)!=(experience.features.shape[1],8)) or
                 (experience.account_state is not None and
-                 np.shape(experience.account_state)!=(8,)))}
+                 np.shape(experience.account_state)!=(8,)) or
+                (experience.multiscale_state is not None and
+                 np.shape(experience.multiscale_state)!=
+                 (experience.features.shape[1],MULTISCALE_FEATURE_COUNT)))}
         self.metrics["last_candidate_optimizer_steps"]=0
         self.metrics["last_candidate_samples_trained"]=0
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
@@ -1946,10 +1986,11 @@ class OnlineGlobalAgent:
             # while holding only one sequence's activations on the 8 GB GPU.
             successful_batch=[]
             for experience in batch:
-                args,pstate,astate=self._pack([experience])
+                args,pstate,astate,mstate=self._pack([experience])
                 if use_portfolio:
                     logits,values,allocations=candidate(*args,portfolio_state=pstate,
-                                                         account_state=astate,return_allocation=True)
+                                                         account_state=astate,return_allocation=True,
+                                                         multiscale_state=mstate)
                 else:
                     logits,values=candidate(*args); allocations=None
                 chosen=logits[0,int(experience.symbol_index)].float()
@@ -2010,7 +2051,7 @@ class OnlineGlobalAgent:
                 valid_samples+=1
                 successful_batch.append(experience)
                 loss_values.append(float(loss.detach().cpu()))
-                del args,pstate,astate,logits,values,allocations,chosen,predicted,dist,loss
+                del args,pstate,astate,mstate,logits,values,allocations,chosen,predicted,dist,loss
             if not valid_samples:
                 continue
             nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
@@ -2314,8 +2355,10 @@ class OnlineGlobalAgent:
                             if getattr(model,"_stockrl_uses_market_context",False):
                                 pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=model_device)
                                 at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=model_device)
+                                mt=torch.as_tensor(panel.multiscale_at(index)[None],device=model_device)
                                 logits,_,allocation=model(*model_args,portfolio_state=pt,
-                                                          account_state=at,return_allocation=True)
+                                                          account_state=at,return_allocation=True,
+                                                          multiscale_state=mt)
                                 allocation=allocation[0].float().cpu().numpy()
                             else:
                                 logits,_=model(*model_args); allocation=None
@@ -2552,17 +2595,23 @@ class OnlineGlobalAgent:
 def benchmark_model(model, panel, window=128, repeats=3, device=None):
     from .core import device_for
     dev=device or device_for(); model.to(dev)
-    if dev.type=="cuda": model.half()
-    model.eval(); contextual=getattr(model,"_stockrl_uses_market_context",False)
-    args=[x.to(dev) for x in panel.window(min(len(panel.dates)-1,window),window,include_context=contextual)]
+    contextual=getattr(model,"_stockrl_uses_market_context",False)
+    if dev.type=="cuda":
+        # The large backbone uses FP16 while context adapters consume FP32.
+        (model.backbone if contextual else model).half()
+    model.eval()
+    end_index=min(len(panel.dates)-1,window)
+    args=[x.to(dev) for x in panel.window(end_index,window,include_context=contextual)]
     args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+    extra=({"multiscale_state":torch.as_tensor(panel.multiscale_at(end_index)[None],device=dev)}
+           if contextual else {})
     samples=[]
     with torch.inference_mode():
-        model(*args)
+        model(*args,**extra)
         if dev.type=="cuda": torch.cuda.synchronize(dev)
         for _ in range(repeats):
             if dev.type=="cuda": torch.cuda.synchronize(dev)
-            t=time.perf_counter(); model(*args); samples.append(time.perf_counter()-t)
+            t=time.perf_counter(); model(*args,**extra); samples.append(time.perf_counter()-t)
             if dev.type=="cuda":
                 torch.cuda.synchronize(dev); samples[-1]=time.perf_counter()-t
     return {"inference_seconds_p50":float(np.percentile(samples,50)),"inference_seconds_p95":float(np.percentile(samples,95)),

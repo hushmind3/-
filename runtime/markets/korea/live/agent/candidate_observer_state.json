@@ -1,13 +1,13 @@
 {
   "status": "observing",
-  "last_timestamp": "2026-09-30T09:20:48.000000000",
-  "candidate_version": 85,
+  "last_timestamp": "2026-09-30T10:41:46.000000000",
+  "candidate_version": 93,
   "candidate_training": false,
-  "last_inference_seconds": 2.397322799999529,
-  "inference_count": 214,
+  "last_inference_seconds": 0.9237602000030165,
+  "inference_count": 271,
   "last_decisions": [
     {
-      "symbol": "PEP",
+      "symbol": "PANW",
       "action": "HOLD"
     }
   ]

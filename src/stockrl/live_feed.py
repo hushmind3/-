@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 from .paths import ensure_project_path
+from .multiscale import DailyBarStore, TIMEFRAME_NAMES
 
 import pandas as pd
 import requests
@@ -249,6 +250,15 @@ class LiveMarketCollector:
             self.errors_path.write_text("",encoding="utf-8")
         config = json.loads(self.config_path.read_text(encoding="utf-8"))
         self.instruments = config["instruments"]
+        configured_timeframes=tuple(config.get("decision_timeframes",TIMEFRAME_NAMES))
+        if configured_timeframes!=TIMEFRAME_NAMES:
+            raise ValueError(f"decision_timeframes must match the model feature order: {TIMEFRAME_NAMES}")
+        self.daily_store=DailyBarStore(self.output.with_name("timeframes.sqlite3"))
+        self.daily_next_due: dict[str,float]={}
+        self.daily_failures: dict[str,int]={}
+        self.daily_pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix="daily-context")
+        self.daily_future=None
+        self.daily_item=None
         self.index = AppendOnlyMarketCSV(self.output)
         self.poll_seconds = max(1.0, poll_seconds)
         self.timeout = timeout
@@ -414,6 +424,39 @@ class LiveMarketCollector:
                 with self.errors_path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(event, ensure_ascii=False) + "\n")
                 logging.warning("%s failed (%s); retry in %.0fs", name, exc, backoff)
+        # Daily history is a small bounded sidecar. Weekly/monthly context is
+        # derived from these completed bars, never inferred from a 512-minute
+        # live cache or from a still-forming higher-timeframe candle.
+        daily_fetched=0
+        if self.daily_future is not None and self.daily_future.done():
+            name=str(self.daily_item["symbol"])
+            try:
+                daily_fetched=self.daily_store.upsert(self.daily_future.result())
+                self.daily_failures[name]=0
+                self.daily_next_due[name]=now+86_400.0
+            except Exception as exc:
+                failures=self.daily_failures.get(name,0)+1
+                self.daily_failures[name]=failures
+                self.daily_next_due[name]=now+min(3600.0,60.0*2**min(failures,6))
+                logging.warning("%s daily context failed (%s)",name,exc)
+            self.daily_future=None
+            self.daily_item=None
+        if self.daily_future is None:
+            for item in self.instruments:
+                name=str(item["symbol"])
+                provider=str(item.get("provider","yahoo")).lower()
+                if provider not in ("yahoo","kraken") or now<self.daily_next_due.get(name,0.0):
+                    continue
+                daily_item=dict(item)
+                if provider=="yahoo":
+                    daily_item["interval"]="1d"
+                    daily_item["range"]=("5d" if self.daily_store.has_symbol(name) else "5y")
+                else:
+                    daily_item["interval"]=1440
+                self.daily_item=item
+                self.daily_future=self.daily_pool.submit(
+                    self.provider_adapters[provider].fetch,daily_item)
+                break
         while True:
             try:
                 rows.append(self.broker_rows.get_nowait())
@@ -435,6 +478,10 @@ class LiveMarketCollector:
                    "fresh_symbols_5m": fresh_symbols,
                    "fetched_rows": len(rows), "appended_unique_rows": added,
                    "provider_failures": self.failures, "retrying_symbols": sum(v > 0 for v in self.failures.values()),
+                   "decision_timeframes": list(TIMEFRAME_NAMES),
+                   "daily_history_symbols": self.daily_store.symbol_count(),
+                   "daily_history_rows_fetched": daily_fetched,
+                   "daily_history_failures": self.daily_failures,
                    "broker_provider": self.broker_provider, "broker_connected": self.broker_status.get("connected", False),
                    "broker_symbols": self.broker_status.get("symbols", 0),
                    "broker_last_message_utc": self.broker_status.get("last_message_utc"),
@@ -484,4 +531,6 @@ class LiveMarketCollector:
             if tail:
                 self.index.append(tail)
             self.index.close()
+            self.daily_pool.shutdown(wait=True,cancel_futures=True)
+            self.daily_store.close()
             self.http.close()
