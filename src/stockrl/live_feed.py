@@ -104,7 +104,7 @@ def _utc_stamp(epoch: int | float) -> str:
 
 
 class AppendOnlyMarketCSV:
-    """Append bars exactly once and compact the live cache to a rolling window."""
+    """Append bars once; compact only history acknowledged by the observer."""
     RETAIN_TIMESTAMPS = 512
     REFERENCE_CARRY_ROWS = 20
     DEDUPE_DAYS = 8
@@ -184,6 +184,23 @@ class AppendOnlyMarketCSV:
                 return
             cutoff_ns=int(latest_rows[-1][0]) if len(latest_rows)>=self.RETAIN_TIMESTAMPS else None
             latest_ns=int(latest_rows[0][0])
+            # Never compact unobserved bars. The saved cursor advances only
+            # after the corresponding pending/replay input is durable.
+            cursor_path=self.path.parent/"agent"/"live_cursor.json"
+            try:
+                cursor=json.loads(cursor_path.read_text(encoding="utf-8")).get("last_timestamp")
+                cursor_ns=int(pd.to_datetime(cursor,utc=True).value) if cursor else None
+            except (OSError,ValueError,TypeError,json.JSONDecodeError):
+                cursor_ns=None
+            if cursor_ns is None:
+                return
+            context_rows=self.db.execute(
+                "SELECT DISTINCT stamp_ns FROM seen WHERE stamp_ns<=? ORDER BY stamp_ns DESC LIMIT 128",
+                (cursor_ns,)).fetchall()
+            if not context_rows:
+                return
+            protected_ns=int(context_rows[-1][0])
+            cutoff_ns=min(cutoff_ns,protected_ns) if cutoff_ns is not None else None
             carry_by_symbol={}
             wrote_recent=False
             for chunk in pd.read_csv(self.path,chunksize=100_000):

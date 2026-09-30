@@ -1,5 +1,6 @@
 """Regression checks for sparse market inputs and the real portfolio ledger."""
 from pathlib import Path
+from contextlib import closing
 from tempfile import TemporaryDirectory
 import json
 import queue
@@ -10,7 +11,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import torch
 
-from stockrl.global_online import GlobalReplayBuffer, MarketObservation, OnlineGlobalAgent, REWARD_VERSION
+from stockrl.global_online import Experience, GlobalReplayBuffer, IncrementalMarketCSV, MarketObservation, OnlineGlobalAgent, REWARD_VERSION
 from stockrl.global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig
 from stockrl.market_training import ContextConditionedTransformer, CONTEXT_FEATURES
 from stockrl.multiscale import MULTISCALE_FEATURE_COUNT
@@ -57,26 +58,155 @@ class FixedPolicy(torch.nn.Module):
 
 
 class PipelineTests(unittest.TestCase):
-    def test_replay_learning_resumes_without_new_row_counter_and_is_bounded(self):
+    def test_replay_learning_drains_partial_batches_without_new_quotes(self):
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
         agent.replay=GlobalReplayBuffer()
         for row_id in (1,2):
             row=SimpleNamespace(source="paper_account_symbol",reward_version=REWARD_VERSION,
                 features=np.zeros((4,2,17)),portfolio_state=None,account_state=None,
-                multiscale_state=None)
+                multiscale_state=None,timestamp=f"T{row_id}")
             agent.replay.items.append(row)
             agent.replay.row_ids[id(row)]=row_id
         agent.min_replay=2; agent.batch_size=2; agent.candidate_replay_passes=2
         agent.candidate_retry_after=0
         for uses,expected in ((1,1),(2,0)):
-            agent.metrics={"observation_caught_up":True,"paper_experiences_seen":2,
+            agent.metrics={"observation_caught_up":False,"paper_experiences_seen":2,
                            "paper_experiences_since_candidate":0}
-            agent.candidate_replay_uses={1:uses,2:uses}
+            agent.replay._memory_uses={id(row):uses for row in agent.replay.items}
+            agent.min_replay=8; agent.batch_size=8
             agent.stop=SimpleNamespace(wait=Mock(side_effect=[False,True]))
             with patch.object(agent,"_train_candidate") as train:
                 agent._learner()
                 self.assertEqual(train.call_count,expected)
             self.assertEqual(agent.metrics["candidate_eligible_replay_count"],2 if uses==1 else 0)
+
+    @staticmethod
+    def experience(timestamp="2026-09-30T01:00:00", features=None, symbol_index=0):
+        panel=Panel()
+        return Experience(features=panel.features[:4].copy() if features is None else features,
+            symbol_ids=panel.symbol_ids,market_ids=panel.market_ids,asset_ids=panel.asset_ids,
+            valid_mask=panel.observed[:4].copy(),symbol_index=symbol_index,action=1,reward=.001,
+            timestamp=timestamp,source="paper_account_symbol",regime=0,reward_version=REWARD_VERSION,
+            market_context=panel.market_context[:4].copy())
+
+    def test_replay_over_4096_and_warning_survives_restart_without_eviction(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(capacity=2,journal_path=path)
+            replay.storage_warning_bytes=1
+            rows=[self.experience(str(np.datetime64("2026-09-30T01:00:00")+np.timedelta64(i,"s")))
+                  for i in range(4100)]
+            replay.add_many(rows)
+            self.assertEqual(len(replay),4100)
+            self.assertTrue(replay.stats()["storage_pressure"])
+            restored=GlobalReplayBuffer(capacity=2,journal_path=path)
+            self.assertEqual(len(restored),4100)
+            self.assertEqual(restored.pending_batch(1)[0].timestamp,rows[0].timestamp)
+
+    def test_shared_rolling_frames_and_checkpoint_ack_are_idempotent(self):
+        import sqlite3
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(journal_path=path)
+            frames=np.arange(5*2*17,dtype=np.float32).reshape(5,2,17)
+            first=self.experience(features=frames[:4]); second=self.experience("2026-09-30T01:01:00",frames[1:])
+            replay.add_many([first,second])
+            with closing(sqlite3.connect(path)) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM frames").fetchone()[0],5)
+            replay=GlobalReplayBuffer(journal_path=path)
+            selected=replay.pending_batch(8)
+            np.testing.assert_array_equal(selected[1].features,frames[1:])
+            ids=replay.row_ids_for(selected)
+            replay.acknowledge_training(dict.fromkeys(ids,1))
+            self.assertEqual(len(replay),2)
+            # Restart before the second pass preserves both remaining rows.
+            replay=GlobalReplayBuffer(journal_path=path)
+            self.assertEqual(replay.stats()["eligible"],2)
+            replay.acknowledge_training(dict.fromkeys(ids,2))
+            replay.acknowledge_training(dict.fromkeys(ids,2))
+            self.assertEqual(len(replay),0)
+            self.assertEqual(replay.stats()["daily"][0]["completed"],2)
+            self.assertEqual(replay.stats()["daily"][0]["exposures"],4)
+            with closing(sqlite3.connect(path)) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM frames").fetchone()[0],0)
+
+    def test_pending_input_survives_weekend_restart_without_csv(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(journal_path=path)
+            exp=self.experience(); decision={**vars(exp),"symbol":"TEST.KS","input_symbols":["TEST.KS","CONTEXT"]}
+            replay.save_pending([],[decision])
+            restored=GlobalReplayBuffer(journal_path=path).load_pending("portfolio")
+            np.testing.assert_array_equal(restored[0]["features"],exp.features)
+            panel=Panel(); panel.dates+=np.timedelta64(4,"D")
+            agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent.replay=GlobalReplayBuffer(journal_path=path)
+            agent.paper_account=PaperAccount.in_memory(.001,.0001)
+            agent.metrics={}; agent.horizon_kind="seconds"; agent.horizon_amount=60
+            self.assertEqual(agent._mature_portfolio(restored,panel,2),[])
+            self.assertEqual(len(agent.replay),2)
+            self.assertEqual(agent.replay.load_pending("portfolio"),[])
+
+    def test_unexecuted_buy_is_retained_with_zero_trade_reward(self):
+        panel=Panel(); agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.replay=GlobalReplayBuffer(); agent.paper_account=PaperAccount.in_memory(.001,.0001)
+        agent.metrics={}; agent.horizon_kind="seconds"; agent.horizon_amount=60
+        decision={**vars(self.experience()),"symbol":"TEST.KS","action":2,"fill_expected":False}
+        self.assertEqual(agent._mature_portfolio([decision],panel,2),[])
+        self.assertEqual(len(agent.replay),2)
+        for exp in agent.replay.items:
+            self.assertFalse(exp.trade_executed)
+            self.assertEqual(exp.reward,0)
+
+    def test_reader_never_trims_unprocessed_market_bars(self):
+        import pandas as pd
+        reader=IncrementalMarketCSV(ROOT/"unused.csv",retain_timestamps=8)
+        frame=pd.DataFrame({"date":pd.date_range("2026-09-30",periods=400,freq="min",tz="UTC"),
+                            "symbol":["TEST.KS"]*400})
+        self.assertEqual(len(reader._trim(frame)),400)
+        reader.processed_through=str(frame.date.iloc[200])
+        trimmed=reader._trim(frame)
+        self.assertEqual(len(trimmed),327) # 128 preceding context + all 199 new bars.
+        self.assertEqual(trimmed.date.iloc[-1],frame.date.iloc[-1])
+
+    def test_feed_compaction_preserves_unobserved_bars_and_input_history(self):
+        import pandas as pd
+        from stockrl.live_feed import AppendOnlyMarketCSV
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"market.csv"
+            (path.parent/"agent").mkdir()
+            dates=pd.date_range("2026-09-30",periods=800,freq="min",tz="UTC")
+            atomic_json({"last_timestamp":dates[200].isoformat()},path.parent/"agent"/"live_cursor.json")
+            writer=AppendOnlyMarketCSV(path); writer.COMPACT_CSV_BYTES=1; writer._next_csv_compaction=1
+            try:
+                writer.append([{"date":stamp.isoformat(),"symbol":"TEST.KS","market":"KRX",
+                    "asset_class":"equity","close":100} for stamp in dates])
+            finally:
+                writer.close()
+            stored=pd.read_csv(path)
+            self.assertEqual(len(stored),727)
+            self.assertEqual(pd.to_datetime(stored.date,utc=True).iloc[0],dates[73])
+            self.assertEqual(pd.to_datetime(stored.date,utc=True).iloc[-1],dates[799])
+
+    def test_shared_forward_preserves_every_experience_gradient(self):
+        torch.manual_seed(9)
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+                              n_markets=4,n_asset_types=4,max_seq_len=8)
+        model=GlobalMarketTransformer(cfg)
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.device=torch.device("cpu"); agent.metrics={"nonfinite_updates":0}
+        agent.champion=model; agent.window=4
+        examples=[self.experience(symbol_index=i) for i in (0,1)]
+        for exp in examples: exp.behavior_log_prob=-1.0
+        for exp in examples:
+            args,*_=agent._pack([exp]); logits,values=model(*args)
+            (agent._experience_loss(logits,values,None,exp)/2).backward()
+        expected={name:p.grad.clone() for name,p in model.named_parameters() if p.grad is not None}
+        model.zero_grad(set_to_none=True)
+        args,*_=agent._pack([examples[0]]); logits,values=model(*args)
+        torch.stack([agent._experience_loss(logits,values,None,e) for e in examples]).mean().backward()
+        for name,p in model.named_parameters():
+            if name in expected: torch.testing.assert_close(p.grad,expected[name],atol=1e-6,rtol=1e-5)
 
     def test_reward_keeps_symbol_index_of_original_input(self):
         panel=Panel(); panel.symbols.reverse()

@@ -1,0 +1,473 @@
+"""One durable FIFO of rolling-window experiences, including unfinished work.
+
+The cache capacity limits RAM, never the number of unlearned database rows.
+Overlapping windows share compressed frames. Only checkpoint-confirmed training
+can consume rows; market closures and restarts do not expire them.
+"""
+from collections import OrderedDict, deque
+from contextlib import closing
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from types import SimpleNamespace
+import hashlib
+import pickle
+import random
+import sqlite3
+import threading
+import zlib
+
+import numpy as np
+
+
+CURRENT_REWARD_VERSION = "symbol_and_portfolio_v5"
+ARRAY_NAMES = ("features", "symbol_ids", "market_ids", "asset_ids", "valid_mask",
+               "market_context", "multiscale_state", "portfolio_state", "account_state")
+TRAINING_SOURCES = ("paper_account_symbol", "paper_account_portfolio")
+
+
+class ReplayStorageFull(RuntimeError):
+    """Leave unlearned work intact when its storage budget is exhausted."""
+
+
+class GlobalReplayBuffer:
+    # A warning level, never an eviction or write limit for unlearned work.
+    storage_warning_bytes = 50 * 1024 * 1024
+
+    def __init__(self, capacity=4096, seed=7, journal_path=None):
+        self.capacity = max(1, int(capacity))
+        self.items = deque(maxlen=min(self.capacity, 128) if journal_path else None)
+        self.rng = random.Random(seed)
+        self.lock = threading.RLock()
+        self.paper_outcomes_seen = 0
+        self.journal_path = Path(journal_path) if journal_path else None
+        self.row_ids = {}
+        self.window_cache = OrderedDict()
+        self.frame_cache = OrderedDict()
+        self._memory_uses = {}
+        if self.journal_path:
+            self._load_journal()
+
+    def _connect(self):
+        self.journal_path.parent.mkdir(parents=True, exist_ok=True)
+        db = sqlite3.connect(self.journal_path, timeout=30)
+        db.execute("PRAGMA journal_size_limit=524288")
+        db.execute("PRAGMA wal_autocheckpoint=128")
+        # Undo old page limits. Learning completion, not size, permits deletion.
+        db.execute("PRAGMA max_page_count=4294967294")
+        return db
+
+    @staticmethod
+    def _day(timestamp):
+        try:
+            stamp = datetime.fromisoformat(str(timestamp).replace("Z", "+00:00"))
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=timezone.utc)
+            return stamp.astimezone(timezone(timedelta(hours=9))).date().isoformat()
+        except ValueError:
+            return str(timestamp)[:10]
+
+    @staticmethod
+    def _window_key(exp):
+        digest = hashlib.sha256()
+        for name in ARRAY_NAMES:
+            value = getattr(exp, name, None)
+            digest.update(name.encode())
+            if value is None:
+                digest.update(b"none")
+            else:
+                array = np.ascontiguousarray(value)
+                digest.update(str(array.dtype).encode())
+                digest.update(repr(array.shape).encode())
+                digest.update(array.tobytes())
+        return digest.hexdigest()
+
+    @staticmethod
+    def _metadata(exp):
+        names = ("symbol_index", "action", "reward", "timestamp", "source", "regime",
+                 "reward_version", "portfolio_reward", "portfolio_transition",
+                 "portfolio_value_transition", "forward_return", "behavior_log_prob",
+                 "trade_executed")
+        return pickle.dumps({name: getattr(exp, name) for name in names
+                             if hasattr(exp, name)}, protocol=5)
+
+    def _store_window(self, db, exp):
+        key = self._window_key(exp)
+        if db.execute("SELECT 1 FROM windows WHERE key=?", (key,)).fetchone():
+            return key
+        refs = []
+        frame_rows = {}
+        for index in range(len(exp.features)):
+            frame = {"features": np.ascontiguousarray(exp.features[index]),
+                     "valid_mask": np.ascontiguousarray(exp.valid_mask[index]),
+                     "market_context": (None if getattr(exp, "market_context", None) is None
+                                        else np.ascontiguousarray(exp.market_context[index]))}
+            raw = pickle.dumps(frame, protocol=5)
+            frame_key = hashlib.sha256(raw).digest()
+            refs.append(frame_key)
+            frame_rows[frame_key] = zlib.compress(raw, level=1)
+        db.executemany("INSERT OR IGNORE INTO frames(key,payload,refs) VALUES(?,?,0)",
+                       frame_rows.items())
+        db.executemany("UPDATE frames SET refs=refs+1 WHERE key=?",
+                       ((ref,) for ref in frame_rows))
+        arrays = {name: getattr(exp, name, None) for name in ARRAY_NAMES
+                  if name not in ("features", "valid_mask", "market_context")}
+        payload = zlib.compress(pickle.dumps({"encoding": "rolling_frames_v1",
+            "frames": refs, "arrays": arrays}, protocol=5), level=1)
+        db.execute("INSERT INTO windows(key,payload) VALUES(?,?)", (key, payload))
+        return key
+
+    def _read_window(self, db, key):
+        if key in self.window_cache:
+            self.window_cache.move_to_end(key)
+            return self.window_cache[key]
+        row = db.execute("SELECT payload FROM windows WHERE key=?", (key,)).fetchone()
+        if row is None:
+            raise ValueError(f"Replay input is missing: {key}")
+        stored = pickle.loads(zlib.decompress(row[0]))
+        if stored.get("encoding") != "rolling_frames_v1":
+            arrays = stored  # Existing journals retain their exact inputs.
+        else:
+            frames = []
+            for frame_key in stored["frames"]:
+                frame = self.frame_cache.get(frame_key)
+                if frame is None:
+                    row = db.execute("SELECT payload FROM frames WHERE key=?", (frame_key,)).fetchone()
+                    if row is None:
+                        raise ValueError("Replay rolling frame is missing")
+                    frame = pickle.loads(zlib.decompress(row[0]))
+                    self.frame_cache[frame_key] = frame
+                    if len(self.frame_cache) > 512:
+                        self.frame_cache.popitem(last=False)
+                frames.append(frame)
+            arrays = dict(stored["arrays"])
+            arrays["features"] = np.stack([frame["features"] for frame in frames])
+            arrays["valid_mask"] = np.stack([frame["valid_mask"] for frame in frames])
+            arrays["market_context"] = (None if frames[0]["market_context"] is None else
+                np.stack([frame["market_context"] for frame in frames]))
+        self.window_cache[key] = arrays
+        if len(self.window_cache) > 4:
+            self.window_cache.popitem(last=False)
+        return arrays
+
+    @staticmethod
+    def _training_eligible(metadata):
+        return (metadata.get("source", "").startswith("teacher") or
+                (metadata.get("source") in TRAINING_SOURCES and
+                 metadata.get("reward_version") == CURRENT_REWARD_VERSION))
+
+    def _load_journal(self):
+        with closing(self._connect()) as db:
+            db.execute("PRAGMA journal_mode=WAL")
+            db.execute("CREATE TABLE IF NOT EXISTS windows (key TEXT PRIMARY KEY,payload BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS experiences (id INTEGER PRIMARY KEY AUTOINCREMENT,window_key TEXT NOT NULL,metadata BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL,record_key TEXT NOT NULL,metadata BLOB NOT NULL,PRIMARY KEY(kind,record_key))")
+            db.execute("CREATE TABLE IF NOT EXISTS frames (key BLOB PRIMARY KEY,payload BLOB NOT NULL,refs INTEGER NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS portfolio_value_stamps (timestamp TEXT PRIMARY KEY)")
+            db.execute("CREATE TABLE IF NOT EXISTS daily_learning (day TEXT PRIMARY KEY,enqueued INTEGER NOT NULL DEFAULT 0,first_trained INTEGER NOT NULL DEFAULT 0,completed INTEGER NOT NULL DEFAULT 0,exposures INTEGER NOT NULL DEFAULT 0)")
+            columns = {row[1] for row in db.execute("PRAGMA table_info(experiences)")}
+            additions = {"timestamp": "TEXT", "day": "TEXT", "eligible": "INTEGER DEFAULT 0",
+                         "training_uses": "INTEGER NOT NULL DEFAULT 0", "error": "TEXT",
+                         "experience_key": "TEXT"}
+            with db:
+                for name, declaration in additions.items():
+                    if name not in columns:
+                        db.execute(f"ALTER TABLE experiences ADD COLUMN {name} {declaration}")
+                for row_id, blob in db.execute("SELECT id,metadata FROM experiences WHERE timestamp IS NULL").fetchall():
+                    metadata = pickle.loads(blob)
+                    db.execute("UPDATE experiences SET timestamp=?,day=?,eligible=? WHERE id=?",
+                        (metadata["timestamp"], self._day(metadata["timestamp"]),
+                         int(self._training_eligible(metadata)), row_id))
+                db.execute("CREATE UNIQUE INDEX IF NOT EXISTS experience_key_idx ON experiences(experience_key)")
+                db.execute("CREATE INDEX IF NOT EXISTS experience_fifo_idx ON experiences(eligible,error,training_uses,timestamp,id)")
+                db.execute("INSERT OR IGNORE INTO daily_learning(day,enqueued) SELECT day,COUNT(*) FROM experiences GROUP BY day")
+            # Load metadata and at most a small RAM cache. No startup pruning.
+            with db:
+                for (blob,) in db.execute("SELECT metadata FROM experiences"):
+                    metadata=pickle.loads(blob)
+                    if metadata.get("portfolio_value_transition"):
+                        db.execute("INSERT OR IGNORE INTO portfolio_value_stamps VALUES(?)",(metadata["timestamp"],))
+            rows = db.execute("SELECT id,window_key,metadata,training_uses FROM experiences ORDER BY id LIMIT ?",
+                              (self.items.maxlen,)).fetchall()
+            for row in rows:
+                self._decode(db, row)
+
+    def _decode(self, db, row):
+        from .global_online import Experience
+        row_id, key, blob, uses = row
+        metadata = pickle.loads(blob)
+        if metadata.get("portfolio_transition") and "portfolio_value_transition" not in metadata:
+            metadata["portfolio_value_transition"] = False
+        exp = Experience(**self._read_window(db, key), **metadata)
+        exp._replay_row_id = int(row_id)
+        exp._replay_window_key = key
+        exp._replay_training_uses = int(uses)
+        self.items.append(exp)
+        self.row_ids[id(exp)] = int(row_id)
+        self._prune_row_ids()
+        return exp
+
+    def _prune_row_ids(self):
+        live = {id(row) for row in self.items}
+        self.row_ids = {key: value for key, value in self.row_ids.items() if key in live}
+
+    def _collect_unused_windows(self, db):
+        pending_keys = set()
+        pending_stamps=set()
+        for (blob,) in db.execute("SELECT metadata FROM pending_records"):
+            metadata=pickle.loads(blob)
+            pending_stamps.add(metadata.get("timestamp"))
+            key = metadata.get("_window_key")
+            if key:
+                pending_keys.add(key)
+        unused = db.execute("SELECT key,payload FROM windows WHERE key NOT IN (SELECT window_key FROM experiences)").fetchall()
+        for key, blob in unused:
+            if key in pending_keys:
+                continue
+            stored = pickle.loads(zlib.decompress(blob))
+            if stored.get("encoding") == "rolling_frames_v1":
+                db.executemany("UPDATE frames SET refs=refs-1 WHERE key=?",
+                               ((ref,) for ref in set(stored["frames"])))
+            db.execute("DELETE FROM windows WHERE key=?", (key,))
+            self.window_cache.pop(key, None)
+        db.execute("DELETE FROM frames WHERE refs<=0")
+        for (stamp,) in db.execute("SELECT timestamp FROM portfolio_value_stamps WHERE timestamp NOT IN (SELECT timestamp FROM experiences)").fetchall():
+            if stamp not in pending_stamps:
+                db.execute("DELETE FROM portfolio_value_stamps WHERE timestamp=?",(stamp,))
+
+    def add(self, exp, pending_ack=None):
+        self.add_many([exp], pending_ack)
+
+    def add_many(self, experiences, pending_ack=None):
+        with self.lock:
+            if not self.journal_path:
+                self.items.extend(experiences)
+                return
+            saved=[]
+            try:
+                with closing(self._connect()) as db, db:
+                    for exp in experiences:
+                        key=self._store_window(db,exp)
+                        symbol_id=int(exp.symbol_ids[exp.symbol_index])
+                        identity=hashlib.sha256(repr((exp.source,exp.timestamp,symbol_id,exp.action)).encode()).hexdigest()
+                        cursor=db.execute("INSERT OR IGNORE INTO experiences(window_key,metadata,timestamp,day,eligible,experience_key) VALUES(?,?,?,?,?,?)",
+                            (key,self._metadata(exp),exp.timestamp,self._day(exp.timestamp),
+                             int(self._training_eligible(vars(exp))),identity))
+                        if cursor.rowcount:
+                            saved.append((exp,int(cursor.lastrowid),key))
+                            db.execute("INSERT INTO daily_learning(day,enqueued) VALUES(?,1) ON CONFLICT(day) DO UPDATE SET enqueued=enqueued+1",
+                                       (self._day(exp.timestamp),))
+                            if exp.portfolio_value_transition:
+                                db.execute("INSERT OR IGNORE INTO portfolio_value_stamps VALUES(?)",(exp.timestamp,))
+                    if pending_ack:
+                        db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
+                for exp,row_id,key in saved:
+                    exp._replay_row_id=row_id
+                    exp._replay_window_key=key
+                    exp._replay_training_uses=0
+                    self.items.append(exp)
+                    self.row_ids[id(exp)]=row_id
+                self._prune_row_ids()
+            except sqlite3.OperationalError as exc:
+                if "full" in str(exc).lower():
+                    raise ReplayStorageFull("Replay disk is full; unlearned rows were retained.") from exc
+                raise
+
+    def has_portfolio_value(self,timestamp):
+        if not self.journal_path:
+            return any(row.portfolio_value_transition and row.timestamp==timestamp for row in self.items)
+        with self.lock, closing(self._connect()) as db:
+            return db.execute("SELECT 1 FROM portfolio_value_stamps WHERE timestamp=?",(timestamp,)).fetchone() is not None
+
+    def save_pending(self, regular, portfolio):
+        if not self.journal_path:
+            return
+        with self.lock, closing(self._connect()) as db, db:
+            window_by_arrays={}
+            for kind, rows in (("regular", regular), ("portfolio", portfolio)):
+                keep = set()
+                for item in rows:
+                    key = f"{item.get('timestamp','')}|{item.get('symbol',item.get('symbol_index',''))}"
+                    keep.add(key)
+                    metadata = {name: value for name, value in item.items() if name not in ARRAY_NAMES}
+                    if "features" in item:
+                        array_identity=tuple(id(item.get(name)) for name in ARRAY_NAMES)
+                        if array_identity not in window_by_arrays:
+                            window_by_arrays[array_identity]=self._store_window(db,SimpleNamespace(**item))
+                        metadata["_window_key"]=window_by_arrays[array_identity]
+                    db.execute("INSERT OR REPLACE INTO pending_records VALUES(?,?,?)",
+                               (kind, key, pickle.dumps(metadata, protocol=5)))
+                for (key,) in db.execute("SELECT record_key FROM pending_records WHERE kind=?", (kind,)).fetchall():
+                    if key not in keep:
+                        db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?", (kind, key))
+
+    def load_pending(self, kind):
+        if not self.journal_path:
+            return []
+        with self.lock, closing(self._connect()) as db:
+            out = []
+            for (blob,) in db.execute("SELECT metadata FROM pending_records WHERE kind=? ORDER BY record_key", (kind,)):
+                metadata = pickle.loads(blob)
+                key = metadata.pop("_window_key", None)
+                if key:
+                    metadata.update(self._read_window(db, key))
+                out.append(metadata)
+            return out
+
+    def acknowledge_pending(self, kind, decision):
+        if not self.journal_path:
+            return
+        key = (decision if isinstance(decision, str) else
+               f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}")
+        with self.lock, closing(self._connect()) as db, db:
+            db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?", (kind, key))
+
+    def pending_batch(self, batch_size, passes=2, exclude_row_ids=()):
+        with self.lock:
+            if not self.journal_path:
+                rows = [row for row in self.items if self._training_eligible(vars(row)) and
+                        self._memory_uses.get(id(row), 0) < passes and id(row) not in exclude_row_ids]
+                for row in rows:
+                    row._replay_training_uses=self._memory_uses.get(id(row),0)
+                return sorted(rows, key=lambda row: (row.timestamp, self._memory_uses.get(id(row), 0)))[:batch_size]
+            with closing(self._connect()) as db:
+                excluded = sorted(set(exclude_row_ids))
+                clause = (" AND id NOT IN (" + ",".join("?" for _ in excluded) + ")") if excluded else ""
+                rows = db.execute("SELECT id,window_key,metadata,training_uses FROM experiences WHERE eligible=1 AND error IS NULL AND training_uses<?" +
+                    clause + " ORDER BY timestamp,training_uses,id LIMIT ?", (passes, *excluded, batch_size)).fetchall()
+                return [self._decode(db, row) for row in rows]
+
+    def sample(self, batch_size, exclude_ids=None):
+        excluded = [self.row_ids.get(key, key) for key in (exclude_ids or ())]
+        return self.pending_batch(batch_size, exclude_row_ids=excluded)
+
+    def acknowledge_training(self, uses_by_id, passes=2):
+        """Idempotently apply absolute use counts embedded in candidate.pt."""
+        if not self.journal_path:
+            self._memory_uses.update(uses_by_id)
+            self.items = deque(row for row in self.items if self._memory_uses.get(id(row), 0) < passes)
+            return 0
+        completed = 0
+        with self.lock, closing(self._connect()) as db, db:
+            for row_id, target in uses_by_id.items():
+                row = db.execute("SELECT training_uses,day FROM experiences WHERE id=?", (int(row_id),)).fetchone()
+                if row is None or int(target) <= row[0]:
+                    continue
+                previous, day = row
+                done = int(target >= passes)
+                db.execute("UPDATE daily_learning SET first_trained=first_trained+?,completed=completed+?,exposures=exposures+? WHERE day=?",
+                    (int(previous == 0), done, int(target)-previous, day))
+                db.execute("UPDATE experiences SET training_uses=? WHERE id=?", (int(target), int(row_id)))
+                if done:
+                    db.execute("DELETE FROM experiences WHERE id=?", (int(row_id),))
+                    completed += 1
+            self._collect_unused_windows(db)
+        if completed:
+            self.items = deque((row for row in self.items if getattr(row, "_replay_row_id", None) not in uses_by_id or
+                                uses_by_id[getattr(row, "_replay_row_id")] < passes), maxlen=min(self.capacity, 128))
+            self._prune_row_ids()
+            self.compact()
+        return completed
+
+    def compact(self):
+        if not self.journal_path:
+            return
+        with self.lock, closing(self._connect()) as db:
+            db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            free = db.execute("PRAGMA freelist_count").fetchone()[0]
+            page = db.execute("PRAGMA page_size").fetchone()[0]
+            if free * page > 2 * 1024 * 1024:
+                db.execute("VACUUM")
+
+    def quarantine(self, row_ids, reason):
+        if not self.journal_path:
+            return
+        with self.lock, closing(self._connect()) as db, db:
+            db.executemany("UPDATE experiences SET error=? WHERE id=?", ((reason, int(row_id)) for row_id in row_ids))
+
+    def stats(self, passes=2):
+        if not self.journal_path:
+            eligible = sum(self._training_eligible(vars(row)) and self._memory_uses.get(id(row), 0) < passes for row in self.items)
+            return {"total": len(self.items), "eligible": eligible, "untrained": eligible,
+                    "quarantined": 0, "unsupported": len(self.items)-eligible, "daily": []}
+        with self.lock, closing(self._connect()) as db:
+            total, eligible, untrained, quarantine, unsupported = db.execute(
+                "SELECT COUNT(*),COALESCE(SUM(eligible=1 AND error IS NULL AND training_uses<?),0),"
+                "COALESCE(SUM(eligible=1 AND error IS NULL AND training_uses=0),0),"
+                "COALESCE(SUM(error IS NOT NULL),0),COALESCE(SUM(eligible=0),0) FROM experiences", (passes,)).fetchone()
+            daily = [{"day": day, "enqueued": queued, "first_trained": first,
+                      "completed": done, "exposures": exposures, "remaining": queued-done}
+                     for day, queued, first, done, exposures in db.execute(
+                         "SELECT day,enqueued,first_trained,completed,exposures FROM daily_learning ORDER BY day DESC LIMIT 14")]
+            oldest = db.execute("SELECT MIN(timestamp) FROM experiences WHERE eligible=1 AND error IS NULL AND training_uses<?", (passes,)).fetchone()[0]
+            pending = db.execute("SELECT COUNT(*) FROM pending_records").fetchone()[0]
+        return {"total": total, "eligible": eligible, "untrained": untrained,
+                "quarantined": quarantine, "unsupported": unsupported, "daily": daily,
+                "oldest": oldest, "pending": pending, "bytes": self.disk_bytes(),
+                "storage_pressure": self.disk_bytes() >= self.storage_warning_bytes}
+
+    def __len__(self):
+        if not self.journal_path:
+            return len(self.items)
+        with self.lock, closing(self._connect()) as db:
+            return db.execute("SELECT COUNT(*) FROM experiences").fetchone()[0]
+
+    def trainable_count(self):
+        return self.stats()["eligible"]
+
+    def disk_bytes(self):
+        if not self.journal_path:
+            return 0
+        return sum(path.stat().st_size for path in (self.journal_path,
+            Path(str(self.journal_path)+"-wal"), Path(str(self.journal_path)+"-shm")) if path.exists())
+
+    def row_ids_for(self, experiences):
+        return sorted({getattr(row, "_replay_row_id", self.row_ids.get(id(row), id(row))) for row in experiences})
+
+    def discard_row_ids(self, row_ids):
+        ids = set(map(int, row_ids))
+        if not ids:
+            return 0
+        removed = 0
+        with self.lock:
+            if self.journal_path:
+                with closing(self._connect()) as db, db:
+                    for row_id in ids:
+                        removed += db.execute("DELETE FROM experiences WHERE id=?", (row_id,)).rowcount
+                    self._collect_unused_windows(db)
+            self.items = deque((row for row in self.items if getattr(row, "_replay_row_id", self.row_ids.get(id(row))) not in ids),
+                               maxlen=self.items.maxlen)
+            self._prune_row_ids()
+        return removed
+
+    def discard(self, experiences):
+        if self.journal_path:
+            return self.discard_row_ids(self.row_ids_for(experiences))
+        ids = {id(row) for row in experiences}
+        before = len(self.items)
+        self.items = deque(row for row in self.items if id(row) not in ids)
+        return before-len(self.items)
+
+    def teacher_fraction(self):
+        return max(0.0, 1.0-self.paper_outcomes_seen/10000.0) if any(row.source.startswith("teacher") for row in self.items) else 0.0
+
+    def note_paper_outcome(self):
+        self.paper_outcomes_seen += 1
+
+    def sample_source(self, source):
+        return next((row for row in self.items if row.source.startswith(source)), None)
+
+    def load(self, path, manifest_path=None):
+        import json
+        import torch
+        path = Path(path)
+        if not path.exists():
+            return
+        manifest_path = manifest_path or path.with_suffix(".manifest.json")
+        paths = [path]
+        if manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            root = path.parent/(path.stem+"_chunks")/manifest["generation"]
+            paths = [root/name for name in manifest["chunks"]]
+        for chunk in paths:
+            for exp in torch.load(chunk, map_location="cpu", weights_only=False):
+                self.add(exp)

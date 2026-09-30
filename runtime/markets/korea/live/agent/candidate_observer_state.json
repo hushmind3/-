@@ -1,15 +1,10 @@
 {
-  "status": "observing",
-  "last_timestamp": "2026-09-30T15:04:05.000000000",
-  "candidate_version": 292,
+  "status": "training_and_observing",
+  "last_timestamp": "2026-09-30T16:02:00.000000000",
+  "candidate_version": 677,
   "policy_mode": "same_epsilon_sampling_and_random_draws_as_champion",
-  "candidate_training": false,
-  "last_inference_seconds": 0.850499399995897,
-  "inference_count": 663,
-  "last_decisions": [
-    {
-      "symbol": "TEAM",
-      "action": "HOLD"
-    }
-  ]
+  "candidate_training": true,
+  "last_inference_seconds": 1.423595000000205,
+  "inference_count": 725,
+  "last_decisions": []
 }
