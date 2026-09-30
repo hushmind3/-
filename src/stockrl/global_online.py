@@ -1279,7 +1279,10 @@ class OnlineGlobalAgent:
                             "file_bytes":stat.st_size,"file_mtime_ns":stat.st_mtime_ns,
                             "error":self.metrics["agent_last_input_error"],
                         }
-                        with (self.state_dir/"agent_errors.jsonl").open("a",encoding="utf-8") as log:
+                        error_log=self.state_dir/"agent_errors.jsonl"
+                        if error_log.exists() and error_log.stat().st_size >= 2*1024*1024:
+                            error_log.write_text("",encoding="utf-8")
+                        with error_log.open("a",encoding="utf-8") as log:
                             log.write(json.dumps(error_record,ensure_ascii=False)+"\n")
                             log.flush(); os.fsync(log.fileno())
                         self._write_metrics()
@@ -1487,6 +1490,10 @@ class OnlineGlobalAgent:
                     self._collect_candidate_validation(panel,ti)
                     import pandas as pd
                     if rows:
+                        # Decision history is an observation aid, not replay.
+                        # Clear the same file when full; never make dated copies.
+                        if decisions_path.exists() and decisions_path.stat().st_size >= 16*1024*1024:
+                            decisions_path.unlink()
                         pd.DataFrame(rows).to_csv(decisions_path,mode="a",header=not decisions_path.exists(),index=False)
                     self.metrics["observations"]+=1; cursor=stamp
                     self.metrics["last_market_timestamp"]=stamp

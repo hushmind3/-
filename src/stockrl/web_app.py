@@ -313,6 +313,8 @@ class Supervisor:
 
     def _spawn(self, name: str, args: list[str], log_path: Path):
         log_path.parent.mkdir(parents=True, exist_ok=True)
+        if log_path.exists() and log_path.stat().st_size >= 8*1024*1024:
+            log_path.write_text("",encoding="utf-8")
         handle = log_path.open("a", encoding="utf-8", buffering=1)
         self.log_handles[name] = handle
         self.children[name] = subprocess.Popen(args, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT,

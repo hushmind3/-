@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "stockrl-distill"
+name = "continual-trading-agent"
 version = "0.1.0"
 description = "Continual-learning paper trading agent with cost-aware candidate validation"
 requires-python = ">=3.10"

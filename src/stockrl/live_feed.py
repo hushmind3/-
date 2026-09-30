@@ -107,8 +107,9 @@ class AppendOnlyMarketCSV:
     RETAIN_TIMESTAMPS = 512
     REFERENCE_CARRY_ROWS = 20
     DEDUPE_DAYS = 8
-    COMPACT_CSV_BYTES = 64 * 1024 * 1024
-    COMPACT_INDEX_BYTES = 128 * 1024 * 1024
+    # One rolling cache, compacted in place before it consumes the runtime budget.
+    COMPACT_CSV_BYTES = 16 * 1024 * 1024
+    COMPACT_INDEX_BYTES = 16 * 1024 * 1024
 
     def __init__(self, path: str | Path):
         self.path = ensure_project_path(path, "market data")
@@ -228,8 +229,8 @@ class AppendOnlyMarketCSV:
         if self.path.exists():
             current_csv=self.path.stat().st_size
             current_index=sum(p.stat().st_size for p in (self.db_path,wal) if p.exists())
-            self._next_csv_compaction=max(self.COMPACT_CSV_BYTES,int(current_csv*1.5))
-            self._next_index_compaction=max(self.COMPACT_INDEX_BYTES,int(current_index*1.5))
+            self._next_csv_compaction=self.COMPACT_CSV_BYTES
+            self._next_index_compaction=self.COMPACT_INDEX_BYTES
 
     def close(self):
         self.db.close()
@@ -244,6 +245,8 @@ class LiveMarketCollector:
         self.stop_file = ensure_project_path(stop_file, "stop marker") if stop_file else None
         self.errors_path = (ensure_project_path(log_path, "runtime log") if log_path
                             else self.output.with_name("live_feed_errors.jsonl"))
+        if self.errors_path.exists() and self.errors_path.stat().st_size >= 2*1024*1024:
+            self.errors_path.write_text("",encoding="utf-8")
         config = json.loads(self.config_path.read_text(encoding="utf-8"))
         self.instruments = config["instruments"]
         self.index = AppendOnlyMarketCSV(self.output)
@@ -406,6 +409,8 @@ class LiveMarketCollector:
                          "provider": item.get("provider", "yahoo"), "retry_seconds": backoff,
                          "error": f"{type(exc).__name__}: {exc}"}
                 self.errors_path.parent.mkdir(parents=True, exist_ok=True)
+                if self.errors_path.exists() and self.errors_path.stat().st_size >= 2*1024*1024:
+                    self.errors_path.write_text("",encoding="utf-8")
                 with self.errors_path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(event, ensure_ascii=False) + "\n")
                 logging.warning("%s failed (%s); retry in %.0fs", name, exc, backoff)

@@ -74,6 +74,10 @@ def main() -> int:
     env["STOCKRL_WEB_PORT"] = str(PORT)
     env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
     command = [sys.executable, "-m", "stockrl.launch_web", "--server-only"]
+    for log_name in ("web.stdout.log", "web.stderr.log"):
+        log_file=log_dir/log_name
+        if log_file.exists() and log_file.stat().st_size >= 2*1024*1024:
+            log_file.write_text("",encoding="utf-8")
     flags = 0
     if os.name == "nt":
         flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW

@@ -28,4 +28,5 @@ data/cache/
 
 # Runtime databases, market data, logs, snapshots, and account state stay local.
 /runtime/
+/backups/dashboard/.validation-ui-preview/
 *.egg-info/
