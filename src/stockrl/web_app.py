@@ -566,6 +566,8 @@ class Supervisor:
                     - float(position.get("average_cost", 0.0)))
                     for symbol, position in positions.items())
                 candidate_observer_books[currency] = {
+                    "initial_cash": initial_cash,
+                    "cash": float(book.get("cash", 0.0)),
                     "net_pnl": equity - initial_cash,
                     "net_return_rate": ((equity - initial_cash) / initial_cash
                                         if initial_cash else 0.0),
@@ -682,10 +684,14 @@ class Supervisor:
                         - float(position.get("average_cost", 0.0)))
                     for symbol, position in held.items())
                 paper_financials[currency] = {
+                    "initial_cash": float(book.get("initial_cash", 0.0)),
+                    "cash": float(book.get("cash", 0.0)),
                     "net_pnl": float(book.get("net_pnl", 0.0)),
                     "realized_pnl": float(book.get("realized_pnl", 0.0)),
                     "unrealized_pnl": unrealized,
                     "trade_count": int(book.get("trade_count", 0)),
+                    "position_count": sum(1 for position in held.values()
+                                           if float(position.get("quantity", 0.0)) != 0.0),
                     "fees": float(book.get("fees", 0.0)),
                     "sell_tax": float(book.get("sell_tax", 0.0)),
                     "spread": float(book.get("spread", 0.0)),
