@@ -7,7 +7,10 @@
 - feed 파일이 추론 중 계속 갱신돼도, agent가 읽어 처리한 시점까지 cursor를 완료하면 candidate 학습을 허용합니다. 새로 도착한 시세는 다음 읽기에서 이어 처리하며 파일이 멈출 때까지 학습을 막지 않습니다.
 - 성숙한 replay 경험을 5분 경과만으로 삭제하던 경로를 제거했습니다. 미결 outcome 대기는 실시간 우선 정책에 따라 5분이 지나면 만료될 수 있습니다. replay는 설정된 용량 한도로 관리하고 검증이 끝나 승격된 학습 행만 소비합니다.
 - 과거 `train`, `continuous`, `replay` CLI 명령은 추가 checkpoint/replay 파일 생성을 막기 위해 비활성화했습니다. 현재 운영 학습은 8766 paper runtime의 candidate를 갱신합니다.
-- 직전 실측 학습은 replay 16건, batch 4, optimizer 4회로 732초가 걸렸습니다. 학습량이 적어 다음 candidate update부터 batch 4는 유지하고 optimizer를 8회로 늘려 고유 replay 표본 32건을 사용합니다. CUDA peak와 학습시간은 다음 update에서 다시 측정합니다.
+- 직전 live 측정에서는 실행 중 설정이 batch 8, optimizer 16회여서 고유 replay 128건을 학습했습니다. 전체 279.02초, CUDA forward/backward/optimizer 계산 248.14초, step당 평균 15.51초, peak allocated VRAM 4,390,984,704 bytes(약 4.09 GiB)였습니다. 이 설정은 8회 시험보다 큰 별도 회차로 기록합니다.
+- batch 8, optimizer 8회 실측은 고유 replay 64건, 총 240.57초, 실제 CUDA 계산 193.99초, step당 평균 24.25초, peak allocated VRAM 4,434,537,984 bytes(약 4.13 GiB)였습니다. 해당 candidate는 128개 미래 bar paper 검증을 시작합니다.
+- 승급 검증은 candidate 가중치를 CPU RAM에 FP16 동결본으로 복사하고 champion과 각각 별도 paper 계좌를 사용해 같은 128개 이후 bar, 같은 비용·초기자금으로 비교합니다. 검증 snapshot은 bar별 forward 계산 때만 GPU로 잠깐 옮기고, 계산 후 다시 CPU RAM에 둡니다. 검증 중에도 원래 candidate는 replay batch로 계속 학습합니다. snapshot은 추가 checkpoint 파일로 저장하지 않습니다. 프로세스가 재시작되면 그 시험은 무효 처리하고 최신 `candidate.pt`에서 새 128-bar 시험을 시작합니다. 다음 시험은 직전 시험 종료 cursor보다 이후 bar에서만 시작합니다.
+- candidate는 학습 update 사이에도 직전 `candidate.pt` 가중치에서 이어 학습합니다. snapshot이 지면 snapshot만 버리고 candidate와 replay를 유지합니다. snapshot이 이기면 그 동결본을 champion으로 승격하며, 그동안 학습된 candidate 후손은 다음 학습으로 이어갑니다.
 - 코드 변경 후 8766을 재시작해 상태를 확인합니다. 실주문은 OFF이며 champion/candidate 가중치 파일은 수정하지 않습니다. SHA256은 각 검증 구간의 champion 계보를 기록하는 값이며 고정 허용목록이나 승격 잠금으로 쓰지 않습니다.
 ## 프로젝트 방향
 
@@ -20,7 +23,7 @@
 ## 현재 운영 화면과 상태
 
 - 운영 화면은 로컬 `http://127.0.0.1:8766/`에서 제공됩니다. 대시보드는 `/api/status`의 현재 응답을 5초마다 읽어 표시합니다. API 응답과 화면이 다르면 실행 중인 서버가 오래된 소스를 메모리에 읽어 둔 상태일 수 있습니다. 화면 코드를 바꾼 것만으로 실행 중 서버가 자동 갱신되지는 않습니다.
-- 가상 평가·자동 학습 영역은 API가 보고한 검증 진행, 최근 candidate 학습 표본과 optimizer 횟수, 학습 시간·VRAM, candidate/champion 비교 점수, paper 체결 건수를 표시합니다. 점수는 동일한 미학습 비교 구간의 비용 차감 순손익률입니다. 값이 아직 기록되지 않은 경우 0으로 꾸미지 않고 측정 전으로 표시합니다.
+- 가상 평가·자동 학습 영역은 API가 보고한 검증 진행, 최근 candidate 학습 표본과 optimizer 횟수, 학습 시간·VRAM, candidate/champion 비교 점수, paper 체결 건수를 표시합니다. 승급 시험 계좌는 Champion 운영 계좌와 분리되며, 같은 미학습 구간에서 양쪽 시험본의 순손익·체결 수·보유 종목과 수량을 비교합니다. 이와 별도로 Candidate의 최근 완료 가중치를 쓰는 실시간 관찰용 paper 계좌가 있으며, 체결·비용·순손익·보유량·최근 판단을 보여줍니다. 이 관찰 계좌는 학습 보상과 승급 점수에 들어가지 않고 Champion 운영 계좌도 바꾸지 않습니다. 점수는 동일한 미학습 비교 구간의 비용 차감 순손익률입니다. 값이 아직 기록되지 않은 경우 0으로 꾸미지 않고 측정 전으로 표시합니다.
 - 장치 GPU 이용률과 VRAM은 장치 전체 측정값이며 모델 단독 사용량과 구분합니다. candidate 학습의 peak/시작/예약 VRAM은 학습 업데이트 기록이 제공하는 값입니다.
 - 운영 상태와 설정은 실행 중 API 값이 기준입니다. 아래의 과거 실험·복구 기록에 적힌 시각, 수치, 경로, 학습 설정은 해당 기록 당시의 값이며 현재 상태를 뜻하지 않습니다.
 
@@ -286,7 +289,11 @@ python -m pip install -e .
 python -m stockrl web
 ```
 
-또는 파일 탐색기에서 `StockRL Start.bat`을 실행하세요. 운영 대시보드 기준 포트는 `8766`입니다. 실행 상태와 replay는 시장별 프로젝트 runtime 경로(현재 `runtime/markets/korea/live`)에 저장하고 비공개 GitHub에 복구 snapshot으로 보관합니다. 모델 가중치 파일만 Git에서 제외합니다. 창에는 시세/모델 연결, champion, BUY/HOLD/SELL 판단, 가상 포지션, reward, replay 건수, candidate 승격/기각 기록, GPU/VRAM이 표시됩니다.
+또는 파일 탐색기에서 `StockRL Start.bat`을 실행하세요. 운영 대시보드 기준 포트는 `8766`입니다. 실행 상태와 replay는 시장별 프로젝트 runtime 경로(현재 `runtime/markets/korea/live`)에 저장합니다. runtime과 모델 가중치는 로컬 전용이며 GitHub에는 올리지 않습니다. 창에는 시세/모델 연결, champion과 Candidate의 분리된 paper 계좌, BUY/HOLD/SELL 판단, 가상 보유량, reward, replay 건수, candidate 승급/기각 기록, GPU/VRAM이 표시됩니다. Candidate 관찰 계좌는 최신 학습 완료 가중치의 행동 추적용이며 승급 평가에는 쓰지 않습니다.
+
+이후 대시보드 HTML을 수정할 때는 현재본을 `backups/dashboard/`에 백업하고, 이 스냅샷을 비공개 GitHub에 먼저 저장한 뒤 수정합니다. 원격 저장을 확인할 수 없으면 HTML을 고치지 않습니다.
+
+운영 화면의 `서버 재시작` 버튼은 운영 상태를 저장한 뒤 8766 서버와 feed/agent를 재시작합니다. 재시작 중 새 시세 bar가 진행되면 미완료 candidate 검증은 새로 시작할 수 있습니다.
 
 같은 PC의 휴대폰 브라우저에서 보려면 LAN 연결에서 `python -m stockrl web --host 0.0.0.0`로 실행하고 PC의 사설 LAN 주소를 여세요. 현재 웹판은 인증/HTTPS가 없으므로 인터넷에 직접 공개하거나 클라우드에 바로 배포하지 마세요. 클라우드 운영은 인증, HTTPS reverse proxy, persistent volume을 앞에 둬야 합니다. 실시간 데이터는 무료 공개 API의 best-effort 제공이며, 실제 브로커 주문 기능은 웹판에 연결하지 않았습니다.
 
@@ -352,7 +359,7 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - **수정함:** 실행 중인 SQLite 데이터베이스를 파일 복사로 백업하면 WAL에 남은 최신 변경을 놓칠 수 있다. `scripts/snapshot_runtime.py`는 SQLite online backup API를 사용하고, 일반 파일은 복사 중 변화를 확인하며, staging 폴더를 완성한 뒤 snapshot으로 확정한다.
 - 실행 중 snapshot은 `--allow-live`를 명시해야 한다. WAL/SHM 파일과 checkpoint는 따로 복사하지 않는다. 원본 runtime 데이터베이스는 건드리지 않는다.
 - 한국 runtime snapshot `runtime/markets/korea/snapshots/20260929T093208Z`를 확인했다. replay `experiences=4096`, `windows=111`, market index `seen=102597`; SQLite integrity check는 모두 `ok`, 별도 sidecar 복사는 0개다.
-- 활성 `runtime/markets/*/live/**` 파일은 Git에서 제외하고, 복구 snapshot만 커밋 대상으로 둔다. 실제 runtime 파일은 작업 중 그대로 보존했다.
+- 활성 `runtime/markets/*/live/**` 파일과 모델 가중치는 Git에서 제외한다. 과거 Git 이력에 포함된 runtime snapshot은 당시 기록으로 남아 있을 수 있다.
 
 ## P0: agent 지연과 candidate 학습 분리
 

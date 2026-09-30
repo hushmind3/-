@@ -1,12 +1,12 @@
 """Asynchronous online actor-critic over global asset panels.
 
-Market observation and candidate training use separate threads and separate
-model instances. Only a held-out score improvement swaps the champion.
+Market observation, candidate training, and frozen-snapshot validation use
+separate model state. Only a future paper-account score improvement swaps the champion.
 """
 from __future__ import annotations
 
 from collections import deque, OrderedDict
-from contextlib import closing
+from contextlib import closing, nullcontext
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc
@@ -574,7 +574,19 @@ class OnlineGlobalAgent:
             if self.device.type=="cuda": self.champion=self.champion.half()
             self.champion=self.champion.to(self.device).eval()
             save_model(self.champion_path,self.champion,self.cfg,temp_dir=self.state_dir)
-        self.candidate=None; self.optimizer=None; self.steps=0; self.updates=0
+        self.candidate=None; self.validation_candidate=None; self.optimizer=None; self.steps=0; self.updates=0
+        self.candidate_model_lock=threading.RLock()
+        self.candidate_live_inference_lock=threading.Lock()
+        self.candidate_live_model_lock=threading.Lock()
+        self.candidate_live_model=None
+        self.candidate_live_model_version=None
+        self.candidate_live_queue=queue.Queue(maxsize=2)
+        self.candidate_live_rng=random.Random(seed+3)
+        self.candidate_version=0
+        self.last_validated_candidate_version=-1
+        self.validation_restart_needs_fresh_trial=False
+        self.candidate_trained_replay_row_ids=set()
+        self.candidate_lineage_path=self.state_dir/"candidate_lineage.json"
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self.policy_rng=random.Random(seed+1)
         self.validation_policy_rng=random.Random(seed+2)
@@ -587,11 +599,16 @@ class OnlineGlobalAgent:
         self.positions={}
         self.paper_account=PaperAccount(self.state_dir/"paper_account.json",self.fee,self.slippage)
         if not self.paper_account.path.exists(): self.paper_account.save()
-        self.validation_window_bars=64
+        self.candidate_live_account=PaperAccount(
+            self.state_dir/"candidate_observer_account.json",self.fee,self.slippage)
+        self.candidate_live_state_path=self.state_dir/"candidate_observer_state.json"
+        self.candidate_live_thread=threading.Thread(
+            target=self._candidate_live_worker,name="candidate-live-observer",daemon=True)
+        self.validation_window_bars=128
         self.validation_queue=queue.Queue(maxsize=2)
         self.validation_generation=0
         self.validation_queue_invalid_reason=None
-        self.validation_queue_delay_limit_seconds=60.0
+        self.validation_queue_delay_limit_seconds=300.0
         self.validation_queue_thread=threading.Thread(
             target=self._validation_worker,name="candidate-validation",daemon=True)
         self.validation_state_path=self.state_dir/"candidate_validation.json"
@@ -624,6 +641,12 @@ class OnlineGlobalAgent:
                       "unmatched_live_symbol_count":0,
                       "last_update_utc":None,"last_promotion_utc":None,"last_rejection_utc":None,
                       "inference_during_candidate":0,"reward_definition":REWARD_DEFINITION,
+                      "candidate_live_inference_count":0,
+                      "candidate_live_inference_seconds_total":0.0,
+                      "candidate_live_queue_drops":0,
+                      "candidate_live_errors":0,
+                      "candidate_live_status":"waiting_for_candidate",
+                      "candidate_live_last_timestamp":self.candidate_live_account.state.get("last_timestamp"),
                       "champion_live_inference_count":0,
                       "champion_live_inference_seconds_total":0.0,
                       "champion_validation_inference_count":0,
@@ -740,52 +763,53 @@ class OnlineGlobalAgent:
             # A candidate trained with the old, currency-bugged reward cannot
             # be carried into the new policy cycle.
             shutil.copy2(self.champion_path,self.model_dir/"candidate.pt")
+        try:
+            lineage=json.loads(self.candidate_lineage_path.read_text(encoding="utf-8"))
+        except (OSError,json.JSONDecodeError):
+            lineage={}
+        self.candidate_version=max(0,int(lineage.get("candidate_version",self.metrics.get("updates",0))))
+        self.candidate_trained_replay_row_ids=set(
+            int(row_id) for row_id in lineage.get("trained_replay_row_ids",[]))
+        if validation_state.get("status")=="promoted":
+            finalized=set(int(row_id) for row_id in validation_state.get("trained_replay_row_ids",[]))
+            self.candidate_trained_replay_row_ids.difference_update(finalized)
+        candidate_path=self.model_dir/"candidate.pt"
+        if candidate_path.is_file():
+            self.candidate,candidate_cfg=load_model(candidate_path,self.device)
+            if asdict(candidate_cfg)!=asdict(self.cfg):
+                raise ValueError("candidate checkpoint architecture does not match champion")
+            if self.device.type=="cuda":
+                self.candidate=self.candidate.to("cpu")
+            self.metrics["candidate_checkpoint_loaded"]=True
+            self.metrics["candidate_has_learning"]=(
+                self._sha256_file(candidate_path)!=self._sha256_file(self.champion_path))
+            observer=self._new_model_like(self.candidate,torch.device("cpu"))
+            observer.load_state_dict(self.candidate.state_dict())
+            observer.eval(); observer.requires_grad_(False)
+            self.candidate_live_model=observer
+            self.candidate_live_model_version=self.candidate_version
         if validation_state.get("status")=="collecting":
-            if validation_state.get("source_champion_sha256")==self._sha256_file(self.champion_path):
-                candidate_path=self.model_dir/"candidate.pt"
-                if candidate_path.is_file():
-                    self.candidate,self.cfg=load_model(candidate_path,self.device)
-                    self.validation_start_after=validation_state.get("start_after")
-                    self.validation_source_sha256=validation_state.get("source_champion_sha256")
-                    self.validation_bars=int(validation_state.get("bars",0))
-                    self.validation_generation=int(validation_state.get("generation",0))
-                    self.validation_active=True
-                    self.metrics["candidate_stage"]="sequential_paper_validation"
-                    self.metrics["candidate_validation_bars"]=self.validation_bars
-                    champion_ts=self.validation_champion_account.state.get("last_timestamp")
-                    candidate_ts=self.validation_candidate_account.state.get("last_timestamp")
-                    cursor_ts=None
-                    try:
-                        cursor_ts=json.loads((self.state_dir/"live_cursor.json").read_text(
-                            encoding="utf-8")).get("last_timestamp")
-                    except (OSError,json.JSONDecodeError,AttributeError):
-                        pass
-                    account_ts=self.paper_account.state.get("last_timestamp")
-                    latest_cursor=max((str(x) for x in (cursor_ts,account_ts) if x),default=None)
-                    saved_ts=validation_state.get("last_timestamp")
-                    consistent=(champion_ts==candidate_ts==saved_ts
-                                and int(validation_state.get("bars",-1))==self.validation_bars
-                                and ((self.validation_bars==0 and saved_ts is None)
-                                     or (self.validation_bars>0 and saved_ts is not None)))
-                    missed_bars=(latest_cursor is not None and
-                                 (saved_ts is None or latest_cursor>str(saved_ts)))
-                    if not consistent or missed_bars:
-                        self.validation_champion_account.reset()
-                        self.validation_candidate_account.reset()
-                        self.validation_start_after=latest_cursor or saved_ts
-                        self.validation_bars=0
-                        self.validation_generation+=1
-                        validation_state.update({"status":"collecting",
-                            "start_after":self.validation_start_after,"bars":0,
-                            "source_champion_sha256":self.validation_source_sha256,
-                            "generation":self.validation_generation,
-                            "last_timestamp":None,
-                            "reset_reason":"validation ledger timestamps were inconsistent or feed advanced"})
-                        self._atomic_json(validation_state,self.validation_state_path)
-                        self.metrics["candidate_validation_bars"]=0
-            else:
-                validation_state={"status":"discarded","reason":"champion changed during validation"}
-                _atomic_json(validation_state,self.validation_state_path)
+            self.validation_restart_needs_fresh_trial=True
+        else:
+            self.last_validated_candidate_version=int(
+                validation_state.get("source_candidate_version",-1))
+        if validation_state.get("status")=="collecting":
+            # The trial model exists only in RAM. A restart invalidates that
+            # frozen snapshot; keep candidate.pt and its replay untouched and
+            # start a fresh trial from its latest checkpoint after loading feed.
+            validation_state.update({"status":"discarded",
+                "reason":"restart invalidated the in-memory validation snapshot",
+                "discarded_bars":int(validation_state.get("bars",0))})
+            _atomic_json(validation_state,self.validation_state_path)
+            self.validation_champion_account.reset()
+            self.validation_candidate_account.reset()
+            self.validation_bars=0
+            self.validation_active=False
+            self.metrics["candidate_validation_bars"]=0
+            self.metrics["candidate_validation_restart_discarded"]=True
+        self._atomic_json({"version":1,"candidate_version":self.candidate_version,
+            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+            self.candidate_lineage_path)
         self.metrics["candidate_skip_reason"]="새 paper 경험과 검증 시각을 기다리는 중"
         # Older runtime metrics may contain an obsolete held stage; resume the
         # normal candidate cycle without discarding replay or validation state.
@@ -816,10 +840,36 @@ class OnlineGlobalAgent:
                         target[:]=[row for row in target if row.timestamp!=expired]
             target.append(item)
 
-    def _reset_candidate_file(self) -> None:
-        """Keep candidate.pt present but make it match the current champion."""
-        candidate=self.model_dir/"candidate.pt"
-        shutil.copy2(self.champion_path,candidate)
+    def _new_model_like(self, source, device):
+        contextual=bool(getattr(source,"_stockrl_uses_market_context",False))
+        source_dtype=next(source.parameters()).dtype
+        if contextual:
+            from .market_training import ContextConditionedTransformer
+            backbone=GlobalMarketTransformer(self.cfg)
+            if device.type=="cuda" or source_dtype==torch.float16: backbone=backbone.half()
+            model=ContextConditionedTransformer(backbone)
+            model.context_policy.float(); model.context_value.float()
+            model._stockrl_uses_market_context=True
+            model._stockrl_symbol_map=dict(source._stockrl_symbol_map)
+        else:
+            model=GlobalMarketTransformer(self.cfg)
+            if device.type=="cuda" or source_dtype==torch.float16: model=model.half()
+        return model.to(device)
+
+    def _restore_candidate_checkpoint(self):
+        path=self.model_dir/"candidate.pt"
+        if not path.is_file():
+            with self.lock:
+                source=self.champion
+                self.candidate=self._new_model_like(source,self.device)
+                self.candidate.load_state_dict(source.state_dict())
+        else:
+            candidate,cfg=load_model(path,self.device)
+            if asdict(cfg)!=asdict(self.cfg):
+                raise ValueError("candidate checkpoint architecture does not match champion")
+            self.candidate=candidate
+        if self.device.type=="cuda": self.candidate.to("cpu")
+        self.metrics["candidate_checkpoint_loaded"]=True
 
     def _target_index(self,panel:GlobalMarketPanel,start:int,symbol:int)->int|None:
         future=np.flatnonzero(panel.observed[start+1:,symbol])+start+1
@@ -832,11 +882,123 @@ class OnlineGlobalAgent:
 
     def start(self):
         if self.validation_queue_thread.ident is None: self.validation_queue_thread.start()
+        if self.candidate_live_thread.ident is None: self.candidate_live_thread.start()
         if self.thread.ident is None: self.thread.start()
     def close(self):
         self.stop.set()
         if self.thread.is_alive(): self.thread.join(timeout=300)
         if self.validation_queue_thread.is_alive(): self.validation_queue_thread.join(timeout=300)
+        if self.candidate_live_thread.is_alive(): self.candidate_live_thread.join(timeout=300)
+
+    def _queue_candidate_live_observation(self,panel,index,paper_enabled):
+        item=(panel,int(index),bool(paper_enabled))
+        try:
+            self.candidate_live_queue.put_nowait(item)
+        except queue.Full:
+            try:
+                self.candidate_live_queue.get_nowait()
+                self.candidate_live_queue.task_done()
+                self.metrics["candidate_live_queue_drops"]=(
+                    int(self.metrics.get("candidate_live_queue_drops",0))+1)
+            except queue.Empty:
+                pass
+            try: self.candidate_live_queue.put_nowait(item)
+            except queue.Full: pass
+
+    def _candidate_live_worker(self):
+        """Run an independent observational paper account for current candidate weights."""
+        while not self.stop.is_set():
+            try:
+                panel,index,paper_enabled=self.candidate_live_queue.get(timeout=.25)
+            except queue.Empty:
+                continue
+            try:
+                stamp=str(panel.dates[index])
+                latest=str(self.current_market_timestamp or stamp)
+                # If a newer bar is already queued, skip stale decisions and
+                # keep the observer account close to the live market.
+                if stamp<latest and not self.candidate_live_queue.empty():
+                    self.metrics["candidate_live_queue_drops"]=(
+                        int(self.metrics.get("candidate_live_queue_drops",0))+1)
+                    continue
+                account=self.candidate_live_account
+                account.process_bar(panel,index,paper_enabled)
+                if self.candidate_live_model is None:
+                    self.metrics["candidate_live_status"]="waiting_for_candidate_update"
+                    account.save()
+                    self._atomic_json({"status":self.metrics["candidate_live_status"],
+                        "last_timestamp":stamp,"candidate_version":self.candidate_version,
+                        "last_decisions":[]},self.candidate_live_state_path)
+                    self.metrics["candidate_live_last_timestamp"]=stamp
+                    continue
+                pstate,astate=account.model_inputs(panel,index)
+                window=self._window(panel,index)
+                started=time.perf_counter()
+                with self.candidate_live_model_lock:
+                    model=self.candidate_live_model
+                    if model is None: raise RuntimeError("candidate observer snapshot is not loaded")
+                    originally_offloaded=(self.device.type=="cuda" and
+                        next(model.parameters()).device.type=="cpu")
+                    with self.candidate_live_inference_lock:
+                        if originally_offloaded: model.to(self.device)
+                        device=next(model.parameters()).device
+                        was_training=model.training
+                        model.eval()
+                        try:
+                            args=[value.to(device) for value in window]
+                            args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+                            with torch.inference_mode():
+                                if getattr(model,"_stockrl_uses_market_context",False):
+                                    pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=device)
+                                    at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=device)
+                                    logits,_,allocation=model(*args,portfolio_state=pt,
+                                        account_state=at,return_allocation=True)
+                                    allocation=allocation[0].float().cpu().numpy()
+                                else:
+                                    logits,_=model(*args); allocation=None
+                                model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                                probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
+                                    +PAPER_EXPLORATION_EPSILON/3.0)
+                            if device.type=="cuda": torch.cuda.synchronize(device)
+                        finally:
+                            model.train(was_training)
+                            if originally_offloaded: model.to("cpu")
+                elapsed=time.perf_counter()-started
+                actions=self._sample_actions(probabilities,
+                    [self.candidate_live_rng.random() for _ in range(len(probabilities))])
+                account.queue_decisions(panel,index,probabilities,paper_enabled,
+                    allocation=allocation,actions=actions)
+                account.save()
+                decisions=[]
+                for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions)):
+                    if not panel.observed[index,symbol_index]: continue
+                    market,asset=panel.groups[symbol]
+                    if asset in ("equity","etf"):
+                        decisions.append({"symbol":symbol,"action":ACTION_NAMES[action]})
+                self.metrics["candidate_live_inference_count"]=(
+                    int(self.metrics.get("candidate_live_inference_count",0))+1)
+                self.metrics["candidate_live_inference_seconds_total"]=(
+                    float(self.metrics.get("candidate_live_inference_seconds_total",0.0))+elapsed)
+                self.metrics["candidate_live_status"]=("training_and_observing"
+                    if self.metrics.get("candidate_training") else "observing")
+                self.metrics["candidate_live_last_timestamp"]=stamp
+                self._atomic_json({"status":self.metrics["candidate_live_status"],
+                    "last_timestamp":stamp,"candidate_version":self.candidate_live_model_version,
+                    "candidate_training":bool(self.metrics.get("candidate_training")),
+                    "last_inference_seconds":elapsed,"inference_count":self.metrics[
+                        "candidate_live_inference_count"],"last_decisions":decisions},
+                    self.candidate_live_state_path)
+            except Exception as exc:
+                self.metrics["candidate_live_errors"]=(
+                    int(self.metrics.get("candidate_live_errors",0))+1)
+                self.metrics["candidate_live_status"]="error"
+                self.metrics["candidate_live_error"]=f"{type(exc).__name__}: {exc}"[:500]
+                self._atomic_json({"status":"error","last_timestamp":stamp,
+                    "candidate_version":self.candidate_live_model_version,
+                    "error":self.metrics["candidate_live_error"],"last_decisions":[]},
+                    self.candidate_live_state_path)
+            finally:
+                self.candidate_live_queue.task_done()
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
         args=[x.to(self.device) for x in self._window(panel,index)]
@@ -1093,6 +1255,13 @@ class OnlineGlobalAgent:
                         # output entirely whenever their venue was closed.
                         recent_timestamps=4096, active_stale_seconds=604800,
                         raw_frame=raw_frame)
+                    if (self.candidate is not None and not self.validation_active
+                            and not self.metrics.get("candidate_training")
+                            and self.metrics.get("candidate_has_learning")
+                            and (self.validation_restart_needs_fresh_trial or
+                                 self.candidate_version>self.last_validated_candidate_version)):
+                        self._begin_candidate_validation(
+                            self.candidate,start_after=str(panel.dates[-1]))
                 except (OSError,ValueError) as exc:
                     # A producer may be in the middle of appending a CSV batch.
                     # Expose a stable error per file version; otherwise an
@@ -1314,6 +1483,7 @@ class OnlineGlobalAgent:
                     self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
                     self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
+                    self._queue_candidate_live_observation(panel,ti,paper_enabled)
                     self._collect_candidate_validation(panel,ti)
                     import pandas as pd
                     if rows:
@@ -1544,7 +1714,7 @@ class OnlineGlobalAgent:
             if self.replay.trainable_count()<self.min_replay:
                 self.metrics["candidate_skip_reason"] = f"학습 가능 경험 {self.replay.trainable_count()}/{self.min_replay}건 대기"
                 continue
-            if self.candidate is not None:
+            if self.metrics.get("candidate_training"):
                 self.metrics["candidate_skip_reason"] = (
                     f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기"
                     if self.validation_active else "candidate 학습 진행 중")
@@ -1560,7 +1730,7 @@ class OnlineGlobalAgent:
             try:
                 self._train_candidate()
             except Exception as exc:
-                self.metrics["candidate_training"]=False; self.candidate=None
+                self.metrics["candidate_training"]=False
                 self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
                 self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"[:1200]
                 exc.__traceback__=None
@@ -1568,7 +1738,7 @@ class OnlineGlobalAgent:
                 self._schedule_candidate_retry()
                 self._release_cuda_cache()
                 try:
-                    self._reset_candidate_file()
+                    self._restore_candidate_checkpoint()
                     self._write_metrics()
                 except Exception: pass
 
@@ -1624,24 +1794,12 @@ class OnlineGlobalAgent:
         self.metrics["last_candidate_peak_reserved_bytes"]=None
         with self.lock: source_champion=self.champion
         candidate_path=self.model_dir/"candidate.pt"
-        self.candidate=None
-        if getattr(source_champion,"_stockrl_uses_market_context",False):
-            from .market_training import ContextConditionedTransformer
-            backbone=GlobalMarketTransformer(self.cfg)
-            if self.device.type=="cuda": backbone=backbone.half()
-            self.candidate=ContextConditionedTransformer(backbone)
-            self.candidate.context_policy.float(); self.candidate.context_value.float()
-            self.candidate._stockrl_uses_market_context=True
-            self.candidate._stockrl_symbol_map=source_champion._stockrl_symbol_map
-        else:
-            self.candidate=GlobalMarketTransformer(self.cfg)
-            if self.device.type=="cuda": self.candidate=self.candidate.half()
-        self.candidate=self.candidate.to(self.device)
-        # Every candidate starts from the current champion. A rejected candidate
-        # is reset and is never the starting point of the next attempt.
-        self.candidate.load_state_dict(source_champion.state_dict())
-        original=self.champion
-        candidate=self.candidate.train()
+        if self.candidate is None:
+            self._restore_candidate_checkpoint()
+        with self.candidate_model_lock:
+            self.candidate=self.candidate.to(self.device)
+            candidate=self.candidate.train()
+        original=source_champion
         trainable_parameters=self._configure_candidate_trainables(candidate)
         opt=torch.optim.AdamW(
             trainable_parameters,lr=self.lr,weight_decay=.01,
@@ -1743,7 +1901,10 @@ class OnlineGlobalAgent:
                 del args,pstate,astate,logits,values,allocations,chosen,predicted,dist,loss
             if not valid_samples:
                 continue
-            nn.utils.clip_grad_norm_(candidate.parameters(),1.0); opt.step()
+            nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
+            with self.candidate_model_lock:
+                opt.step()
+                if self.device.type=="cuda": torch.cuda.synchronize(self.device)
             if self.device.type=="cuda":
                 compute_end.record()
             else:
@@ -1785,8 +1946,8 @@ class OnlineGlobalAgent:
             self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
             self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
             self._schedule_candidate_retry()
-            self.candidate=None
-            self._reset_candidate_file()
+            self.candidate.eval()
+            if self.device.type=="cuda": self.candidate.to("cpu")
             self._write_metrics()
             del candidate,opt
             self._release_cuda_cache()
@@ -1802,8 +1963,7 @@ class OnlineGlobalAgent:
                             "candidate_score":None,"champion_score":None})
             self.metrics["candidate_gate_history"]=history[-20:]
             self.metrics["candidate_training"]=False
-            self.candidate=None
-            self._reset_candidate_file()
+            self._restore_candidate_checkpoint()
             self._write_metrics()
             del candidate,opt
             self._release_cuda_cache()
@@ -1818,10 +1978,28 @@ class OnlineGlobalAgent:
         # omit it from the artifact so evaluation/recovery only loads weights.
         trained_replay_row_ids=self.replay.row_ids_for(used_experiences)
         save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
-        self._begin_candidate_validation(candidate,trained_replay_row_ids)
-        # Keep replay rows available through validation. A rejected or
-        # interrupted candidate must not erase the only copy of its experience.
-        self.metrics["candidate_replay_rows_held_for_validation"]=len(trained_replay_row_ids)
+        with self.candidate_model_lock:
+            self.candidate_version+=len(elapsed)
+            self.candidate_trained_replay_row_ids.update(int(x) for x in trained_replay_row_ids)
+            self._atomic_json({"version":1,"candidate_version":self.candidate_version,
+                "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+                self.candidate_lineage_path)
+            observer=self._new_model_like(candidate,torch.device("cpu"))
+            observer.load_state_dict(candidate.state_dict())
+            observer.eval(); observer.requires_grad_(False)
+            with self.candidate_live_model_lock:
+                self.candidate_live_model=observer
+                self.candidate_live_model_version=self.candidate_version
+        self.metrics["candidate_live_status"]="candidate_updated"
+        self.metrics["candidate_has_learning"]=True
+        self.metrics["candidate_training"]=False
+        if not self.validation_active:
+            self._begin_candidate_validation(candidate)
+        # Keep the most recently trained candidate on CPU between update
+        # batches. The frozen trial copy remains independent in memory.
+        if self.device.type=="cuda": self.candidate.to("cpu")
+        self.metrics["candidate_replay_rows_held_for_validation"]=len(
+            getattr(self,"validation_trained_replay_row_ids",self.candidate_trained_replay_row_ids))
         self.metrics["candidate_replay_rows_consumed"]=0
         self.metrics["candidate_replay_rows_audit_status"]="tracked"
         self.last_train_replay_size=len(self.replay)
@@ -1830,15 +2008,31 @@ class OnlineGlobalAgent:
             0,int(self.metrics.get("paper_experiences_since_candidate",0))-trigger_experience_count)
         self.metrics["candidate_replay_since_last_update"]=int(
             self.metrics["paper_experiences_since_candidate"])
-        self.metrics["candidate_training"]=False
-        self.metrics["candidate_stage"]="sequential_paper_validation"
+        self.metrics["candidate_stage"]=("training_and_validation" if self.validation_active else
+                                          "sequential_paper_validation")
         self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
 
-    def _begin_candidate_validation(self,candidate,trained_replay_row_ids=None):
-        """Start a fresh, future-only comparison in two identical paper ledgers."""
+    def _begin_candidate_validation(self,candidate,trained_replay_row_ids=None,start_after=None):
+        """Freeze the current candidate in RAM and start a future-only trial."""
+        if self.validation_active:
+            self.metrics["candidate_validation_deferred"]=True
+            return False
+        if self.metrics.get("candidate_training"):
+            self.metrics["candidate_validation_deferred"]=True
+            return False
+        if candidate is None:
+            return False
+        with self.candidate_model_lock:
+            frozen=self._new_model_like(candidate,torch.device("cpu"))
+            frozen.load_state_dict(candidate.state_dict())
+            frozen.eval()
+            frozen.requires_grad_(False)
+            self.validation_candidate=frozen
+            if not self.metrics.get("candidate_training") and self.device.type=="cuda":
+                candidate.to("cpu")
         self.validation_generation+=1
         generation=self.validation_generation
         self.validation_queue_invalid_reason=None
@@ -1850,23 +2044,55 @@ class OnlineGlobalAgent:
                 break
         self.validation_champion_account.reset()
         self.validation_candidate_account.reset()
-        self.validation_start_after=(self.current_market_timestamp or
-                                     self.metrics.get("last_market_timestamp"))
+        cursor_path=self.state_dir/"live_cursor.json"
+        cursor_timestamp=None
+        try:
+            cursor_timestamp=json.loads(cursor_path.read_text(encoding="utf-8")).get("last_timestamp")
+        except (OSError,json.JSONDecodeError,AttributeError):
+            pass
+        candidates=[str(x) for x in (self.current_market_timestamp,
+            self.metrics.get("last_market_timestamp"),cursor_timestamp) if x]
+        self.validation_start_after=(str(start_after) if start_after is not None
+                                     else max(candidates,default=None))
         self.validation_bars=0
         self.validation_active=True
-        self.candidate=candidate.eval()
+        self.validation_restart_needs_fresh_trial=False
+        self.last_validated_candidate_version=self.candidate_version
+        self.validation_trained_replay_row_ids=sorted(
+            int(x) for x in self.candidate_trained_replay_row_ids)
         source_sha=self._sha256_file(self.champion_path)
         self.validation_source_sha256=source_sha
         self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
                            "bars":0,"source_champion_sha256":source_sha,
-                           "trained_replay_row_ids":sorted(set(trained_replay_row_ids or [])),
+                           "source_candidate_version":self.candidate_version,
+                           "trained_replay_row_ids":self.validation_trained_replay_row_ids,
                            "replay_rows_finalized":False,
                            "generation":generation,
                            "started_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())},
                           self.validation_state_path)
+        self.metrics["candidate_validation_active"]=True
+        self.metrics["candidate_validation_snapshot_version"]=self.candidate_version
+        self.metrics["candidate_validation_snapshot_created_utc"]=time.strftime(
+            "%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+        self.metrics["candidate_validation_start_after"]=self.validation_start_after
+        self.metrics["candidate_validation_deferred"]=False
+        # These counters describe the new in-memory trial. Do not surface
+        # queue failures or inference totals from a discarded pre-restart run.
+        self.metrics["candidate_validation_error"]=None
+        self.metrics["candidate_validation_queue_overflows"]=0
+        self.metrics["candidate_validation_queue_depth"]=0
+        self.metrics["candidate_validation_queue_max_depth"]=0
+        self.metrics["candidate_validation_queue_delay_seconds"]=0.0
+        self.metrics["candidate_validation_inference_count"]=0
+        self.metrics["candidate_validation_inference_seconds_total"]=0.0
+        self.metrics["champion_validation_inference_count"]=0
+        self.metrics["champion_validation_inference_seconds_total"]=0.0
+        self.metrics["candidate_replay_rows_held_for_validation"]=len(
+            self.validation_trained_replay_row_ids)
         self.metrics["candidate_stage"]="sequential_paper_validation"
         self.metrics["candidate_validation_bars"]=0
         self.metrics["promotion_blocked_reason"]=None
+        return True
 
     @staticmethod
     def _atomic_json(value,path):
@@ -1876,7 +2102,7 @@ class OnlineGlobalAgent:
         os.replace(temporary,path)
 
     def _collect_candidate_validation(self,panel,index):
-        if not self.validation_active or self.candidate is None:
+        if not self.validation_active or self.validation_candidate is None:
             return
         stamp=str(panel.dates[index])
         if self.validation_start_after and stamp<=str(self.validation_start_after):
@@ -1923,7 +2149,7 @@ class OnlineGlobalAgent:
                 self.metrics["candidate_validation_queue_depth"]=self.validation_queue.qsize()
 
     def _process_candidate_validation(self,panel,index,generation,stamp):
-        if generation!=self.validation_generation or not self.validation_active or self.candidate is None:
+        if generation!=self.validation_generation or not self.validation_active or self.validation_candidate is None:
             return
         champ_account=self.validation_champion_account
         cand_account=self.validation_candidate_account
@@ -1949,29 +2175,48 @@ class OnlineGlobalAgent:
             champ_account.process_bar(panel,index,True)
             cand_account.process_bar(panel,index,True)
             window=self._window(panel,index)
-            args=[x.to(self.device) for x in window]
+            args=window
             with self.lock:
                 champion=self.champion
-            accounts=((champion,champ_account),(self.candidate,cand_account))
-            for model,account in accounts:
-                pstate,astate=account.model_inputs(panel,index)
-                model_args=list(args)
-                model_args[0]=model_args[0].to(dtype=next(model.parameters()).dtype)
-                inference_started=time.perf_counter()
-                with torch.inference_mode():
-                    if getattr(model,"_stockrl_uses_market_context",False):
-                        pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=self.device)
-                        at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=self.device)
-                        logits,_,allocation=model(*model_args,portfolio_state=pt,
-                                                  account_state=at,return_allocation=True)
-                        allocation=allocation[0].float().cpu().numpy()
-                    else:
-                        logits,_=model(*model_args); allocation=None
-                    model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
-                    probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
-                                   +PAPER_EXPLORATION_EPSILON/3.0)
-                elapsed=time.perf_counter()-inference_started
-                prefix=("champion" if model is champion else "candidate")+"_validation_inference_"
+            validation_candidate=self.validation_candidate
+            accounts=(("champion",champion,champ_account),
+                      ("candidate",validation_candidate,cand_account))
+            for model_name,model,account in accounts:
+                # Candidate observation and frozen candidate validation share
+                # one GPU inference slot so they cannot duplicate the 0.5B
+                # model allocation at the same time.
+                inference_lock=(self.candidate_live_inference_lock
+                                if model_name=="candidate" else nullcontext())
+                with inference_lock:
+                    snapshot_offloaded=(model_name=="candidate" and self.device.type=="cuda"
+                                        and next(model.parameters()).device.type=="cpu")
+                    if snapshot_offloaded:
+                        model.to(self.device)
+                    model_device=next(model.parameters()).device
+                    pstate,astate=account.model_inputs(panel,index)
+                    model_args=[x.to(model_device) for x in args]
+                    model_args[0]=model_args[0].to(dtype=next(model.parameters()).dtype)
+                    inference_started=time.perf_counter()
+                    try:
+                        if model_device.type=="cuda": torch.cuda.synchronize(model_device)
+                        with torch.inference_mode():
+                            if getattr(model,"_stockrl_uses_market_context",False):
+                                pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=model_device)
+                                at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=model_device)
+                                logits,_,allocation=model(*model_args,portfolio_state=pt,
+                                                          account_state=at,return_allocation=True)
+                                allocation=allocation[0].float().cpu().numpy()
+                            else:
+                                logits,_=model(*model_args); allocation=None
+                            model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
+                            probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
+                                           +PAPER_EXPLORATION_EPSILON/3.0)
+                        if model_device.type=="cuda": torch.cuda.synchronize(model_device)
+                        elapsed=time.perf_counter()-inference_started
+                    finally:
+                        if snapshot_offloaded:
+                            model.to("cpu")
+                prefix=model_name+"_validation_inference_"
                 self.metrics[prefix+"count"]=(int(self.metrics.get(prefix+"count",0))+1)
                 self.metrics[prefix+"seconds_total"]=(
                     float(self.metrics.get(prefix+"seconds_total",0.0))+elapsed)
@@ -2002,14 +2247,26 @@ class OnlineGlobalAgent:
             self._finish_candidate_validation(*completion_scores,None)
 
     def _finish_candidate_validation(self,candidate_score,champion_score,error):
-        candidate=self.candidate
+        candidate=self.validation_candidate
         source_sha=self._sha256_file(self.champion_path)
+        state={}
+        try: state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+        except (OSError,json.JSONDecodeError): pass
+        snapshot_version=int(state.get("source_candidate_version",
+                                       self.metrics.get("candidate_validation_snapshot_version",0)))
+        trained_replay_row_ids=state.get("trained_replay_row_ids",[])
         if error is None and self.validation_bars<self.validation_window_bars:
             error="sequential paper validation window is incomplete"
+        if error is None and state.get("source_champion_sha256")!=source_sha:
+            error="champion changed during candidate validation"
+        promoted=False
         if error is None:
-            state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
-            if state.get("source_champion_sha256")!=source_sha:
-                error="champion changed during candidate validation"
+            try:
+                promoted=self._commit_candidate(candidate,float(candidate_score),float(champion_score),
+                    self.validation_bars,source_sha,trained_replay_row_ids,
+                    candidate_version=snapshot_version)
+            except Exception as exc:
+                error=f"{type(exc).__name__}: {exc}"
         if error is not None:
             self.metrics["promotion_blocked_reason"]=error
             self.metrics["candidate_validation_error"]=error
@@ -2017,83 +2274,54 @@ class OnlineGlobalAgent:
             from datetime import datetime,timezone
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
             self.metrics["last_candidate_promoted"]=False
-            self._reset_candidate_file()
-            self.candidate=None
-            self.validation_active=False
-            prior_state={}
-            try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
-            except (OSError,json.JSONDecodeError): pass
-            self.metrics["candidate_replay_rows_held_for_validation"]=0
-            self.metrics["candidate_replay_rows_consumed"]=(
-                0 if "trained_replay_row_ids" in prior_state else None)
-            self.metrics["candidate_replay_rows_audit_status"]=(
-                "tracked" if "trained_replay_row_ids" in prior_state else "legacy_untracked")
-            self._atomic_json({**prior_state,"status":"rejected","reason":error,
+            self._atomic_json({**state,"status":"rejected","reason":error,
                                "bars":self.validation_bars,
                                "source_champion_sha256":source_sha,
                                "replay_rows_consumed":0,
                                "replay_rows_finalized":True},self.validation_state_path)
         else:
-            state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
-            try:
-                promoted=self._commit_candidate(candidate,float(candidate_score),float(champion_score),
-                                                self.validation_bars,source_sha,
-                                                state.get("trained_replay_row_ids",[]))
-            except Exception as exc:
-                error=f"{type(exc).__name__}: {exc}"
-                self.metrics["promotion_blocked_reason"]=error
-                self.metrics["candidate_validation_error"]=error
-                self.metrics["rejections"]+=1
-                self.metrics["last_candidate_promoted"]=False
-                self._reset_candidate_file()
-                self.candidate=None
-                from datetime import datetime,timezone
-                self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
-                prior_state={}
-                try: prior_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
-                except (OSError,json.JSONDecodeError): pass
-                self.metrics["candidate_replay_rows_held_for_validation"]=0
-                self.metrics["candidate_replay_rows_consumed"]=(
-                    0 if "trained_replay_row_ids" in prior_state else None)
-                self.metrics["candidate_replay_rows_audit_status"]=(
-                    "tracked" if "trained_replay_row_ids" in prior_state else "legacy_untracked")
-                self._atomic_json({**prior_state,"status":"rejected","reason":error,
-                                   "bars":self.validation_bars,
-                                   "source_champion_sha256":source_sha,
-                                   "replay_rows_consumed":0,
-                                   "replay_rows_finalized":True},self.validation_state_path)
+            if promoted:
+                try:
+                    consumed=self.replay.discard_row_ids(trained_replay_row_ids)
+                    with self.candidate_model_lock:
+                        self.candidate_trained_replay_row_ids.difference_update(
+                            int(row_id) for row_id in trained_replay_row_ids)
+                        self._atomic_json({"version":1,"candidate_version":self.candidate_version,
+                            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+                            self.candidate_lineage_path)
+                    self.metrics["candidate_replay_rows_consumed"]=consumed
+                    self.metrics["candidate_replay_cleanup_pending"]=False
+                    state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
+                    state["replay_rows_consumed"]=consumed
+                    state["replay_rows_finalized"]=True
+                    self._atomic_json(state,self.validation_state_path)
+                except Exception as exc:
+                    self.metrics["candidate_replay_cleanup_pending"]=True
+                    self.metrics["last_candidate_replay_cleanup_error"]=f"{type(exc).__name__}: {exc}"[:1200]
             else:
-                if promoted:
-                    try:
-                        consumed=self.replay.discard_row_ids(state.get("trained_replay_row_ids",[]))
-                        self.metrics["candidate_replay_rows_consumed"]=consumed
-                        self.metrics["candidate_replay_rows_held_for_validation"]=0
-                        self.metrics["candidate_replay_rows_audit_status"]="tracked"
-                        self.metrics["candidate_replay_cleanup_pending"]=False
-                        state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
-                        state["replay_rows_consumed"]=consumed
-                        state["replay_rows_finalized"]=True
-                        self._atomic_json(state,self.validation_state_path)
-                    except Exception as exc:
-                        # The champion and validation state already say promoted.
-                        # Leave the rows and recovery marker intact for next start.
-                        self.metrics["candidate_replay_cleanup_pending"]=True
-                        self.metrics["last_candidate_replay_cleanup_error"]=f"{type(exc).__name__}: {exc}"[:1200]
-                else:
-                    self.metrics["candidate_replay_rows_consumed"]=0
-                    self.metrics["candidate_replay_rows_held_for_validation"]=0
-                    self.metrics["candidate_replay_rows_audit_status"]="tracked"
-            self.validation_active=False
-        self.metrics["candidate_training"]=False
-        self.metrics["candidate_stage"]="waiting"
+                self.metrics["candidate_replay_rows_consumed"]=0
+        self.validation_active=False
+        self.validation_candidate=None
+        self.last_validated_candidate_version=snapshot_version
+        self.metrics["candidate_validation_active"]=False
+        self.metrics["candidate_validation_bars"]=self.validation_bars
+        self.metrics["candidate_replay_rows_held_for_validation"]=0
+        self.metrics["candidate_replay_rows_audit_status"]="tracked"
+        self.metrics["candidate_stage"]=("training" if self.metrics.get("candidate_training") else "waiting")
+        self.metrics["candidate_has_learning"]=(
+            self.candidate_version>snapshot_version if promoted else
+            bool(self.metrics.get("candidate_has_learning",False)))
         self.metrics["candidate_skip_reason"]=None
         self.validation_generation+=1
         self._write_metrics()
         del candidate
         self._release_cuda_cache()
+        if self.candidate is not None and self.candidate_version>snapshot_version:
+            self._begin_candidate_validation(self.candidate)
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
-                          source_champion_sha256:str,trained_replay_row_ids=None)->bool:
+                          source_champion_sha256:str,trained_replay_row_ids=None,
+                          candidate_version:int|None=None)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
         promote=(validation_bars>=self.validation_window_bars
                  and self._sha256_file(self.champion_path)==source_champion_sha256
@@ -2104,9 +2332,10 @@ class OnlineGlobalAgent:
         if promote:
             staged=self.state_dir/"champion.next"
             save_model(staged,candidate,self.cfg,step=self.steps,temp_dir=self.state_dir)
+            promoted_model,_=load_model(staged,self.device)
             promoted_sha=self._sha256_file(staged).upper()
             baseline_next=self.state_dir/"promotion_baseline.next"
-            self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed sequential paper gate"},
+            self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed 128-bar frozen-snapshot paper gate"},
                               baseline_next)
             with self.lock:
                 if self._sha256_file(self.champion_path)!=source_champion_sha256:
@@ -2114,14 +2343,11 @@ class OnlineGlobalAgent:
                 os.replace(staged,self.champion_path)
                 os.replace(baseline_next,self.promotion_baseline_path)
                 self.promotion_baseline_sha256=promoted_sha
-                self.champion=candidate.eval(); self.metrics["promotions"]+=1
+                self.champion=promoted_model.eval(); self.metrics["promotions"]+=1
                 from datetime import datetime, timezone
                 self.metrics["last_promotion_utc"]=datetime.now(timezone.utc).isoformat()
-            self.candidate=None
         else:
             self.metrics["rejections"]+=1
-            self._reset_candidate_file()
-            self.candidate=None
             from datetime import datetime, timezone
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
         self.metrics["promotion_blocked_reason"]=None
@@ -2136,6 +2362,7 @@ class OnlineGlobalAgent:
         self._atomic_json({"status":"promoted" if promote else "rejected",
                            "bars":validation_bars,"candidate_score":float(score_new),
                            "champion_score":float(score_old),"applied":promote,
+                           "source_candidate_version":candidate_version,
                            "trained_replay_row_ids":sorted(set(trained_replay_row_ids or [])),
                            "replay_rows_consumed":0,
                            "replay_rows_finalized":not promote,
@@ -2146,6 +2373,8 @@ class OnlineGlobalAgent:
 
     def _write_metrics(self):
         proc=psutil.Process(); metrics=dict(self.metrics)
+        validation_snapshot_bytes=(sum(p.numel()*p.element_size()
+            for p in self.validation_candidate.parameters()) if self.validation_candidate is not None else 0)
         metrics.update({"parameters":parameter_count(self.champion),"device":str(self.device),
           "replay_persistence":"bounded_sqlite_runtime",
           "promotion_score_mode":"sequential_paper_account_net_return",
@@ -2166,8 +2395,18 @@ class OnlineGlobalAgent:
           "candidate_validation_queue_delay_limit_seconds":self.validation_queue_delay_limit_seconds,
           "candidate_replay_since_last_update":int(self.metrics.get("candidate_replay_since_last_update",0)),
           "last_train_replay_size":self.last_train_replay_size,
-          "candidate_stage":("sequential_paper_validation" if self.validation_active else
+          "candidate_stage":("training_and_validation" if self.validation_active and
+                             self.metrics.get("candidate_training") else
+                             "sequential_paper_validation" if self.validation_active else
                              "training" if self.metrics.get("candidate_training") else "waiting"),
+          "candidate_validation_active":bool(self.validation_active),
+          "candidate_validation_snapshot_version":self.metrics.get("candidate_validation_snapshot_version"),
+          "candidate_validation_snapshot_device":(
+              str(next(self.validation_candidate.parameters()).device)
+              if self.validation_candidate is not None else None),
+          "candidate_validation_snapshot_parameter_bytes":validation_snapshot_bytes,
+          "candidate_model_version":self.candidate_version,
+          "candidate_has_learning":bool(self.metrics.get("candidate_has_learning",False)),
           "champion_model_parameter_bytes":sum(p.numel()*p.element_size() for p in self.champion.parameters()),
           "last_candidate_peak_extra_allocated_bytes":(
               max(0,int(self.metrics["last_candidate_peak_allocated_bytes"])-

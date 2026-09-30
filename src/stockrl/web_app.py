@@ -548,6 +548,120 @@ class Supervisor:
                 for symbol, row in latest_decisions.items()
             }
             paper_account = _json(state / "paper_account.json")
+            candidate_observer_account = _json(state / "candidate_observer_account.json")
+            candidate_observer_state = _json(state / "candidate_observer_state.json")
+            candidate_observer_books = {}
+            for currency, book in candidate_observer_account.get("books", {}).items():
+                positions = book.get("positions", {})
+                marks = book.get("marks", {})
+                holdings_value = sum(float(position.get("quantity", 0.0)) * float(
+                    marks.get(symbol, position.get("average_cost", 0.0)))
+                    for symbol, position in positions.items())
+                initial_cash = float(book.get("initial_cash", 0.0))
+                equity = float(book.get("cash", 0.0)) + holdings_value
+                unrealized = sum(float(position.get("quantity", 0.0)) * (
+                    float(marks.get(symbol, position.get("average_cost", 0.0)))
+                    - float(position.get("average_cost", 0.0)))
+                    for symbol, position in positions.items())
+                candidate_observer_books[currency] = {
+                    "net_pnl": equity - initial_cash,
+                    "net_return_rate": ((equity - initial_cash) / initial_cash
+                                        if initial_cash else 0.0),
+                    "realized_pnl": float(book.get("realized_pnl", 0.0)),
+                    "unrealized_pnl": unrealized,
+                    "costs": sum(float(book.get(key, 0.0)) for key in
+                                 ("fees", "sell_tax", "spread", "slippage")),
+                    "trade_count": int(book.get("trade_count", 0)),
+                    "position_count": sum(1 for position in positions.values()
+                                          if float(position.get("quantity", 0.0)) != 0.0),
+                    "positions": [{"symbol": symbol,
+                                   "quantity": float(position.get("quantity", 0.0)),
+                                   "average_cost": float(position.get("average_cost", 0.0)),
+                                   "mark": float(marks.get(symbol, position.get("average_cost", 0.0)))}
+                                  for symbol, position in sorted(positions.items())
+                                  if float(position.get("quantity", 0.0)) != 0.0],
+                }
+            candidate_live_account = {
+                "available": (bool(candidate_observer_books) and
+                    candidate_observer_state.get("status") in
+                    ("observing", "training_and_observing")),
+                "status": candidate_observer_state.get("status", "waiting_for_candidate_update"),
+                "last_timestamp": candidate_observer_state.get("last_timestamp",
+                    candidate_observer_account.get("last_timestamp")),
+                "candidate_version": candidate_observer_state.get("candidate_version"),
+                "candidate_training": bool(candidate_observer_state.get("candidate_training",
+                    metrics.get("candidate_training"))),
+                "last_inference_seconds": candidate_observer_state.get("last_inference_seconds"),
+                "inference_count": int(metrics.get("candidate_live_inference_count", 0)),
+                "inference_seconds_total": float(metrics.get(
+                    "candidate_live_inference_seconds_total", 0.0)),
+                "queue_drops": int(metrics.get("candidate_live_queue_drops", 0)),
+                "error": candidate_observer_state.get("error",
+                    metrics.get("candidate_live_error")),
+                "decisions": candidate_observer_state.get("last_decisions", []),
+                "recent_fills": list(candidate_observer_account.get("fills", []))[-12:],
+                "books": candidate_observer_books,
+            }
+            validation_state = _json(state / "candidate_validation.json")
+            validation_books = {}
+            validation_accounts_available = True
+            for model_name, account_file in (
+                    ("champion", "candidate_validation_champion.json"),
+                    ("candidate", "candidate_validation_candidate.json")):
+                account_path = state / account_file
+                account = _json(account_path)
+                validation_accounts_available = (
+                    validation_accounts_available and account_path.is_file()
+                    and bool(account.get("books")))
+                model_books = {}
+                for currency, book in account.get("books", {}).items():
+                    positions = book.get("positions", {})
+                    marks = book.get("marks", {})
+                    holdings_value = sum(
+                        float(position.get("quantity", 0.0)) * float(
+                            marks.get(symbol, position.get("average_cost", 0.0)))
+                        for symbol, position in positions.items())
+                    initial_cash = float(book.get("initial_cash", 0.0))
+                    equity = float(book.get("cash", 0.0)) + holdings_value
+                    unrealized = sum(
+                        float(position.get("quantity", 0.0)) * (
+                            float(marks.get(symbol, position.get("average_cost", 0.0)))
+                            - float(position.get("average_cost", 0.0)))
+                        for symbol, position in positions.items())
+                    model_books[currency] = {
+                        "net_pnl": equity - initial_cash,
+                        "net_return_rate": ((equity - initial_cash) / initial_cash
+                                            if initial_cash else 0.0),
+                        "realized_pnl": float(book.get("realized_pnl", 0.0)),
+                        "unrealized_pnl": unrealized,
+                        "costs": sum(float(book.get(key, 0.0)) for key in
+                                     ("fees", "sell_tax", "spread", "slippage")),
+                        "trade_count": int(book.get("trade_count", 0)),
+                        "position_count": sum(
+                            1 for position in positions.values()
+                            if float(position.get("quantity", 0.0)) != 0.0),
+                        "positions": [
+                            {"symbol": symbol,
+                             "quantity": float(position.get("quantity", 0.0))}
+                            for symbol, position in sorted(positions.items())
+                            if float(position.get("quantity", 0.0)) != 0.0
+                        ],
+                    }
+                validation_books[model_name] = model_books
+            validation_comparison = {
+                "status": validation_state.get("status", "not_started"),
+                "active": bool(metrics.get("candidate_validation_active")) and
+                          validation_state.get("status") == "collecting",
+                "bars_current": int(metrics.get("candidate_validation_bars",
+                                                 validation_state.get("bars", 0)) or 0),
+                "bars_required": int(metrics.get("candidate_min_validation_dates", 128) or 128),
+                "snapshot_version": metrics.get("candidate_validation_snapshot_version",
+                                                 validation_state.get("source_candidate_version")),
+                "accounts_available": validation_accounts_available,
+                "last_timestamp": validation_state.get("last_timestamp"),
+                "champion": validation_books["champion"],
+                "candidate": validation_books["candidate"],
+            }
             paper_positions = {}
             paper_financials = {}
             for currency, book in paper_account.get("books", {}).items():
@@ -593,7 +707,7 @@ class Supervisor:
             }
             learning_candidate_every = int(metrics.get("candidate_every", self.candidate_every))
             learning_min_replay = int(metrics.get("candidate_min_replay", 8))
-            learning_min_holdout = int(metrics.get("candidate_min_validation_dates", 64))
+            learning_min_holdout = int(metrics.get("candidate_min_validation_dates", 128))
             learning_replay = int(metrics.get("candidate_replay_since_last_update",
                 metrics.get("trainable_replay_count", metrics.get("replay_count", 0))))
             learning_holdout = int(metrics.get("candidate_validation_bars", metrics.get("validation_window_dates", 0)))
@@ -690,6 +804,8 @@ class Supervisor:
                     "decisions": decisions, "model_directions": model_directions,
                     "positions": paper_positions, "paper_positions": paper_positions,
                     "paper_financials": paper_financials, "paper_account": paper_account, "gpu": gpu,
+                    "validation_comparison": validation_comparison,
+                    "candidate_live_account": candidate_live_account,
                     "real_orders_enabled": False,
                     "physical_gpu": self._physical_gpu(),
                     "logs": "\n".join(status_logs) or "Broker API is not connected; orders remain OFF."}

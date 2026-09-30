@@ -5,7 +5,8 @@ Do not recreate, replace, or redesign the dashboard from scratch. Preserve the e
 For future dashboard work:
 - Make only the smallest targeted change needed for the request.
 - Before editing, create a timestamped byte-for-byte backup of the current HTML in a clearly named `backups/dashboard/` folder. Never overwrite an earlier backup.
-- Do not claim a backup is the original if it was made after an accidental rewrite. The original dashboard is currently not recovered; do not reconstruct it from screenshots and call that a restoration.
+- Before every dashboard HTML edit, commit and push that timestamped pre-edit snapshot to the private GitHub repository, and verify the push succeeded. If the snapshot cannot be pushed, do not edit the dashboard.
+- Do not claim a backup is the original if it was made after an accidental rewrite. Do not reconstruct a dashboard from screenshots and call that a restoration.
 - If the original file cannot be located, stop before changing the dashboard and report that limitation. Do not generate a substitute UI.
 - After a permitted targeted edit, verify that all existing navigation anchors and section IDs remain, inspect the rendered page, and confirm the live controls still work.
 - Keep the portable, source, and Mac-transfer copies synchronized without replacing their dashboard with a newly designed page.
