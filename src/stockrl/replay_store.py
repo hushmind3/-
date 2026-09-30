@@ -33,7 +33,7 @@ class GlobalReplayBuffer:
     # A warning level, never an eviction or write limit for unlearned work.
     storage_warning_bytes = 50 * 1024 * 1024
 
-    def __init__(self, capacity=4096, seed=7, journal_path=None):
+    def __init__(self, capacity=4096, seed=7, journal_path=None, dual_learning=False):
         self.capacity = max(1, int(capacity))
         self.items = deque(maxlen=min(self.capacity, 128) if journal_path else None)
         self.rng = random.Random(seed)
@@ -44,6 +44,8 @@ class GlobalReplayBuffer:
         self.window_cache = OrderedDict()
         self.frame_cache = OrderedDict()
         self._memory_uses = {}
+        self._champion_memory_uses = {}
+        self.dual_learning=bool(dual_learning)
         if self.journal_path:
             self._load_journal()
 
@@ -167,7 +169,7 @@ class GlobalReplayBuffer:
             columns = {row[1] for row in db.execute("PRAGMA table_info(experiences)")}
             additions = {"timestamp": "TEXT", "day": "TEXT", "eligible": "INTEGER DEFAULT 0",
                          "training_uses": "INTEGER NOT NULL DEFAULT 0", "error": "TEXT",
-                         "experience_key": "TEXT"}
+                         "experience_key": "TEXT", "champion_training_uses":"INTEGER NOT NULL DEFAULT 0"}
             with db:
                 for name, declaration in additions.items():
                     if name not in columns:
@@ -180,6 +182,13 @@ class GlobalReplayBuffer:
                 db.execute("CREATE UNIQUE INDEX IF NOT EXISTS experience_key_idx ON experiences(experience_key)")
                 db.execute("CREATE INDEX IF NOT EXISTS experience_fifo_idx ON experiences(eligible,error,training_uses,timestamp,id)")
                 db.execute("INSERT OR IGNORE INTO daily_learning(day,enqueued) SELECT day,COUNT(*) FROM experiences GROUP BY day")
+                db.execute("CREATE TABLE IF NOT EXISTS replay_settings(key TEXT PRIMARY KEY,value TEXT)")
+                if self.dual_learning and not db.execute("SELECT 1 FROM replay_settings WHERE key='dual_learning'").fetchone():
+                    # Remaining partially learned rows now require both models.
+                    # Completed history before this change retains its original meaning.
+                    for day,count in db.execute("SELECT day,COUNT(*) FROM experiences WHERE training_uses>0 GROUP BY day").fetchall():
+                        db.execute("UPDATE daily_learning SET first_trained=MAX(0,first_trained-?) WHERE day=?",(count,day))
+                    db.execute("INSERT INTO replay_settings VALUES('dual_learning','1')")
             # Load metadata and at most a small RAM cache. No startup pruning.
             with db:
                 for (blob,) in db.execute("SELECT metadata FROM experiences"):
@@ -321,49 +330,64 @@ class GlobalReplayBuffer:
         with self.lock, closing(self._connect()) as db, db:
             db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?", (kind, key))
 
-    def pending_batch(self, batch_size, passes=2, exclude_row_ids=()):
+    def pending_batch(self, batch_size, passes=2, exclude_row_ids=(), learner="candidate"):
+        if learner not in ("candidate","champion"):
+            raise ValueError("unknown learner")
+        uses_by_id=self._champion_memory_uses if learner=="champion" else self._memory_uses
+        column="champion_training_uses" if learner=="champion" else "training_uses"
         with self.lock:
             if not self.journal_path:
                 rows = [row for row in self.items if self._training_eligible(vars(row)) and
-                        self._memory_uses.get(id(row), 0) < passes and id(row) not in exclude_row_ids]
+                        uses_by_id.get(id(row), 0) < passes and id(row) not in exclude_row_ids]
                 for row in rows:
-                    row._replay_training_uses=self._memory_uses.get(id(row),0)
-                return sorted(rows, key=lambda row: (row.timestamp, self._memory_uses.get(id(row), 0)))[:batch_size]
+                    row._replay_training_uses=uses_by_id.get(id(row),0)
+                return sorted(rows, key=lambda row: (row.timestamp, uses_by_id.get(id(row), 0)))[:batch_size]
             with closing(self._connect()) as db:
                 excluded = sorted(set(exclude_row_ids))
                 clause = (" AND id NOT IN (" + ",".join("?" for _ in excluded) + ")") if excluded else ""
-                rows = db.execute("SELECT id,window_key,metadata,training_uses FROM experiences WHERE eligible=1 AND error IS NULL AND training_uses<?" +
-                    clause + " ORDER BY timestamp,training_uses,id LIMIT ?", (passes, *excluded, batch_size)).fetchall()
+                rows = db.execute(f"SELECT id,window_key,metadata,{column} FROM experiences WHERE eligible=1 AND error IS NULL AND {column}<?" +
+                    clause + f" ORDER BY timestamp,{column},id LIMIT ?", (passes, *excluded, batch_size)).fetchall()
                 return [self._decode(db, row) for row in rows]
 
     def sample(self, batch_size, exclude_ids=None):
         excluded = [self.row_ids.get(key, key) for key in (exclude_ids or ())]
         return self.pending_batch(batch_size, exclude_row_ids=excluded)
 
-    def acknowledge_training(self, uses_by_id, passes=2):
-        """Idempotently apply absolute use counts embedded in candidate.pt."""
+    def acknowledge_training(self, uses_by_id, passes=2, learner="candidate"):
+        """Consume only after every required learner confirms its checkpoint."""
+        if learner not in ("candidate","champion"):
+            raise ValueError("unknown learner")
+        column="champion_training_uses" if learner=="champion" else "training_uses"
         if not self.journal_path:
-            self._memory_uses.update(uses_by_id)
-            self.items = deque(row for row in self.items if self._memory_uses.get(id(row), 0) < passes)
+            memory=self._champion_memory_uses if learner=="champion" else self._memory_uses
+            memory.update(uses_by_id)
+            self.items = deque(row for row in self.items if self._memory_uses.get(id(row),0)<passes or
+                (self.dual_learning and self._champion_memory_uses.get(id(row),0)<passes))
             return 0
         completed = 0
+        deleted_ids=set()
         with self.lock, closing(self._connect()) as db, db:
             for row_id, target in uses_by_id.items():
-                row = db.execute("SELECT training_uses,day FROM experiences WHERE id=?", (int(row_id),)).fetchone()
-                if row is None or int(target) <= row[0]:
+                row = db.execute("SELECT training_uses,champion_training_uses,day FROM experiences WHERE id=?", (int(row_id),)).fetchone()
+                previous=(row[1] if learner=="champion" else row[0]) if row else 0
+                if row is None or int(target) <= previous:
                     continue
-                previous, day = row
-                done = int(target >= passes)
+                candidate_uses,champion_uses,day=row
+                before=min(candidate_uses,champion_uses) if self.dual_learning else candidate_uses
+                if learner=="champion": champion_uses=int(target)
+                else: candidate_uses=int(target)
+                after=min(candidate_uses,champion_uses) if self.dual_learning else candidate_uses
+                done=int(after>=passes)
                 db.execute("UPDATE daily_learning SET first_trained=first_trained+?,completed=completed+?,exposures=exposures+? WHERE day=?",
-                    (int(previous == 0), done, int(target)-previous, day))
-                db.execute("UPDATE experiences SET training_uses=? WHERE id=?", (int(target), int(row_id)))
+                    (int(before==0 and after>0),done,int(target)-previous,day))
+                db.execute(f"UPDATE experiences SET {column}=? WHERE id=?", (int(target), int(row_id)))
                 if done:
                     db.execute("DELETE FROM experiences WHERE id=?", (int(row_id),))
+                    deleted_ids.add(int(row_id))
                     completed += 1
             self._collect_unused_windows(db)
         if completed:
-            self.items = deque((row for row in self.items if getattr(row, "_replay_row_id", None) not in uses_by_id or
-                                uses_by_id[getattr(row, "_replay_row_id")] < passes), maxlen=min(self.capacity, 128))
+            self.items = deque((row for row in self.items if getattr(row,"_replay_row_id",None) not in deleted_ids),maxlen=min(self.capacity,128))
             self._prune_row_ids()
             self.compact()
         return completed
@@ -386,23 +410,35 @@ class GlobalReplayBuffer:
 
     def stats(self, passes=2):
         if not self.journal_path:
-            eligible = sum(self._training_eligible(vars(row)) and self._memory_uses.get(id(row), 0) < passes for row in self.items)
+            remaining={name:sum(self._training_eligible(vars(row)) and uses.get(id(row),0)<passes for row in self.items)
+                for name,uses in (("candidate",self._memory_uses),("champion",self._champion_memory_uses))}
+            eligible=sum(self._training_eligible(vars(row)) and (self._memory_uses.get(id(row),0)<passes or
+                (self.dual_learning and self._champion_memory_uses.get(id(row),0)<passes)) for row in self.items)
             return {"total": len(self.items), "eligible": eligible, "untrained": eligible,
-                    "quarantined": 0, "unsupported": len(self.items)-eligible, "daily": []}
+                    "quarantined":0,"unsupported":0,"daily":[],"model_remaining":remaining,
+                    "model_untrained":remaining}
         with self.lock, closing(self._connect()) as db:
+            count_expr="MIN(training_uses,champion_training_uses)" if self.dual_learning else "training_uses"
             total, eligible, untrained, quarantine, unsupported = db.execute(
-                "SELECT COUNT(*),COALESCE(SUM(eligible=1 AND error IS NULL AND training_uses<?),0),"
-                "COALESCE(SUM(eligible=1 AND error IS NULL AND training_uses=0),0),"
+                f"SELECT COUNT(*),COALESCE(SUM(eligible=1 AND error IS NULL AND {count_expr}<?),0),"
+                f"COALESCE(SUM(eligible=1 AND error IS NULL AND {count_expr}=0),0),"
                 "COALESCE(SUM(error IS NOT NULL),0),COALESCE(SUM(eligible=0),0) FROM experiences", (passes,)).fetchone()
+            model_remaining={}; model_untrained={}
+            for name,column in (("candidate","training_uses"),("champion","champion_training_uses")):
+                model_remaining[name],model_untrained[name]=db.execute(
+                    f"SELECT COALESCE(SUM(eligible=1 AND error IS NULL AND {column}<?),0),COALESCE(SUM(eligible=1 AND error IS NULL AND {column}=0),0) FROM experiences",(passes,)).fetchone()
+            blocked_by_day=dict(db.execute("SELECT day,COUNT(*) FROM experiences WHERE error IS NOT NULL OR eligible=0 GROUP BY day"))
             daily = [{"day": day, "enqueued": queued, "first_trained": first,
-                      "completed": done, "exposures": exposures, "remaining": queued-done}
+                      "completed":done,"exposures":exposures,"remaining":max(0,queued-done-blocked_by_day.get(day,0)),
+                      "blocked":blocked_by_day.get(day,0),"remaining_total":queued-done}
                      for day, queued, first, done, exposures in db.execute(
                          "SELECT day,enqueued,first_trained,completed,exposures FROM daily_learning ORDER BY day DESC LIMIT 14")]
-            oldest = db.execute("SELECT MIN(timestamp) FROM experiences WHERE eligible=1 AND error IS NULL AND training_uses<?", (passes,)).fetchone()[0]
+            oldest = db.execute(f"SELECT MIN(timestamp) FROM experiences WHERE eligible=1 AND error IS NULL AND {count_expr}<?", (passes,)).fetchone()[0]
             pending = db.execute("SELECT COUNT(*) FROM pending_records").fetchone()[0]
         return {"total": total, "eligible": eligible, "untrained": untrained,
                 "quarantined": quarantine, "unsupported": unsupported, "daily": daily,
                 "oldest": oldest, "pending": pending, "bytes": self.disk_bytes(),
+                "model_remaining":model_remaining,"model_untrained":model_untrained,
                 "storage_pressure": self.disk_bytes() >= self.storage_warning_bytes}
 
     def __len__(self):

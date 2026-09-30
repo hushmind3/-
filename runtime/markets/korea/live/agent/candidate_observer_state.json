@@ -1,10 +1,10 @@
 {
   "status": "training_and_observing",
-  "last_timestamp": "2026-09-30T16:02:00.000000000",
-  "candidate_version": 677,
+  "last_timestamp": "2026-09-30T21:22:20.000000000",
+  "candidate_version": 4237,
   "policy_mode": "same_epsilon_sampling_and_random_draws_as_champion",
   "candidate_training": true,
-  "last_inference_seconds": 1.423595000000205,
-  "inference_count": 725,
+  "last_inference_seconds": 0.8741078000020934,
+  "inference_count": 1365,
   "last_decisions": []
 }

@@ -900,6 +900,13 @@ class Supervisor:
                     "observe_enabled":self.observe_enabled,
                     "learning": {
                         "candidate_learning_enabled": metrics.get("candidate_learning_enabled", True),
+                        "champion_learning_enabled":metrics.get("champion_learning_enabled",False),
+                        "dual_learning_enabled":metrics.get("dual_learning_enabled",False),
+                        "champion_training":metrics.get("champion_training",False),
+                        "champion_model_version":metrics.get("champion_training_version",0),
+                        "champion_remaining":metrics.get("champion_eligible_replay_count",0),
+                        "eligible_backlog":metrics.get("replay_eligible_backlog",learning_replay),
+                        "blocked_replay":int(metrics.get("replay_quarantined_count",0))+int(metrics.get("replay_unsupported_count",0)),
                         "candidate_stage": metrics.get("candidate_stage",
                             "training" if metrics.get("candidate_training") else "waiting"),
                         "candidate_every": learning_candidate_every,

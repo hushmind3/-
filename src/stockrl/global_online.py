@@ -1,7 +1,8 @@
 """Asynchronous online actor-critic over global asset panels.
 
-Market observation, candidate training, and frozen-snapshot validation use
-separate model state. Only a future paper-account score improvement swaps the champion.
+Market observation, both learners, and frozen-snapshot validation use separate
+model state. Each learner publishes saved updates; candidate promotion requires
+a future paper-account score improvement against the frozen champion baseline.
 """
 from __future__ import annotations
 
@@ -29,6 +30,23 @@ from .multiscale import (MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES,
 REWARD_VERSION="symbol_and_portfolio_v5"
 PAPER_EXPLORATION_EPSILON=0.05
 ONLINE_TRAINABLE_BLOCKS=4
+
+
+class TrainingMetrics:
+    """Keep each learner's measurements in the same runtime status object."""
+    def __init__(self,store,learner):
+        self.store=store; self.learner=learner
+    def key(self,key):
+        if self.learner=="candidate": return key
+        if key.startswith("candidate_"): return "champion_"+key[len("candidate_"):]
+        if key.startswith("last_candidate_"): return "last_champion_"+key[len("last_candidate_"):]
+        if key in ("weight_delta_l1","paper_examples_trained","teacher_examples_trained"):
+            return "champion_"+key
+        return key
+    def __getitem__(self,key): return self.store[self.key(key)]
+    def __setitem__(self,key,value): self.store[self.key(key)]=value
+    def get(self,key,default=None): return self.store.get(self.key(key),default)
+    def setdefault(self,key,default=None): return self.store.setdefault(self.key(key),default)
 REWARD_DEFINITION=("symbol_and_portfolio_v5: online RL uses executed cash-only paper-account outcomes; "
                    "trade reward horizon starts after the linked next-bar fill; "
                    "per-symbol net PnL and normalized whole-account net equity change are kept separate")
@@ -290,7 +308,12 @@ class OnlineGlobalAgent:
         self.candidate_interval=max(1,min(int(candidate_interval),512))
         self.min_validation_dates=0
         self.lr=lr; self.seed=seed; self.lock=threading.RLock(); self.stop=threading.Event()
-        self.replay=GlobalReplayBuffer(capacity,seed,self.state_dir/"replay.sqlite3")
+        self.dual_learning_enabled=True
+        self.champion_training_version=0
+        self.validation_champion=None
+        self.validation_promotion_epoch=0
+        self.next_learning_role="champion"
+        self.replay=GlobalReplayBuffer(capacity,seed,self.state_dir/"replay.sqlite3",dual_learning=True)
         # Replay is a durable FIFO SQLite journal; checkpoints
         # remain the only model files. The optional teacher source is read-only.
         if teacher_replay_path: self.replay.load(Path(teacher_replay_path))
@@ -414,7 +437,16 @@ class OnlineGlobalAgent:
             self.metrics["reward_schema_reset_from"]=prior_reward_definition
         self.metrics["reward_definition"]=REWARD_DEFINITION
         self.metrics.pop("protected_champion_sha256",None)
-        self.metrics["runtime_code_version"]="rolling-complete-learning-20261001"
+        self.metrics["runtime_code_version"]="dual-model-complete-learning-20261001"
+        self.metrics["champion_training"]=False
+        for key in ("champion_paper_examples_trained","champion_teacher_examples_trained"):
+            self.metrics.setdefault(key,0)
+        self.metrics.setdefault("champion_weight_delta_l1",[])
+        champion_commit=getattr(self.champion,"_stockrl_replay_commit",{})
+        if champion_commit.get("learner")=="champion":
+            self.replay.acknowledge_training(champion_commit.get("uses",{}),2,learner="champion")
+        self.champion_training_version=max(int(self.metrics.get("champion_training_version",0)),
+            int(champion_commit.get("model_version",0)) if champion_commit.get("learner")=="champion" else 0)
         self.metrics["agent_session_started_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
         for key in ("update_losses","update_seconds","weight_delta_l1"):
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
@@ -1525,31 +1557,46 @@ class OnlineGlobalAgent:
     def _learner(self):
         while not self.stop.wait(.1):
             stats=self.replay.stats(self.candidate_replay_passes)
-            self.metrics["candidate_untrained_replay_count"]=stats["untrained"]
-            self.metrics["candidate_eligible_replay_count"]=stats["eligible"]
+            dual=getattr(self,"dual_learning_enabled",False)
+            remaining=stats.get("model_remaining",{"candidate":stats["eligible"],"champion":0})
+            self.metrics["candidate_untrained_replay_count"]=stats.get("model_untrained",{}).get("candidate",stats["untrained"])
+            self.metrics["candidate_eligible_replay_count"]=remaining["candidate"]
+            self.metrics["champion_eligible_replay_count"]=remaining.get("champion",0) if dual else 0
             self.metrics["candidate_replay_passes"]=self.candidate_replay_passes
-            if not stats["eligible"]:
+            if not remaining["candidate"] and not (dual and remaining.get("champion",0)):
                 self.metrics["candidate_skip_reason"]="남은 학습 가능한 경험을 모두 처리했습니다. 새 경험 대기"
                 continue
-            if self.metrics.get("candidate_training"):
+            if self.metrics.get("candidate_training") or self.metrics.get("champion_training"):
                 continue
             if time.monotonic()<self.candidate_retry_after:
                 self.metrics["candidate_skip_reason"]="Candidate 오류 뒤 경험을 보존하고 재시도 대기 중"
                 continue
             self.last_train_replay_size=len(self.replay)
             self.metrics["candidate_skip_reason"]=None
+            preferred=getattr(self,"next_learning_role","candidate") if dual else "candidate"
+            learner=preferred if remaining.get(preferred,0) else ("candidate" if preferred=="champion" else "champion")
+            self.next_learning_role="candidate" if learner=="champion" else "champion"
+            self.metrics["learning_active_role"]=learner
             try:
-                self._train_candidate()
+                if learner=="champion": self._train_champion()
+                else: self._train_candidate()
             except Exception as exc:
-                self.metrics["candidate_training"]=False
-                self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
-                self.metrics["last_candidate_error"]=f"{type(exc).__name__}: {exc}"[:1200]
+                self.metrics[learner+"_training"]=False
+                self.metrics[learner+"_errors"]=int(self.metrics.get(learner+"_errors",0))+1
+                self.metrics["last_"+learner+"_error"]=f"{type(exc).__name__}: {exc}"[:1200]
                 exc.__traceback__=None
                 del exc
                 self._schedule_candidate_retry()
                 self._release_cuda_cache()
                 try:
-                    self._restore_candidate_checkpoint()
+                    if learner=="candidate": self._restore_candidate_checkpoint()
+                    else:
+                        restored,_=load_model(self.champion_path,self.device)
+                        with self.lock: self.champion=restored.eval()
+                        commit=getattr(restored,"_stockrl_replay_commit",{})
+                        if commit.get("learner")=="champion":
+                            self.replay.acknowledge_training(commit.get("uses",{}),2,learner="champion")
+                            self.champion_training_version=max(self.champion_training_version,int(commit.get("model_version",0)))
                     self._write_metrics()
                 except Exception: pass
 
@@ -1565,7 +1612,8 @@ class OnlineGlobalAgent:
             try: torch.cuda.empty_cache()
             except RuntimeError: pass
 
-    def _configure_candidate_trainables(self,candidate):
+    def _configure_candidate_trainables(self,candidate,learner="candidate"):
+        metrics=TrainingMetrics(self.metrics,learner)
         """Fine-tune the upper transformer blocks and small policy adapters only."""
         backbone=getattr(candidate,"backbone",candidate)
         for parameter in candidate.parameters():
@@ -1586,10 +1634,10 @@ class OnlineGlobalAgent:
         trainable=[parameter for parameter in candidate.parameters() if parameter.requires_grad]
         if not trainable:
             raise RuntimeError("candidate has no trainable parameters")
-        self.metrics["candidate_trainable_transformer_blocks"]=len(trainable_blocks)
-        self.metrics["candidate_trainable_parameter_count"]=sum(
+        metrics["candidate_trainable_transformer_blocks"]=len(trainable_blocks)
+        metrics["candidate_trainable_parameter_count"]=sum(
             parameter.numel() for parameter in trainable)
-        self.metrics["candidate_total_parameter_count"]=sum(
+        metrics["candidate_total_parameter_count"]=sum(
             parameter.numel() for parameter in candidate.parameters())
         return trainable
 
@@ -1629,25 +1677,41 @@ class OnlineGlobalAgent:
         return loss
 
     def _train_candidate(self):
+        return self._train_model("candidate")
+
+    def _train_champion(self):
+        return self._train_model("champion")
+
+    def _train_model(self,learner):
+        metrics=TrainingMetrics(self.metrics,learner)
         from datetime import datetime, timezone
         training_started=time.perf_counter()
-        trigger_experience_count=int(self.metrics.get("paper_experiences_since_candidate",0))
-        self.metrics["candidate_training"]=True
-        self.metrics["candidate_skip_reason"] = None
-        self.metrics["last_candidate_compute_seconds"]=0.0
-        self.metrics["last_candidate_step_compute_seconds"]=0.0
-        self.metrics["last_candidate_total_seconds"]=0.0
-        self.metrics["last_candidate_peak_allocated_bytes"]=None
-        self.metrics["last_candidate_peak_reserved_bytes"]=None
-        with self.lock: source_champion=self.champion
-        candidate_path=self.model_dir/"candidate.pt"
-        if self.candidate is None:
-            self._restore_candidate_checkpoint()
-        with self.candidate_model_lock:
-            self.candidate=self.candidate.to(self.device)
-            candidate=self.candidate.train()
+        trigger_experience_count=int(metrics.get("paper_experiences_since_candidate",0))
+        metrics["candidate_training"]=True
+        metrics["candidate_skip_reason"] = None
+        metrics["last_candidate_compute_seconds"]=0.0
+        metrics["last_candidate_step_compute_seconds"]=0.0
+        metrics["last_candidate_total_seconds"]=0.0
+        metrics["last_candidate_peak_allocated_bytes"]=None
+        metrics["last_candidate_peak_reserved_bytes"]=None
+        with self.lock:
+            source_champion=self.champion
+        if learner=="candidate":
+            if self.candidate is None:
+                self._restore_candidate_checkpoint()
+            with self.candidate_model_lock:
+                self.candidate=self.candidate.to(self.device)
+                candidate=self.candidate.train()
+            model_version=self.candidate_version
+        else:
+            # Inference holds the immutable published model while its learner
+            # works on an independent copy. Publish only a completed checkpoint.
+            candidate=self._new_model_like(source_champion,self.device)
+            candidate.load_state_dict(source_champion.state_dict())
+            candidate.train()
+            model_version=self.champion_training_version
         original=source_champion
-        trainable_parameters=self._configure_candidate_trainables(candidate)
+        trainable_parameters=self._configure_candidate_trainables(candidate,learner)
         opt=torch.optim.AdamW(
             trainable_parameters,lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8,foreach=False)
@@ -1662,18 +1726,18 @@ class OnlineGlobalAgent:
         sampled_ids=set()
         # The SQLite queue is authoritative; the small RAM cache is not the
         # backlog. Finish the oldest rows, including their second pass.
-        self.metrics["last_candidate_optimizer_steps"]=0
-        self.metrics["last_candidate_samples_trained"]=0
-        self.metrics["candidate_optimizer_steps_current"]=0
-        self.metrics["candidate_samples_current"]=0
-        self.metrics["candidate_window_forwards_current"]=0
-        self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
-        self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
+        metrics["last_candidate_optimizer_steps"]=0
+        metrics["last_candidate_samples_trained"]=0
+        metrics["candidate_optimizer_steps_current"]=0
+        metrics["candidate_samples_current"]=0
+        metrics["candidate_window_forwards_current"]=0
+        metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
+        metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
             if self.stop.is_set():
                 break
             batch=self.replay.pending_batch(self.batch_size,self.candidate_replay_passes,
-                exclude_row_ids=sampled_ids)
+                exclude_row_ids=sampled_ids,learner=learner)
             if not batch: break
             sampled_ids.update(self.replay.row_ids_for(batch))
             malformed=[e for e in batch if (
@@ -1722,7 +1786,7 @@ class OnlineGlobalAgent:
                     if losses:
                         (torch.stack(losses).sum()/len(batch)).backward()
                         valid_samples+=len(losses)
-                    self.metrics["candidate_window_forwards_current"]+=1
+                    metrics["candidate_window_forwards_current"]+=1
                     del args,pstate,astate,mstate,logits,values,allocations,losses
                 if not valid_samples:
                     continue
@@ -1735,122 +1799,150 @@ class OnlineGlobalAgent:
                 else:
                     compute_elapsed.append(time.perf_counter()-compute_ti)
             candidate_samples+=valid_samples
-            self.metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in successful_batch)
-            self.metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in successful_batch)
+            metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in successful_batch)
+            metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in successful_batch)
             used_experiences.extend(successful_batch)
-            self.metrics["update_losses"].append(float(np.mean(loss_values)))
-            self.metrics["update_losses"]=self.metrics["update_losses"][-2000:]
+            metrics["update_losses"].append(float(np.mean(loss_values)))
+            metrics["update_losses"]=metrics["update_losses"][-2000:]
             if self.device.type=="cuda":
                 torch.cuda.synchronize(self.device)
                 compute_elapsed.append(compute_start.elapsed_time(compute_end)/1000.0)
-                self.metrics["last_candidate_peak_allocated_bytes"]=int(
+                metrics["last_candidate_peak_allocated_bytes"]=int(
                     torch.cuda.max_memory_allocated(self.device))
-                self.metrics["last_candidate_peak_reserved_bytes"]=int(
+                metrics["last_candidate_peak_reserved_bytes"]=int(
                     torch.cuda.max_memory_reserved(self.device))
             elapsed.append(time.perf_counter()-ti); self.steps+=1
-            self.metrics["candidate_optimizer_steps_current"]=len(elapsed)
-            self.metrics["candidate_samples_current"]=candidate_samples
-            self.metrics["last_candidate_compute_seconds"]=float(sum(compute_elapsed))
-            self.metrics["last_candidate_step_compute_seconds"]=(
+            metrics["candidate_optimizer_steps_current"]=len(elapsed)
+            metrics["candidate_samples_current"]=candidate_samples
+            metrics["last_candidate_compute_seconds"]=float(sum(compute_elapsed))
+            metrics["last_candidate_step_compute_seconds"]=(
                 float(sum(compute_elapsed)/len(compute_elapsed)) if compute_elapsed else 0.0)
-            self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
+            metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
             self._write_metrics()
-        self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
-        self.metrics["last_candidate_update_seconds"]=float(sum(elapsed))
+        metrics["update_seconds"].extend(elapsed); metrics["updates"]+=len(elapsed)
+        metrics["last_candidate_update_seconds"]=float(sum(elapsed))
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
-            self.metrics["last_candidate_peak_allocated_bytes"]=int(
+            metrics["last_candidate_peak_allocated_bytes"]=int(
                 torch.cuda.max_memory_allocated(self.device))
-            self.metrics["last_candidate_baseline_allocated_bytes"]=training_baseline_allocated
-            self.metrics["last_candidate_peak_reserved_bytes"]=int(
+            metrics["last_candidate_baseline_allocated_bytes"]=training_baseline_allocated
+            metrics["last_candidate_peak_reserved_bytes"]=int(
                 torch.cuda.max_memory_reserved(self.device))
-        self.metrics["last_candidate_optimizer_steps"]=len(elapsed)
-        self.metrics["last_candidate_samples_trained"]=candidate_samples
-        self.metrics["last_candidate_unique_samples_trained"]=len(candidate_sample_keys)
-        self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
-        self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
-        self.metrics["update_seconds"]=self.metrics["update_seconds"][-2000:]
-        self.metrics["teacher_mix_probability"]=self.replay.teacher_fraction()
+        metrics["last_candidate_optimizer_steps"]=len(elapsed)
+        metrics["last_candidate_samples_trained"]=candidate_samples
+        metrics["last_candidate_unique_samples_trained"]=len(candidate_sample_keys)
+        metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
+        metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
+        metrics["update_seconds"]=metrics["update_seconds"][-2000:]
+        metrics["teacher_mix_probability"]=self.replay.teacher_fraction()
         if not elapsed:
-            self.metrics["candidate_training"]=False
+            metrics["candidate_training"]=False
             if not self.stop.is_set():
-                self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
-                self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
+                metrics["candidate_errors"]=int(metrics.get("candidate_errors",0))+1
+                metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
                 self._schedule_candidate_retry()
-            self.candidate.eval()
-            if self.device.type=="cuda": self.candidate.to("cpu")
+            candidate.eval()
+            if self.device.type=="cuda": candidate.to("cpu")
             self._write_metrics()
             del candidate,opt
             self._release_cuda_cache()
             return
         if not all(torch.isfinite(p).all() for p in candidate.parameters()):
-            self.metrics["nonfinite_updates"]+=1
-            self.metrics["rejections"]+=1
+            metrics["nonfinite_updates"]+=1
+            metrics["rejections"]+=1
             self._schedule_candidate_retry()
-            self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
-            history=self.metrics.setdefault("candidate_gate_history",[])
-            history.append({"time_utc":self.metrics["last_rejection_utc"],"applied":False,
+            metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
+            history=metrics.setdefault("candidate_gate_history",[])
+            history.append({"time_utc":metrics["last_rejection_utc"],"applied":False,
                             "reason":"가중치에 계산 불가능한 값이 발생해 적용하지 않음",
                             "candidate_score":None,"champion_score":None})
-            self.metrics["candidate_gate_history"]=history[-20:]
-            self.metrics["candidate_training"]=False
-            self._restore_candidate_checkpoint()
+            metrics["candidate_gate_history"]=history[-20:]
+            metrics["candidate_training"]=False
+            if learner=="candidate": self._restore_candidate_checkpoint()
             self._write_metrics()
             del candidate,opt
             self._release_cuda_cache()
             return
         delta=sum((candidate.state_dict()[k].float()-v.detach().float()).abs().sum().item()
                   for k,v in original.state_dict().items())
-        self.metrics["weight_delta_l1"].append(delta)
-        self.metrics["weight_delta_l1"]=self.metrics["weight_delta_l1"][-2000:]
-        self.metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
-        self.metrics["last_candidate_error"]=None
+        metrics["weight_delta_l1"].append(delta)
+        metrics["weight_delta_l1"]=metrics["weight_delta_l1"][-2000:]
+        metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
+        metrics["last_candidate_error"]=None
         self.state_dir.mkdir(exist_ok=True,parents=True)
-        # Candidate optimizer state is intentionally ephemeral across runs;
-        # omit it from the artifact so evaluation/recovery only loads weights.
         trained_replay_row_ids=self.replay.row_ids_for(used_experiences)
         uses={getattr(e,"_replay_row_id",self.replay.row_ids.get(id(e),id(e))):
               int(getattr(e,"_replay_training_uses",0))+1 for e in used_experiences}
-        replay_commit={"uses":uses,"passes":self.candidate_replay_passes,
-                       "candidate_version":self.candidate_version+len(elapsed)}
-        save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,
-                   temp_dir=self.state_dir,replay_commit=replay_commit)
-        candidate._stockrl_replay_commit=replay_commit
-        consumed=self.replay.acknowledge_training(uses,self.candidate_replay_passes)
-        with self.candidate_model_lock:
-            self.candidate_version=replay_commit["candidate_version"]
-            self.candidate_trained_replay_row_ids=set(trained_replay_row_ids)
-            self.candidate_replay_uses={}
-            self._atomic_json({"version":2,"candidate_version":self.candidate_version,
-                "queue_source":"replay.sqlite3","last_checkpoint_rows":trained_replay_row_ids},
-                self.candidate_lineage_path)
-            observer=self._new_model_like(candidate,torch.device("cpu"))
-            observer.load_state_dict(candidate.state_dict())
-            observer.eval(); observer.requires_grad_(False)
-            with self.candidate_live_model_lock:
-                self.candidate_live_model=observer
-                self.candidate_live_model_version=self.candidate_version
-        self.metrics["candidate_live_status"]="candidate_updated"
-        self.metrics["candidate_has_learning"]=True
-        self.metrics["candidate_training"]=False
-        if not self.validation_active and not self.stop.is_set():
+        replay_commit={"uses":uses,"passes":self.candidate_replay_passes,"learner":learner,
+                       "model_version":model_version+len(elapsed),
+                       "candidate_version":model_version+len(elapsed)}
+        if learner=="champion":
+            staged=self.state_dir/"champion.learning.next"
+            try:
+                save_model(staged,candidate,self.cfg,step=self.steps,
+                           temp_dir=self.state_dir,replay_commit=replay_commit)
+                with self.lock:
+                    if self.champion is not source_champion:
+                        # A winning trial was promoted while this branch trained.
+                        # Retry these rows against the new champion; do not ACK.
+                        metrics["candidate_training"]=False
+                        metrics["candidate_skip_reason"]="승급된 Champion에서 같은 경험을 다시 학습합니다"
+                        return
+                    os.replace(staged,self.champion_path)
+                    candidate._stockrl_replay_commit=replay_commit
+                    self.champion=candidate.eval()
+                    self.champion.requires_grad_(False)
+                    self.champion_training_version=replay_commit["model_version"]
+            finally:
+                staged.unlink(missing_ok=True)
+        else:
+            save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,
+                       temp_dir=self.state_dir,replay_commit=replay_commit)
+            candidate._stockrl_replay_commit=replay_commit
+        consumed=self.replay.acknowledge_training(uses,self.candidate_replay_passes,learner=learner)
+        if learner=="candidate":
+            with self.candidate_model_lock:
+                self.candidate_version=replay_commit["model_version"]
+                self.candidate_trained_replay_row_ids=set(trained_replay_row_ids)
+                self.candidate_replay_uses={}
+                self._atomic_json({"version":2,"candidate_version":self.candidate_version,
+                    "queue_source":"replay.sqlite3","last_checkpoint_rows":trained_replay_row_ids},
+                    self.candidate_lineage_path)
+                observer=self._new_model_like(candidate,torch.device("cpu"))
+                observer.load_state_dict(candidate.state_dict())
+                observer.eval(); observer.requires_grad_(False)
+                with self.candidate_live_model_lock:
+                    self.candidate_live_model=observer
+                    self.candidate_live_model_version=self.candidate_version
+            metrics["candidate_live_status"]="candidate_updated"
+            metrics["candidate_has_learning"]=True
+        metrics["candidate_training"]=False
+        if learner=="candidate" and not self.validation_active and not self.stop.is_set():
             self._begin_candidate_validation(candidate)
-        # Keep the most recently trained candidate on CPU between update
-        # batches. The frozen trial copy remains independent in memory.
-        if self.device.type=="cuda": self.candidate.to("cpu")
-        self.metrics["candidate_replay_rows_held_for_validation"]=0
-        self.metrics["candidate_replay_rows_consumed"]=consumed
-        self.metrics["last_candidate_window_forwards"]=self.metrics["candidate_window_forwards_current"]
-        self.metrics["candidate_replay_rows_audit_status"]="tracked"
+        if learner=="candidate" and self.device.type=="cuda": candidate.to("cpu")
+        metrics["candidate_replay_rows_held_for_validation"]=0
+        metrics["candidate_replay_rows_consumed"]=consumed
+        metrics["last_candidate_window_forwards"]=metrics["candidate_window_forwards_current"]
+        metrics["candidate_replay_rows_audit_status"]="tracked"
+        metrics["candidate_completed_training_runs"]=int(metrics.get("candidate_completed_training_runs",0))+1
         self.last_train_replay_size=len(self.replay)
-        self.metrics["last_train_replay_size"]=self.last_train_replay_size
-        self.metrics["paper_experiences_since_candidate"]=max(
-            0,int(self.metrics.get("paper_experiences_since_candidate",0))-trigger_experience_count)
-        self.metrics["candidate_replay_since_last_update"]=int(
-            self.metrics["paper_experiences_since_candidate"])
-        self.metrics["candidate_stage"]=("sequential_paper_validation" if self.validation_active else
+        metrics["last_train_replay_size"]=self.last_train_replay_size
+        metrics["paper_experiences_since_candidate"]=max(
+            0,int(metrics.get("paper_experiences_since_candidate",0))-trigger_experience_count)
+        metrics["candidate_replay_since_last_update"]=int(
+            metrics["paper_experiences_since_candidate"])
+        metrics["candidate_stage"]=("sequential_paper_validation" if self.validation_active else
                                           "waiting_for_replay")
-        self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
+        metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
+        metrics["candidate_last_completed_round"]={
+            "samples":candidate_samples,"unique_samples":len(candidate_sample_keys),
+            "optimizer_steps":len(elapsed),
+            "total_seconds":metrics["last_candidate_total_seconds"],
+            "compute_seconds":metrics["last_candidate_compute_seconds"],
+            "step_compute_seconds":metrics["last_candidate_step_compute_seconds"],
+            "peak_allocated_bytes":metrics["last_candidate_peak_allocated_bytes"],
+            "completed_utc":metrics["last_update_utc"],
+            "model_version":replay_commit["model_version"]}
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
@@ -1876,6 +1968,14 @@ class OnlineGlobalAgent:
             self.validation_candidate=frozen
             if not self.metrics.get("candidate_training") and self.device.type=="cuda":
                 candidate.to("cpu")
+        with self.lock:
+            champion_snapshot=self._new_model_like(self.champion,torch.device("cpu"))
+            champion_snapshot.load_state_dict(self.champion.state_dict())
+            champion_snapshot.eval(); champion_snapshot.requires_grad_(False)
+            self.validation_champion=champion_snapshot
+            source_sha=self._sha256_file(self.champion_path)
+            source_champion_version=self.champion_training_version
+            self.validation_promotion_epoch=int(self.metrics.get("promotions",0))
         self.validation_generation+=1
         generation=self.validation_generation
         self.validation_queue_invalid_reason=None
@@ -1905,11 +2005,13 @@ class OnlineGlobalAgent:
         self.last_validated_candidate_version=self.candidate_version
         self.validation_trained_replay_row_ids=sorted(
             int(x) for x in self.candidate_trained_replay_row_ids)
-        source_sha=self._sha256_file(self.champion_path)
         self.validation_source_sha256=source_sha
         self._atomic_json({"status":"collecting","start_after":self.validation_start_after,
                            "bars":0,"source_champion_sha256":source_sha,
                            "source_candidate_version":self.candidate_version,
+                           "source_champion_version":source_champion_version,
+                           "source_promotion_epoch":self.validation_promotion_epoch,
+                           "both_models_frozen":True,
                            "trained_replay_row_ids":self.validation_trained_replay_row_ids,
                            "same_market_timeline":False,"same_market_input":False,
                            "same_action_rule":False,
@@ -1920,6 +2022,7 @@ class OnlineGlobalAgent:
                           self.validation_state_path)
         self.metrics["candidate_validation_active"]=True
         self.metrics["candidate_validation_snapshot_version"]=self.candidate_version
+        self.metrics["champion_validation_snapshot_version"]=source_champion_version
         self.metrics["candidate_validation_snapshot_created_utc"]=time.strftime(
             "%Y-%m-%dT%H:%M:%SZ",time.gmtime())
         self.metrics["candidate_validation_start_after"]=self.validation_start_after
@@ -2029,8 +2132,7 @@ class OnlineGlobalAgent:
             cand_account.process_bar(panel,index,True)
             window=self._window(panel,index)
             args=window
-            with self.lock:
-                champion=self.champion
+            champion=self.validation_champion
             validation_candidate=self.validation_candidate
             accounts=(("champion",champion,champ_account),
                       ("candidate",validation_candidate,cand_account))
@@ -2038,10 +2140,9 @@ class OnlineGlobalAgent:
                 # Candidate observation and frozen candidate validation share
                 # one GPU inference slot so they cannot duplicate the 0.5B
                 # model allocation at the same time.
-                inference_lock=(self.candidate_live_inference_lock
-                                if model_name=="candidate" else nullcontext())
+                inference_lock=self.candidate_live_inference_lock
                 with inference_lock:
-                    snapshot_offloaded=(model_name=="candidate" and self.device.type=="cuda"
+                    snapshot_offloaded=(self.device.type=="cuda"
                                         and next(model.parameters()).device.type=="cpu")
                     if snapshot_offloaded:
                         model.to(self.device)
@@ -2121,13 +2222,16 @@ class OnlineGlobalAgent:
         trained_replay_row_ids=state.get("trained_replay_row_ids",[])
         if error is None and self.validation_bars<self.validation_window_bars:
             error="sequential paper validation window is incomplete"
-        if error is None and state.get("source_champion_sha256")!=source_sha:
+        frozen_pair=bool(state.get("both_models_frozen"))
+        if error is None and frozen_pair and state.get("source_promotion_epoch")!=int(self.metrics.get("promotions",0)):
+            error="another promotion invalidated this frozen model pair"
+        if error is None and not frozen_pair and state.get("source_champion_sha256")!=source_sha:
             error="champion changed during candidate validation"
         promoted=False
         if error is None:
             try:
                 promoted=self._commit_candidate(candidate,float(candidate_score),float(champion_score),
-                    self.validation_bars,source_sha,trained_replay_row_ids,
+                    self.validation_bars,state.get("source_champion_sha256",source_sha),trained_replay_row_ids,
                     candidate_version=snapshot_version,trial_state=state)
             except Exception as exc:
                 error=f"{type(exc).__name__}: {exc}"
@@ -2148,6 +2252,7 @@ class OnlineGlobalAgent:
                                "replay_rows_finalized":True},self.validation_state_path)
         self.validation_active=False
         self.validation_candidate=None
+        self.validation_champion=None
         self.last_validated_candidate_version=snapshot_version
         self.metrics["candidate_validation_active"]=False
         self.metrics["candidate_validation_bars"]=self.validation_bars
@@ -2169,8 +2274,11 @@ class OnlineGlobalAgent:
                           source_champion_sha256:str,trained_replay_row_ids=None,
                           candidate_version:int|None=None,trial_state=None)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
+        frozen_pair=bool((trial_state or {}).get("both_models_frozen"))
+        same_epoch=((trial_state or {}).get("source_promotion_epoch")==int(self.metrics.get("promotions",0)))
+        source_valid=(same_epoch if frozen_pair else self._sha256_file(self.champion_path)==source_champion_sha256)
         promote=(validation_bars>=self.validation_window_bars
-                 and self._sha256_file(self.champion_path)==source_champion_sha256
+                 and source_valid
                  and should_promote(score_new,score_old,1e-9))
         self.metrics["last_candidate_validation_score"]=score_new
         self.metrics["last_champion_validation_score"]=score_old
@@ -2184,7 +2292,7 @@ class OnlineGlobalAgent:
             self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed 128-bar frozen-snapshot paper gate"},
                               baseline_next)
             with self.lock:
-                if self._sha256_file(self.champion_path)!=source_champion_sha256:
+                if (frozen_pair and int(self.metrics.get("promotions",0))!=(trial_state or {}).get("source_promotion_epoch")) or (not frozen_pair and self._sha256_file(self.champion_path)!=source_champion_sha256):
                     raise RuntimeError("champion changed before atomic promotion")
                 os.replace(staged,self.champion_path)
                 os.replace(baseline_next,self.promotion_baseline_path)
@@ -2199,7 +2307,7 @@ class OnlineGlobalAgent:
         self.metrics["promotion_blocked_reason"]=None
         history=self.metrics.setdefault("candidate_gate_history",[])
         reason=("sequential paper-account net return improved" if promote else
-                "champion changed during comparison" if self._sha256_file(self.champion_path)!=source_champion_sha256 else
+                "model pair invalidated during comparison" if not source_valid else
                 "candidate paper-account net return did not beat champion")
         history.append({"time_utc":self.metrics["last_promotion_utc" if promote else "last_rejection_utc"],
                         "applied":promote,"reason":reason,
@@ -2209,6 +2317,8 @@ class OnlineGlobalAgent:
                            "bars":validation_bars,"candidate_score":float(score_new),
                            "champion_score":float(score_old),"applied":promote,
                            "source_candidate_version":candidate_version,
+                           "source_champion_version":(trial_state or {}).get("source_champion_version"),
+                           "both_models_frozen":frozen_pair,
                            "start_after":(trial_state or {}).get("start_after"),
                            "last_timestamp":(trial_state or {}).get("last_timestamp"),
                            "last_decisions":(trial_state or {}).get("last_decisions",{}),
@@ -2233,8 +2343,17 @@ class OnlineGlobalAgent:
           "replay_persistence":"durable_fifo_shared_frames_sqlite",
           "learning_priority":"complete_daily_experience_coverage",
           "replay_untrained_count":replay_stats["untrained"],
-          "candidate_eligible_replay_count":replay_stats["eligible"],
-          "candidate_untrained_replay_count":replay_stats["untrained"],
+          "replay_eligible_backlog":replay_stats["eligible"],
+          "candidate_eligible_replay_count":replay_stats["model_remaining"]["candidate"],
+          "candidate_untrained_replay_count":replay_stats["model_untrained"]["candidate"],
+          "champion_eligible_replay_count":replay_stats["model_remaining"]["champion"],
+          "champion_untrained_replay_count":replay_stats["model_untrained"]["champion"],
+          "dual_learning_enabled":True,
+          "champion_learning_enabled":not self.stop.is_set(),
+          "champion_training_version":self.champion_training_version,
+          "champion_batch_size":self.batch_size,
+          "champion_optimizer_steps_target":self.updates_per_candidate,
+          "champion_samples_target":self.updates_per_candidate*self.batch_size,
           "replay_quarantined_count":replay_stats["quarantined"],
           "replay_unsupported_count":replay_stats["unsupported"],
           "replay_oldest_unfinished_timestamp":replay_stats.get("oldest"),
@@ -2252,7 +2371,8 @@ class OnlineGlobalAgent:
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
           "promotion_baseline_sha256":self.promotion_baseline_sha256,
           "candidate_learning_enabled":not self.stop.is_set(),
-          "candidate_start_ready":bool(replay_stats["eligible"]),
+          "candidate_start_ready":bool(replay_stats["model_remaining"]["candidate"]),
+          "champion_start_ready":bool(replay_stats["model_remaining"]["champion"]),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":1,
           "candidate_batch_size":self.batch_size,
@@ -2303,7 +2423,7 @@ class OnlineGlobalAgent:
         _atomic_json(metrics,self.state_dir/"metrics.json")
 
     def checkpoint(self):
-        # Do not rewrite champion on shutdown. Only the promotion gate may replace it.
+        # Each learner saves its checkpoint before acknowledging replay.
         self._write_metrics()
 
 

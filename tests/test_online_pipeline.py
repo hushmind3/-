@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import torch
 
-from stockrl.global_online import Experience, GlobalReplayBuffer, IncrementalMarketCSV, MarketObservation, OnlineGlobalAgent, REWARD_VERSION
+from stockrl.global_online import Experience, GlobalReplayBuffer, IncrementalMarketCSV, MarketObservation, OnlineGlobalAgent, REWARD_VERSION, save_model
 from stockrl.global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig
 from stockrl.market_training import ContextConditionedTransformer, CONTEXT_FEATURES
 from stockrl.multiscale import MULTISCALE_FEATURE_COUNT
@@ -129,6 +129,62 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(replay.stats()["daily"][0]["exposures"],4)
             with closing(sqlite3.connect(path)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM frames").fetchone()[0],0)
+
+    def test_dual_replay_requires_both_saved_model_passes(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            replay.add(self.experience())
+            ids=replay.row_ids_for(replay.pending_batch(8))
+            replay.acknowledge_training(dict.fromkeys(ids,2),learner="candidate")
+            self.assertEqual(len(replay),1)
+            self.assertEqual(replay.stats()["model_remaining"],{"candidate":0,"champion":1})
+            replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            self.assertEqual(replay.stats()["eligible"],1)
+            replay.acknowledge_training(dict.fromkeys(ids,1),learner="champion")
+            self.assertEqual(len(replay),1)
+            replay.acknowledge_training(dict.fromkeys(ids,2),learner="champion")
+            replay.acknowledge_training(dict.fromkeys(ids,2),learner="champion")
+            self.assertEqual(len(replay),0)
+            self.assertEqual(replay.stats()["daily"][0]["completed"],1)
+            self.assertEqual(replay.stats()["daily"][0]["exposures"],4)
+
+    def test_both_models_train_restore_and_frozen_pair_competes(self):
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+                              n_markets=4,n_asset_types=4,max_seq_len=8)
+        with TemporaryDirectory(dir=ROOT) as directory:
+            root=Path(directory); model_dir=root/"models"; model_dir.mkdir()
+            save_model(model_dir/"champion.pt",GlobalMarketTransformer(cfg),cfg)
+            with patch("stockrl.paths.validate_model_dir",return_value=model_dir):
+                agent=OnlineGlobalAgent(root/"state",device="cpu",window=4,
+                    batch_size=2,updates_per_candidate=1,model_dir=model_dir)
+                agent.replay.add_many([self.experience(symbol_index=i) for i in (0,1)])
+                original=agent.champion
+                original_state={name:p.detach().clone() for name,p in original.state_dict().items()}
+                agent._train_champion()
+                for name,p in original.state_dict().items(): torch.testing.assert_close(p,original_state[name])
+                self.assertIsNot(agent.champion,original)
+                self.assertEqual(agent.metrics["last_champion_samples_trained"],2)
+                self.assertEqual(len(agent.replay),2)
+                # A restart restores the champion's saved training uses once.
+                agent=OnlineGlobalAgent(root/"state",device="cpu",window=4,
+                    batch_size=2,updates_per_candidate=1,model_dir=model_dir)
+                self.assertEqual(agent.replay.stats()["daily"][0]["exposures"],2)
+                agent._train_candidate()
+                frozen={name:p.detach().clone() for name,p in agent.validation_champion.state_dict().items()}
+                trial=json.loads(agent.validation_state_path.read_text(encoding="utf-8"))
+                self.assertTrue(trial["both_models_frozen"])
+                agent._train_champion()
+                for name,p in agent.validation_champion.state_dict().items(): torch.testing.assert_close(p,frozen[name])
+                self.assertEqual(len(agent.replay),2)
+                agent._train_candidate()
+                self.assertEqual(len(agent.replay),0)
+                # Champion may continue learning after the fair trial snapshot.
+                # The gate compares the two frozen versions, not today's hashes.
+                self.assertNotEqual(agent._sha256_file(agent.champion_path),trial["source_champion_sha256"])
+                self.assertTrue(agent._commit_candidate(agent.validation_candidate,.1,0.0,128,
+                    trial["source_champion_sha256"],trial_state=trial))
+                self.assertEqual(agent.metrics["promotions"],1)
 
     def test_pending_input_survives_weekend_restart_without_csv(self):
         with TemporaryDirectory(dir=ROOT) as directory:
