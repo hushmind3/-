@@ -1,25 +1,13 @@
 {
   "status": "observing",
-  "last_timestamp": "2026-09-30T06:55:00.000000000",
-  "candidate_version": 48,
+  "last_timestamp": "2026-09-30T09:19:57.000000000",
+  "candidate_version": 85,
   "candidate_training": false,
-  "last_inference_seconds": 1.3218446000009862,
-  "inference_count": 58,
+  "last_inference_seconds": 0.9116626000031829,
+  "inference_count": 212,
   "last_decisions": [
     {
-      "symbol": "005930.KS",
-      "action": "SELL"
-    },
-    {
-      "symbol": "010120.KS",
-      "action": "BUY"
-    },
-    {
-      "symbol": "012330.KS",
-      "action": "SELL"
-    },
-    {
-      "symbol": "034020.KS",
+      "symbol": "KLAC",
       "action": "BUY"
     }
   ]

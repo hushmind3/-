@@ -11,3 +11,748 @@
 2026-09-30 15:55:29,741 INFO polled=2 fetched=1453 appended=13 failures=0
 2026-09-30 15:55:45,586 INFO polled=2 fetched=1447 appended=7 failures=0
 2026-09-30 15:56:02,667 INFO polled=13 fetched=4568 appended=32 failures=0
+2026-09-30 16:05:52,996 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 16:05:52,997 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 16:05:54,904 INFO polled=15 fetched=4664 appended=132 failures=2
+2026-09-30 16:06:10,209 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 16:06:10,210 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 16:06:10,765 INFO polled=4 fetched=1481 appended=43 failures=2
+2026-09-30 16:06:26,547 INFO polled=2 fetched=1448 appended=8 failures=2
+2026-09-30 16:06:42,044 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 16:06:42,045 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 16:06:42,504 INFO polled=4 fetched=1440 appended=0 failures=2
+2026-09-30 16:06:59,627 INFO polled=13 fetched=4677 appended=20 failures=2
+2026-09-30 16:07:15,433 INFO polled=2 fetched=1499 appended=61 failures=2
+2026-09-30 16:07:31,291 INFO polled=2 fetched=1447 appended=7 failures=2
+2026-09-30 16:07:46,631 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 16:07:46,632 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 16:07:47,146 INFO polled=4 fetched=1445 appended=5 failures=2
+2026-09-30 16:08:04,424 INFO polled=13 fetched=4718 appended=52 failures=2
+2026-09-30 16:08:20,250 INFO polled=2 fetched=1474 appended=34 failures=2
+2026-09-30 16:08:36,083 INFO polled=2 fetched=1452 appended=12 failures=2
+2026-09-30 16:08:51,912 INFO polled=2 fetched=1441 appended=1 failures=2
+2026-09-30 16:09:09,116 INFO polled=13 fetched=4755 appended=72 failures=2
+2026-09-30 16:09:24,934 INFO polled=2 fetched=1459 appended=19 failures=2
+2026-09-30 16:09:40,730 INFO polled=2 fetched=1447 appended=7 failures=2
+2026-09-30 16:09:56,063 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 16:09:56,064 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 16:09:56,567 INFO polled=4 fetched=1442 appended=2 failures=2
+2026-09-30 16:10:12,222 WARNING ^HSI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 16:10:14,479 INFO polled=13 fetched=4487 appended=69 failures=3
+2026-09-30 16:10:30,376 INFO polled=3 fetched=1741 appended=21 failures=2
+2026-09-30 16:10:46,185 INFO polled=2 fetched=1441 appended=1 failures=2
+2026-09-30 16:11:02,011 INFO polled=2 fetched=1455 appended=16 failures=2
+2026-09-30 16:11:18,988 INFO polled=12 fetched=4492 appended=61 failures=2
+2026-09-30 16:11:34,921 INFO polled=3 fetched=1733 appended=12 failures=2
+2026-09-30 16:11:50,738 INFO polled=2 fetched=1448 appended=8 failures=2
+2026-09-30 16:12:06,585 INFO polled=2 fetched=1483 appended=45 failures=2
+2026-09-30 16:12:23,682 INFO polled=12 fetched=4482 appended=41 failures=2
+2026-09-30 16:12:39,604 INFO polled=3 fetched=1727 appended=5 failures=2
+2026-09-30 16:12:55,425 INFO polled=2 fetched=1446 appended=6 failures=2
+2026-09-30 16:13:11,226 INFO polled=2 fetched=1489 appended=51 failures=2
+2026-09-30 16:13:28,233 INFO polled=12 fetched=4484 appended=33 failures=2
+2026-09-30 16:13:44,118 INFO polled=3 fetched=1730 appended=7 failures=2
+2026-09-30 16:13:59,440 WARNING ^GDAXI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 16:13:59,441 WARNING ^FTSE failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 16:13:59,931 INFO polled=4 fetched=1443 appended=3 failures=2
+2026-09-30 16:14:16,293 INFO polled=2 fetched=1502 appended=64 failures=2
+2026-09-30 16:14:33,685 INFO polled=12 fetched=4487 appended=26 failures=2
+2026-09-30 16:14:49,952 INFO polled=3 fetched=1731 appended=7 failures=2
+2026-09-30 16:15:06,208 INFO polled=2 fetched=1476 appended=38 failures=2
+2026-09-30 16:15:22,415 INFO polled=2 fetched=1468 appended=28 failures=2
+2026-09-30 16:15:39,934 INFO polled=12 fetched=4493 appended=22 failures=2
+2026-09-30 16:15:56,197 INFO polled=3 fetched=1732 appended=7 failures=2
+2026-09-30 16:16:12,408 INFO polled=2 fetched=1494 appended=56 failures=2
+2026-09-30 16:16:28,518 INFO polled=2 fetched=1455 appended=15 failures=2
+2026-09-30 16:16:45,827 INFO polled=12 fetched=4503 appended=22 failures=2
+2026-09-30 16:17:02,040 INFO polled=3 fetched=1744 appended=19 failures=2
+2026-09-30 16:17:18,118 INFO polled=2 fetched=1487 appended=47 failures=2
+2026-09-30 16:17:34,203 INFO polled=2 fetched=1450 appended=10 failures=2
+2026-09-30 16:17:51,499 INFO polled=12 fetched=4510 appended=19 failures=2
+2026-09-30 16:18:07,676 INFO polled=3 fetched=1771 appended=46 failures=2
+2026-09-30 16:18:23,751 INFO polled=2 fetched=1463 appended=23 failures=2
+2026-09-30 16:18:39,843 INFO polled=2 fetched=1447 appended=7 failures=2
+2026-09-30 16:18:57,147 INFO polled=12 fetched=4520 appended=19 failures=2
+2026-09-30 16:19:13,352 INFO polled=5 fetched=1786 appended=59 failures=0
+2026-09-30 16:19:29,463 INFO polled=2 fetched=1461 appended=21 failures=0
+2026-09-30 16:19:45,561 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-30 16:20:02,893 INFO polled=12 fetched=4550 appended=39 failures=0
+2026-09-30 16:20:19,091 INFO polled=5 fetched=1790 appended=54 failures=0
+2026-09-30 16:21:35,742 INFO polled=15 fetched=4852 appended=31 failures=0
+2026-09-30 16:21:51,611 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 16:22:07,415 INFO polled=2 fetched=1477 appended=39 failures=0
+2026-09-30 16:22:23,236 INFO polled=2 fetched=1454 appended=14 failures=0
+2026-09-30 16:22:40,392 INFO polled=15 fetched=4872 appended=29 failures=0
+2026-09-30 16:22:56,162 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-30 16:23:11,966 INFO polled=2 fetched=1489 appended=51 failures=0
+2026-09-30 16:23:27,772 INFO polled=2 fetched=1452 appended=12 failures=0
+2026-09-30 16:23:45,001 INFO polled=15 fetched=4885 appended=29 failures=0
+2026-09-30 16:24:00,807 INFO polled=2 fetched=1449 appended=9 failures=0
+2026-09-30 16:24:16,630 INFO polled=2 fetched=1493 appended=53 failures=0
+2026-09-30 16:24:32,459 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-30 16:24:49,669 INFO polled=15 fetched=4897 appended=28 failures=0
+2026-09-30 16:25:05,517 INFO polled=2 fetched=1478 appended=40 failures=0
+2026-09-30 16:25:21,313 INFO polled=2 fetched=1467 appended=27 failures=0
+2026-09-30 16:25:37,107 INFO polled=2 fetched=1446 appended=6 failures=0
+2026-09-30 16:25:54,301 INFO polled=15 fetched=4911 appended=29 failures=0
+2026-09-30 16:26:10,141 INFO polled=2 fetched=1483 appended=45 failures=0
+2026-09-30 16:26:25,989 INFO polled=2 fetched=1461 appended=21 failures=0
+2026-09-30 16:26:41,875 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-30 16:26:59,214 INFO polled=15 fetched=4923 appended=28 failures=0
+2026-09-30 16:27:15,056 INFO polled=2 fetched=1496 appended=58 failures=0
+2026-09-30 16:27:30,918 INFO polled=2 fetched=1452 appended=12 failures=0
+2026-09-30 16:27:46,990 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-30 16:28:04,536 INFO polled=15 fetched=4965 appended=59 failures=0
+2026-09-30 16:28:20,652 INFO polled=2 fetched=1483 appended=43 failures=0
+2026-09-30 16:28:36,852 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-30 16:28:52,953 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-30 16:29:10,564 INFO polled=15 fetched=4999 appended=70 failures=0
+2026-09-30 16:29:26,667 INFO polled=2 fetched=1462 appended=22 failures=0
+2026-09-30 16:29:42,763 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-30 16:36:39,917 INFO polled=15 fetched=5047 appended=114 failures=0
+2026-09-30 16:36:55,923 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 16:37:12,114 INFO polled=2 fetched=1482 appended=44 failures=0
+2026-09-30 16:37:28,173 INFO polled=2 fetched=1452 appended=12 failures=0
+2026-09-30 16:37:45,795 INFO polled=15 fetched=5063 appended=25 failures=0
+2026-09-30 16:38:01,586 INFO polled=2 fetched=1454 appended=16 failures=0
+2026-09-30 16:38:17,440 INFO polled=2 fetched=1485 appended=45 failures=0
+2026-09-30 16:38:33,275 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-09-30 16:38:50,893 INFO polled=15 fetched=5080 appended=29 failures=0
+2026-09-30 16:39:06,897 INFO polled=2 fetched=1479 appended=41 failures=0
+2026-09-30 16:39:22,747 INFO polled=2 fetched=1460 appended=20 failures=0
+2026-09-30 16:39:38,656 INFO polled=2 fetched=1451 appended=11 failures=0
+2026-09-30 16:39:56,024 INFO polled=15 fetched=5092 appended=28 failures=0
+2026-09-30 16:40:12,145 INFO polled=2 fetched=1493 appended=55 failures=0
+2026-09-30 16:40:28,245 INFO polled=2 fetched=1452 appended=12 failures=0
+2026-09-30 16:40:44,311 INFO polled=2 fetched=1446 appended=6 failures=0
+2026-09-30 16:41:02,317 INFO polled=15 fetched=5120 appended=43 failures=0
+2026-09-30 16:42:01,108 INFO polled=15 fetched=5112 appended=22 failures=0
+2026-09-30 16:42:17,054 INFO polled=2 fetched=1453 appended=15 failures=0
+2026-09-30 16:42:32,865 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-09-30 16:42:48,673 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-09-30 16:43:06,074 INFO polled=15 fetched=5160 appended=56 failures=0
+2026-09-30 16:43:21,898 INFO polled=2 fetched=1467 appended=27 failures=0
+2026-09-30 16:43:37,734 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-09-30 16:43:53,540 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-09-30 16:44:18,040 INFO polled=15 fetched=5151 appended=23 failures=0
+2026-09-30 16:44:33,982 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 16:44:49,844 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 16:45:05,671 INFO polled=2 fetched=1470 appended=13 failures=0
+2026-09-30 16:45:23,033 INFO polled=15 fetched=5184 appended=28 failures=0
+2026-09-30 16:45:38,879 INFO polled=2 fetched=1449 appended=6 failures=0
+2026-09-30 16:45:54,770 INFO polled=2 fetched=1444 appended=3 failures=0
+2026-09-30 16:46:10,610 INFO polled=2 fetched=1481 appended=43 failures=0
+2026-09-30 16:46:28,705 INFO polled=15 fetched=5196 appended=39 failures=0
+2026-09-30 16:46:44,504 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-30 16:47:00,337 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-09-30 16:47:16,162 INFO polled=2 fetched=1495 appended=57 failures=0
+2026-09-30 16:47:33,548 INFO polled=15 fetched=5201 appended=32 failures=0
+2026-09-30 16:47:49,351 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-09-30 16:48:05,143 INFO polled=2 fetched=1467 appended=29 failures=0
+2026-09-30 16:48:20,955 INFO polled=2 fetched=1470 appended=30 failures=0
+2026-09-30 16:48:38,261 INFO polled=15 fetched=5215 appended=32 failures=0
+2026-09-30 16:48:54,083 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-30 16:49:09,903 INFO polled=2 fetched=1491 appended=53 failures=0
+2026-09-30 16:49:25,725 INFO polled=2 fetched=1454 appended=14 failures=0
+2026-09-30 16:49:43,023 INFO polled=15 fetched=5221 appended=25 failures=0
+2026-09-30 16:49:58,812 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-09-30 16:50:14,644 INFO polled=2 fetched=1493 appended=55 failures=0
+2026-09-30 16:50:30,450 INFO polled=2 fetched=1454 appended=14 failures=0
+2026-09-30 16:50:47,834 INFO polled=15 fetched=5234 appended=27 failures=0
+2026-09-30 16:51:03,659 INFO polled=2 fetched=1467 appended=29 failures=0
+2026-09-30 16:51:19,944 INFO polled=2 fetched=1477 appended=37 failures=0
+2026-09-30 16:51:36,131 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-30 16:51:53,908 INFO polled=15 fetched=5245 appended=25 failures=0
+2026-09-30 16:52:10,146 INFO polled=2 fetched=1482 appended=44 failures=0
+2026-09-30 16:52:26,390 INFO polled=2 fetched=1467 appended=27 failures=0
+2026-09-30 16:52:42,666 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-09-30 16:53:00,591 INFO polled=15 fetched=5256 appended=23 failures=0
+2026-09-30 16:53:16,839 INFO polled=2 fetched=1488 appended=50 failures=0
+2026-09-30 16:53:33,097 INFO polled=2 fetched=1459 appended=19 failures=0
+2026-09-30 16:53:49,249 INFO polled=2 fetched=1446 appended=6 failures=0
+2026-09-30 16:54:07,302 INFO polled=15 fetched=5312 appended=68 failures=0
+2026-09-30 16:54:23,518 INFO polled=2 fetched=1469 appended=29 failures=0
+2026-09-30 16:54:39,637 INFO polled=2 fetched=1449 appended=9 failures=0
+2026-09-30 16:54:55,742 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-09-30 16:55:13,539 INFO polled=15 fetched=5345 appended=77 failures=0
+2026-09-30 16:55:29,708 INFO polled=2 fetched=1454 appended=14 failures=0
+2026-09-30 16:55:45,899 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-30 16:56:01,976 INFO polled=2 fetched=1456 appended=17 failures=0
+2026-09-30 16:56:19,658 INFO polled=15 fetched=5355 appended=70 failures=0
+2026-09-30 16:56:35,795 INFO polled=2 fetched=1450 appended=10 failures=0
+2026-09-30 16:56:52,004 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-09-30 16:57:08,254 INFO polled=2 fetched=1477 appended=39 failures=0
+2026-09-30 16:57:26,115 INFO polled=15 fetched=5344 appended=46 failures=0
+2026-09-30 16:57:42,124 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-09-30 16:57:58,343 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-09-30 16:59:24,778 INFO polled=15 fetched=5345 appended=38 failures=0
+2026-09-30 16:59:40,785 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 16:59:56,795 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-09-30 17:00:13,383 WARNING AAPL failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,384 WARNING MSFT failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,385 WARNING NVDA failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,385 WARNING AMZN failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,386 WARNING GOOGL failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,387 WARNING GOOG failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,388 WARNING CRM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,388 WARNING TSLA failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,389 WARNING AVGO failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,390 WARNING COST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,390 WARNING NFLX failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,391 WARNING AMD failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,392 WARNING INTC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,393 WARNING QCOM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,393 WARNING CSCO failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,394 WARNING ADBE failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,395 WARNING TXN failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,396 WARNING AMAT failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,396 WARNING MU failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,397 WARNING KLAC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,398 WARNING LRCX failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,398 WARNING ASML failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,399 WARNING ADP failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,400 WARNING BKNG failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,400 WARNING PDD failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,401 WARNING INTU failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,402 WARNING ISRG failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,403 WARNING REGN failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,404 WARNING VRTX failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,404 WARNING GILD failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,405 WARNING AMGN failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,406 WARNING SBUX failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,407 WARNING PYPL failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,407 WARNING DIS failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,408 WARNING PANW failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,409 WARNING HD failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,409 WARNING MDB failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,410 WARNING JNJ failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,411 WARNING KO failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,412 WARNING PEP failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,412 WARNING MAR failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,413 WARNING MCD failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,414 WARNING MELI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,415 WARNING LULU failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,416 WARNING CHTR failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,416 WARNING TEAM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,417 WARNING PCAR failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,418 WARNING ORLY failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,419 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,419 WARNING KDP failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,420 WARNING NXPI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,421 WARNING FANG failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,421 WARNING MCHP failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,422 WARNING FAST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,423 WARNING HON failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,424 WARNING IBM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,424 WARNING JPM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,425 WARNING BAC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,426 WARNING WMT failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,426 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,427 WARNING CVX failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,428 WARNING UNH failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,428 WARNING CAT failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,429 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,430 WARNING SPY failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,430 WARNING QQQ failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,431 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,432 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:13,433 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:00:14,370 INFO polled=72 fetched=1521 appended=83 failures=69
+2026-09-30 17:00:31,135 WARNING AAPL failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,136 WARNING MSFT failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,137 WARNING NVDA failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,138 WARNING AMZN failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,138 WARNING GOOGL failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,139 WARNING GOOG failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,140 WARNING CRM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,141 WARNING TSLA failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,142 WARNING AVGO failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,143 WARNING COST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,144 WARNING NFLX failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,144 WARNING AMD failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,145 WARNING INTC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,146 WARNING QCOM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,147 WARNING CSCO failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,148 WARNING ADBE failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,148 WARNING TXN failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,149 WARNING AMAT failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,150 WARNING MU failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,151 WARNING KLAC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,152 WARNING LRCX failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,153 WARNING ASML failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,154 WARNING ADP failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,155 WARNING BKNG failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,156 WARNING PDD failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,157 WARNING INTU failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,157 WARNING ISRG failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,158 WARNING REGN failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,159 WARNING VRTX failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,160 WARNING GILD failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,161 WARNING AMGN failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,161 WARNING SBUX failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,162 WARNING PYPL failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,163 WARNING DIS failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,163 WARNING PANW failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,164 WARNING HD failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,165 WARNING MDB failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,166 WARNING JNJ failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,167 WARNING KO failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,168 WARNING PEP failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,168 WARNING MAR failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,169 WARNING MCD failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,170 WARNING MELI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,171 WARNING LULU failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,172 WARNING CHTR failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,173 WARNING TEAM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,173 WARNING PCAR failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,174 WARNING ORLY failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,175 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,176 WARNING KDP failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,177 WARNING NXPI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,178 WARNING FANG failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,178 WARNING MCHP failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,179 WARNING FAST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,180 WARNING HON failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,181 WARNING IBM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,182 WARNING JPM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,182 WARNING BAC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,183 WARNING WMT failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,183 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,184 WARNING CVX failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,185 WARNING UNH failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,185 WARNING CAT failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,186 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,187 WARNING SPY failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,188 WARNING QQQ failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,188 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,189 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:31,190 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:00:33,683 INFO polled=84 fetched=5366 appended=30 failures=69
+2026-09-30 17:00:49,657 INFO polled=2 fetched=1445 appended=5 failures=69
+2026-09-30 17:01:06,201 WARNING CRM failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,202 WARNING AVGO failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,203 WARNING REGN failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,204 WARNING VRTX failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,205 WARNING HD failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,206 WARNING JNJ failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,206 WARNING PCAR failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,207 WARNING ORLY failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,208 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,208 WARNING KDP failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,210 WARNING IBM failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,210 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,211 WARNING CVX failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,212 WARNING CAT failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,213 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,213 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,214 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,215 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:01:06,922 INFO polled=71 fetched=1527 appended=89 failures=18
+2026-09-30 17:01:22,768 INFO polled=3 fetched=1495 appended=25 failures=18
+2026-09-30 17:01:40,995 INFO polled=15 fetched=5378 appended=28 failures=18
+2026-09-30 17:01:57,020 INFO polled=2 fetched=1445 appended=5 failures=18
+2026-09-30 17:02:13,579 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:13,580 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:13,581 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:13,581 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:13,582 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:13,582 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:02:14,412 INFO polled=71 fetched=1589 appended=100 failures=6
+2026-09-30 17:02:30,463 INFO polled=3 fetched=1488 appended=17 failures=6
+2026-09-30 17:02:49,126 INFO polled=15 fetched=5390 appended=28 failures=6
+2026-09-30 17:03:05,721 INFO polled=2 fetched=1472 appended=34 failures=6
+2026-09-30 17:03:23,146 INFO polled=65 fetched=1608 appended=69 failures=6
+2026-09-30 17:03:39,543 INFO polled=3 fetched=1485 appended=13 failures=6
+2026-09-30 17:03:57,701 INFO polled=14 fetched=5067 appended=24 failures=6
+2026-09-30 17:04:13,078 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:13,079 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:13,079 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:13,080 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:13,081 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:13,082 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:04:14,090 INFO polled=8 fetched=1496 appended=58 failures=6
+2026-09-30 17:04:31,605 INFO polled=65 fetched=1602 appended=32 failures=6
+2026-09-30 17:04:47,777 INFO polled=3 fetched=1481 appended=8 failures=6
+2026-09-30 17:05:05,411 INFO polled=14 fetched=5107 appended=54 failures=6
+2026-09-30 17:05:21,748 INFO polled=2 fetched=1468 appended=28 failures=6
+2026-09-30 17:05:39,092 INFO polled=65 fetched=1635 appended=55 failures=6
+2026-09-30 17:05:55,651 INFO polled=3 fetched=1480 appended=6 failures=6
+2026-09-30 17:06:14,469 INFO polled=14 fetched=5141 appended=67 failures=6
+2026-09-30 17:06:31,048 INFO polled=2 fetched=1463 appended=23 failures=6
+2026-09-30 17:06:48,679 INFO polled=65 fetched=1657 appended=44 failures=6
+2026-09-30 17:07:05,105 INFO polled=3 fetched=1503 appended=30 failures=6
+2026-09-30 17:07:23,821 INFO polled=14 fetched=5144 appended=56 failures=6
+2026-09-30 17:07:40,173 INFO polled=2 fetched=1452 appended=12 failures=6
+2026-09-30 17:07:57,702 INFO polled=65 fetched=1686 appended=35 failures=6
+2026-09-30 17:08:13,223 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:13,224 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:13,225 WARNING GS failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:13,226 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:13,227 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:13,227 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:08:14,123 INFO polled=9 fetched=1537 appended=62 failures=6
+2026-09-30 17:08:32,517 INFO polled=14 fetched=5134 appended=31 failures=6
+2026-09-30 17:08:49,057 INFO polled=2 fetched=1448 appended=8 failures=6
+2026-09-30 17:09:06,800 INFO polled=65 fetched=1744 appended=66 failures=6
+2026-09-30 17:09:23,224 INFO polled=3 fetched=1509 appended=31 failures=6
+2026-09-30 17:09:41,135 INFO polled=14 fetched=5144 appended=29 failures=6
+2026-09-30 17:09:57,215 INFO polled=2 fetched=1440 appended=0 failures=6
+2026-09-30 17:10:15,048 INFO polled=65 fetched=1790 appended=88 failures=6
+2026-09-30 17:10:31,270 INFO polled=3 fetched=1493 appended=14 failures=6
+2026-09-30 17:10:48,918 INFO polled=14 fetched=5152 appended=25 failures=6
+2026-09-30 17:11:05,090 INFO polled=2 fetched=1464 appended=26 failures=6
+2026-09-30 17:11:22,530 INFO polled=65 fetched=1803 appended=70 failures=6
+2026-09-30 17:11:38,710 INFO polled=3 fetched=1491 appended=11 failures=6
+2026-09-30 17:11:56,335 INFO polled=14 fetched=5167 appended=28 failures=6
+2026-09-30 17:12:12,508 INFO polled=2 fetched=1492 appended=54 failures=6
+2026-09-30 17:12:29,918 INFO polled=65 fetched=1806 appended=44 failures=6
+2026-09-30 17:12:46,085 INFO polled=3 fetched=1486 appended=5 failures=6
+2026-09-30 17:13:03,766 INFO polled=14 fetched=5188 appended=39 failures=6
+2026-09-30 17:13:19,084 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:13:19,085 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:13:19,085 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:13:19,086 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:13:19,087 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:13:19,945 INFO polled=8 fetched=1486 appended=46 failures=5
+2026-09-30 17:13:37,307 INFO polled=65 fetched=1822 appended=40 failures=5
+2026-09-30 17:13:53,493 INFO polled=3 fetched=1490 appended=8 failures=5
+2026-09-30 17:14:11,148 INFO polled=14 fetched=5226 appended=60 failures=5
+2026-09-30 17:14:27,322 INFO polled=3 fetched=1470 appended=29 failures=5
+2026-09-30 17:14:44,728 INFO polled=65 fetched=1849 appended=42 failures=5
+2026-09-30 17:15:00,900 INFO polled=3 fetched=1491 appended=8 failures=5
+2026-09-30 17:15:18,677 INFO polled=14 fetched=5265 appended=80 failures=5
+2026-09-30 17:15:34,822 INFO polled=3 fetched=1452 appended=11 failures=5
+2026-09-30 17:15:52,188 INFO polled=65 fetched=1863 appended=27 failures=5
+2026-09-30 17:16:08,496 INFO polled=3 fetched=1530 appended=48 failures=5
+2026-09-30 17:16:26,919 INFO polled=14 fetched=5242 appended=44 failures=5
+2026-09-30 17:16:43,302 INFO polled=3 fetched=1446 appended=5 failures=5
+2026-09-30 17:17:00,885 INFO polled=65 fetched=1888 appended=42 failures=5
+2026-09-30 17:17:17,088 INFO polled=3 fetched=1545 appended=61 failures=5
+2026-09-30 17:17:35,730 INFO polled=14 fetched=5243 appended=32 failures=5
+2026-09-30 17:17:52,266 INFO polled=3 fetched=1446 appended=5 failures=5
+2026-09-30 17:18:09,950 INFO polled=65 fetched=1955 appended=80 failures=5
+2026-09-30 17:18:25,284 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:18:25,285 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:18:25,285 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:18:25,286 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:18:25,287 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:18:26,359 INFO polled=8 fetched=1515 appended=28 failures=5
+2026-09-30 17:18:44,672 INFO polled=14 fetched=5250 appended=27 failures=5
+2026-09-30 17:19:00,840 INFO polled=3 fetched=1446 appended=4 failures=5
+2026-09-30 17:19:18,329 INFO polled=65 fetched=2002 appended=88 failures=5
+2026-09-30 17:19:34,921 INFO polled=3 fetched=1497 appended=9 failures=5
+2026-09-30 17:19:53,722 INFO polled=14 fetched=5262 appended=27 failures=5
+2026-09-30 17:20:10,110 INFO polled=3 fetched=1489 appended=49 failures=5
+2026-09-30 17:20:27,820 INFO polled=65 fetched=1985 appended=45 failures=5
+2026-09-30 17:20:44,013 INFO polled=3 fetched=1496 appended=7 failures=5
+2026-09-30 17:21:02,235 INFO polled=14 fetched=5270 appended=23 failures=5
+2026-09-30 17:21:18,792 INFO polled=3 fetched=1500 appended=60 failures=5
+2026-09-30 17:21:36,634 INFO polled=65 fetched=1994 appended=31 failures=5
+2026-09-30 17:21:53,068 INFO polled=3 fetched=1496 appended=6 failures=5
+2026-09-30 17:22:11,835 INFO polled=14 fetched=5337 appended=80 failures=5
+2026-09-30 17:22:28,441 INFO polled=3 fetched=1463 appended=21 failures=5
+2026-09-30 17:22:46,157 INFO polled=65 fetched=2013 appended=34 failures=5
+2026-09-30 17:23:02,365 INFO polled=3 fetched=1507 appended=18 failures=5
+2026-09-30 17:23:20,608 INFO polled=14 fetched=5347 appended=64 failures=5
+2026-09-30 17:23:35,933 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:23:35,935 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:23:35,936 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:23:35,936 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:23:35,937 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:23:37,172 INFO polled=8 fetched=1454 appended=11 failures=5
+2026-09-30 17:23:55,172 INFO polled=65 fetched=2033 appended=33 failures=5
+2026-09-30 17:24:11,592 INFO polled=3 fetched=1544 appended=54 failures=5
+2026-09-30 17:24:29,846 INFO polled=14 fetched=5333 appended=38 failures=5
+2026-09-30 17:24:46,186 INFO polled=3 fetched=1447 appended=4 failures=5
+2026-09-30 17:25:03,839 INFO polled=65 fetched=2077 appended=50 failures=5
+2026-09-30 17:25:20,205 INFO polled=3 fetched=1536 appended=42 failures=5
+2026-09-30 17:25:38,452 INFO polled=14 fetched=5339 appended=32 failures=5
+2026-09-30 17:25:54,928 INFO polled=3 fetched=1447 appended=4 failures=5
+2026-09-30 17:26:12,945 INFO polled=65 fetched=2132 appended=82 failures=5
+2026-09-30 17:26:29,362 INFO polled=3 fetched=1513 appended=18 failures=5
+2026-09-30 17:26:47,172 INFO polled=14 fetched=5347 appended=28 failures=5
+2026-09-30 17:27:03,684 INFO polled=3 fetched=1466 appended=24 failures=5
+2026-09-30 17:27:21,620 INFO polled=65 fetched=2151 appended=69 failures=5
+2026-09-30 17:27:38,068 INFO polled=3 fetched=1506 appended=10 failures=5
+2026-09-30 17:27:56,405 INFO polled=14 fetched=5353 appended=22 failures=5
+2026-09-30 17:28:12,623 INFO polled=3 fetched=1490 appended=48 failures=5
+2026-09-30 17:28:30,552 INFO polled=65 fetched=2141 appended=39 failures=5
+2026-09-30 17:28:45,900 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:28:45,901 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:28:45,902 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:28:45,903 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:28:45,904 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:28:47,134 INFO polled=8 fetched=1510 appended=13 failures=5
+2026-09-30 17:29:05,731 INFO polled=14 fetched=5391 appended=50 failures=5
+2026-09-30 17:29:21,913 INFO polled=3 fetched=1483 appended=39 failures=5
+2026-09-30 17:29:39,750 INFO polled=65 fetched=2167 appended=44 failures=5
+2026-09-30 17:29:56,215 INFO polled=3 fetched=1501 appended=3 failures=5
+2026-09-30 17:30:14,894 INFO polled=14 fetched=5442 appended=83 failures=5
+2026-09-30 17:30:31,137 INFO polled=3 fetched=1459 appended=15 failures=5
+2026-09-30 17:30:49,052 INFO polled=65 fetched=2180 appended=36 failures=5
+2026-09-30 17:31:05,591 INFO polled=3 fetched=1527 appended=30 failures=5
+2026-09-30 17:31:24,303 INFO polled=14 fetched=5431 appended=52 failures=5
+2026-09-30 17:31:40,459 INFO polled=3 fetched=1454 appended=10 failures=5
+2026-09-30 17:31:59,493 INFO polled=65 fetched=2211 appended=36 failures=5
+2026-09-30 17:32:15,805 INFO polled=3 fetched=1557 appended=58 failures=5
+2026-09-30 17:32:33,600 INFO polled=14 fetched=5419 appended=29 failures=5
+2026-09-30 17:32:49,723 INFO polled=3 fetched=1450 appended=6 failures=5
+2026-09-30 17:33:07,442 INFO polled=65 fetched=2273 appended=74 failures=5
+2026-09-30 17:33:23,854 INFO polled=3 fetched=1521 appended=19 failures=5
+2026-09-30 17:33:41,665 INFO polled=14 fetched=5431 appended=28 failures=5
+2026-09-30 17:33:56,989 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:33:56,990 WARNING XOM failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:33:56,991 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:33:56,991 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:33:56,992 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:33:58,081 INFO polled=8 fetched=1451 appended=7 failures=5
+2026-09-30 17:34:16,123 INFO polled=65 fetched=2305 appended=78 failures=5
+2026-09-30 17:34:32,701 INFO polled=3 fetched=1519 appended=16 failures=5
+2026-09-30 17:34:51,250 INFO polled=14 fetched=5440 appended=26 failures=5
+2026-09-30 17:35:07,621 INFO polled=3 fetched=1479 appended=37 failures=5
+2026-09-30 17:35:25,493 INFO polled=65 fetched=2300 appended=53 failures=5
+2026-09-30 17:35:41,678 INFO polled=3 fetched=1518 appended=14 failures=5
+2026-09-30 17:35:59,729 INFO polled=14 fetched=5452 appended=25 failures=5
+2026-09-30 17:36:16,107 INFO polled=3 fetched=1496 appended=54 failures=5
+2026-09-30 17:36:34,196 INFO polled=65 fetched=2315 appended=39 failures=5
+2026-09-30 17:36:50,762 INFO polled=3 fetched=1513 appended=8 failures=5
+2026-09-30 17:37:09,139 INFO polled=14 fetched=5510 appended=73 failures=5
+2026-09-30 17:37:25,701 INFO polled=3 fetched=1468 appended=24 failures=5
+2026-09-30 17:37:43,705 INFO polled=65 fetched=2330 appended=38 failures=5
+2026-09-30 17:37:59,836 INFO polled=3 fetched=1511 appended=5 failures=5
+2026-09-30 17:38:18,709 INFO polled=14 fetched=5539 appended=79 failures=5
+2026-09-30 17:38:34,820 INFO polled=3 fetched=1452 appended=8 failures=5
+2026-09-30 17:38:55,715 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:38:55,720 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:38:55,720 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:38:55,721 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:38:59,166 INFO polled=84 fetched=6468 appended=42 failures=4
+2026-09-30 17:39:14,496 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:39:14,497 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:39:14,498 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:39:14,499 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:39:15,316 INFO polled=6 fetched=1467 appended=29 failures=4
+2026-09-30 17:39:31,613 INFO polled=2 fetched=1443 appended=3 failures=4
+2026-09-30 17:39:46,946 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:39:46,946 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:39:46,947 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:39:46,948 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:39:47,697 INFO polled=6 fetched=1441 appended=1 failures=4
+2026-09-30 17:40:06,764 INFO polled=80 fetched=6527 appended=76 failures=4
+2026-09-30 17:40:22,947 INFO polled=2 fetched=1477 appended=37 failures=4
+2026-09-30 17:40:39,038 INFO polled=2 fetched=1452 appended=12 failures=4
+2026-09-30 17:42:11,078 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:42:11,079 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:42:11,080 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:42:11,081 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:42:13,977 INFO polled=84 fetched=6601 appended=110 failures=4
+2026-09-30 17:42:29,315 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:42:29,316 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:42:29,317 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:42:29,318 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:42:29,890 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 17:42:45,935 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 17:43:01,256 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:43:01,257 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:43:01,258 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:43:01,258 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:43:01,760 INFO polled=6 fetched=1452 appended=13 failures=4
+2026-09-30 17:43:20,828 INFO polled=80 fetched=6672 appended=87 failures=4
+2026-09-30 17:43:36,636 INFO polled=2 fetched=1452 appended=12 failures=4
+2026-09-30 17:43:58,871 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:43:58,875 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:43:58,880 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:43:58,884 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:44:01,366 INFO polled=84 fetched=6644 appended=24 failures=4
+2026-09-30 17:44:16,699 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:44:16,700 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:44:16,700 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:44:16,701 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:44:17,213 INFO polled=6 fetched=1456 appended=18 failures=4
+2026-09-30 17:44:33,020 INFO polled=2 fetched=1441 appended=1 failures=4
+2026-09-30 17:44:48,349 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:44:48,349 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:44:48,350 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:44:48,351 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:44:48,835 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 17:45:08,014 INFO polled=80 fetched=6731 appended=107 failures=4
+2026-09-30 17:45:23,851 INFO polled=2 fetched=1460 appended=20 failures=4
+2026-09-30 17:45:39,635 INFO polled=2 fetched=1449 appended=9 failures=4
+2026-09-30 17:45:54,957 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:45:54,958 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:45:54,959 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:45:54,959 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:45:55,431 INFO polled=6 fetched=1443 appended=3 failures=4
+2026-09-30 17:46:14,682 INFO polled=80 fetched=6787 appended=106 failures=4
+2026-09-30 17:46:30,807 INFO polled=2 fetched=1457 appended=17 failures=4
+2026-09-30 17:46:47,001 INFO polled=2 fetched=1446 appended=6 failures=4
+2026-09-30 17:47:12,648 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:47:12,649 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:47:12,650 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:47:12,651 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:47:15,247 INFO polled=84 fetched=6774 appended=52 failures=4
+2026-09-30 17:47:30,583 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:47:30,584 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:47:30,585 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:47:30,585 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:47:31,233 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 17:50:04,688 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:50:04,692 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:50:04,696 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:50:04,700 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 17:50:08,008 INFO polled=84 fetched=6877 appended=131 failures=4
+2026-09-30 17:50:23,313 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:50:23,314 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:50:23,315 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:50:23,316 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 17:50:24,070 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 17:50:40,109 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 17:50:55,427 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:50:55,428 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:50:55,429 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:50:55,430 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 17:50:56,108 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 17:51:16,074 INFO polled=80 fetched=6964 appended=103 failures=4
+2026-09-30 17:51:31,901 INFO polled=2 fetched=1452 appended=12 failures=4
+2026-09-30 17:51:47,746 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 17:52:03,049 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:52:03,050 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:52:03,051 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:52:03,052 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 17:52:03,574 INFO polled=6 fetched=1465 appended=27 failures=4
+2026-09-30 17:52:22,613 INFO polled=80 fetched=6985 appended=82 failures=4
+2026-09-30 17:52:38,417 INFO polled=2 fetched=1453 appended=13 failures=4
+2026-09-30 17:52:54,217 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 17:53:10,304 INFO polled=2 fetched=1486 appended=48 failures=4
+2026-09-30 17:53:29,376 INFO polled=80 fetched=7007 appended=68 failures=4
+2026-09-30 17:53:45,198 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 17:54:01,187 INFO polled=2 fetched=1447 appended=7 failures=4
+2026-09-30 17:54:16,537 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:54:16,538 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:54:16,538 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:54:16,539 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 17:54:17,036 INFO polled=6 fetched=1484 appended=44 failures=4
+2026-09-30 17:54:36,339 INFO polled=80 fetched=7048 appended=73 failures=4
+2026-09-30 17:54:52,167 INFO polled=2 fetched=1446 appended=6 failures=4
+2026-09-30 17:55:08,274 INFO polled=2 fetched=1480 appended=42 failures=4
+2026-09-30 17:55:24,332 INFO polled=2 fetched=1460 appended=20 failures=4
+2026-09-30 17:55:43,626 INFO polled=80 fetched=7076 appended=62 failures=4
+2026-09-30 17:55:59,717 INFO polled=2 fetched=1442 appended=2 failures=4
+2026-09-30 17:56:16,090 INFO polled=2 fetched=1493 appended=55 failures=4
+2026-09-30 17:56:32,200 INFO polled=2 fetched=1452 appended=12 failures=4
+2026-09-30 17:56:51,794 INFO polled=80 fetched=7108 appended=55 failures=4
+2026-09-30 17:57:07,936 INFO polled=2 fetched=1473 appended=35 failures=4
+2026-09-30 17:57:24,067 INFO polled=2 fetched=1460 appended=20 failures=4
+2026-09-30 17:57:40,217 INFO polled=2 fetched=1453 appended=13 failures=4
+2026-09-30 17:57:59,528 INFO polled=80 fetched=7153 appended=64 failures=4
+2026-09-30 17:58:15,625 INFO polled=2 fetched=1483 appended=45 failures=4
+2026-09-30 17:58:30,951 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:58:30,952 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:58:30,952 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:58:30,953 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 17:58:31,914 INFO polled=6 fetched=1456 appended=16 failures=4
+2026-09-30 17:58:48,176 INFO polled=2 fetched=1453 appended=13 failures=4
+2026-09-30 17:59:07,481 INFO polled=80 fetched=7221 appended=93 failures=4
+2026-09-30 17:59:23,632 INFO polled=2 fetched=1470 appended=30 failures=4
+2026-09-30 17:59:39,694 INFO polled=2 fetched=1447 appended=7 failures=4
+2026-09-30 17:59:55,875 INFO polled=2 fetched=1443 appended=3 failures=4
+2026-09-30 18:00:15,555 INFO polled=80 fetched=7285 appended=119 failures=4
+2026-09-30 18:00:31,700 INFO polled=2 fetched=1460 appended=20 failures=4
+2026-09-30 18:00:47,765 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 18:01:04,010 INFO polled=2 fetched=1457 appended=19 failures=4
+2026-09-30 18:01:23,836 INFO polled=80 fetched=7314 appended=89 failures=4
+2026-09-30 18:01:40,016 INFO polled=2 fetched=1453 appended=13 failures=4
+2026-09-30 18:01:56,291 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 18:02:12,535 INFO polled=2 fetched=1490 appended=52 failures=4
+2026-09-30 18:02:41,554 INFO polled=80 fetched=7344 appended=81 failures=4
+2026-09-30 18:02:57,813 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 18:03:14,033 INFO polled=2 fetched=1492 appended=54 failures=4
+2026-09-30 18:03:33,592 INFO polled=80 fetched=7380 appended=68 failures=4
+2026-09-30 18:03:48,902 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:03:48,903 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:03:48,903 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:03:48,904 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:03:49,676 INFO polled=6 fetched=1446 appended=6 failures=4
+2026-09-30 18:04:05,788 INFO polled=2 fetched=1469 appended=31 failures=4
+2026-09-30 18:04:21,915 INFO polled=2 fetched=1467 appended=27 failures=4
+2026-09-30 18:04:41,028 INFO polled=80 fetched=7408 appended=56 failures=4
+2026-09-30 18:04:57,108 INFO polled=2 fetched=1446 appended=6 failures=4
+2026-09-30 18:05:13,221 INFO polled=2 fetched=1489 appended=51 failures=4
+2026-09-30 18:05:29,329 INFO polled=2 fetched=1457 appended=17 failures=4
+2026-09-30 18:05:49,031 INFO polled=80 fetched=7442 appended=60 failures=4
+2026-09-30 18:06:05,143 INFO polled=2 fetched=1474 appended=36 failures=4
+2026-09-30 18:06:21,626 INFO polled=2 fetched=1467 appended=27 failures=4
+2026-09-30 18:06:38,192 INFO polled=2 fetched=1447 appended=7 failures=4
+2026-09-30 18:06:59,317 INFO polled=80 fetched=7483 appended=62 failures=4
+2026-09-30 18:07:15,796 INFO polled=2 fetched=1493 appended=55 failures=4
+2026-09-30 18:07:32,248 INFO polled=2 fetched=1457 appended=17 failures=4
+2026-09-30 18:07:48,437 INFO polled=2 fetched=1442 appended=2 failures=4
+2026-09-30 18:08:08,209 INFO polled=80 fetched=7562 appended=102 failures=4
+2026-09-30 18:08:24,654 INFO polled=2 fetched=1471 appended=31 failures=4
+2026-09-30 18:08:41,199 INFO polled=2 fetched=1450 appended=10 failures=4
+2026-09-30 18:08:56,529 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:08:56,530 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:08:56,530 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:08:56,531 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:08:57,595 INFO polled=6 fetched=1445 appended=5 failures=4
+2026-09-30 18:09:18,455 INFO polled=80 fetched=7632 appended=110 failures=4
+2026-09-30 18:09:34,647 INFO polled=2 fetched=1458 appended=18 failures=4
+2026-09-30 18:09:51,279 INFO polled=2 fetched=1446 appended=6 failures=4
+2026-09-30 18:10:08,049 INFO polled=2 fetched=1474 appended=36 failures=4
+2026-09-30 18:10:28,754 INFO polled=80 fetched=7660 appended=89 failures=4
+2026-09-30 18:10:44,925 INFO polled=2 fetched=1449 appended=9 failures=4
+2026-09-30 18:11:01,225 INFO polled=2 fetched=1442 appended=3 failures=4
+2026-09-30 18:11:17,846 INFO polled=2 fetched=1494 appended=54 failures=4
+2026-09-30 18:11:39,010 INFO polled=80 fetched=7676 appended=61 failures=4
+2026-09-30 18:11:55,574 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 18:12:11,916 INFO polled=2 fetched=1492 appended=54 failures=4
+2026-09-30 18:12:28,499 INFO polled=2 fetched=1453 appended=13 failures=4
+2026-09-30 18:12:48,809 INFO polled=80 fetched=7709 appended=62 failures=4
+2026-09-30 18:13:05,121 INFO polled=2 fetched=1467 appended=29 failures=4
+2026-09-30 18:13:21,470 INFO polled=2 fetched=1469 appended=29 failures=4
+2026-09-30 18:13:37,801 INFO polled=2 fetched=1449 appended=9 failures=4
+2026-09-30 18:13:58,549 INFO polled=80 fetched=7752 appended=65 failures=4
+2026-09-30 18:14:13,860 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:14:13,861 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:14:13,862 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:14:13,862 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:14:14,954 INFO polled=6 fetched=1488 appended=50 failures=4
+2026-09-30 18:14:31,492 INFO polled=2 fetched=1460 appended=20 failures=4
+2026-09-30 18:14:47,892 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 18:15:08,270 INFO polled=80 fetched=7837 appended=107 failures=4
+2026-09-30 18:15:25,054 INFO polled=2 fetched=1473 appended=33 failures=4
+2026-09-30 18:15:41,584 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 18:15:57,906 INFO polled=2 fetched=1442 appended=2 failures=4
+2026-09-30 18:16:18,906 INFO polled=80 fetched=7887 appended=100 failures=4
+2026-09-30 18:16:35,103 INFO polled=2 fetched=1458 appended=18 failures=4
+2026-09-30 18:16:51,546 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 18:17:08,046 INFO polled=2 fetched=1476 appended=38 failures=4
+2026-09-30 18:17:28,972 INFO polled=80 fetched=7908 appended=83 failures=4
+2026-09-30 18:17:45,313 INFO polled=2 fetched=1451 appended=11 failures=4
+2026-09-30 18:18:01,687 INFO polled=2 fetched=1444 appended=4 failures=4
+2026-09-30 18:18:18,040 INFO polled=2 fetched=1492 appended=52 failures=4
+2026-09-30 18:18:38,576 INFO polled=80 fetched=7925 appended=63 failures=4
+2026-09-30 18:18:54,957 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 18:19:11,157 INFO polled=2 fetched=1486 appended=48 failures=4
+2026-09-30 18:19:26,544 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:19:26,545 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:19:26,546 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:19:26,547 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 300s
+2026-09-30 18:19:27,468 INFO polled=6 fetched=1456 appended=16 failures=4
+2026-09-30 18:19:47,116 INFO polled=80 fetched=7958 appended=58 failures=4
+2026-09-30 18:20:03,321 INFO polled=2 fetched=1460 appended=22 failures=4
+2026-09-30 18:20:19,522 INFO polled=2 fetched=1476 appended=36 failures=4
+2026-09-30 18:20:35,904 INFO polled=2 fetched=1452 appended=12 failures=4
+2026-09-30 18:20:55,762 INFO polled=80 fetched=7993 appended=59 failures=4
+2026-09-30 18:21:12,013 INFO polled=2 fetched=1487 appended=49 failures=4
+2026-09-30 18:21:28,425 INFO polled=2 fetched=1455 appended=15 failures=4
+2026-09-30 18:21:44,850 INFO polled=2 fetched=1447 appended=7 failures=4
+2026-09-30 18:22:04,625 INFO polled=80 fetched=8043 appended=71 failures=4
+2026-09-30 18:22:20,818 INFO polled=2 fetched=1479 appended=39 failures=4
+2026-09-30 18:22:37,010 INFO polled=2 fetched=1454 appended=14 failures=4
+2026-09-30 18:22:53,141 INFO polled=2 fetched=1445 appended=5 failures=4
+2026-09-30 18:23:13,058 INFO polled=80 fetched=8125 appended=108 failures=4
+2026-09-30 18:23:29,152 INFO polled=2 fetched=1461 appended=21 failures=4
+2026-09-30 18:23:45,264 INFO polled=2 fetched=1447 appended=7 failures=4
+2026-09-30 18:24:01,393 INFO polled=2 fetched=1449 appended=10 failures=4
+2026-09-30 18:24:21,110 INFO polled=80 fetched=8167 appended=103 failures=4

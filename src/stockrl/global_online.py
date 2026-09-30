@@ -9,7 +9,7 @@ from collections import deque, OrderedDict
 from contextlib import closing, nullcontext
 from dataclasses import asdict, dataclass
 from pathlib import Path
-import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc
+import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc, math
 import re
 import hashlib
 
@@ -21,14 +21,14 @@ from torch.distributions import Categorical
 
 from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTransformer,
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
-from .paper_account import PaperAccount
+from .paper_account import PaperAccount, _currency
 
-REWARD_VERSION="symbol_and_portfolio_v4"
+REWARD_VERSION="symbol_and_portfolio_v5"
 PAPER_EXPLORATION_EPSILON=0.05
 ONLINE_TRAINABLE_BLOCKS=4
-REWARD_DEFINITION=("symbol_and_portfolio_v4: sampled-policy action probabilities with clipped importance weighting; "
-                   "per-symbol net PnL trains action/allocation contribution; "
-                   "normalized whole-account net equity change is a separate portfolio-value target")
+REWARD_DEFINITION=("symbol_and_portfolio_v5: online RL uses executed cash-only paper-account outcomes; "
+                   "trade reward horizon starts after the linked next-bar fill; "
+                   "per-symbol net PnL and normalized whole-account net equity change are kept separate")
 
 
 class IncrementalMarketCSV:
@@ -315,10 +315,12 @@ class GlobalReplayBuffer:
         # paper validation. The isolated per-action proxy can assign a short
         # reward to SELL, while PaperAccount forbids naked shorts; keep those
         # rows in the journal for audit, but do not sample them for training.
-        paper=[x for x in items if x.source.startswith("paper")
+        paper=[x for x in items if x.source in
+               ("paper_account_symbol","paper_account_portfolio")
                and getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION]
-        # Keep old samples on disk for auditability, but don't mix their former
-        # position-transition rewards with the new isolated-horizon trade target.
+        # Isolated action proxies are retained for audit only. They do not
+        # represent executable cash-only account outcomes and cannot train the
+        # live policy or portfolio allocator.
         items=paper+teachers
         if not items: return []
         n=min(batch_size,len(items))
@@ -406,7 +408,7 @@ class GlobalReplayBuffer:
     def trainable_count(self)->int:
         with self.lock:
             return sum(x.source.startswith("teacher") or
-                       (x.source.startswith("paper") and
+                       (x.source in ("paper_account_symbol","paper_account_portfolio") and
                         getattr(x,"reward_version","legacy_transition_v1")==REWARD_VERSION)
                        for x in self.items)
     def load(self,path:Path,manifest_path:Path|None=None):
@@ -956,16 +958,16 @@ class OnlineGlobalAgent:
                                     allocation=allocation[0].float().cpu().numpy()
                                 else:
                                     logits,_=model(*args); allocation=None
-                                model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
-                                probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
-                                    +PAPER_EXPLORATION_EPSILON/3.0)
+                                probabilities=self._account_action_probabilities(
+                                    logits[0].float().cpu().numpy(),pstate)
                             if device.type=="cuda": torch.cuda.synchronize(device)
                         finally:
                             model.train(was_training)
                             if originally_offloaded: model.to("cpu")
                 elapsed=time.perf_counter()-started
-                actions=self._sample_actions(probabilities,
-                    [self.candidate_live_rng.random() for _ in range(len(probabilities))])
+                # This account is for reading the candidate's policy, so use
+                # its highest-probability action without exploration noise.
+                actions=self._deterministic_actions(probabilities)
                 account.queue_decisions(panel,index,probabilities,paper_enabled,
                     allocation=allocation,actions=actions)
                 account.save()
@@ -1038,6 +1040,40 @@ class OnlineGlobalAgent:
             raise ValueError("action probabilities and uniforms have incompatible shapes")
         cumulative=np.cumsum(probabilities,axis=1)
         return np.minimum((uniforms[:,None]>=cumulative).sum(axis=1),2).astype(int).tolist()
+
+    @staticmethod
+    def _account_action_probabilities(logits, portfolio_state=None, explore=False):
+        """Keep a flat account in cash when many near-tied symbols compete.
+
+        Without a universe-size no-trade correction, a near-uniform three-way
+        policy buys roughly one third of every observed symbol each bar.
+        Held symbols retain the unadjusted policy so SELL can reduce exposure.
+        """
+        scores=np.asarray(logits,dtype=np.float64).copy()
+        if scores.ndim!=2 or scores.shape[1]!=3:
+            raise ValueError("action logits must have shape [symbols,3]")
+        held=(np.asarray(portfolio_state)[:,0]>0.5 if portfolio_state is not None
+              else np.zeros(len(scores),dtype=bool))
+        if held.shape!=(len(scores),):
+            raise ValueError("portfolio_state does not match action logits")
+        scores[~held,1]+=math.log(max(2,len(scores)))
+        scores-=scores.max(axis=-1,keepdims=True)
+        exp_scores=np.exp(scores)
+        probabilities=exp_scores/exp_scores.sum(axis=-1,keepdims=True)
+        if explore:
+            epsilon=min(PAPER_EXPLORATION_EPSILON,1.0/max(1,len(scores)))
+            probabilities=(1.0-epsilon)*probabilities+epsilon/3.0
+        return probabilities
+
+    @staticmethod
+    def _deterministic_actions(probabilities):
+        """Use the highest-probability action; exact ties resolve to no-op HOLD."""
+        probabilities=np.asarray(probabilities,dtype=np.float64)
+        actions=np.argmax(probabilities,axis=-1).astype(int)
+        ties=np.isclose(probabilities,probabilities.max(axis=-1,keepdims=True),
+                        rtol=0.0,atol=1e-8).sum(axis=-1)>1
+        actions[ties]=1
+        return actions.tolist()
 
     def _window(self,panel,index):
         contextual=getattr(self.champion,"_stockrl_uses_market_context",False)
@@ -1119,27 +1155,36 @@ class OnlineGlobalAgent:
             day=str(dec.get("timestamp","")[:10])
             daily=self.metrics.setdefault("daily_net_pnl",{})
             daily[day]=float(daily.get(day,0.0))+float(reward)
-            regime=(float(dec["regime"]) if "regime" in dec
-                    else abs(float(panel.features[dec["index"],i,6])))
-            self.replay.add(Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                dec["valid_mask"],i,action,float(reward),dec["timestamp"],"paper",max(regime,abs(forward)),
-                reward_version=REWARD_VERSION,market_context=dec.get("market_context"),
-                behavior_log_prob=dec.get("behavior_log_prob")),
-                pending_ack=("regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
+            # This isolated BUY/SELL proxy assumes a trade at the decision
+            # price. It is useful as a diagnostic, but is not an executed
+            # cash-only account transition, so never place it in training replay.
+            self.replay.acknowledge_pending(
+                "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
         return keep
 
-    def _mature_portfolio(self, pending, panel, end_index: int):
+    def _mature_portfolio(self, pending, panel, end_index: int, filled_orders=()):
         """Turn completed paper-account transitions into reward experiences.
 
-        The reward is the account's net-of-cost normalized equity change.  It
-        is attached to the exact decision window and portfolio state, so the
-        learner and promotion gate optimize the same virtual account result.
+        The reward uses the account's net-of-cost normalized equity change.
+        Trade actions begin their horizon on the linked next-bar fill; HOLD
+        observations use their decision time because they create no order.
         """
         if not pending:
             return pending
         now = float(self.paper_account.normalized_equity())
+        fills_by_id={str(fill.get("decision_id")):fill for fill in filled_orders
+                     if fill.get("decision_id")}
+        fills_by_order={(str(fill.get("order_date")),str(fill.get("symbol"))):fill
+                        for fill in filled_orders if fill.get("order_date")}
         keep=[]; account_transition_added=set()
         for dec in pending:
+            if dec.get("reward_version")!=REWARD_VERSION:
+                # Pending rows created under the former decision-time horizon
+                # have no reliable fill boundary. Retire them without training.
+                self.replay.acknowledge_pending("portfolio",dec)
+                self.metrics["stale_pending_reward_rows_discarded"]=int(
+                    self.metrics.get("stale_pending_reward_rows_discarded",0))+1
+                continue
             stamp=np.datetime64(dec["timestamp"]); current=panel.dates[end_index]
             if float((current-stamp)/np.timedelta64(1,"s"))>self.max_pending_age_seconds:
                 self.metrics["portfolio_pending_expired_after_window"] = int(
@@ -1151,11 +1196,47 @@ class OnlineGlobalAgent:
             symbol_ix=panel.symbols.index(symbol)
             if current<=stamp or not panel.observed[end_index,symbol_ix]:
                 keep.append(dec); continue
+            if int(dec.get("action",1))!=1 and not dec.get("fill_expected"):
+                # A BUY/SELL without a queued executable paper order did not
+                # change the account; don't credit unrelated portfolio drift
+                # to that unexecuted action.
+                self.replay.acknowledge_pending("portfolio",dec)
+                self.metrics["paper_unfilled_decisions"]=int(
+                    self.metrics.get("paper_unfilled_decisions",0))+1
+                continue
+            if dec.get("fill_expected") and not dec.get("fill_seen"):
+                fill=(fills_by_id.get(str(dec.get("decision_id"))) or
+                      fills_by_order.get((str(dec.get("timestamp")),str(symbol))))
+                if fill is not None:
+                    dec["fill_seen"]=True
+                    dec["fill_timestamp"]=str(fill["date"])
+                    dec["fill_price"]=float(fill["price"])
+                    dec["symbol_pnl_before"]=float(
+                        fill.get("symbol_pnl_before_fill",dec.get("symbol_pnl_before",0.0)))
+                    dec["bars_elapsed"]=0
+                    keep.append(dec)
+                    continue
+                queued=self.paper_account.state.get("pending",{}).get(symbol)
+                still_queued=bool(queued and (
+                    queued.get("decision_id")==dec.get("decision_id") or
+                    (not queued.get("decision_id") and queued.get("date")==dec.get("timestamp"))))
+                if still_queued:
+                    keep.append(dec)
+                else:
+                    # The order was attempted but produced no fill. It has no
+                    # realized account outcome to teach as a profitable trade.
+                    self.replay.acknowledge_pending("portfolio",dec)
+                    self.metrics["paper_unfilled_decisions"]=int(
+                        self.metrics.get("paper_unfilled_decisions",0))+1
+                continue
+            reward_start=np.datetime64(dec.get("fill_timestamp",dec["timestamp"]))
+            if current<=reward_start:
+                keep.append(dec); continue
             if self.horizon_kind=="bars":
                 dec["bars_elapsed"]=int(dec.get("bars_elapsed",0))+1
                 matured=dec["bars_elapsed"]>=self.horizon_amount
             else:
-                matured=current>=stamp+np.timedelta64(self.horizon_amount,"s")
+                matured=current>=reward_start+np.timedelta64(self.horizon_amount,"s")
             if not matured:
                 keep.append(dec); continue
             account_reward = now - float(dec.get("equity_before", now))
@@ -1166,11 +1247,13 @@ class OnlineGlobalAgent:
                     self.metrics.get("promotion_validation_outcomes",0))+1
                 self.replay.acknowledge_pending("portfolio",dec)
                 continue
-            entry=float(dec.get("entry_price",0.0)); exit_price=float(panel.closes[end_index,symbol_ix])
+            entry=float(dec.get("fill_price",dec.get("entry_price",0.0)))
+            exit_price=float(panel.closes[end_index,symbol_ix])
             forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
             exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                     dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),
                     dec["timestamp"],"paper_account_symbol",float(dec.get("regime",0.0)),
+                    reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"), portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),forward_return=forward_return,
                     behavior_log_prob=dec.get("behavior_log_prob"))
@@ -1193,6 +1276,7 @@ class OnlineGlobalAgent:
                 account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                     dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),timestamp,
                     "paper_account_portfolio",float(dec.get("regime",0.0)),
+                    reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"),portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
                     portfolio_transition=True,portfolio_value_transition=first_account_transition,
@@ -1421,8 +1505,9 @@ class OnlineGlobalAgent:
                     self.metrics["autonomy_enabled"]=paper_enabled
                     self.metrics["paper_enabled"]=paper_enabled
                     self.metrics["observe_enabled"]=observe_enabled
-                    self.paper_account.process_bar(panel,ti,paper_enabled)
-                    portfolio_pending=self._mature_portfolio(portfolio_pending,panel,ti)
+                    filled_orders=self.paper_account.process_bar(panel,ti,paper_enabled)
+                    portfolio_pending=self._mature_portfolio(
+                        portfolio_pending,panel,ti,filled_orders)
                     pending=self._mature(pending,panel,ti)
                     if not observe_enabled:
                         cursor=str(panel.dates[ti]); self.metrics["observations"]+=1
@@ -1434,8 +1519,7 @@ class OnlineGlobalAgent:
                         continue
                     pstate,astate=self.paper_account.model_inputs(panel,ti)
                     logits,values,allocation=self._infer(panel,ti,pstate,astate)
-                    model_probs=torch.softmax(torch.as_tensor(logits),-1).numpy()
-                    probs=(1.0-PAPER_EXPLORATION_EPSILON)*model_probs+PAPER_EXPLORATION_EPSILON/3.0
+                    probs=self._account_action_probabilities(logits,pstate,explore=True)
                     actions=self._sample_actions(
                         probs,[self.policy_rng.random() for _ in range(len(probs))])
                     window=self._window(panel,ti)
@@ -1466,9 +1550,14 @@ class OnlineGlobalAgent:
                               "is_validation":False,
                               "promotion_holdout":validation,
                               })
-                        if paper_enabled and panel.observed[ti,j]:
+                        market,asset=panel.groups[symbol]
+                        if (paper_enabled and panel.observed[ti,j] and
+                                _currency(market,asset) is not None and
+                                (action!=1 or float(pstate[j][0])>0.5)):
+                            decision_id=f"{stamp}|{symbol}"
                             portfolio_pending.append({**portfolio_inputs,"index":ti,"symbol_index":j,"symbol":symbol,
-                              "action":action,"timestamp":stamp,
+                              "action":action,"timestamp":stamp,"decision_id":decision_id,
+                              "reward_version":REWARD_VERSION,
                               "behavior_log_prob":behavior_log_prob,
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
@@ -1481,8 +1570,12 @@ class OnlineGlobalAgent:
                         self.metrics["decisions"]+=1
                         if paper_enabled:
                             self.positions[symbol]=action-1
-                    self.paper_account.queue_decisions(panel,ti,probs,paper_enabled,
-                                                       allocation=allocation,actions=actions)
+                    submitted_order_ids=self.paper_account.queue_decisions(
+                        panel,ti,probs,paper_enabled,allocation=allocation,actions=actions)
+                    submitted_order_ids=submitted_order_ids or set()
+                    for dec in portfolio_pending:
+                        if dec.get("timestamp")==stamp:
+                            dec["fill_expected"]=(dec.get("decision_id") in submitted_order_ids)
                     self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
                     self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
@@ -1494,7 +1587,8 @@ class OnlineGlobalAgent:
                         # Clear the same file when full; never make dated copies.
                         if decisions_path.exists() and decisions_path.stat().st_size >= 16*1024*1024:
                             decisions_path.unlink()
-                        pd.DataFrame(rows).to_csv(decisions_path,mode="a",header=not decisions_path.exists(),index=False)
+                        has_header = decisions_path.exists() and decisions_path.stat().st_size > 0
+                        pd.DataFrame(rows).to_csv(decisions_path,mode="a",header=not has_header,index=False)
                     self.metrics["observations"]+=1; cursor=stamp
                     self.metrics["last_market_timestamp"]=stamp
                     _atomic_json({"last_timestamp":cursor},cursor_path)
@@ -1864,10 +1958,21 @@ class OnlineGlobalAgent:
                     self.metrics["nonfinite_updates"]+=1
                     continue
                 action=torch.as_tensor([experience.action],device=self.device,dtype=torch.long)
-                action_probs=(1.0-PAPER_EXPLORATION_EPSILON)*torch.softmax(chosen,dim=-1)
-                action_probs=action_probs+PAPER_EXPLORATION_EPSILON/3.0
+                policy_logits=chosen.clone()
+                portfolio_state=experience.portfolio_state
+                if (portfolio_state is not None and
+                        float(portfolio_state[int(experience.symbol_index),0])<=0.5):
+                    policy_logits[1]=policy_logits[1]+math.log(
+                        max(2,int(experience.features.shape[1])))
+                epsilon=min(PAPER_EXPLORATION_EPSILON,
+                            1.0/max(1,int(experience.features.shape[1])))
+                action_probs=(1.0-epsilon)*torch.softmax(policy_logits,dim=-1)
+                action_probs=action_probs+epsilon/3.0
                 dist=Categorical(probs=action_probs[None])
-                symbol_reward=torch.as_tensor(float(experience.reward),device=self.device,dtype=torch.float32)
+                # Paper PnL is stored as a fraction of seed cash. Optimize in
+                # percentage points so fee losses are not drowned by entropy.
+                symbol_reward=torch.as_tensor(float(experience.reward)*100.0,
+                                              device=self.device,dtype=torch.float32)
                 loss=chosen.sum()*0
                 if not experience.portfolio_transition:
                     advantage=(symbol_reward-predicted.detach()).clamp(-1,1)
@@ -1884,11 +1989,11 @@ class OnlineGlobalAgent:
                         policy_loss=chosen.sum()*0
                     loss=(policy_loss
                           +.5*nn.functional.smooth_l1_loss(predicted[None],symbol_reward[None])
-                          -.005*dist.entropy().mean())
+                          -.0005*dist.entropy().mean())
                 else:
                     loss=chosen.sum()*0
                     if experience.portfolio_value_transition:
-                        account_reward=torch.as_tensor(float(experience.portfolio_reward or 0.0),
+                        account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0),
                                                         device=self.device,dtype=torch.float32)
                         portfolio_value=values[0].float().mean()
                         loss=loss+.25*nn.functional.smooth_l1_loss(portfolio_value,account_reward)
@@ -2174,7 +2279,6 @@ class OnlineGlobalAgent:
             self._finish_candidate_validation(None,None,"validation market timestamps are not increasing")
             return
         completion_scores=None
-        common_action_uniforms=[self.validation_policy_rng.random() for _ in panel.symbols]
         try:
             # Both evaluators start from identical seed cash and see this same
             # chronological bar. Existing paper positions and live orders are
@@ -2215,9 +2319,8 @@ class OnlineGlobalAgent:
                                 allocation=allocation[0].float().cpu().numpy()
                             else:
                                 logits,_=model(*model_args); allocation=None
-                            model_probs=torch.softmax(logits[0].float(),dim=-1).cpu().numpy()
-                            probabilities=((1.0-PAPER_EXPLORATION_EPSILON)*model_probs
-                                           +PAPER_EXPLORATION_EPSILON/3.0)
+                            probabilities=self._account_action_probabilities(
+                                logits[0].float().cpu().numpy(),pstate)
                         if model_device.type=="cuda": torch.cuda.synchronize(model_device)
                         elapsed=time.perf_counter()-inference_started
                     finally:
@@ -2227,7 +2330,9 @@ class OnlineGlobalAgent:
                 self.metrics[prefix+"count"]=(int(self.metrics.get(prefix+"count",0))+1)
                 self.metrics[prefix+"seconds_total"]=(
                     float(self.metrics.get(prefix+"seconds_total",0.0))+elapsed)
-                actions=self._sample_actions(probabilities,common_action_uniforms)
+                # Promotion compares each frozen model's policy directly;
+                # sampled actions and epsilon exploration add avoidable noise.
+                actions=self._deterministic_actions(probabilities)
                 account.queue_decisions(panel,index,probabilities,True,
                                         allocation=allocation,actions=actions)
                 account.save()

@@ -146,26 +146,28 @@ class PaperAccount:
 
     def _fill(self, symbol: str, currency: str, action: str, price: float,
               spread_rate: float, budget: float, timestamp: str,
-              requested_quantity: int | None = None) -> None:
+              requested_quantity: int | None = None,
+              decision_id: str | None = None,
+              order_date: str | None = None) -> dict | None:
         book = self.state["books"][currency]
         half_spread = max(0.0, min(float(spread_rate) / 2.0, 0.025))
         execution_cost = half_spread + self.slippage
         position = book["positions"].get(symbol)
         if action == "BUY":
             if budget <= 0 and requested_quantity is None:
-                return
+                return None
             unit_cost=price*(1.0+execution_cost)*(1.0+self.fee)
             affordable=math.floor(float(book["cash"])/unit_cost)
             quantity=(min(max(0,int(requested_quantity)),affordable)
                       if requested_quantity is not None else
                       math.floor(min(float(budget),float(book["cash"]))/unit_cost))
             if quantity < 1:
-                return
+                return None
             fill_price = price * (1.0 + execution_cost)
             notional = quantity * fill_price
             fee = notional * self.fee
             if notional + fee > book["cash"] + 1e-8:
-                return
+                return None
             book["cash"] -= notional + fee
             if position:
                 old_quantity = int(position["quantity"])
@@ -179,11 +181,11 @@ class PaperAccount:
             realized = 0.0
         elif action == "SELL":
             if not position:
-                return  # cash-only: no naked short sale
+                return None  # cash-only: no naked short sale
             requested = int(budget) if budget > 0 else int(position["quantity"])
             quantity = min(int(position["quantity"]), requested)
             if quantity <= 0:
-                return
+                return None
             fill_price = price * max(0.0, 1.0 - execution_cost)
             notional = quantity * fill_price
             fee = notional * self.fee
@@ -197,26 +199,30 @@ class PaperAccount:
             if position["quantity"] <= 0:
                 del book["positions"][symbol]
         else:
-            return
+            return None
         book["trade_count"] += 1
         book["fees"] += fee
         book["sell_tax"] += tax
         book["spread"] += quantity * price * half_spread
         book["slippage"] += quantity * price * self.slippage
-        self.state["fills"].append({"date": timestamp, "symbol": symbol,
+        fill={"date": timestamp, "symbol": symbol,
             "currency": currency, "action": action, "quantity": quantity,
             "price": fill_price, "fee": fee, "sell_tax": tax,
-            "realized_pnl": realized})
+            "realized_pnl": realized, "decision_id": decision_id,
+            "order_date": order_date}
+        self.state["fills"].append(fill)
         self.state["fills"] = self.state["fills"][-200:]
         if book["cash"] < -1e-6 or any(p["quantity"] < 0 for p in book["positions"].values()):
             raise AssertionError("paper account spent more cash or sold more shares than it owns")
+        return fill
 
-    def process_bar(self, panel, index: int, enabled: bool) -> None:
+    def process_bar(self, panel, index: int, enabled: bool) -> list[dict]:
         timestamp = str(panel.dates[index])
         if self.state["last_timestamp"] and timestamp <= self.state["last_timestamp"]:
-            return
+            return []
         if not enabled:
             self.state["pending"].clear()
+        filled=[]
         for j, symbol in enumerate(panel.symbols):
             if not panel.observed[index, j]:
                 continue
@@ -234,18 +240,26 @@ class PaperAccount:
                 # The completed bar close is known only now. The prior signal
                 # could not trade on its own observation bar.
                 spread_bps = max(0.0, float(panel.features[index, j, 7]))
-                self._fill(symbol, currency, order["action"], price,
+                symbol_pnl_before_fill=self.symbol_net_pnl(symbol)
+                fill=self._fill(symbol, currency, order["action"], price,
                            spread_bps / 10_000.0, float(order.get("budget", 0.0)), timestamp,
                            requested_quantity=(int(order["requested_quantity"])
-                                               if order.get("requested_quantity") is not None else None))
+                                               if order.get("requested_quantity") is not None else None),
+                           decision_id=order.get("decision_id"),
+                           order_date=order.get("date"))
+                if fill is not None:
+                    fill["symbol_pnl_before_fill"]=symbol_pnl_before_fill
+                    filled.append(fill)
                 del self.state["pending"][symbol]
         self.state["last_timestamp"] = timestamp
+        return filled
 
     def queue_decisions(self, panel, index: int, probabilities, enabled: bool,
-                        allocation=None, actions=None) -> None:
+                        allocation=None, actions=None) -> set[str]:
         if not enabled:
-            return
+            return set()
         timestamp = str(panel.dates[index])
+        queued_decisions=set()
         buys: dict[str, list[tuple[str, float]]] = {key: [] for key in SEED_CASH}
         buy_quantities: dict[str,float] = {}
         buy_prices: dict[str,float] = {}
@@ -296,7 +310,10 @@ class PaperAccount:
             current_quantity = int(position["quantity"]) if position else 0
             if full_weights is None:
                 if action == 0 and current_quantity:
-                    self.state["pending"][symbol] = {"date": timestamp, "action": "SELL"}
+                    decision_id=f"{timestamp}|{symbol}"
+                    self.state["pending"][symbol] = {"date": timestamp, "action": "SELL",
+                                                     "decision_id": decision_id}
+                    queued_decisions.add(decision_id)
                 elif action == 2:
                     buys[currency].append((symbol, max(float(probabilities[j, 2]), 0.0)))
                 continue
@@ -306,7 +323,15 @@ class PaperAccount:
             equity = max(0.0, self._equity(currency))
             current_weight = current_quantity * price / equity if equity > 0 else 0.0
             model_weight = currency_weights[j]
-            target_weight = max(current_weight, model_weight) if action == 2 else min(current_weight, model_weight)
+            if action == 2:
+                target_weight = max(current_weight, model_weight)
+            else:
+                # SELL must reduce an existing position. When the allocation
+                # head contradicts SELL by asking to keep/increase its weight,
+                # the explicit exit signal takes precedence.
+                target_weight = min(current_weight, model_weight)
+                if model_weight >= current_weight:
+                    target_weight = 0.0
             target_quantity = max(0.0, equity * target_weight / price)
             delta = target_quantity - current_quantity
             if delta > 0:
@@ -317,8 +342,12 @@ class PaperAccount:
             elif delta < 0:
                 # Whole-share accounts cannot realize fractional target sizes.
                 target_whole_quantity=max(0,math.floor(target_quantity+0.5))
+                if action == 0 and current_quantity > 0:
+                    target_whole_quantity=min(target_whole_quantity,current_quantity-1)
                 self.state["pending"][symbol] = {"date": timestamp, "action": "SELL",
-                                                  "budget": current_quantity-target_whole_quantity}
+                                                  "budget": current_quantity-target_whole_quantity,
+                                                  "decision_id": f"{timestamp}|{symbol}"}
+                queued_decisions.add(f"{timestamp}|{symbol}")
         for currency, signals in buys.items():
             cash = float(self.state["books"][currency]["cash"])
             if cash <= 0:
@@ -365,9 +394,12 @@ class PaperAccount:
                 if existing and existing.get("date")==timestamp and existing.get("action")=="SELL":
                     continue
                 order={"date":timestamp,"action":"BUY","budget":budget}
+                order["decision_id"]=f"{timestamp}|{symbol}"
                 if requested_quantity is not None:
                     order["requested_quantity"]=requested_quantity
                 self.state["pending"][symbol]=order
+                queued_decisions.add(order["decision_id"])
+        return queued_decisions
 
     def snapshot(self) -> dict:
         books = {}
