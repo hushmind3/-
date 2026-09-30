@@ -466,6 +466,63 @@ class Supervisor:
             threading.Thread(target=self._stop_children, daemon=True).start()
         return {"ok": True, "message": "Stopping; learning state is being saved."}
 
+    def reset_paper_accounts(self) -> dict:
+        """Reset the live Champion and Candidate observer paper ledgers safely."""
+        with self.lock:
+            if self.stopping:
+                return {"error": "System is stopping; wait before resetting accounts."}
+            was_running = self.run_requested
+            mode, horizon = self.mode, self.horizon
+            profile = self.profile or (self.runtime / self.mode)
+
+        if was_running:
+            self.stop()
+            deadline = time.monotonic() + 45.0
+            while time.monotonic() < deadline:
+                with self.lock:
+                    stopped = not self.stopping and not self.run_requested
+                if stopped:
+                    break
+                time.sleep(0.1)
+            else:
+                return {"error": "Live workers did not stop; paper accounts were not reset."}
+
+        state = profile / "agent"
+        state.mkdir(parents=True, exist_ok=True)
+        from .paper_account import PaperAccount
+
+        for filename in ("paper_account.json", "candidate_observer_account.json"):
+            PaperAccount(state / filename, self.fee, 0.0).reset()
+
+        observer_path = state / "candidate_observer_state.json"
+        observer = _json(observer_path)
+        observer.update({"status": "waiting_for_candidate_update",
+                         "last_timestamp": None, "last_decisions": [],
+                         "last_inference_seconds": None, "error": None})
+        temporary = observer_path.with_suffix(".json.reset.tmp")
+        temporary.write_text(json.dumps(observer, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(temporary, observer_path)
+
+        metrics_path = state / "metrics.json"
+        metrics = _json(metrics_path)
+        metrics.update({"paper_net_reward": 0.0, "paper_account_reward": 0.0,
+                        "fee_total": 0.0, "slippage_total": 0.0,
+                        "paper_account_reset_utc": datetime.now(timezone.utc).isoformat(),
+                        "candidate_live_status": "waiting_for_candidate",
+                        "candidate_live_last_timestamp": None})
+        temporary = metrics_path.with_suffix(".json.reset.tmp")
+        temporary.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(temporary, metrics_path)
+
+        if was_running:
+            result = self.start(mode, horizon)
+            if not result.get("ok"):
+                return {"error": "Accounts reset, but system restart failed: " +
+                        str(result.get("error", "unknown error")), "reset": True}
+        return {"ok": True, "reset": ["champion", "candidate_observer"],
+                "system_restarted": was_running,
+                "message": "Champion and Candidate observer paper accounts reset to seed cash."}
+
     def _stop_children(self):
         for name, proc in list(self.children.items()):
             try:
@@ -887,6 +944,9 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                 return self._send(result, 200 if result.get("ok") else 400)
             if route == "/api/stop":
                 return self._send(supervisor.stop())
+            if route == "/api/paper-accounts/reset":
+                result = supervisor.reset_paper_accounts()
+                return self._send(result, 200 if result.get("ok") else 409)
             if route == "/api/autonomy":
                 if not isinstance(payload.get("enabled"),bool):
                     return self._send({"error":"enabled must be a boolean"},400)
