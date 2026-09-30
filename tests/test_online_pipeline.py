@@ -100,6 +100,22 @@ class PipelineTests(unittest.TestCase):
         np.testing.assert_allclose(one[0],many[0])
         self.assertEqual(OnlineGlobalAgent._deterministic_actions(many),[2]*170)
 
+    def test_live_champion_and_candidate_share_exploration_and_random_draws(self):
+        logits=np.asarray([[.2,.1,.3],[-.1,.4,.2],[.8,.1,-.2]])
+        portfolio_state=np.zeros((3,4),dtype=np.float32)
+        uniforms=[.05,.48,.93]
+        expected_probabilities=OnlineGlobalAgent._account_action_probabilities(
+            logits,portfolio_state,explore=True)
+        expected_actions=OnlineGlobalAgent._sample_actions(expected_probabilities,uniforms)
+        champion_probabilities,champion_actions=OnlineGlobalAgent._paper_policy_actions(
+            logits,portfolio_state,uniforms)
+        candidate_probabilities,candidate_actions=OnlineGlobalAgent._paper_policy_actions(
+            logits,portfolio_state,uniforms)
+        np.testing.assert_allclose(champion_probabilities,expected_probabilities)
+        np.testing.assert_allclose(candidate_probabilities,expected_probabilities)
+        self.assertEqual(champion_actions,expected_actions)
+        self.assertEqual(candidate_actions,expected_actions)
+
     def test_pending_ack_accepts_both_call_styles(self):
         with TemporaryDirectory(dir=ROOT) as directory:
             replay=GlobalReplayBuffer(journal_path=Path(directory)/"replay.sqlite3")

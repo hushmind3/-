@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 from .paths import default_runtime_dir, ensure_project_path, validate_model_dir
+from .paper_account import KR_SELL_TAX_ASSUMPTION, SEED_CASH
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -667,6 +668,8 @@ class Supervisor:
                 "inference_seconds_total": float(metrics.get(
                     "candidate_live_inference_seconds_total", 0.0)),
                 "queue_drops": int(metrics.get("candidate_live_queue_drops", 0)),
+                "policy_mode": candidate_observer_state.get(
+                    "policy_mode", "same_epsilon_sampling_and_random_draws_as_champion"),
                 "error": candidate_observer_state.get("error",
                     metrics.get("candidate_live_error")),
                 "decisions": candidate_observer_state.get("last_decisions", []),
@@ -676,11 +679,18 @@ class Supervisor:
             validation_state = _json(state / "candidate_validation.json")
             validation_books = {}
             validation_accounts_available = True
+            validation_initial_cash = {}
+            validation_last_timestamps = {}
             for model_name, account_file in (
                     ("champion", "candidate_validation_champion.json"),
                     ("candidate", "candidate_validation_candidate.json")):
                 account_path = state / account_file
                 account = _json(account_path)
+                validation_last_timestamps[model_name] = account.get("last_timestamp")
+                validation_initial_cash[model_name] = {
+                    currency: float(book.get("initial_cash", 0.0))
+                    for currency, book in account.get("books", {}).items()
+                }
                 validation_accounts_available = (
                     validation_accounts_available and account_path.is_file()
                     and bool(account.get("books")))
@@ -693,13 +703,18 @@ class Supervisor:
                             marks.get(symbol, position.get("average_cost", 0.0)))
                         for symbol, position in positions.items())
                     initial_cash = float(book.get("initial_cash", 0.0))
-                    equity = float(book.get("cash", 0.0)) + holdings_value
+                    cash = float(book.get("cash", 0.0))
+                    equity = cash + holdings_value
                     unrealized = sum(
                         float(position.get("quantity", 0.0)) * (
                             float(marks.get(symbol, position.get("average_cost", 0.0)))
                             - float(position.get("average_cost", 0.0)))
                         for symbol, position in positions.items())
                     model_books[currency] = {
+                        "initial_cash": initial_cash,
+                        "cash": cash,
+                        "equity": equity,
+                        "holdings_value": holdings_value,
                         "net_pnl": equity - initial_cash,
                         "net_return_rate": ((equity - initial_cash) / initial_cash
                                             if initial_cash else 0.0),
@@ -717,6 +732,7 @@ class Supervisor:
                             for symbol, position in sorted(positions.items())
                             if float(position.get("quantity", 0.0)) != 0.0
                         ],
+                        "recent_fills": list(account.get("fills", []))[-12:],
                     }
                 validation_books[model_name] = model_books
             validation_comparison = {
@@ -729,9 +745,55 @@ class Supervisor:
                 "snapshot_version": metrics.get("candidate_validation_snapshot_version",
                                                  validation_state.get("source_candidate_version")),
                 "accounts_available": validation_accounts_available,
-                "last_timestamp": validation_state.get("last_timestamp"),
+                "last_timestamp": (validation_state.get("last_timestamp") or
+                                   validation_last_timestamps.get("champion")),
+                "start_after": validation_state.get("start_after"),
+                "same_market_timeline": bool(
+                    validation_state.get("same_market_timeline", False) and
+                    validation_last_timestamps.get("champion") is not None and
+                    validation_last_timestamps.get("champion") ==
+                    validation_last_timestamps.get("candidate")),
+                "same_market_input": bool(
+                    validation_state.get("same_market_input", False)),
+                "same_last_bar": bool(
+                    validation_last_timestamps.get("champion") is not None and
+                    validation_last_timestamps.get("champion") ==
+                    validation_last_timestamps.get("candidate")),
+                "same_starting_cash": bool(validation_accounts_available and
+                    validation_initial_cash.get("champion") ==
+                    validation_initial_cash.get("candidate") == SEED_CASH),
+                "fee_rate": float(metrics.get("fee_rate", self.fee)),
+                "slippage_bps": float(metrics.get("slippage_bps", 1.0)),
+                "krw_sell_tax_rate": KR_SELL_TAX_ASSUMPTION,
+                "same_cost_rules": bool(validation_accounts_available),
+                "action_rule": "same highest-probability action; no exploration draw",
+                "same_action_rule": bool(validation_state.get("same_action_rule", False)),
+                "comparison_valid": bool(validation_state.get("comparison_valid", False)),
+                "reason": validation_state.get("reason"),
+                "last_decisions": validation_state.get("last_decisions", {}),
                 "champion": validation_books["champion"],
                 "candidate": validation_books["candidate"],
+            }
+            live_seed = {name: {
+                currency: float(book.get("initial_cash", 0.0))
+                for currency, book in account.get("books", {}).items()
+            } for name, account in (("champion", paper_account),
+                                    ("candidate", candidate_observer_account))}
+            live_account_comparison = {
+                "score_is_promotion_gate": False,
+                "same_seed_cash": live_seed["champion"] == live_seed["candidate"] == SEED_CASH,
+                "same_fee_rate": float(metrics.get("fee_rate", self.fee)),
+                "same_slippage_bps": float(metrics.get("slippage_bps", 1.0)),
+                "same_krw_sell_tax_rate": KR_SELL_TAX_ASSUMPTION,
+                "same_action_sampling": "same exploration probability and random draws for each queued market observation",
+                "candidate_snapshot_version": candidate_observer_state.get("candidate_version"),
+                "candidate_skipped_observations": int(metrics.get("candidate_live_queue_drops", 0)),
+                "last_bar_timestamps_equal": (
+                    paper_account.get("last_timestamp") ==
+                    candidate_observer_account.get("last_timestamp")),
+                "reason_not_a_fair_score": (
+                    "운영 관찰 계좌는 Candidate 가중치가 바뀐 여러 시점과 일부 건너뛴 관측을 누적합니다. "
+                    "승급 점수는 별도 128분 동일 구간 시험만 사용합니다."),
             }
             paper_positions = {}
             paper_financials = {}
@@ -878,6 +940,7 @@ class Supervisor:
                     "positions": paper_positions, "paper_positions": paper_positions,
                     "paper_financials": paper_financials, "paper_account": paper_account, "gpu": gpu,
                     "validation_comparison": validation_comparison,
+                    "live_account_comparison": live_account_comparison,
                     "candidate_live_account": candidate_live_account,
                     "real_orders_enabled": False,
                     "physical_gpu": self._physical_gpu(),

@@ -618,7 +618,6 @@ class OnlineGlobalAgent:
         self.candidate_live_model=None
         self.candidate_live_model_version=None
         self.candidate_live_queue=queue.Queue(maxsize=2)
-        self.candidate_live_rng=random.Random(seed+3)
         self.candidate_version=0
         self.last_validated_candidate_version=-1
         self.validation_restart_needs_fresh_trial=False
@@ -940,8 +939,8 @@ class OnlineGlobalAgent:
         if self.validation_queue_thread.is_alive(): self.validation_queue_thread.join(timeout=300)
         if self.candidate_live_thread.is_alive(): self.candidate_live_thread.join(timeout=300)
 
-    def _queue_candidate_live_observation(self,panel,index,paper_enabled):
-        item=(panel,int(index),bool(paper_enabled))
+    def _queue_candidate_live_observation(self,panel,index,paper_enabled,uniforms):
+        item=(panel,int(index),bool(paper_enabled),tuple(float(x) for x in uniforms))
         try:
             self.candidate_live_queue.put_nowait(item)
         except queue.Full:
@@ -959,7 +958,7 @@ class OnlineGlobalAgent:
         """Run an independent observational paper account for current candidate weights."""
         while not self.stop.is_set():
             try:
-                panel,index,paper_enabled=self.candidate_live_queue.get(timeout=.25)
+                panel,index,paper_enabled,uniforms=self.candidate_live_queue.get(timeout=.25)
             except queue.Empty:
                 continue
             try:
@@ -1008,16 +1007,13 @@ class OnlineGlobalAgent:
                                     allocation=allocation[0].float().cpu().numpy()
                                 else:
                                     logits,_=model(*args); allocation=None
-                                probabilities=self._account_action_probabilities(
-                                    logits[0].float().cpu().numpy(),pstate)
                             if device.type=="cuda": torch.cuda.synchronize(device)
                         finally:
                             model.train(was_training)
                             if originally_offloaded: model.to("cpu")
+                probabilities,actions=self._paper_policy_actions(
+                    logits[0].float().cpu().numpy(),pstate,uniforms)
                 elapsed=time.perf_counter()-started
-                # This account is for reading the candidate's policy, so use
-                # its highest-probability action without exploration noise.
-                actions=self._deterministic_actions(probabilities)
                 account.queue_decisions(panel,index,probabilities,paper_enabled,
                     allocation=allocation,actions=actions)
                 account.save()
@@ -1037,6 +1033,7 @@ class OnlineGlobalAgent:
                 self.metrics["candidate_live_last_timestamp"]=stamp
                 self._atomic_json({"status":self.metrics["candidate_live_status"],
                     "last_timestamp":stamp,"candidate_version":self.candidate_live_model_version,
+                    "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
                     "candidate_training":bool(self.metrics.get("candidate_training")),
                     "last_inference_seconds":elapsed,"inference_count":self.metrics[
                         "candidate_live_inference_count"],"last_decisions":decisions},
@@ -1111,6 +1108,13 @@ class OnlineGlobalAgent:
             epsilon=min(PAPER_EXPLORATION_EPSILON,1.0/max(1,len(scores)))
             probabilities=(1.0-epsilon)*probabilities+epsilon/3.0
         return probabilities
+
+    @classmethod
+    def _paper_policy_actions(cls, logits, portfolio_state, uniforms):
+        """Apply the same stochastic policy rule and random draws to both live ledgers."""
+        probabilities=cls._account_action_probabilities(
+            logits,portfolio_state,explore=True)
+        return probabilities,cls._sample_actions(probabilities,uniforms)
 
     @staticmethod
     def _deterministic_actions(probabilities):
@@ -1601,9 +1605,8 @@ class OnlineGlobalAgent:
                         continue
                     pstate,astate=self.paper_account.model_inputs(panel,ti)
                     logits,values,allocation=self._infer(panel,ti,pstate,astate)
-                    probs=self._account_action_probabilities(logits,pstate,explore=True)
-                    actions=self._sample_actions(
-                        probs,[self.policy_rng.random() for _ in range(len(probs))])
+                    uniforms=[self.policy_rng.random() for _ in range(len(logits))]
+                    probs,actions=self._paper_policy_actions(logits,pstate,uniforms)
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
                     # The frozen trial cannot learn these future observations.
@@ -1674,7 +1677,7 @@ class OnlineGlobalAgent:
                     self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
                     self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
-                    self._queue_candidate_live_observation(panel,ti,paper_enabled)
+                    self._queue_candidate_live_observation(panel,ti,paper_enabled,uniforms)
                     self._collect_candidate_validation(panel,ti)
                     import pandas as pd
                     if rows:
@@ -2327,6 +2330,9 @@ class OnlineGlobalAgent:
                            "bars":0,"source_champion_sha256":source_sha,
                            "source_candidate_version":self.candidate_version,
                            "trained_replay_row_ids":self.validation_trained_replay_row_ids,
+                           "same_market_timeline":False,"same_market_input":False,
+                           "same_action_rule":False,
+                           "comparison_valid":False,"last_decisions":{},
                            "replay_rows_finalized":False,
                            "generation":generation,
                            "started_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())},
@@ -2434,6 +2440,7 @@ class OnlineGlobalAgent:
             self._finish_candidate_validation(None,None,"validation market timestamps are not increasing")
             return
         completion_scores=None
+        last_decisions={}
         try:
             # Both evaluators start from identical seed cash and see this same
             # chronological bar. Existing paper positions and live orders are
@@ -2493,12 +2500,20 @@ class OnlineGlobalAgent:
                 account.queue_decisions(panel,index,probabilities,True,
                                         allocation=allocation,actions=actions)
                 account.save()
+                last_decisions[model_name]=[
+                    {"symbol":symbol,"action":ACTION_NAMES[action]}
+                    for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions))
+                    if panel.observed[index,symbol_index]
+                    and _currency(*panel.groups[symbol]) is not None]
             self.validation_bars+=1
             self.metrics["candidate_validation_bars"]=self.validation_bars
             self.metrics["candidate_skip_reason"]=(
                 f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기")
             state.update({"status":"collecting","start_after":self.validation_start_after,
                           "last_timestamp":stamp,"bars":self.validation_bars,
+                          "same_market_timeline":True,"same_market_input":True,
+                          "same_action_rule":True,
+                          "comparison_valid":False,"last_decisions":last_decisions,
                           "source_champion_sha256":self.validation_source_sha256,
                           "generation":generation})
             self._atomic_json(state,self.validation_state_path)
@@ -2533,7 +2548,7 @@ class OnlineGlobalAgent:
             try:
                 promoted=self._commit_candidate(candidate,float(candidate_score),float(champion_score),
                     self.validation_bars,source_sha,trained_replay_row_ids,
-                    candidate_version=snapshot_version)
+                    candidate_version=snapshot_version,trial_state=state)
             except Exception as exc:
                 error=f"{type(exc).__name__}: {exc}"
         if error is not None:
@@ -2545,6 +2560,9 @@ class OnlineGlobalAgent:
             self.metrics["last_candidate_promoted"]=False
             self._atomic_json({**state,"status":"rejected","reason":error,
                                "bars":self.validation_bars,
+                               "same_market_timeline":False,"same_market_input":False,
+                               "same_action_rule":False,
+                               "comparison_valid":False,
                                "source_champion_sha256":source_sha,
                                "replay_rows_consumed":0,
                                "replay_rows_finalized":True},self.validation_state_path)
@@ -2591,7 +2609,7 @@ class OnlineGlobalAgent:
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
                           source_champion_sha256:str,trained_replay_row_ids=None,
-                          candidate_version:int|None=None)->bool:
+                          candidate_version:int|None=None,trial_state=None)->bool:
         """Stage a valid champion checkpoint, then atomically swap the reader."""
         promote=(validation_bars>=self.validation_window_bars
                  and self._sha256_file(self.champion_path)==source_champion_sha256
@@ -2633,6 +2651,13 @@ class OnlineGlobalAgent:
                            "bars":validation_bars,"candidate_score":float(score_new),
                            "champion_score":float(score_old),"applied":promote,
                            "source_candidate_version":candidate_version,
+                           "start_after":(trial_state or {}).get("start_after"),
+                           "last_timestamp":(trial_state or {}).get("last_timestamp"),
+                           "last_decisions":(trial_state or {}).get("last_decisions",{}),
+                           "same_market_timeline":bool(validation_bars>=self.validation_window_bars),
+                           "same_market_input":bool(validation_bars>=self.validation_window_bars),
+                           "same_action_rule":bool(validation_bars>=self.validation_window_bars),
+                           "comparison_valid":bool(validation_bars>=self.validation_window_bars),
                            "trained_replay_row_ids":sorted(set(trained_replay_row_ids or [])),
                            "replay_rows_consumed":0,
                            "replay_rows_finalized":not promote,
