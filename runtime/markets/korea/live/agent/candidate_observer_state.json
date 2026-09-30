@@ -1,13 +1,13 @@
 {
   "status": "observing",
-  "last_timestamp": "2026-09-30T10:41:46.000000000",
+  "last_timestamp": "2026-09-30T11:05:48.000000000",
   "candidate_version": 93,
   "candidate_training": false,
-  "last_inference_seconds": 0.9237602000030165,
-  "inference_count": 271,
+  "last_inference_seconds": 2.3072927000030177,
+  "inference_count": 279,
   "last_decisions": [
     {
-      "symbol": "PANW",
+      "symbol": "ASML",
       "action": "HOLD"
     }
   ]
