@@ -338,7 +338,7 @@ class Supervisor:
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
                 "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
-                "--candidate-every", str(self.candidate_every), "--batch-size", "4", "--updates", "8",
+                "--candidate-every", str(self.candidate_every), "--batch-size", "8", "--updates", "8",
                 "--fee", str(self.fee), "--horizon", self.horizon,
                 "--device", self._device()]
         seed = self.initial_champion or (self.model_dir / "champion.pt")
@@ -705,6 +705,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
         runtime_path = ROOT / runtime_path
     supervisor = Supervisor(runtime_path, device, candidate_every, fee, horizon, config, initial_champion,
                             model_dir, settings_dir)
+    restart_server_requested = threading.Event()
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "StockRLWeb/1.0"
@@ -748,6 +749,12 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             except (ValueError, json.JSONDecodeError):
                 return self._send({"error": "invalid json"}, 400)
             route = urlparse(self.path).path
+            if route == "/api/server/restart":
+                if restart_server_requested.is_set():
+                    return self._send({"error": "Server restart is already in progress."}, 409)
+                self._send({"ok": True, "message": "Server restart accepted; saving and stopping live workers."})
+                threading.Timer(0.5, restart_server_requested.set).start()
+                return
             if route == "/api/start":
                 result = supervisor.start(payload.get("mode", "live"),payload.get("horizon"))
                 return self._send(result, 200 if result.get("ok") else 400)
@@ -829,12 +836,21 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     if open_browser:
         webbrowser.open(url, new=1, autoraise=True)
     try:
-        while thread.is_alive():
-            time.sleep(1)
+        while thread.is_alive() and not restart_server_requested.is_set():
+            restart_server_requested.wait(0.25)
     except KeyboardInterrupt:
         pass
     finally:
         supervisor.stop()
         server.shutdown(); server.server_close()
+        if restart_server_requested.is_set():
+            # Wait for the existing worker processes to save and exit before
+            # relaunching the server, avoiding duplicate feed/agent processes.
+            while supervisor.stopping:
+                time.sleep(0.25)
+            original_argv = getattr(sys, "orig_argv", None)
+            if original_argv and len(original_argv) > 1:
+                os.execv(sys.executable, [sys.executable, *original_argv[1:]])
+            os.execv(sys.executable, [sys.executable, "-m", "stockrl.launch_web", "--server-only"])
 
 

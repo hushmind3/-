@@ -369,6 +369,6 @@ NVIDIA GeForce RTX 3070에서 CUDA forward/backward/update 1단계를 측정했�
 - `scripts/run_global_paper.ps1`은 Data·State·로그·설정 경로를 먼저 확인한 뒤 폴더를 만든다.
 - feed 최신 bar와 저장된 agent cursor 차이를 API health에 반영하는 소스를 추가했다. 현재 상태에서 둘 사이 6,600초, 1,183 bar 차이가 확인됐지만 health 변경도 실행 중 프로세스에는 반영되지 않았다.
 - OS 자격 증명 보관함은 조회·변경하지 않았다. 실주문은 OFF다.
-- 온라인 candidate update 설정은 batch 4와 optimizer 8회로 최대 32개의 replay 경험을 사용하며, 마지막 4개 Transformer 층과 policy/value/context/portfolio head만 갱신한다.
+- 온라인 candidate update 설정은 batch 8과 optimizer 8회로 최대 64개의 replay 경험을 사용하며, 마지막 4개 Transformer 층과 policy/value/context/portfolio head만 갱신한다.
 - 학습 계측은 CUDA event로 forward/backward/optimizer 계산시간 합을 기록하고, candidate 초기화부터 checkpoint 저장까지 전체 경과시간·optimizer step당 평균 계산시간·peak allocated VRAM을 `metrics.json` 및 `/api/status` metrics에 저장한다.
 - candidate 학습은 종목 축 크기가 서로 다른 호환 불가 replay 경험을 제외한다. 해당 경험은 replay DB에 그대로 남기고 새 DB를 만들지 않는다.
