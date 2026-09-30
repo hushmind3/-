@@ -1215,3 +1215,177 @@
 2026-09-30 20:06:34,450 INFO polled=2 fetched=1440 appended=0 failures=4
 2026-09-30 20:06:50,256 INFO polled=2 fetched=1440 appended=0 failures=4
 2026-09-30 20:07:10,970 INFO polled=80 fetched=11744 appended=88 failures=4
+2026-09-30 20:08:31,468 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:31,469 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:31,470 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:31,471 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:37,589 INFO polled=84 fetched=11800 appended=73 failures=4
+2026-09-30 20:08:58,652 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:58,656 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:58,659 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:08:58,662 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:09:04,816 INFO polled=84 fetched=11806 appended=18 failures=4
+2026-09-30 20:09:20,136 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:09:20,136 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:09:20,137 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:09:20,138 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:09:20,983 INFO polled=6 fetched=1440 appended=2 failures=4
+2026-09-30 20:09:36,748 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:09:52,070 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:09:52,071 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:09:52,071 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:09:52,072 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:09:52,570 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-09-30 20:10:14,700 INFO polled=80 fetched=11876 appended=83 failures=4
+2026-09-30 20:10:30,512 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:10:46,375 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:11:01,679 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:11:01,680 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:11:01,681 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:11:01,681 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:11:02,475 INFO polled=6 fetched=1440 appended=2 failures=4
+2026-09-30 20:11:08,324 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 2s
+2026-09-30 20:11:23,540 INFO polled=80 fetched=11925 appended=68 failures=4
+2026-09-30 20:11:39,345 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:11:55,461 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:12:11,607 INFO polled=2 fetched=1440 appended=2 failures=4
+2026-09-30 20:12:33,025 INFO polled=80 fetched=11973 appended=61 failures=4
+2026-09-30 20:12:48,991 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:13:04,321 WARNING ROST failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:13:04,322 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:13:04,323 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:13:04,324 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:13:05,413 INFO polled=6 fetched=1440 appended=2 failures=4
+2026-09-30 20:13:21,351 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:13:43,022 INFO polled=80 fetched=12016 appended=61 failures=4
+2026-09-30 20:13:59,206 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:14:15,541 INFO polled=2 fetched=1440 appended=2 failures=4
+2026-09-30 20:14:31,540 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:14:54,275 INFO polled=80 fetched=12068 appended=67 failures=4
+2026-09-30 20:15:10,358 INFO polled=2 fetched=1440 appended=2 failures=4
+2026-09-30 20:15:26,291 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:15:42,107 INFO polled=2 fetched=1440 appended=0 failures=4
+2026-09-30 20:16:04,752 INFO polled=80 fetched=12115 appended=62 failures=4
+2026-09-30 20:16:17,064 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:16:17,069 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:16:17,074 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:16:21,944 INFO polled=84 fetched=12152 appended=48 failures=3
+2026-09-30 20:16:37,341 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:16:37,341 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:16:37,342 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:16:37,804 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:16:53,655 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:17:08,974 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:17:08,974 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:17:08,975 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:17:09,895 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:17:31,109 INFO polled=81 fetched=12201 appended=66 failures=3
+2026-09-30 20:17:46,925 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:18:03,194 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:18:21,562 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:18:21,564 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:18:21,564 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:18:28,104 INFO polled=84 fetched=12244 appended=56 failures=3
+2026-09-30 20:18:43,519 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:18:43,519 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:18:43,520 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:18:44,032 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:18:50,657 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 2s
+2026-09-30 20:18:59,918 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:19:15,241 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:19:15,243 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:19:15,243 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:19:16,477 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:19:37,660 INFO polled=81 fetched=12291 appended=66 failures=3
+2026-09-30 20:19:53,497 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:20:04,419 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 4s
+2026-09-30 20:20:09,497 ERROR Kiwoom WebSocket disconnected: ('Connection aborted.', ConnectionResetError(10054, '현재 연결은 원격 호스트에 의해 강제로 끊겼습니다', None, 10054, None)); retrying in 8s
+2026-09-30 20:20:09,595 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:20:24,943 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:20:24,943 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:20:24,944 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:20:25,422 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:20:46,759 INFO polled=81 fetched=12338 appended=60 failures=3
+2026-09-30 20:21:02,870 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:21:18,649 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:21:34,618 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:21:56,225 INFO polled=81 fetched=12381 appended=56 failures=3
+2026-09-30 20:22:12,330 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:22:27,698 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:22:27,699 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:22:27,700 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-09-30 20:22:28,182 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:22:41,703 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 16s
+2026-09-30 20:22:43,966 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:23:05,225 INFO polled=81 fetched=12432 appended=76 failures=3
+2026-09-30 20:23:21,065 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:23:36,862 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:23:52,639 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:24:17,740 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:24:17,745 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:24:17,748 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:24:22,446 INFO polled=84 fetched=12504 appended=93 failures=3
+2026-09-30 20:24:37,769 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:24:37,770 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:24:37,771 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:24:38,286 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:24:54,100 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:25:09,409 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:25:09,409 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:25:09,410 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:25:09,921 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:25:31,162 INFO polled=81 fetched=12547 appended=61 failures=3
+2026-09-30 20:25:46,962 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:26:02,818 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:26:18,143 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:26:18,143 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:26:18,144 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:26:18,621 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:26:39,910 INFO polled=81 fetched=12597 appended=66 failures=3
+2026-09-30 20:27:09,795 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:27:09,798 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:27:09,799 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:27:14,667 INFO polled=84 fetched=12626 appended=40 failures=3
+2026-09-30 20:27:30,021 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:27:30,022 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:27:30,022 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:27:30,521 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:27:46,365 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:28:01,726 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:28:01,727 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:28:01,728 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:28:02,206 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:28:23,277 INFO polled=81 fetched=12678 appended=68 failures=3
+2026-09-30 20:28:39,117 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:28:47,261 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 2s
+2026-09-30 20:28:55,172 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:29:10,530 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:29:10,530 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:29:10,531 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:29:11,083 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:29:33,757 INFO polled=81 fetched=12732 appended=67 failures=3
+2026-09-30 20:41:20,309 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:41:20,310 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:41:20,311 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-09-30 20:41:26,521 INFO polled=84 fetched=13210 appended=539 failures=3
+2026-09-30 20:41:41,877 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:41:41,878 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:41:41,878 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-09-30 20:41:42,345 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:41:58,146 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:42:13,471 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:42:13,472 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:42:13,473 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-09-30 20:42:13,969 INFO polled=5 fetched=1440 appended=2 failures=3
+2026-09-30 20:42:34,837 INFO polled=81 fetched=13259 appended=64 failures=3
+2026-09-30 20:42:41,100 ERROR Kiwoom WebSocket disconnected: no close frame received or sent; retrying in 2s
+2026-09-30 20:42:50,702 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:43:06,518 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:43:21,874 WARNING ^GSPC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:43:21,874 WARNING ^IXIC failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:43:21,875 WARNING ^DJI failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-09-30 20:43:22,355 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-09-30 20:43:43,820 INFO polled=81 fetched=13299 appended=55 failures=3
+2026-09-30 20:43:59,635 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-09-30 20:44:15,443 INFO polled=2 fetched=1440 appended=2 failures=3
+2026-09-30 20:44:31,299 INFO polled=2 fetched=1440 appended=0 failures=3
