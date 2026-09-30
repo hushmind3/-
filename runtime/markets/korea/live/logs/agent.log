@@ -1,0 +1,3 @@
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:706: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
