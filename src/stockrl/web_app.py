@@ -494,6 +494,16 @@ class Supervisor:
         for filename in ("paper_account.json", "candidate_observer_account.json"):
             PaperAccount(state / filename, self.fee, 0.0).reset()
 
+        decisions_path = state / "decisions.csv"
+        decisions_path.write_text("date,symbol,action,value,p_sell,p_hold,p_buy\n",
+                                  encoding="utf-8")
+        positions_path = state / "live_positions.json"
+        temporary = positions_path.with_suffix(".json.reset.tmp")
+        temporary.write_text("{}", encoding="utf-8")
+        os.replace(temporary, positions_path)
+        with self.lock:
+            self._latest_csv_cache.pop("decisions", None)
+
         observer_path = state / "candidate_observer_state.json"
         observer = _json(observer_path)
         observer.update({"status": "waiting_for_candidate_update",
