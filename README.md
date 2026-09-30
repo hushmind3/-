@@ -78,3 +78,7 @@ ITCH, FI-2010, FinRL, TradeMaster, MacroHFT 등 공개 시장 데이터와 연�
 ## 과거 연구 기록
 
 초기 연구에는 가중 teacher 앙상블, GRU actor-critic, teacher 증류, PPO, 과거 checkpoint와 benchmark가 포함됩니다. 이는 프로젝트의 역사적 실험이며 현재 자율 지속학습 운영 구조와 구분합니다. 과거 실험 결과는 현재 모델의 성능이나 승급 근거로 간주하지 않습니다.
+
+## Feedback
+
+Dear teachers, please send your feedback to [**hushmind@gmail.com**](mailto:hushmind@gmail.com)
