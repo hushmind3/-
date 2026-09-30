@@ -142,8 +142,19 @@ class GlobalMarketTransformer(nn.Module):
                     z = block(z, mask)
                 x = z.reshape(b, t, n, -1)
             x = x * valid[..., None]
-        x = self.final_norm(x[:, -1])
+        x = self.final_norm(self.last_observed_state(x, valid))
         return self.policy_head(x), self.value_head(x).squeeze(-1)
+
+    @staticmethod
+    def last_observed_state(x, valid):
+        # Asynchronous markets do not all print at the final panel timestamp.
+        # Read each symbol's last actual observation, always within this window.
+        b,t,n,_=x.shape
+        positions=torch.arange(t,device=x.device)[None,:,None]
+        latest=torch.where(valid,positions,-1).amax(dim=1).clamp_min(0)
+        rows=x[torch.arange(b,device=x.device)[:,None],latest,
+               torch.arange(n,device=x.device)[None,:]]
+        return rows*valid.any(dim=1)[...,None]
 
 
 def parameter_count(model: nn.Module) -> int:

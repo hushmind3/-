@@ -536,7 +536,7 @@ class Supervisor:
     def _stop_children(self):
         for name, proc in list(self.children.items()):
             try:
-                proc.wait(timeout=30 if name == "agent" else 8)
+                proc.wait(timeout=90 if name == "agent" else 8)
             except subprocess.TimeoutExpired:
                 proc.terminate()
                 try:
@@ -783,19 +783,16 @@ class Supervisor:
             learning_candidate_every = int(metrics.get("candidate_every", self.candidate_every))
             learning_min_replay = int(metrics.get("candidate_min_replay", 8))
             learning_min_holdout = int(metrics.get("candidate_min_validation_dates", 128))
-            learning_replay = int(metrics.get("candidate_replay_since_last_update",
+            learning_replay = int(metrics.get("candidate_eligible_replay_count",
                 metrics.get("trainable_replay_count", metrics.get("replay_count", 0))))
             learning_holdout = int(metrics.get("candidate_validation_bars", metrics.get("validation_window_dates", 0)))
             learning_skip = metrics.get("candidate_skip_reason")
-            if not learning_skip:
-                if metrics.get("candidate_training"):
-                    learning_skip = "candidate 학습 진행 중"
-                elif learning_holdout < learning_min_holdout:
-                    learning_skip = f"미학습 검증 시각 {learning_holdout}/{learning_min_holdout}개 대기"
-                elif learning_replay < learning_candidate_every:
-                    learning_skip = f"candidate 학습 간격 {learning_replay}/{learning_candidate_every}건 대기"
-                else:
-                    learning_skip = "다음 candidate 실행 조건을 확인 중"
+            if metrics.get("candidate_training"):
+                learning_skip = (f"Candidate 학습 중 · optimizer "
+                    f"{metrics.get('candidate_optimizer_steps_current',0)}/"
+                    f"{metrics.get('candidate_optimizer_steps_target',0)}회")
+            elif not learning_skip:
+                learning_skip = (f"학습 가능한 replay {learning_replay}건 · 다음 batch 조건 확인 중")
             learning_blocker = metrics.get("promotion_blocked_reason")
             rows = self._market_row_count(data)
             checkpoint = self.model_dir / "champion.pt"
@@ -835,6 +832,7 @@ class Supervisor:
                     "instruments": instrument_status,
                     "provider":provider_status,
                     "feed_metrics": feed_metrics, "metrics": metrics,
+                    "backtest": _json(state / "backtest.json"),
                     "autonomy_enabled":self.autonomy_enabled,
                     "paper_enabled":self.autonomy_enabled,
                     "observe_enabled":self.observe_enabled,

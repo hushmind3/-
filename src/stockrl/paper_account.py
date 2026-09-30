@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+from .state_io import atomic_json
 
 
 SEED_CASH = {"KRW": 10_000_000.0, "USD": 10_000.0}
@@ -51,6 +52,15 @@ class PaperAccount:
             } for currency, seed in SEED_CASH.items()},
         }
 
+    @classmethod
+    def in_memory(cls, fee: float, slippage: float):
+        account=cls.__new__(cls)
+        account.path=None
+        account.fee=float(fee)
+        account.slippage=float(slippage)
+        account.state=cls._empty_state()
+        return account
+
     def reset(self) -> None:
         """Reset a dedicated simulation ledger to the shared starting cash."""
         self.state = self._empty_state()
@@ -89,7 +99,9 @@ class PaperAccount:
         n = len(panel.symbols)
         pstate = [[0.0] * 8 for _ in range(n)]
         for j, symbol in enumerate(panel.symbols):
-            if not panel.observed[index, j] and not panel.observed[:index + 1, j].any():
+            seen=(panel.ever_observed[j] if hasattr(panel,"ever_observed")
+                  else panel.observed[:index + 1,j].any())
+            if not panel.observed[index, j] and not seen:
                 continue
             market, asset = panel.groups[symbol]
             currency = _currency(market, asset)
@@ -414,7 +426,5 @@ class PaperAccount:
                 "kr_sell_tax_assumption": KR_SELL_TAX_ASSUMPTION}
 
     def save(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = self.path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(self.snapshot(), ensure_ascii=False, indent=2), encoding="utf-8")
-        os.replace(temporary, self.path)
+        if self.path is not None:
+            atomic_json(self.snapshot(), self.path)

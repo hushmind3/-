@@ -257,7 +257,7 @@ class ContextConditionedTransformer(nn.Module):
                 z = checkpoint(block, z, mask, use_reentrant=False)
                 x = z.reshape(b, t, n, -1)
             x = x * valid[..., None]
-        x = base.final_norm(x[:, -1])
+        x = base.final_norm(base.last_observed_state(x,valid))
         return base.policy_head(x), base.value_head(x).squeeze(-1)
 
 

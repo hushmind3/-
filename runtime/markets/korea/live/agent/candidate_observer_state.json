@@ -1,14 +1,9 @@
 {
   "status": "observing",
-  "last_timestamp": "2026-09-30T11:41:42.000000000",
-  "candidate_version": 93,
+  "last_timestamp": "2026-09-30T13:04:00.000000000",
+  "candidate_version": 232,
   "candidate_training": false,
-  "last_inference_seconds": 1.6795261000006576,
-  "inference_count": 297,
-  "last_decisions": [
-    {
-      "symbol": "PYPL",
-      "action": "HOLD"
-    }
-  ]
+  "last_inference_seconds": 1.384877200001938,
+  "inference_count": 478,
+  "last_decisions": []
 }

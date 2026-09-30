@@ -22,6 +22,7 @@ from torch.distributions import Categorical
 from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTransformer,
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
 from .paper_account import PaperAccount, _currency
+from .state_io import atomic_json
 from .multiscale import (MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES,
                          TIMEFRAME_FEATURE_NAMES)
 
@@ -265,10 +266,11 @@ class GlobalReplayBuffer:
             self._prune_row_ids()
             self._enforce_disk_limit_locked()
 
-    def acknowledge_pending(self, kind: str, decision: dict) -> None:
+    def acknowledge_pending(self, kind: str, decision: dict | str) -> None:
         if self.journal_path is None:
             return
-        key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+        key=(decision if isinstance(decision,str) else
+             f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}")
         with closing(self._connect()) as db:
             with db:
                 db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",(kind,key))
@@ -452,10 +454,7 @@ def _atomic_save(obj, path: Path, temp_dir: Path | None = None):
 
 
 def _atomic_json(obj,path:Path):
-    path.parent.mkdir(parents=True,exist_ok=True); tmp=path.with_suffix(path.suffix+".tmp")
-    tmp.write_text(json.dumps(obj,indent=2,
-                              default=lambda value: value.item() if isinstance(value,np.generic) else str(value)),
-                   encoding="utf-8"); os.replace(tmp,path)
+    atomic_json(obj,path,default=lambda value: value.item() if isinstance(value,np.generic) else str(value))
 
 
 def should_promote(candidate_score:float, champion_score:float, minimum_delta:float=0.0)->bool:
@@ -538,6 +537,32 @@ def load_model(path:Path,device:torch.device):
     return model,cfg
 
 
+class MarketObservation:
+    """Bounded immutable market input for asynchronous portfolio validation."""
+    window=GlobalMarketPanel.window
+
+    def __init__(self,panel,index,length):
+        start=max(0,index-length+1)
+        self.dates=panel.dates[start:index+1].copy()
+        self.symbols=list(panel.symbols)
+        self.groups=dict(panel.groups)
+        self.features=panel.features[start:index+1].copy()
+        self.observed=panel.observed[start:index+1].copy()
+        self.ever_observed=panel.observed[:index+1].any(axis=0)
+        self.closes=panel.closes[start:index+1].copy()
+        self.symbol_ids=panel.symbol_ids.copy()
+        self.market_ids=panel.market_ids.copy()
+        self.asset_ids=panel.asset_ids.copy()
+        self.market_context=(panel.market_context[start:index+1].copy()
+                             if panel.market_context is not None else None)
+        self.multiscale=panel.multiscale_at(index).copy()
+
+    def multiscale_at(self,index):
+        if index!=len(self.dates)-1:
+            raise ValueError("observation has only its captured multiscale state")
+        return self.multiscale
+
+
 class OnlineGlobalAgent:
     def __init__(self, state_dir: str|Path, device="auto", config:TransformerConfig|None=None,
                  capacity=4_096, window=128, horizon=1, fee=.001, slippage_bps=1.0,
@@ -598,6 +623,8 @@ class OnlineGlobalAgent:
         self.last_validated_candidate_version=-1
         self.validation_restart_needs_fresh_trial=False
         self.candidate_trained_replay_row_ids=set()
+        self.candidate_replay_passes=2
+        self.candidate_replay_uses={}
         self.candidate_lineage_path=self.state_dir/"candidate_lineage.json"
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self.policy_rng=random.Random(seed+1)
@@ -617,7 +644,8 @@ class OnlineGlobalAgent:
         self.candidate_live_thread=threading.Thread(
             target=self._candidate_live_worker,name="candidate-live-observer",daemon=True)
         self.validation_window_bars=128
-        self.validation_queue=queue.Queue(maxsize=2)
+        self.validation_queue=queue.Queue(maxsize=32)
+        self.validation_last_enqueued_minute=None
         self.validation_generation=0
         self.validation_queue_invalid_reason=None
         self.validation_queue_delay_limit_seconds=300.0
@@ -699,6 +727,9 @@ class OnlineGlobalAgent:
             self.metrics["paper_experiences_since_candidate"]=0
             self.metrics["reward_schema_reset_from"]=prior_reward_definition
         self.metrics["reward_definition"]=REWARD_DEFINITION
+        self.metrics.pop("protected_champion_sha256",None)
+        self.metrics["runtime_code_version"]="portfolio-online-20260930"
+        self.metrics["agent_session_started_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
         for key in ("update_losses","update_seconds","weight_delta_l1"):
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
         self.promotion_baseline_path=self.state_dir/"promotion_baseline.json"
@@ -733,6 +764,9 @@ class OnlineGlobalAgent:
         self.updates=int(self.metrics.get("updates",0)); self.steps=self.updates
         # Replay is restored from the bounded runtime journal after restart.
         self.metrics["candidate_training"]=False
+        self.metrics["candidate_optimizer_steps_current"]=0
+        self.metrics["candidate_samples_current"]=0
+        self.metrics["last_candidate_error"]=None
         validation_state={}
         try:
             validation_state=json.loads(self.validation_state_path.read_text(encoding="utf-8"))
@@ -782,6 +816,9 @@ class OnlineGlobalAgent:
         self.candidate_version=max(0,int(lineage.get("candidate_version",self.metrics.get("updates",0))))
         self.candidate_trained_replay_row_ids=set(
             int(row_id) for row_id in lineage.get("trained_replay_row_ids",[]))
+        self.candidate_replay_uses={int(key):int(value) for key,value in lineage.get("training_uses",{}).items()}
+        for row_id in self.candidate_trained_replay_row_ids:
+            self.candidate_replay_uses.setdefault(row_id,1)
         if validation_state.get("status")=="promoted":
             finalized=set(int(row_id) for row_id in validation_state.get("trained_replay_row_ids",[]))
             self.candidate_trained_replay_row_ids.difference_update(finalized)
@@ -820,7 +857,8 @@ class OnlineGlobalAgent:
             self.metrics["candidate_validation_bars"]=0
             self.metrics["candidate_validation_restart_discarded"]=True
         self._atomic_json({"version":1,"candidate_version":self.candidate_version,
-            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids),
+            "training_uses":self.candidate_replay_uses},
             self.candidate_lineage_path)
         self.metrics["candidate_skip_reason"]="새 paper 경험과 검증 시각을 기다리는 중"
         # Older runtime metrics may contain an obsolete held stage; resume the
@@ -995,6 +1033,7 @@ class OnlineGlobalAgent:
                     float(self.metrics.get("candidate_live_inference_seconds_total",0.0))+elapsed)
                 self.metrics["candidate_live_status"]=("training_and_observing"
                     if self.metrics.get("candidate_training") else "observing")
+                self.metrics["candidate_live_error"]=None
                 self.metrics["candidate_live_last_timestamp"]=stamp
                 self._atomic_json({"status":self.metrics["candidate_live_status"],
                     "last_timestamp":stamp,"candidate_version":self.candidate_live_model_version,
@@ -1057,12 +1096,7 @@ class OnlineGlobalAgent:
 
     @staticmethod
     def _account_action_probabilities(logits, portfolio_state=None, explore=False):
-        """Keep a flat account in cash when many near-tied symbols compete.
-
-        Without a universe-size no-trade correction, a near-uniform three-way
-        policy buys roughly one third of every observed symbol each bar.
-        Held symbols retain the unadjusted policy so SELL can reduce exposure.
-        """
+        """Use the learned SELL/HOLD/BUY policy, with explicit training exploration."""
         scores=np.asarray(logits,dtype=np.float64).copy()
         if scores.ndim!=2 or scores.shape[1]!=3:
             raise ValueError("action logits must have shape [symbols,3]")
@@ -1070,7 +1104,6 @@ class OnlineGlobalAgent:
               else np.zeros(len(scores),dtype=bool))
         if held.shape!=(len(scores),):
             raise ValueError("portfolio_state does not match action logits")
-        scores[~held,1]+=math.log(max(2,len(scores)))
         scores-=scores.max(axis=-1,keepdims=True)
         exp_scores=np.exp(scores)
         probabilities=exp_scores/exp_scores.sum(axis=-1,keepdims=True)
@@ -1173,7 +1206,7 @@ class OnlineGlobalAgent:
             # price. It is useful as a diagnostic, but is not an executed
             # cash-only account transition, so never place it in training replay.
             self.replay.acknowledge_pending(
-                "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+                "regular",dec)
         return keep
 
     def _mature_portfolio(self, pending, panel, end_index: int, filled_orders=()):
@@ -1210,6 +1243,14 @@ class OnlineGlobalAgent:
             symbol_ix=panel.symbols.index(symbol)
             if current<=stamp or not panel.observed[end_index,symbol_ix]:
                 keep.append(dec); continue
+            input_symbols=dec.get("input_symbols")
+            input_symbol_index=(input_symbols.index(symbol) if input_symbols and symbol in input_symbols
+                                else int(dec["symbol_index"]))
+            if not 0<=input_symbol_index<dec["features"].shape[1]:
+                self.replay.acknowledge_pending("portfolio",dec)
+                self.metrics["portfolio_pending_expired_after_window"]=int(
+                    self.metrics.get("portfolio_pending_expired_after_window",0))+1
+                continue
             if int(dec.get("action",1))!=1 and not dec.get("fill_expected"):
                 # A BUY/SELL without a queued executable paper order did not
                 # change the account; don't credit unrelated portfolio drift
@@ -1265,7 +1306,7 @@ class OnlineGlobalAgent:
             exit_price=float(panel.closes[end_index,symbol_ix])
             forward_return=(exit_price/entry-1.0 if entry>0 and np.isfinite(entry*exit_price) else None)
             exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),
+                    dec["valid_mask"],input_symbol_index,int(dec["action"]),float(symbol_reward),
                     dec["timestamp"],"paper_account_symbol",float(dec.get("regime",0.0)),
                     reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"),
@@ -1290,7 +1331,7 @@ class OnlineGlobalAgent:
                         item.portfolio_value_transition and item.timestamp==timestamp
                         for item in self.replay.items))
                 account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
-                    dec["valid_mask"],int(symbol_ix),int(dec["action"]),float(symbol_reward),timestamp,
+                    dec["valid_mask"],input_symbol_index,int(dec["action"]),float(symbol_reward),timestamp,
                     "paper_account_portfolio",float(dec.get("regime",0.0)),
                     reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"),
@@ -1348,6 +1389,14 @@ class OnlineGlobalAgent:
                     self.metrics["observation_caught_up"]=False
                     self.metrics["agent_health"]="catching_up"
                     raw_frame,_reader_signature=market_reader.refresh()
+                    quote_rows=raw_frame.groupby("symbol",sort=False).tail(1)
+                    if {"bid","ask"}.issubset(quote_rows.columns):
+                        bids=np.asarray(quote_rows["bid"],dtype=float)
+                        asks=np.asarray(quote_rows["ask"],dtype=float)
+                        self.metrics["quoted_bid_ask_symbols"]=int(
+                            (np.isfinite(bids)&np.isfinite(asks)&(bids>0)&(asks>=bids)).sum())
+                    else:
+                        self.metrics["quoted_bid_ask_symbols"]=0
                     panel=GlobalMarketPanel(data_path, max_symbols=self.cfg.max_symbols,
                         symbol_map=getattr(self.champion,"_stockrl_symbol_map",None),
                         # Keep closed-session indices, futures, yields, and other
@@ -1449,6 +1498,18 @@ class OnlineGlobalAgent:
                             "valid_mask":mask0[0].numpy(),
                             "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
                             "multiscale_state":restore_multiscale[index]})
+                        if is_portfolio and dec.get("portfolio_state") is not None:
+                            old_state=np.asarray(dec["portfolio_state"])
+                            old_symbols=dec.get("input_symbols")
+                            if old_symbols and len(old_symbols)==len(old_state):
+                                by_symbol=dict(zip(old_symbols,old_state))
+                                dec["portfolio_state"]=np.asarray([
+                                    by_symbol.get(name,np.zeros(8,dtype=np.float16))
+                                    for name in panel.symbols],dtype=np.float16)
+                            elif old_state.shape!=(len(panel.symbols),8):
+                                expired_portfolio+=1
+                                continue
+                            dec["input_symbols"]=list(panel.symbols)
                         restored.append(dec)
                     return restored
                 pending=restore_pending(pending,False)
@@ -1545,7 +1606,10 @@ class OnlineGlobalAgent:
                         probs,[self.policy_rng.random() for _ in range(len(probs))])
                     window=self._window(panel,ti)
                     x,sid,mid,aid,mask=window[:5]
-                    stamp=str(panel.dates[ti]); validation=self.validation_active
+                    # The frozen trial cannot learn these future observations.
+                    # The continuing candidate may learn them; its NEXT trial
+                    # starts strictly after its own snapshot time.
+                    stamp=str(panel.dates[ti]); validation=False
                     multiscale_state=panel.multiscale_at(ti).astype(np.float16)
                     actual_symbols=np.asarray([
                         not str(symbol).startswith("__PAD__") for symbol in panel.symbols],dtype=bool)
@@ -1561,6 +1625,7 @@ class OnlineGlobalAgent:
                         "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
                         "multiscale_state":multiscale_state}
                     portfolio_inputs={**pending_inputs,
+                        "input_symbols":list(panel.symbols),
                         "portfolio_state":np.asarray(pstate,dtype=np.float16),
                         "account_state":np.asarray(astate,dtype=np.float32)}
                     for j,symbol in enumerate(panel.symbols):
@@ -1704,74 +1769,85 @@ class OnlineGlobalAgent:
         return history
 
     def evaluate_panel(self,panel:GlobalMarketPanel,model=None,start_index:int|None=None,
-                       end_index:int|None=None,stride:int=1)->dict:
-        """Evaluate one policy with sequential positions and net-of-cost PnL."""
-        model=model or self.champion; start=max(self.window-1,start_index or 0)
+                       end_index:int|None=None,stride:int=1,report_rows=None)->dict:
+        """Evaluate real cash-only portfolio actions using the live paper ledger."""
+        model=model or self.champion
+        start=max(self.window-1,0 if start_index is None else start_index)
         end=len(panel.dates) if end_index is None else min(len(panel.dates),end_index)
-        step_returns=[]; rows=[]; action_counts={name:0 for name in ACTION_NAMES}
-        gross_total=fee_total=slippage_total=net_total=0.0
+        if stride<1:
+            raise ValueError("stride must be positive")
+        account=PaperAccount.in_memory(self.fee,self.slippage)
+        initial=account.normalized_equity()
+        peak=initial; max_dd=0.0; daily={}; action_counts={name:0 for name in ACTION_NAMES}
+        decisions=0; observed_bars=0; previous_equity=initial
         was_training=model.training; model.eval()
+        model_device=next(model.parameters()).device
         try:
             with torch.inference_mode():
-                for ti in range(start,end,stride):
-                    contextual=getattr(model,"_stockrl_uses_market_context",False)
-                    args=[x.to(self.device) for x in panel.window(ti,self.window,include_context=contextual)]
-                    args[0]=args[0].to(dtype=next(model.parameters()).dtype)
-                    logits,values=model(*args); actions=logits[0].argmax(-1).cpu().tolist()
-                    values=values[0].float().cpu().tolist(); rewards=[]
-                    for j,symbol in enumerate(panel.symbols):
-                        if not panel.observed[ti,j]: continue
-                        target=self._target_index(panel,ti,j)
-                        if target is None or target>=end: continue
-                        action=int(actions[j])
-                        reward,fee_cost,slip_cost=net_action_reward(action,panel.return_to(ti,target,j),
-                                                                     0,self.fee,self.slippage)
-                        action_counts[ACTION_NAMES[action]]+=1
-                        gross=float(action-1)*panel.return_to(ti,target,j)
-                        gross_total+=gross; fee_total+=fee_cost; slippage_total+=slip_cost; net_total+=reward
-                        rewards.append(reward)
-                        rows.append({"date":str(panel.dates[ti]),"symbol":symbol,"action":ACTION_NAMES[action],
-                            "gross_pnl_return":gross,"fee_return":fee_cost,"slippage_return":slip_cost,
-                            "net_pnl_return":reward,"value":float(values[j])})
-                    if rewards: step_returns.append((str(panel.dates[ti])[:10],float(np.mean(rewards))))
+                for ti in range(start,end):
+                    fills=account.process_bar(panel,ti,True)
+                    if (ti-start)%stride==0:
+                        contextual=getattr(model,"_stockrl_uses_market_context",False)
+                        args=[x.to(model_device) for x in panel.window(ti,self.window,include_context=contextual)]
+                        args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+                        pstate,astate=account.model_inputs(panel,ti)
+                        if contextual:
+                            logits,values,allocation=model(*args,
+                                portfolio_state=torch.as_tensor(np.asarray(pstate)[None],device=model_device,dtype=torch.float32),
+                                account_state=torch.as_tensor(np.asarray(astate)[None],device=model_device,dtype=torch.float32),
+                                multiscale_state=torch.as_tensor(panel.multiscale_at(ti)[None],device=model_device),
+                                return_allocation=True)
+                            allocation=allocation[0].float().cpu().numpy()
+                        else:
+                            logits,values=model(*args); allocation=None
+                        probabilities=self._account_action_probabilities(logits[0].float().cpu().numpy(),pstate)
+                        actions=self._deterministic_actions(probabilities)
+                        account.queue_decisions(panel,ti,probabilities,True,allocation=allocation,actions=actions)
+                        for j,symbol in enumerate(panel.symbols):
+                            if panel.observed[ti,j] and _currency(*panel.groups[symbol]) is not None:
+                                action_counts[ACTION_NAMES[actions[j]]]+=1
+                                decisions+=1
+                    equity=account.normalized_equity()
+                    peak=max(peak,equity)
+                    max_dd=max(max_dd,(peak-equity)/max(peak,1e-9))
+                    day=str(panel.dates[ti])[:10]
+                    daily[day]=daily.get(day,0.0)+(equity-previous_equity)/initial
+                    previous_equity=equity; observed_bars+=1
+                    if report_rows is not None:
+                        report_rows.append({"date":str(panel.dates[ti]),
+                            "net_asset_return":equity/initial-1.0,"fills":len(fills),
+                            "KRW_equity":account._equity("KRW"),"USD_equity":account._equity("USD")})
         finally:
             model.train(was_training)
-        equity=1.0; peak=1.0; max_dd=0.0; daily={}
-        for day,ret in step_returns:
-            equity*=max(0.0,1+ret); peak=max(peak,equity); max_dd=max(max_dd,(peak-equity)/peak)
-            daily[day]=daily.get(day,0.0)+ret
-        return {"start_index":start,"end_index":end,"timestamps":len(step_returns),"decisions":len(rows),
-            "net_return":net_total,"net_pnl_return_sum":net_total,"compounded_step_return":equity-1,
-            "gross_pnl_return_sum":gross_total,
-            "fee_return_sum":fee_total,"slippage_return_sum":slippage_total,"max_drawdown":max_dd,
-            "action_counts":action_counts,"daily_net_return":daily,"fee_rate":self.fee,
-            "slippage_bps":self.slippage*10000,"horizon":str(self.horizon)}
+        books=account.snapshot()["books"]
+        costs=sum(sum(float(book[k]) for k in ("fees","sell_tax","spread","slippage"))
+                  /float(book["initial_cash"]) for book in books.values())/initial
+        net_return=account.normalized_equity()/initial-1.0
+        return {"start_index":start,"end_index":end,"timestamps":observed_bars,"decisions":decisions,
+            "evaluation_mode":"cash_only_sequential_paper_account",
+            "score_definition":"mean of KRW and USD seed-normalized net asset returns; no raw currency sum",
+            "net_return":net_return,"net_pnl_return_sum":net_return,"compounded_step_return":net_return,
+            "gross_pnl_return_sum":net_return+costs,"cost_return_sum":costs,
+            "max_drawdown":max_dd,"action_counts":action_counts,"daily_net_return":daily,
+            "fee_rate":self.fee,"slippage_bps":self.slippage*10000,"books":books,
+            "trade_count":sum(book["trade_count"] for book in books.values()),
+            "unfilled_orders_at_end":len(account.state["pending"]),
+            "fills_at":"next available observation for that symbol",
+            "data_usage":"historical diagnostic; held-out status requires explicit training lineage"}
 
     def backtest_panel(self,panel:GlobalMarketPanel,stride:int=1)->dict:
-        """Run the final 15% as a sealed, equal-weight paper backtest."""
-        start=max(1,int(len(panel.dates)*.85))
-        out=self.evaluate_panel(panel,self.champion,start_index=start,stride=stride)
+        """Run the final 15% with the same ledger used in live and promotion trials."""
         import pandas as pd
-        # Recreate row-level scores only for the final report CSV.
-        rows=[]; model=self.champion; was_training=model.training; model.eval()
-        try:
-            with torch.inference_mode():
-                for ti in range(max(self.window-1,start),len(panel.dates),stride):
-                    contextual=getattr(model,"_stockrl_uses_market_context",False)
-                    args=[x.to(self.device) for x in panel.window(ti,self.window,include_context=contextual)]
-                    args[0]=args[0].to(dtype=next(model.parameters()).dtype)
-                    logits,values=model(*args); acts=logits[0].argmax(-1).cpu().tolist()
-                    for j,symbol in enumerate(panel.symbols):
-                        if not panel.observed[ti,j]: continue
-                        target=self._target_index(panel,ti,j)
-                        if target is None or target>=len(panel.dates): continue
-                        action=int(acts[j])
-                        reward,fee_cost,slip_cost=net_action_reward(action,panel.return_to(ti,target,j),0,self.fee,self.slippage)
-                        rows.append({"date":str(panel.dates[ti]),"symbol":symbol,"action":ACTION_NAMES[action],
-                            "gross_pnl_return":(action-1)*panel.return_to(ti,target,j),"fee_return":fee_cost,
-                            "slippage_return":slip_cost,"net_pnl_return":reward,"value":float(values[0,j])})
-        finally: model.train(was_training)
-        pd.DataFrame(rows).to_csv(self.state_dir/"backtest.csv",index=False)
+        started=time.perf_counter()
+        start=max(1,int(len(panel.dates)*.85))
+        rows=[]
+        out=self.evaluate_panel(panel,self.champion,start_index=start,stride=stride,report_rows=rows)
+        pd.DataFrame(rows,columns=["date","net_asset_return","fills","KRW_equity","USD_equity"]).to_csv(
+            self.state_dir/"backtest.csv",index=False)
+        out["elapsed_seconds"]=float(time.perf_counter()-started)
+        out["checkpoint_sha256"]=self._sha256_file(self.champion_path)
+        out["completed_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+        self._atomic_json(out,self.state_dir/"backtest.json")
         self.metrics["backtest"]=out
         return out
 
@@ -1838,7 +1914,7 @@ class OnlineGlobalAgent:
     def _learner(self):
         while not self.stop.wait(.1):
             if not bool(self.metrics.get("observation_caught_up",False)):
-                self.metrics["candidate_skip_reason"]="시장 데이터 따라잡기 완료 전 candidate 학습 대기"
+                self.metrics["candidate_skip_reason"]="새 시장 입력 처리 중 · 다음 학습 시작 대기"
                 continue
             new_experiences=int(self.metrics.get("paper_experiences_since_candidate",0))
             self.metrics["candidate_replay_since_last_update"]=new_experiences
@@ -1852,15 +1928,24 @@ class OnlineGlobalAgent:
                 self.metrics["candidate_skip_reason"] = f"학습 가능 경험 {self.replay.trainable_count()}/{self.min_replay}건 대기"
                 continue
             if self.metrics.get("candidate_training"):
-                self.metrics["candidate_skip_reason"] = (
-                    f"순차 paper 검증 {self.validation_bars}/{self.validation_window_bars}개 bar 대기"
-                    if self.validation_active else "candidate 학습 진행 중")
+                self.metrics["candidate_skip_reason"] = "Candidate 학습 진행 중"
                 continue
             if time.monotonic()<self.candidate_retry_after:
                 self.metrics["candidate_skip_reason"]="candidate 학습 오류 후 메모리 회복 대기"
                 continue
-            if new_experiences<max(self.min_replay,self.candidate_interval):
-                self.metrics["candidate_skip_reason"] = f"다음 candidate까지 새 경험 {new_experiences}/{max(self.min_replay,self.candidate_interval)}건"
+            with self.replay.lock:
+                untrained=sum(self.candidate_replay_uses.get(self.replay.row_ids.get(id(row)),0)<self.candidate_replay_passes
+                    and (row.source.startswith("teacher") or row.reward_version==REWARD_VERSION)
+                    and (row.portfolio_state is None or np.shape(row.portfolio_state)==(row.features.shape[1],8))
+                    and (row.account_state is None or np.shape(row.account_state)==(8,))
+                    and (row.multiscale_state is None or np.shape(row.multiscale_state)==(row.features.shape[1],MULTISCALE_FEATURE_COUNT))
+                    for row in self.replay.items)
+            self.metrics["candidate_untrained_replay_count"]=untrained
+            self.metrics["candidate_eligible_replay_count"]=untrained
+            self.metrics["candidate_replay_passes"]=self.candidate_replay_passes
+            if untrained<max(self.min_replay,self.batch_size):
+                self.metrics["candidate_skip_reason"] = (
+                    f"학습 가능한 replay {untrained}/{max(self.min_replay,self.batch_size)}건 · 새 계좌 경험 대기")
                 continue
             self.last_train_replay_size=len(self.replay)
             self.metrics["candidate_skip_reason"] = None
@@ -1961,11 +2046,20 @@ class OnlineGlobalAgent:
                 (experience.multiscale_state is not None and
                  np.shape(experience.multiscale_state)!=
                  (experience.features.shape[1],MULTISCALE_FEATURE_COUNT)))}
+        self.metrics["candidate_incompatible_replay_count"]=len(incompatible_ids)
+        # Consume previously unseen rows before repeating an already-trained
+        # window. A restart must not strand usable replay behind a new-row gate.
+        incompatible_ids.update(id(row) for row in replay_items
+            if self.candidate_replay_uses.get(self.replay.row_ids.get(id(row)),0)>=self.candidate_replay_passes)
         self.metrics["last_candidate_optimizer_steps"]=0
         self.metrics["last_candidate_samples_trained"]=0
+        self.metrics["candidate_optimizer_steps_current"]=0
+        self.metrics["candidate_samples_current"]=0
         self.metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         self.metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
+            if self.stop.is_set():
+                break
             batch=self.replay.sample(self.batch_size,
                 exclude_ids=sampled_ids|incompatible_ids)
             if not batch: break
@@ -1975,93 +2069,89 @@ class OnlineGlobalAgent:
             self.metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in batch)
             self.metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in batch)
             ti=time.perf_counter(); opt.zero_grad(set_to_none=True); valid_samples=0; loss_values=[]
-            if self.device.type=="cuda":
-                compute_start=torch.cuda.Event(enable_timing=True)
-                compute_end=torch.cuda.Event(enable_timing=True)
-                compute_start.record()
-            else:
-                compute_ti=time.perf_counter()
-            use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
-            # Accumulate the requested replay batch as one optimizer update,
-            # while holding only one sequence's activations on the 8 GB GPU.
-            successful_batch=[]
-            for experience in batch:
-                args,pstate,astate,mstate=self._pack([experience])
-                if use_portfolio:
-                    logits,values,allocations=candidate(*args,portfolio_state=pstate,
-                                                         account_state=astate,return_allocation=True,
-                                                         multiscale_state=mstate)
+            with self.candidate_live_inference_lock:
+                if self.device.type=="cuda":
+                    compute_start=torch.cuda.Event(enable_timing=True)
+                    compute_end=torch.cuda.Event(enable_timing=True)
+                    compute_start.record()
                 else:
-                    logits,values=candidate(*args); allocations=None
-                chosen=logits[0,int(experience.symbol_index)].float()
-                predicted=values[0,int(experience.symbol_index)].float()
-                if not torch.isfinite(chosen).all() or not torch.isfinite(predicted).all():
-                    self.metrics["nonfinite_updates"]+=1
-                    continue
-                action=torch.as_tensor([experience.action],device=self.device,dtype=torch.long)
-                policy_logits=chosen.clone()
-                portfolio_state=experience.portfolio_state
-                if (portfolio_state is not None and
-                        float(portfolio_state[int(experience.symbol_index),0])<=0.5):
-                    policy_logits[1]=policy_logits[1]+math.log(
-                        max(2,int(experience.features.shape[1])))
-                epsilon=min(PAPER_EXPLORATION_EPSILON,
-                            1.0/max(1,int(experience.features.shape[1])))
-                action_probs=(1.0-epsilon)*torch.softmax(policy_logits,dim=-1)
-                action_probs=action_probs+epsilon/3.0
-                dist=Categorical(probs=action_probs[None])
-                # Paper PnL is stored as a fraction of seed cash. Optimize in
-                # percentage points so fee losses are not drowned by entropy.
-                symbol_reward=torch.as_tensor(float(experience.reward)*100.0,
-                                              device=self.device,dtype=torch.float32)
-                loss=chosen.sum()*0
-                if not experience.portfolio_transition:
-                    advantage=(symbol_reward-predicted.detach()).clamp(-1,1)
-                    if experience.behavior_log_prob is not None:
-                        new_log_prob=dist.log_prob(action)[0]
-                        old_log_prob=torch.as_tensor(float(experience.behavior_log_prob),
-                                                     device=self.device,dtype=torch.float32)
-                        ratio=torch.exp((new_log_prob-old_log_prob).clamp(-20,20))
-                        clipped=ratio.clamp(.8,1.2)
-                        policy_loss=-torch.minimum(ratio*advantage,clipped*advantage)
+                    compute_ti=time.perf_counter()
+                use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
+                # Accumulate the requested replay batch as one optimizer update,
+                # while holding only one sequence's activations on the 8 GB GPU.
+                successful_batch=[]
+                for experience in batch:
+                    args,pstate,astate,mstate=self._pack([experience])
+                    if use_portfolio:
+                        logits,values,allocations=candidate(*args,portfolio_state=pstate,
+                                                             account_state=astate,return_allocation=True,
+                                                             multiscale_state=mstate)
                     else:
-                        # Legacy deterministic actions have no valid behavior
-                        # probability; use their outcome only for the critic.
-                        policy_loss=chosen.sum()*0
-                    loss=(policy_loss
-                          +.5*nn.functional.smooth_l1_loss(predicted[None],symbol_reward[None])
-                          -.0005*dist.entropy().mean())
-                else:
+                        logits,values=candidate(*args); allocations=None
+                    chosen=logits[0,int(experience.symbol_index)].float()
+                    predicted=values[0,int(experience.symbol_index)].float()
+                    if not torch.isfinite(chosen).all() or not torch.isfinite(predicted).all():
+                        self.metrics["nonfinite_updates"]+=1
+                        continue
+                    action=torch.as_tensor([experience.action],device=self.device,dtype=torch.long)
+                    policy_logits=chosen.clone()
+                    epsilon=min(PAPER_EXPLORATION_EPSILON,
+                                1.0/max(1,int(experience.features.shape[1])))
+                    action_probs=(1.0-epsilon)*torch.softmax(policy_logits,dim=-1)
+                    action_probs=action_probs+epsilon/3.0
+                    dist=Categorical(probs=action_probs[None])
+                    # Paper PnL is stored as a fraction of seed cash. Optimize in
+                    # percentage points so fee losses are not drowned by entropy.
+                    symbol_reward=torch.as_tensor(float(experience.reward)*100.0,
+                                                  device=self.device,dtype=torch.float32)
                     loss=chosen.sum()*0
-                    if experience.portfolio_value_transition:
-                        account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0),
-                                                        device=self.device,dtype=torch.float32)
-                        portfolio_value=values[0].float().mean()
-                        loss=loss+.25*nn.functional.smooth_l1_loss(portfolio_value,account_reward)
-                    if allocations is not None:
-                        selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
-                        contribution=symbol_reward.detach().clamp(-1,1)
-                        loss=loss-.10*contribution*torch.log(selected)
-                if experience.source.startswith("teacher"):
-                    loss=loss+nn.functional.cross_entropy(chosen[None],action)
-                if not torch.isfinite(loss):
-                    self.metrics["nonfinite_updates"]+=1
+                    if not experience.portfolio_transition:
+                        advantage=(symbol_reward-predicted.detach()).clamp(-1,1)
+                        if experience.behavior_log_prob is not None:
+                            new_log_prob=dist.log_prob(action)[0]
+                            old_log_prob=torch.as_tensor(float(experience.behavior_log_prob),
+                                                         device=self.device,dtype=torch.float32)
+                            ratio=torch.exp((new_log_prob-old_log_prob).clamp(-20,20))
+                            clipped=ratio.clamp(.8,1.2)
+                            policy_loss=-torch.minimum(ratio*advantage,clipped*advantage)
+                        else:
+                            # Legacy deterministic actions have no valid behavior
+                            # probability; use their outcome only for the critic.
+                            policy_loss=chosen.sum()*0
+                        loss=(policy_loss
+                              +.5*nn.functional.smooth_l1_loss(predicted[None],symbol_reward[None])
+                              -.0005*dist.entropy().mean())
+                    else:
+                        loss=chosen.sum()*0
+                        if experience.portfolio_value_transition:
+                            account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0),
+                                                            device=self.device,dtype=torch.float32)
+                            portfolio_value=values[0].float().mean()
+                            loss=loss+.25*nn.functional.smooth_l1_loss(portfolio_value,account_reward)
+                        if allocations is not None:
+                            selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
+                            contribution=symbol_reward.detach().clamp(-1,1)
+                            loss=loss-.10*contribution*torch.log(selected)
+                    if experience.source.startswith("teacher"):
+                        loss=loss+nn.functional.cross_entropy(chosen[None],action)
+                    if not torch.isfinite(loss):
+                        self.metrics["nonfinite_updates"]+=1
+                        continue
+                    (loss/len(batch)).backward()
+                    valid_samples+=1
+                    successful_batch.append(experience)
+                    loss_values.append(float(loss.detach().cpu()))
+                    del args,pstate,astate,mstate,logits,values,allocations,chosen,predicted,dist,loss
+                if not valid_samples:
                     continue
-                (loss/len(batch)).backward()
-                valid_samples+=1
-                successful_batch.append(experience)
-                loss_values.append(float(loss.detach().cpu()))
-                del args,pstate,astate,mstate,logits,values,allocations,chosen,predicted,dist,loss
-            if not valid_samples:
-                continue
-            nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
-            with self.candidate_model_lock:
-                opt.step()
-                if self.device.type=="cuda": torch.cuda.synchronize(self.device)
-            if self.device.type=="cuda":
-                compute_end.record()
-            else:
-                compute_elapsed.append(time.perf_counter()-compute_ti)
+                nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
+                with self.candidate_model_lock:
+                    opt.step()
+                    if self.device.type=="cuda": torch.cuda.synchronize(self.device)
+                if self.device.type=="cuda":
+                    compute_end.record()
+                else:
+                    compute_elapsed.append(time.perf_counter()-compute_ti)
             candidate_samples+=valid_samples
             used_experiences.extend(successful_batch)
             self.metrics["update_losses"].append(float(np.mean(loss_values)))
@@ -2074,10 +2164,13 @@ class OnlineGlobalAgent:
                 self.metrics["last_candidate_peak_reserved_bytes"]=int(
                     torch.cuda.max_memory_reserved(self.device))
             elapsed.append(time.perf_counter()-ti); self.steps+=1
+            self.metrics["candidate_optimizer_steps_current"]=len(elapsed)
+            self.metrics["candidate_samples_current"]=candidate_samples
             self.metrics["last_candidate_compute_seconds"]=float(sum(compute_elapsed))
             self.metrics["last_candidate_step_compute_seconds"]=(
                 float(sum(compute_elapsed)/len(compute_elapsed)) if compute_elapsed else 0.0)
             self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
+            self._write_metrics()
         self.metrics["update_seconds"].extend(elapsed); self.metrics["updates"]+=len(elapsed)
         self.metrics["last_candidate_update_seconds"]=float(sum(elapsed))
         if self.device.type=="cuda":
@@ -2096,9 +2189,10 @@ class OnlineGlobalAgent:
         self.metrics["teacher_mix_probability"]=self.replay.teacher_fraction()
         if not elapsed:
             self.metrics["candidate_training"]=False
-            self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
-            self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
-            self._schedule_candidate_retry()
+            if not self.stop.is_set():
+                self.metrics["candidate_errors"]=int(self.metrics.get("candidate_errors",0))+1
+                self.metrics["last_candidate_error"]="no finite optimizer update; replay retained for retry"
+                self._schedule_candidate_retry()
             self.candidate.eval()
             if self.device.type=="cuda": self.candidate.to("cpu")
             self._write_metrics()
@@ -2126,6 +2220,7 @@ class OnlineGlobalAgent:
         self.metrics["weight_delta_l1"].append(delta)
         self.metrics["weight_delta_l1"]=self.metrics["weight_delta_l1"][-2000:]
         self.metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
+        self.metrics["last_candidate_error"]=None
         self.state_dir.mkdir(exist_ok=True,parents=True)
         # Candidate optimizer state is intentionally ephemeral across runs;
         # omit it from the artifact so evaluation/recovery only loads weights.
@@ -2134,8 +2229,16 @@ class OnlineGlobalAgent:
         with self.candidate_model_lock:
             self.candidate_version+=len(elapsed)
             self.candidate_trained_replay_row_ids.update(int(x) for x in trained_replay_row_ids)
+            for row_id in trained_replay_row_ids:
+                self.candidate_replay_uses[row_id]=self.candidate_replay_uses.get(row_id,0)+1
+            with self.replay.lock:
+                retained_ids=set(self.replay.row_ids.values())
+            self.candidate_replay_uses={key:value for key,value in self.candidate_replay_uses.items()
+                                        if key in retained_ids}
+            self.candidate_trained_replay_row_ids.intersection_update(retained_ids)
             self._atomic_json({"version":1,"candidate_version":self.candidate_version,
-                "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+                "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids),
+                "training_uses":self.candidate_replay_uses},
                 self.candidate_lineage_path)
             observer=self._new_model_like(candidate,torch.device("cpu"))
             observer.load_state_dict(candidate.state_dict())
@@ -2146,7 +2249,7 @@ class OnlineGlobalAgent:
         self.metrics["candidate_live_status"]="candidate_updated"
         self.metrics["candidate_has_learning"]=True
         self.metrics["candidate_training"]=False
-        if not self.validation_active:
+        if not self.validation_active and not self.stop.is_set():
             self._begin_candidate_validation(candidate)
         # Keep the most recently trained candidate on CPU between update
         # batches. The frozen trial copy remains independent in memory.
@@ -2161,8 +2264,8 @@ class OnlineGlobalAgent:
             0,int(self.metrics.get("paper_experiences_since_candidate",0))-trigger_experience_count)
         self.metrics["candidate_replay_since_last_update"]=int(
             self.metrics["paper_experiences_since_candidate"])
-        self.metrics["candidate_stage"]=("training_and_validation" if self.validation_active else
-                                          "sequential_paper_validation")
+        self.metrics["candidate_stage"]=("sequential_paper_validation" if self.validation_active else
+                                          "waiting_for_replay")
         self.metrics["last_candidate_total_seconds"]=float(time.perf_counter()-training_started)
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
@@ -2179,6 +2282,9 @@ class OnlineGlobalAgent:
         if candidate is None:
             return False
         with self.candidate_model_lock:
+            if self.metrics.get("candidate_training"):
+                self.metrics["candidate_validation_deferred"]=True
+                return False
             frozen=self._new_model_like(candidate,torch.device("cpu"))
             frozen.load_state_dict(candidate.state_dict())
             frozen.eval()
@@ -2189,6 +2295,8 @@ class OnlineGlobalAgent:
         self.validation_generation+=1
         generation=self.validation_generation
         self.validation_queue_invalid_reason=None
+        self.validation_last_enqueued_minute=None
+        self.metrics["promotion_blocked_reason"]=None
         while True:
             try:
                 self.validation_queue.get_nowait()
@@ -2249,10 +2357,7 @@ class OnlineGlobalAgent:
 
     @staticmethod
     def _atomic_json(value,path):
-        temporary=Path(path).with_suffix(Path(path).suffix+".tmp")
-        temporary.parent.mkdir(parents=True,exist_ok=True)
-        temporary.write_text(json.dumps(value,ensure_ascii=False,indent=2),encoding="utf-8")
-        os.replace(temporary,path)
+        atomic_json(value,path)
 
     def _collect_candidate_validation(self,panel,index):
         if not self.validation_active or self.validation_candidate is None:
@@ -2260,7 +2365,15 @@ class OnlineGlobalAgent:
         stamp=str(panel.dates[index])
         if self.validation_start_after and stamp<=str(self.validation_start_after):
             return
-        item=(self.validation_generation,panel,int(index),stamp,time.monotonic())
+        minute=np.datetime64(panel.dates[index],"m")
+        if self.validation_start_after and minute<=np.datetime64(self.validation_start_after,"m"):
+            return
+        if self.validation_last_enqueued_minute is not None and minute<=self.validation_last_enqueued_minute:
+            return
+        # One observation per market minute; a burst of individual tick stamps
+        # must not fill or accelerate the 128-bar portfolio trial.
+        snapshot=MarketObservation(panel,index,self.window)
+        item=(self.validation_generation,snapshot,len(snapshot.dates)-1,stamp,time.monotonic())
         try:
             self.validation_queue.put_nowait(item)
         except queue.Full:
@@ -2268,6 +2381,7 @@ class OnlineGlobalAgent:
             self.metrics["candidate_validation_queue_overflows"]=(
                 int(self.metrics.get("candidate_validation_queue_overflows",0))+1)
             return
+        self.validation_last_enqueued_minute=minute
         depth=self.validation_queue.qsize()
         self.metrics["candidate_validation_queue_depth"]=depth
         self.metrics["candidate_validation_queue_max_depth"]=max(
@@ -2442,7 +2556,8 @@ class OnlineGlobalAgent:
                         self.candidate_trained_replay_row_ids.difference_update(
                             int(row_id) for row_id in trained_replay_row_ids)
                         self._atomic_json({"version":1,"candidate_version":self.candidate_version,
-                            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids)},
+                            "trained_replay_row_ids":sorted(self.candidate_trained_replay_row_ids),
+                            "training_uses":self.candidate_replay_uses},
                             self.candidate_lineage_path)
                     self.metrics["candidate_replay_rows_consumed"]=consumed
                     self.metrics["candidate_replay_cleanup_pending"]=False
@@ -2537,7 +2652,8 @@ class OnlineGlobalAgent:
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
           "promotion_baseline_sha256":self.promotion_baseline_sha256,
-          "candidate_learning_enabled":bool(self.metrics.get("observation_caught_up",False)),
+          "candidate_learning_enabled":not self.stop.is_set(),
+          "candidate_start_ready":bool(self.metrics.get("observation_caught_up",False)),
           "candidate_every":self.candidate_interval,
           "candidate_min_replay":self.min_replay,
           "candidate_batch_size":self.batch_size,

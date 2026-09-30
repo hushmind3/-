@@ -11619,3 +11619,1292 @@ Traceback (most recent call last):
     key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
            ^^^^^^^^^^^^
 AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    pending=self._mature(pending,panel,ti)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    self.replay.acknowledge_pending(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "regular",f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    key=f"{decision.get('timestamp','')}|{decision.get('symbol',decision.get('symbol_index',''))}"
+           ^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:718: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1532, in follow_csv
+    self.current_market_timestamp=str(panel.dates[ti])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1175, in _mature
+    daily[day]=float(daily.get(day,0.0))+float(reward)
+    # This isolated BUY/SELL proxy assumes a trade at the decision
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 271, in acknowledge_pending
+    return
+       ^^^
+AttributeError: 'str' object has no attribute 'get'
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:722: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\__main__.py", line 3, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 284, in main
+    args=p.parse_args(); args.func(args)
+                         ~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\cli.py", line 108, in global_online
+    agent.follow_csv(args.data,args.poll_seconds,args.initial_lookback_bars)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1633, in follow_csv
+    "reward_version":REWARD_VERSION,
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 2301, in _collect_candidate_validation
+    self.metrics["candidate_validation_queue_delay_seconds"]=0.0
+             ^^^^^^^^^^^^^^^^^
+NameError: name 'MarketObservation' is not defined
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:745: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:745: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:749: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:749: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:749: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py:749: UserWarning: no explicit representation of timezones available for np.datetime64
+  last_update_ts=np.datetime64(last_update)
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
