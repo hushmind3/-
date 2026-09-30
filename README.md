@@ -1,4 +1,6 @@
-# StockRL 금융매매 모델
+# Continual Trading Agent (StockRL)
+
+시장 경험과 비용 차감 순손익으로 스스로 성장하는 지속학습형 자율 트레이딩 에이전트
 
 ## 2026-09-30 현재 운영 수정
 
