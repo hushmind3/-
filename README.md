@@ -1,4 +1,6 @@
-﻿# Continual Trading Agent
+# 자가성장형 온라인 강화학습 트레이딩 에이전트
+
+저장소 이름은 **Continual Trading Agent**입니다.
 
 시장의 경험과 거래 비용을 뺀 순손익으로 정책을 계속 발전시키는 자율 강화학습 트레이딩 에이전트입니다.
 
@@ -40,10 +42,11 @@ python -m pip install -e .
 ## 파일과 저장 공간
 
 - **소스·설정·문서:** 이 Git 프로젝트에 둡니다.
-- **모델 가중치:** 사용자가 지정한 모델 폴더의 `champion.pt`, `candidate.pt`를 사용합니다. 모델 가중치는 Git에 올리지 않습니다.
-- **운영 데이터:** 프로젝트 안의 `runtime/markets/<market>/live` 한 곳만 사용합니다. 키와 인증정보는 공개 저장소에 기록하지 않습니다.
+- **모델 가중치:** `champion.pt`, `candidate.pt`는 Hugging Face에 보관합니다. 모델 가중치만 GitHub 업로드 대상에서 제외합니다.
+- **운영 데이터:** 프로젝트 안의 `runtime/markets/<market>/live`에 둡니다. runtime을 포함한 프로젝트 파일을 GitHub에 함께 저장해 다른 컴퓨터에서 프로젝트를 내려받으면 paper 계좌·replay·cursor·시세 데이터까지 이어받도록 합니다.
 - **저장 한도:** runtime은 100 MiB 이하를 목표로 합니다. 판단·오류·실행 기록은 정해진 크기에 닿으면 같은 파일을 비우고 새 기록을 씁니다. 시세 cache와 replay도 제한된 공간에서 순환합니다. 날짜별 runtime snapshot/archive처럼 순차적으로 쌓이는 복사본은 만들지 않습니다. 운영 계좌 상태와 모델 가중치는 용량 정리 때 임의로 지우지 않습니다.
-- **Git 제외:** runtime과 모델 가중치는 `.gitignore`에서 제외합니다. 과거 Git 커밋에 오래된 데이터가 있을 수 있습니다.
+- **대시보드:** `src/stockrl/web_dashboard.html`이 기준 파일입니다. 하드디스크에 별도 HTML 백업 파일이나 백업 폴더를 만들지 않습니다. 수정 전 현재 프로젝트를 GitHub에 commit·push하고 원격 저장을 확인한 뒤 수정합니다.
+- **Git 제외:** `.pt`, `.pth`, `.ckpt`, `.safetensors` 모델 가중치만 제외합니다. 그 밖의 프로젝트 파일과 runtime 파일은 제외하지 않습니다. GitHub 파일 하나가 100MB를 넘지 않도록 유지합니다.
 
 ## 데이터·연구 도구
 

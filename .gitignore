@@ -1,32 +1,11 @@
-﻿__pycache__/
-*.py[cod]
-.venv/
-checkpoints/*.pt
-runtime-global-desktop/
-runtime-global-live-test/
-logs/
-runtime-global-web/
-
-# Model checkpoints are excluded from Git tracking.
+# Model weights are stored separately on Hugging Face.
 *.pt
 *.pth
 *.ckpt
 *.safetensors
-runtime-global-*/
-replay*.csv
-replay*.pt
-*.sqlite3
-*.log
-cache/
-data/cache/
 
-# High-volume model and training state, browsable in github-large-files/
-/github-large-files/
-/runtime-global-korea-live/live/agent/
-/runtime-global-korea-epoch1/
-/runtime-global-korea-epoch1-compact/
-
-# Runtime databases, market data, logs, snapshots, and account state stay local.
-/runtime/
-/backups/dashboard/.validation-ui-preview/
+# Local Python build caches and browser validation profile are not project data.
+__pycache__/
+*.py[cod]
 *.egg-info/
+/backups/dashboard/.validation-ui-preview/

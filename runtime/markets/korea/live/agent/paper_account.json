@@ -1,0 +1,2969 @@
+{
+  "version": 1,
+  "last_timestamp": "2026-09-30T03:58:00.000000000",
+  "pending": {
+    "KDP": {
+      "date": "2026-09-29T19:16:00.000000000",
+      "action": "SELL",
+      "budget": 1
+    },
+    "PCAR": {
+      "date": "2026-09-29T19:16:00.000000000",
+      "action": "SELL",
+      "budget": 1
+    },
+    "ROST": {
+      "date": "2026-09-29T19:16:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "CVX": {
+      "date": "2026-09-29T19:16:00.000000000",
+      "action": "BUY",
+      "budget": 164.52448742913336,
+      "requested_quantity": 1
+    },
+    "AVGO": {
+      "date": "2026-09-29T23:46:00.000000000",
+      "action": "BUY",
+      "budget": 267.94447695305837,
+      "requested_quantity": 1
+    },
+    "478340.KQ": {
+      "date": "2026-09-30T03:55:00.000000000",
+      "action": "BUY",
+      "budget": 112585.7850986284,
+      "requested_quantity": 9
+    },
+    "009830.KS": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "SELL",
+      "budget": 2
+    },
+    "072950.KQ": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "001820.KS": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "BUY",
+      "budget": 115520.09512876463,
+      "requested_quantity": 1
+    },
+    "030530.KQ": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "BUY",
+      "budget": 10218.417661271145,
+      "requested_quantity": 1
+    },
+    "047040.KS": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "BUY",
+      "budget": 8690.569933343651,
+      "requested_quantity": 1
+    },
+    "201490.KQ": {
+      "date": "2026-09-30T03:57:00.000000000",
+      "action": "BUY",
+      "budget": 2270.767413513468,
+      "requested_quantity": 1
+    },
+    "010120.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "010950.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "036540.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 1
+    },
+    "036930.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "042660.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "042700.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "055550.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 1
+    },
+    "066570.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "SELL",
+      "budget": 0
+    },
+    "373220.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 152631.3745079156,
+      "requested_quantity": 1
+    },
+    "095610.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 152621.1411205551,
+      "requested_quantity": 1
+    },
+    "010060.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 152596.9342864059,
+      "requested_quantity": 1
+    },
+    "403870.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 152583.86235231327,
+      "requested_quantity": 3
+    },
+    "006360.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 49986.741849916834,
+      "requested_quantity": 2
+    },
+    "0010S0.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 47727.20287098439,
+      "requested_quantity": 3
+    },
+    "386380.KQ": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 39630.1503858555,
+      "requested_quantity": 3
+    },
+    "000270.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 38691.62448093955,
+      "requested_quantity": 1
+    },
+    "003490.KS": {
+      "date": "2026-09-30T03:58:00.000000000",
+      "action": "BUY",
+      "budget": 25679.588068186968,
+      "requested_quantity": 1
+    }
+  },
+  "fills": [
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "028050.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 47878.71,
+      "fee": 47.87871,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "030530.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 26265.75,
+      "fee": 52.5315,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "034020.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 81148.65999999999,
+      "fee": 81.14865999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 193769.3829108429,
+      "fee": 193.7693829108429,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "036930.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 231138.59999999998,
+      "fee": 231.13859999999997,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "043260.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 26415.839999999997,
+      "fee": 52.83167999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "047040.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 17766.777408210753,
+      "fee": 35.53355481642151,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "052690.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 122462.21958171845,
+      "fee": 122.46221958171846,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "080220.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 77546.5,
+      "fee": 77.5465,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "089970.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 63538.1,
+      "fee": 63.5381,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "095610.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 168298.96,
+      "fee": 168.29896,
+      "sell_tax": 168.29896,
+      "realized_pnl": 228.0303851198114
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "105560.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 170432.93533225058,
+      "fee": 170.4329353322506,
+      "sell_tax": 170.4329353322506,
+      "realized_pnl": -545.4228973809513
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "222800.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 148964.87321468833,
+      "fee": 148.96487321468834,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "240810.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 131463.15903224944,
+      "fee": 131.46315903224945,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "356680.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 8,
+      "price": 18236.824371803523,
+      "fee": 145.89459497442817,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "373220.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 354962.85,
+      "fee": 354.96285,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:49:00.000000000",
+      "symbol": "387690.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 19781.861999999997,
+      "fee": 19.781861999999997,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "0010S0.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 20937.43,
+      "fee": 41.87486,
+      "sell_tax": 41.87486,
+      "realized_pnl": -592.0960616666634
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "003490.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 31780.92,
+      "fee": 31.78092,
+      "sell_tax": 31.78092,
+      "realized_pnl": -70.94088250000277
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "007660.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 115138.50169372559,
+      "fee": 115.13850169372559,
+      "sell_tax": 115.13850169372559,
+      "realized_pnl": -668.7985457022442
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "0161M0.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 17256.723551130297,
+      "fee": 17.256723551130296,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "030530.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 26284.219999999998,
+      "fee": 52.568439999999995,
+      "sell_tax": 52.568439999999995,
+      "realized_pnl": -218.66266088889824
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "034020.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 81051.34,
+      "fee": 81.05134,
+      "sell_tax": 81.05134,
+      "realized_pnl": -340.5713400000095
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 193530.65290893556,
+      "fee": 193.53065290893556,
+      "sell_tax": 193.53065290893556,
+      "realized_pnl": -819.560690636019
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "036540.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 10646.066350780487,
+      "fee": 10.646066350780488,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "043260.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 6,
+      "price": 26434.129999999997,
+      "fee": 158.60477999999998,
+      "sell_tax": 158.60477999999998,
+      "realized_pnl": -165.6444800000172
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "047040.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 17783.219594162463,
+      "fee": 35.56643918832493,
+      "sell_tax": 35.56643918832493,
+      "realized_pnl": -118.48045314832416
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "052690.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 122337.78041828156,
+      "fee": 122.33778041828157,
+      "sell_tax": 122.33778041828157,
+      "realized_pnl": -491.5769438551797
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "058470.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 73944.34,
+      "fee": 73.94434,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "072950.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 14946.495673778056,
+      "fee": 14.946495673778056,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "080220.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 77253.62,
+      "fee": 77.25362,
+      "sell_tax": 77.25362,
+      "realized_pnl": -508.2403966666752
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "086790.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 130963.07090733052,
+      "fee": 130.96307090733052,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "089970.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 63461.899999999994,
+      "fee": 63.46189999999999,
+      "sell_tax": 63.46189999999999,
+      "realized_pnl": -266.6619000000137
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "096770.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 149035.07322752953,
+      "fee": 149.03507322752952,
+      "sell_tax": 149.03507322752952,
+      "realized_pnl": -577.0550520092365
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "222800.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 149035.07322752953,
+      "fee": 149.03507322752952,
+      "sell_tax": 149.03507322752952,
+      "realized_pnl": -376.8350068285654
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "353200.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 131436.83098170758,
+      "fee": 131.43683098170757,
+      "sell_tax": 131.43683098170757,
+      "realized_pnl": -220.40673373828758
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "386380.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 6,
+      "price": 18858.678,
+      "fee": 113.152068,
+      "sell_tax": 113.152068,
+      "realized_pnl": -1016.3203919999796
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "393210.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 31,
+      "price": 3497.8999999999996,
+      "fee": 108.4349,
+      "sell_tax": 108.4349,
+      "realized_pnl": -1387.1234579999873
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "403870.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 63062.14,
+      "fee": 126.12428,
+      "sell_tax": 126.12428,
+      "realized_pnl": -863.8311466666637
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "440110.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 82049.2,
+      "fee": 82.0492,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "478340.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 8,
+      "price": 13853.615803193092,
+      "fee": 110.82892642554474,
+      "sell_tax": 110.82892642554474,
+      "realized_pnl": -530.3340033063432
+    },
+    {
+      "date": "2026-09-30T03:50:00.000000000",
+      "symbol": "950260.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 25384.76,
+      "fee": 25.38476,
+      "sell_tax": 25.38476,
+      "realized_pnl": -46.56872400000066
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "001440.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 29817.879999999997,
+      "fee": 29.81788,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "001820.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149264.93676314355,
+      "fee": 149.26493676314354,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "006360.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 34229.45,
+      "fee": 34.22945,
+      "sell_tax": 34.22945,
+      "realized_pnl": -68.70940499999415
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "007660.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 115269.12,
+      "fee": 115.26912,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "010060.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 223865.59999999998,
+      "fee": 223.86559999999997,
+      "sell_tax": 223.86559999999997,
+      "realized_pnl": -940.6656000000075
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "028050.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 3,
+      "price": 47821.29,
+      "fee": 143.46387,
+      "sell_tax": 143.46387,
+      "realized_pnl": -702.9839300000167
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 193769.35709528445,
+      "fee": 193.76935709528445,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "036930.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 230861.4,
+      "fee": 230.8614,
+      "sell_tax": 230.8614,
+      "realized_pnl": -970.0613999999769
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "042700.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 253652.09999999998,
+      "fee": 253.6521,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "058470.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 73855.66,
+      "fee": 147.71132,
+      "sell_tax": 147.71132,
+      "realized_pnl": -620.6713199999649
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "072950.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 14946.492327303888,
+      "fee": 14.946492327303888,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "080220.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 77546.5,
+      "fee": 77.5465,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "089970.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 63561.84,
+      "fee": 127.12368,
+      "sell_tax": 127.12368,
+      "realized_pnl": -333.843560000023
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "093370.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 15076.50865935278,
+      "fee": 30.153017318705558,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "105560.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 170467.05467411043,
+      "fee": 170.46705467411044,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "222800.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149164.89323984383,
+      "fee": 149.16489323984385,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "240810.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 131336.87901898383,
+      "fee": 131.33687901898384,
+      "sell_tax": 131.33687901898384,
+      "realized_pnl": -520.4169303358358
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "373220.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 354287.3,
+      "fee": 354.2873,
+      "sell_tax": 354.2873,
+      "realized_pnl": -1739.08745000005
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "387690.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 19818.102,
+      "fee": 19.818102,
+      "sell_tax": 19.818102,
+      "realized_pnl": -139.46436175103008
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "393210.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 37,
+      "price": 3497.0969999999998,
+      "fee": 129.392589,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:51:00.000000000",
+      "symbol": "419050.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 1803.3197385412216,
+      "fee": 1.8033197385412216,
+      "sell_tax": 1.8033197385412216,
+      "realized_pnl": -7.279875039963599
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "003670.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 179931.98610591888,
+      "fee": 179.9319861059189,
+      "sell_tax": 179.9319861059189,
+      "realized_pnl": -675.9597742681799
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "005380.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 346707.89999999997,
+      "fee": 346.7079,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "005490.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 305316.7,
+      "fee": 305.3167,
+      "sell_tax": 305.3167,
+      "realized_pnl": -782.1164000000572
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "006360.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 34270.549999999996,
+      "fee": 34.27054999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "007660.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 115038.51170836926,
+      "fee": 115.03851170836926,
+      "sell_tax": 115.03851170836926,
+      "realized_pnl": -672.2714930676593
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "010120.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 204877.0,
+      "fee": 204.877,
+      "sell_tax": 204.877,
+      "realized_pnl": -860.8770000000077
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "010170.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 7,
+      "price": 16603.337494300366,
+      "fee": 116.22336246010256,
+      "sell_tax": 116.22336246010256,
+      "realized_pnl": -301.8633214162837
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "010950.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 163466.35530424115,
+      "fee": 163.46635530424115,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "0161M0.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 17213.276547878268,
+      "fee": 17.21327654787827,
+      "sell_tax": 17.21327654787827,
+      "realized_pnl": -92.89060449290264
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "028260.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 342794.2,
+      "fee": 342.79420000000005,
+      "sell_tax": 342.79420000000005,
+      "realized_pnl": -1941.1944999999832
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "036540.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 10663.93065600586,
+      "fee": 10.66393065600586,
+      "sell_tax": 10.66393065600586,
+      "realized_pnl": 14.975139987276634
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "042660.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 79052.54,
+      "fee": 79.05254,
+      "sell_tax": 79.05254,
+      "realized_pnl": -232.01248000001942
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "052690.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 122762.29038608551,
+      "fee": 122.76229038608551,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "055550.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 107660.78324693679,
+      "fee": 107.66078324693679,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "058470.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 74044.4,
+      "fee": 148.0888,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "072950.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 14933.504326221942,
+      "fee": 29.867008652443886,
+      "sell_tax": 29.867008652443886,
+      "realized_pnl": -253.17585874224096
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "093370.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 15073.490341644287,
+      "fee": 30.146980683288575,
+      "sell_tax": 30.146980683288575,
+      "realized_pnl": -69.26739941672713
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "103590.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 82150.68,
+      "fee": 82.15068,
+      "sell_tax": 82.15068,
+      "realized_pnl": -382.7507025000232
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "105560.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 170332.9453258896,
+      "fee": 170.3329453258896,
+      "sell_tax": 170.3329453258896,
+      "realized_pnl": -645.2422935467039
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "353200.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 131663.17900289537,
+      "fee": 131.66317900289536,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "386380.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 7,
+      "price": 18846.88532730961,
+      "fee": 131.9281972911673,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "393210.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 6,
+      "price": 3472.915,
+      "fee": 20.83749,
+      "sell_tax": 20.83749,
+      "realized_pnl": -207.74956200000452
+    },
+    {
+      "date": "2026-09-30T03:52:00.000000000",
+      "symbol": "419050.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 1804.6805386198043,
+      "fee": 3.6093610772396088,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "001440.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 29832.09,
+      "fee": 29.83209,
+      "sell_tax": 29.83209,
+      "realized_pnl": -55.240047999992385
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "003670.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 180468.02614587787,
+      "fee": 180.46802614587787,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "005930.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 269161.39999999997,
+      "fee": 269.16139999999996,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "006360.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 34279.42,
+      "fee": 34.27942,
+      "sell_tax": 34.27942,
+      "realized_pnl": -37.61935624999023
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "007660.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 115038.51170836926,
+      "fee": 115.03851170836926,
+      "sell_tax": 115.03851170836926,
+      "realized_pnl": -672.2714930676593
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "009830.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 34179.479999999996,
+      "fee": 34.17948,
+      "sell_tax": 34.17948,
+      "realized_pnl": -181.17950249999558
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "010060.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 223634.09999999998,
+      "fee": 223.6341,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "010950.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 163533.62471580505,
+      "fee": 163.53362471580505,
+      "sell_tax": 163.53362471580505,
+      "realized_pnl": -423.2641931719554
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 193730.6070982647,
+      "fee": 193.7306070982647,
+      "sell_tax": 193.7306070982647,
+      "realized_pnl": -619.9805683115555
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "036540.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 10,
+      "price": 10673.934339723586,
+      "fee": 106.73934339723587,
+      "sell_tax": 106.73934339723587,
+      "realized_pnl": 249.58816337569442
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "036930.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 230638.3,
+      "fee": 230.6383,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "042660.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 79047.4,
+      "fee": 79.0474,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "043260.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 4,
+      "price": 26415.839999999997,
+      "fee": 105.66335999999998,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "047040.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 6,
+      "price": 17793.221404209136,
+      "fee": 106.75932842525482,
+      "sell_tax": 106.75932842525482,
+      "realized_pnl": -295.5505208854738
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "052690.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 122726.31999999999,
+      "fee": 122.72632,
+      "sell_tax": 122.72632,
+      "realized_pnl": -404.1853164716158
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "066570.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 214628.69999999998,
+      "fee": 214.62869999999998,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "080220.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 77353.56,
+      "fee": 77.35356,
+      "sell_tax": 77.35356,
+      "realized_pnl": -416.8469483333465
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "222800.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 149035.07322752953,
+      "fee": 149.03507322752952,
+      "sell_tax": 149.03507322752952,
+      "realized_pnl": -577.0550520092365
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "240810.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 131263.1009525299,
+      "fee": 131.2631009525299,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "319660.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 148735.1367962265,
+      "fee": 148.7351367962265,
+      "sell_tax": 148.7351367962265,
+      "realized_pnl": -475.95152440317906
+    },
+    {
+      "date": "2026-09-30T03:53:00.000000000",
+      "symbol": "386380.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 18848.683999999997,
+      "fee": 18.848684,
+      "sell_tax": 18.848684,
+      "realized_pnl": -54.74558063692166
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "000270.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 114138.55810070038,
+      "fee": 114.13855810070038,
+      "sell_tax": 114.13855810070038,
+      "realized_pnl": -465.42235669995716
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "000720.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 118129.08,
+      "fee": 118.12908,
+      "sell_tax": 118.12908,
+      "realized_pnl": -287.06117527061724
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "001440.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 4,
+      "price": 29832.09,
+      "fee": 119.32836,
+      "sell_tax": 119.32836,
+      "realized_pnl": -220.96019199996954
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "001820.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 149535.05670562744,
+      "fee": 149.53505670562745,
+      "sell_tax": 149.53505670562745,
+      "realized_pnl": -178.21510769048473
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "010060.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 223865.59999999998,
+      "fee": 223.86559999999997,
+      "sell_tax": 223.86559999999997,
+      "realized_pnl": -439.86529999997583
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "010950.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 163666.37528419495,
+      "fee": 163.66637528419494,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "0161M0.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 17206.72145406723,
+      "fee": 17.206721454067228,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "028050.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 3,
+      "price": 47878.71,
+      "fee": 143.63613,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "036930.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 231361.09999999998,
+      "fee": 231.3611,
+      "sell_tax": 231.3611,
+      "realized_pnl": 29.43949999997858
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "042700.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 253847.59999999998,
+      "fee": 253.84759999999997,
+      "sell_tax": 253.84759999999997,
+      "realized_pnl": -565.8473000000231
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "046970.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 7344.4039999999995,
+      "fee": 7.344404,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "047040.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 7,
+      "price": 17816.779596804856,
+      "fee": 124.71745717763399,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "052690.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 122862.30036851883,
+      "fee": 122.86230036851883,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "055550.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 107539.2167530632,
+      "fee": 107.5392167530632,
+      "sell_tax": 107.5392167530632,
+      "realized_pnl": -503.808123096489
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "058470.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 73955.59999999999,
+      "fee": 147.91119999999998,
+      "sell_tax": 147.91119999999998,
+      "realized_pnl": -621.5112000000081
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "066570.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 214621.15,
+      "fee": 214.62115,
+      "sell_tax": 214.62115,
+      "realized_pnl": -651.420999999973
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "086790.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 130536.95913528443,
+      "fee": 130.53695913528443,
+      "sell_tax": 130.53695913528443,
+      "realized_pnl": -818.1487612239871
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "089970.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 63538.1,
+      "fee": 127.0762,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "093370.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 15086.509658355713,
+      "fee": 15.086509658355714,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "095610.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 168566.86484036443,
+      "fee": 168.56686484036445,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "222800.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149364.91325937508,
+      "fee": 149.3649132593751,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "319660.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149264.90325071337,
+      "fee": 149.26490325071336,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "373220.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 354712.69999999995,
+      "fee": 354.7127,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "386380.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 6,
+      "price": 18878.665999999997,
+      "fee": 113.27199599999999,
+      "sell_tax": 113.27199599999999,
+      "realized_pnl": -148.9412678215158
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "387690.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 19748.144,
+      "fee": 19.748144,
+      "sell_tax": 19.748144,
+      "realized_pnl": -209.28244575102872
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "396300.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 20,
+      "price": 5533.317999999999,
+      "fee": 110.66635999999998,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:54:00.000000000",
+      "symbol": "403870.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 63337.979999999996,
+      "fee": 126.67595999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "000270.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 114261.44189929962,
+      "fee": 114.26144189929963,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "003670.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 180291.75999999998,
+      "fee": 180.29175999999998,
+      "sell_tax": 180.29175999999998,
+      "realized_pnl": -717.3176920237602
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "005380.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 346292.1,
+      "fee": 346.2921,
+      "sell_tax": 346.2921,
+      "realized_pnl": -1455.092100000009
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "005935.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 196730.30729461668,
+      "fee": 196.7303072946167,
+      "sell_tax": 196.7303072946167,
+      "realized_pnl": -1030.0457278135582
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "006360.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 34270.549999999996,
+      "fee": 34.27054999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "010060.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 224134.4,
+      "fee": 224.1344,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "032830.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 281168.6,
+      "fee": 281.16859999999997,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 193869.3929017353,
+      "fee": 193.8693929017353,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "042660.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 78952.59999999999,
+      "fee": 78.95259999999999,
+      "sell_tax": 78.95259999999999,
+      "realized_pnl": -331.75260000002163
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "047040.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 17813.216596571445,
+      "fee": 17.813216596571444,
+      "sell_tax": 17.813216596571444,
+      "realized_pnl": -57.00621302336003
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "051910.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 249850.0,
+      "fee": 249.85,
+      "sell_tax": 249.85,
+      "realized_pnl": -1550.6503000000084
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "058470.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 74044.4,
+      "fee": 148.0888,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "356680.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 18259.038,
+      "fee": 36.518076,
+      "sell_tax": 36.518076,
+      "realized_pnl": -65.08254435065464
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "396300.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 5526.682,
+      "fee": 5.526682,
+      "sell_tax": 5.526682,
+      "realized_pnl": -23.222681999998713
+    },
+    {
+      "date": "2026-09-30T03:55:00.000000000",
+      "symbol": "403870.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 63262.02,
+      "fee": 126.52404,
+      "sell_tax": 126.52404,
+      "realized_pnl": -531.6440399999992
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "003670.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 180568.0361530423,
+      "fee": 180.56803615304233,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "006360.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 34229.45,
+      "fee": 34.22945,
+      "sell_tax": 34.22945,
+      "realized_pnl": -101.57442468748923
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "009830.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 34320.579999999994,
+      "fee": 34.32057999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "010120.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 206123.59999999998,
+      "fee": 206.12359999999998,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "010170.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 7,
+      "price": 16636.664503711698,
+      "fee": 116.45665152598188,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "0161M0.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 7,
+      "price": 17189.68,
+      "fee": 120.32776000000001,
+      "sell_tax": 120.32776000000001,
+      "realized_pnl": -767.2672911737754
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "028050.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 47871.259999999995,
+      "fee": 47.87125999999999,
+      "sell_tax": 47.87125999999999,
+      "realized_pnl": -151.07123000000865
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "036540.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 11,
+      "price": 10706.07233745098,
+      "fee": 117.76679571196078,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "051910.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 250650.3,
+      "fee": 250.6503,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "086790.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 130563.03084872961,
+      "fee": 130.56303084872962,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "103590.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 82549.5,
+      "fee": 82.5495,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "319660.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 149135.09674928666,
+      "fee": 149.13509674928667,
+      "sell_tax": 149.13509674928667,
+      "realized_pnl": -577.3415981759899
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "396300.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 5533.317999999999,
+      "fee": 11.066635999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:56:00.000000000",
+      "symbol": "403870.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 63438.03999999999,
+      "fee": 126.87607999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "000270.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 114161.38809728622,
+      "fee": 114.16138809728622,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "005930.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 268838.6,
+      "fee": 268.8386,
+      "sell_tax": 268.8386,
+      "realized_pnl": -1129.6386000000057
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "009830.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 34320.579999999994,
+      "fee": 34.32057999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "010120.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 205876.4,
+      "fee": 205.8764,
+      "sell_tax": 205.8764,
+      "realized_pnl": -865.0763999999908
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "032830.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 281331.1,
+      "fee": 281.3311,
+      "sell_tax": 281.3311,
+      "realized_pnl": -681.3307999999961
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "042660.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 79147.45999999999,
+      "fee": 79.14746,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "042700.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 254152.4,
+      "fee": 254.1524,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "043260.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 26365.809999999998,
+      "fee": 52.73162,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "046970.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 7355.584,
+      "fee": 14.711168,
+      "sell_tax": 14.711168,
+      "realized_pnl": 22.851382718752575
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "066570.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 215129.0,
+      "fee": 215.129,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "067310.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 2,
+      "price": 47478.469999999994,
+      "fee": 94.95693999999999,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "072950.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 14886.48632037735,
+      "fee": 14.88648632037735,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "093370.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 3,
+      "price": 15086.506342721941,
+      "fee": 45.25951902816582,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "095610.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 168633.14481645345,
+      "fee": 168.63314481645347,
+      "sell_tax": 168.63314481645347,
+      "realized_pnl": -439.5531783842307
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "096770.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149164.9267724705,
+      "fee": 149.1649267724705,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "201490.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 3437.0609999999997,
+      "fee": 3.437061,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "272210.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 75645.36,
+      "fee": 75.64536,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "373220.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 354287.3,
+      "fee": 354.2873,
+      "sell_tax": 354.2873,
+      "realized_pnl": -1488.6872999999905
+    },
+    {
+      "date": "2026-09-30T03:57:00.000000000",
+      "symbol": "386380.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 6,
+      "price": 18836.8843281703,
+      "fee": 113.02130596902181,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "000270.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 114038.61190271378,
+      "fee": 114.03861190271378,
+      "sell_tax": 114.03861190271378,
+      "realized_pnl": -515.0917343828478
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "001440.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 4,
+      "price": 29867.909999999996,
+      "fee": 119.47164,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "003490.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 31794.065,
+      "fee": 31.794065,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "003670.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 180331.94613801956,
+      "fee": 180.33194613801956,
+      "sell_tax": 180.33194613801956,
+      "realized_pnl": -777.3219434518542
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "010060.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 224365.3,
+      "fee": 224.3653,
+      "sell_tax": 224.3653,
+      "realized_pnl": -441.9650000000256
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "010120.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 205623.3,
+      "fee": 205.6233,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "010170.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 7,
+      "price": 16623.338502872706,
+      "fee": 116.36336952010895,
+      "sell_tax": 116.36336952010895,
+      "realized_pnl": -442.46539643916185
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "035420.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 193630.6170891571,
+      "fee": 193.6306170891571,
+      "sell_tax": 193.6306170891571,
+      "realized_pnl": -819.9064396582544
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "036540.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 4,
+      "price": 10706.07233745098,
+      "fee": 42.82428934980392,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "036930.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 232139.19999999998,
+      "fee": 232.1392,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "043260.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 26384.16,
+      "fee": 52.76832,
+      "sell_tax": 52.76832,
+      "realized_pnl": -188.34163333333709
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "055550.KS",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 107260.69668792725,
+      "fee": 107.26069668792725,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "086790.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 130236.98917894125,
+      "fee": 130.23698917894126,
+      "sell_tax": 130.23698917894126,
+      "realized_pnl": -717.078678994978
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "272210.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 75504.67,
+      "fee": 151.00934,
+      "sell_tax": 151.00934,
+      "realized_pnl": -559.4092949999613
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "319660.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 149364.91325937508,
+      "fee": 149.3649132593751,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "353200.KS",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 1,
+      "price": 131736.80102541923,
+      "fee": 131.73680102541923,
+      "sell_tax": 131.73680102541923,
+      "realized_pnl": -321.51475852989824
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "403870.KQ",
+      "currency": "KRW",
+      "action": "SELL",
+      "quantity": 2,
+      "price": 63461.899999999994,
+      "fee": 126.92379999999999,
+      "sell_tax": 126.92379999999999,
+      "realized_pnl": -333.0036800000089
+    },
+    {
+      "date": "2026-09-30T03:58:00.000000000",
+      "symbol": "440110.KQ",
+      "currency": "KRW",
+      "action": "BUY",
+      "quantity": 1,
+      "price": 82349.37999999999,
+      "fee": 82.34938,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0
+    }
+  ],
+  "books": {
+    "KRW": {
+      "initial_cash": 10000000.0,
+      "cash": 2514886.6736848075,
+      "positions": {
+        "055550.KS": {
+          "quantity": 2,
+          "average_cost": 107597.95191363437
+        },
+        "419050.KQ": {
+          "quantity": 61,
+          "average_cost": 1806.9763264009657
+        },
+        "072950.KQ": {
+          "quantity": 8,
+          "average_cost": 15014.118691910258
+        },
+        "201490.KQ": {
+          "quantity": 33,
+          "average_cost": 3438.7792503386504
+        },
+        "103590.KS": {
+          "quantity": 2,
+          "average_cost": 82500.58942125
+        },
+        "030530.KQ": {
+          "quantity": 4,
+          "average_cost": 26340.982890444444
+        },
+        "387690.KQ": {
+          "quantity": 5,
+          "average_cost": 19917.930157751027
+        },
+        "067310.KQ": {
+          "quantity": 4,
+          "average_cost": 47158.69491666666
+        },
+        "080220.KQ": {
+          "quantity": 1,
+          "average_cost": 77615.69982833334
+        },
+        "006360.KS": {
+          "quantity": 3,
+          "average_cost": 34262.56552468749
+        },
+        "034020.KS": {
+          "quantity": 1,
+          "average_cost": 81229.80866
+        },
+        "046970.KQ": {
+          "quantity": 14,
+          "average_cost": 7329.447140640624
+        },
+        "0010S0.KQ": {
+          "quantity": 5,
+          "average_cost": 21191.60317083333
+        },
+        "950260.KQ": {
+          "quantity": 4,
+          "average_cost": 25380.559203999997
+        },
+        "003490.KS": {
+          "quantity": 4,
+          "average_cost": 31797.689048124997
+        },
+        "042660.KS": {
+          "quantity": 2,
+          "average_cost": 79176.52743
+        },
+        "093370.KS": {
+          "quantity": 11,
+          "average_cost": 15086.564921808505
+        },
+        "115440.KQ": {
+          "quantity": 9,
+          "average_cost": 11858.951104
+        },
+        "009830.KS": {
+          "quantity": 5,
+          "average_cost": 34317.34055749999
+        },
+        "356680.KQ": {
+          "quantity": 6,
+          "average_cost": 18255.061196175327
+        },
+        "440110.KQ": {
+          "quantity": 2,
+          "average_cost": 82281.48928999998
+        },
+        "393210.KQ": {
+          "quantity": 31,
+          "average_cost": 3500.5940969999997
+        },
+        "043260.KQ": {
+          "quantity": 4,
+          "average_cost": 26425.562496666666
+        },
+        "240810.KQ": {
+          "quantity": 1,
+          "average_cost": 131394.36405348242
+        },
+        "010950.KS": {
+          "quantity": 1,
+          "average_cost": 163830.04165947915
+        },
+        "028050.KS": {
+          "quantity": 2,
+          "average_cost": 47926.58871
+        },
+        "047040.KS": {
+          "quantity": 6,
+          "average_cost": 17834.59637640166
+        },
+        "052690.KS": {
+          "quantity": 1,
+          "average_cost": 122985.16266888735
+        },
+        "089970.KQ": {
+          "quantity": 2,
+          "average_cost": 63601.6381
+        },
+        "222800.KQ": {
+          "quantity": 1,
+          "average_cost": 149514.27817263445
+        },
+        "396300.KQ": {
+          "quantity": 21,
+          "average_cost": 5538.851317999999
+        },
+        "000270.KS": {
+          "quantity": 1,
+          "average_cost": 114325.6264132912
+        },
+        "058470.KQ": {
+          "quantity": 2,
+          "average_cost": 74118.4444
+        },
+        "036540.KQ": {
+          "quantity": 15,
+          "average_cost": 10716.77840978843
+        },
+        "051910.KS": {
+          "quantity": 1,
+          "average_cost": 250900.9503
+        },
+        "042700.KS": {
+          "quantity": 1,
+          "average_cost": 254406.5524
+        },
+        "066570.KS": {
+          "quantity": 1,
+          "average_cost": 215344.129
+        },
+        "096770.KS": {
+          "quantity": 1,
+          "average_cost": 149314.09169924297
+        },
+        "386380.KQ": {
+          "quantity": 6,
+          "average_cost": 18855.721212498473
+        },
+        "001440.KS": {
+          "quantity": 4,
+          "average_cost": 29897.777909999997
+        },
+        "010120.KS": {
+          "quantity": 1,
+          "average_cost": 205828.9233
+        },
+        "036930.KQ": {
+          "quantity": 1,
+          "average_cost": 232371.3392
+        },
+        "319660.KQ": {
+          "quantity": 1,
+          "average_cost": 149514.27817263445
+        }
+      },
+      "marks": {
+        "000150.KS": 1379000.0,
+        "000660.KS": 1783000.0,
+        "000720.KS": 118000.0,
+        "001440.KS": 29850.0,
+        "001820.KS": 149600.0,
+        "003490.KS": 31775.0,
+        "003670.KS": 180400.0,
+        "005380.KS": 346500.0,
+        "005930.KS": 268750.0,
+        "006400.KS": 512000.0,
+        "009830.KS": 34300.0,
+        "010060.KS": 224500.0,
+        "010120.KS": 205500.0,
+        "010170.KQ": 16630.0,
+        "011070.KS": 558000.0,
+        "0161M0.KQ": 17150.0,
+        "028260.KS": 343000.0,
+        "034020.KS": 81300.0,
+        "035420.KS": 193700.0,
+        "036540.KQ": 10700.0,
+        "042700.KS": 254000.0,
+        "043260.KQ": 26400.0,
+        "046970.KQ": 7360.0,
+        "047040.KS": 17820.0,
+        "058470.KQ": 74100.0,
+        "067310.KQ": 47450.0,
+        "080220.KQ": 77600.0,
+        "093370.KS": 15060.0,
+        "096770.KS": 148900.0,
+        "103590.KS": 82400.0,
+        "105560.KS": 170100.0,
+        "115440.KQ": 11860.0,
+        "240810.KQ": 131800.0,
+        "353200.KS": 131800.0,
+        "386380.KQ": 18860.0,
+        "402340.KS": 1123000.0,
+        "403870.KQ": 63500.0,
+        "440110.KQ": 82300.0,
+        "950260.KQ": 25400.0,
+        "000270.KS": 114100.0,
+        "0010S0.KQ": 21000.0,
+        "003230.KS": 1216000.0,
+        "005490.KS": 305500.0,
+        "005935.KS": 196800.0,
+        "006360.KS": 34250.0,
+        "007660.KS": 115000.0,
+        "009150.KS": 1511000.0,
+        "010950.KS": 163600.0,
+        "012330.KS": 367500.0,
+        "012450.KS": 1011000.0,
+        "028050.KS": 47900.0,
+        "030530.KQ": 26350.0,
+        "032830.KS": 281500.0,
+        "034730.KS": 584000.0,
+        "036930.KQ": 232000.0,
+        "042660.KS": 79000.0,
+        "051910.KS": 250500.0,
+        "052690.KS": 122600.0,
+        "055550.KS": 107200.0,
+        "066570.KS": 215000.0,
+        "072950.KQ": 14880.0,
+        "086790.KS": 130300.0,
+        "089970.KQ": 63800.0,
+        "095610.KQ": 169000.0,
+        "108490.KQ": 287000.0,
+        "128940.KS": 501000.0,
+        "201490.KQ": 3435.0,
+        "222800.KQ": 149600.0,
+        "272210.KS": 75550.0,
+        "278470.KS": 360000.0,
+        "298040.KS": 2787000.0,
+        "319660.KQ": 149300.0,
+        "329180.KS": 435500.0,
+        "356680.KQ": 18290.0,
+        "373220.KS": 354500.0,
+        "387690.KQ": 19780.0,
+        "393210.KQ": 3490.0,
+        "396300.KQ": 5500.0,
+        "419050.KQ": 1800.0,
+        "478340.KQ": 13900.0
+      },
+      "fees": 713771.8964171745,
+      "slippage": 71376.84440000031,
+      "spread": 320327.46944634215,
+      "sell_tax": 353677.1160516648,
+      "realized_pnl": -1449832.9920952758,
+      "trade_count": 5098,
+      "equity": 8542781.673684807,
+      "net_pnl": -1457218.3263151925,
+      "holdings_value": 6027895.0,
+      "symbol_realized_pnl": {
+        "396300.KQ": -10638.48123399985,
+        "115440.KQ": -18061.18782491486,
+        "003670.KS": -30480.192706044938,
+        "005930.KS": -36317.07814999914,
+        "028260.KS": -38630.83829999971,
+        "051910.KS": -35957.31879999992,
+        "095610.KQ": -19773.801616267476,
+        "222800.KQ": -31610.78116370106,
+        "000720.KS": -19116.245281521988,
+        "007660.KS": -21799.987955565026,
+        "011070.KS": 4813.036800000002,
+        "042660.KS": -22471.56021000049,
+        "042700.KS": -31700.691050000023,
+        "272210.KS": -12769.185920000135,
+        "278470.KS": -12287.313299999747,
+        "005490.KS": -33264.90199999971,
+        "010060.KS": -45501.800649999874,
+        "012330.KS": 1945.524999999965,
+        "035420.KS": -28316.15449806233,
+        "086790.KS": -19520.995812720997,
+        "089970.KQ": -11457.498960000179,
+        "096770.KS": -19117.071566384373,
+        "009830.KS": -13284.633187499574,
+        "010120.KS": -33068.218999999954,
+        "010170.KQ": -12366.958921213642,
+        "036930.KQ": -59289.1081999997,
+        "052690.KS": -12637.645314351757,
+        "058470.KQ": -22191.17825999974,
+        "080220.KQ": -28700.672671666907,
+        "105560.KS": -37034.76532131509,
+        "373220.KS": -20582.757699999784,
+        "440110.KQ": -20825.618280000228,
+        "001820.KS": -34716.75453822396,
+        "003490.KS": -16703.859787500198,
+        "028050.KS": -11114.238064999823,
+        "043260.KQ": -18346.481578333485,
+        "072950.KQ": -8378.529552133064,
+        "103590.KS": -17508.34683750062,
+        "386380.KQ": -12272.46121385855,
+        "000270.KS": -24400.078886414485,
+        "001440.KS": -23651.54998999998,
+        "005935.KS": -32712.558358681854,
+        "006360.KS": -10775.971095937493,
+        "036540.KQ": -9050.10244301504,
+        "046970.KQ": -6269.680910031255,
+        "066570.KS": -33171.57460000034,
+        "356680.KQ": -13751.664575051542,
+        "393210.KQ": -12384.539603999907,
+        "403870.KQ": -30483.280620000245,
+        "128940.KS": -5209.399399999995,
+        "319660.KQ": -28098.054652074556,
+        "353200.KS": -21974.262512165194,
+        "387690.KQ": -11507.038582376375,
+        "030530.KQ": -10946.699118222183,
+        "055550.KS": -17135.306158563762,
+        "201490.KQ": -6859.527169824531,
+        "419050.KQ": -5276.215660422794,
+        "010950.KS": -26381.0459006459,
+        "047040.KS": -9541.122285902205,
+        "067310.KQ": -11903.021898333493,
+        "034020.KS": -20293.020950000384,
+        "093370.KS": -3749.139768877456,
+        "478340.KQ": -5787.891135657581,
+        "950260.KQ": -7254.112984000021,
+        "0161M0.KQ": -18265.919466878164,
+        "032830.KS": -40310.23724999995,
+        "240810.KQ": -20674.613979601665,
+        "005380.KS": -42005.85424999916,
+        "108490.KQ": -31306.417749999615,
+        "0010S0.KQ": -17019.47318386152,
+        "329180.KS": -3339.638399999938,
+        "006400.KS": -2150.092799999984
+      }
+    },
+    "USD": {
+      "initial_cash": 10000.0,
+      "cash": 18.061294092059143,
+      "positions": {
+        "KDP": {
+          "quantity": 6,
+          "average_cost": 31.121341364732743
+        },
+        "CHTR": {
+          "quantity": 1,
+          "average_cost": 111.4724946074425
+        },
+        "PDD": {
+          "quantity": 2,
+          "average_cost": 77.66089645816794
+        },
+        "GILD": {
+          "quantity": 2,
+          "average_cost": 151.41764272217102
+        },
+        "ADBE": {
+          "quantity": 1,
+          "average_cost": 230.89873684166105
+        },
+        "MCHP": {
+          "quantity": 2,
+          "average_cost": 79.27544668760147
+        },
+        "ORLY": {
+          "quantity": 3,
+          "average_cost": 85.83432043541946
+        },
+        "ROST": {
+          "quantity": 1,
+          "average_cost": 236.1094646952301
+        },
+        "WMT": {
+          "quantity": 2,
+          "average_cost": 106.73729159270972
+        },
+        "PCAR": {
+          "quantity": 2,
+          "average_cost": 111.82037928536595
+        },
+        "NXPI": {
+          "quantity": 1,
+          "average_cost": 236.57056048027218
+        },
+        "LULU": {
+          "quantity": 1,
+          "average_cost": 97.40704278511502
+        },
+        "GOOGL": {
+          "quantity": 2,
+          "average_cost": 341.30955837731193
+        },
+        "INTU": {
+          "quantity": 1,
+          "average_cost": 264.730912888092
+        },
+        "KO": {
+          "quantity": 3,
+          "average_cost": 86.94053940654601
+        },
+        "MDB": {
+          "quantity": 1,
+          "average_cost": 330.82353049167784
+        },
+        "BKNG": {
+          "quantity": 1,
+          "average_cost": 163.48465213601153
+        },
+        "INTC": {
+          "quantity": 2,
+          "average_cost": 116.37287974969823
+        },
+        "NFLX": {
+          "quantity": 2,
+          "average_cost": 70.5825628560115
+        },
+        "DIS": {
+          "quantity": 1,
+          "average_cost": 105.27067979345398
+        },
+        "KLAC": {
+          "quantity": 1,
+          "average_cost": 196.01540263511507
+        },
+        "CRM": {
+          "quantity": 1,
+          "average_cost": 225.62293503749999
+        },
+        "CSCO": {
+          "quantity": 2,
+          "average_cost": 107.28789588393099
+        },
+        "HON": {
+          "quantity": 1,
+          "average_cost": 210.3961957952469
+        },
+        "LRCX": {
+          "quantity": 8,
+          "average_cost": 324.5591562395403
+        },
+        "GOOG": {
+          "quantity": 3,
+          "average_cost": 338.351811798
+        },
+        "AAPL": {
+          "quantity": 1,
+          "average_cost": 330.503187014
+        },
+        "NVDA": {
+          "quantity": 1,
+          "average_cost": 228.42901861779998
+        },
+        "AVGO": {
+          "quantity": 1,
+          "average_cost": 357.162482677
+        }
+      },
+      "marks": {
+        "AAPL": 330.21,
+        "ADBE": 233.51,
+        "ADP": 261.8,
+        "AMAT": 514.09,
+        "AMD": 609.0387,
+        "AMGN": 426.0,
+        "AMZN": 247.3,
+        "ASML": 1838.0,
+        "AVGO": 357.1801,
+        "BAC": 55.0092,
+        "BKNG": 162.16,
+        "CAT": 828.01,
+        "CHTR": 110.99,
+        "COST": 924.0,
+        "CRM": 225.9603,
+        "CSCO": 107.029,
+        "CVX": 204.34,
+        "DIS": 105.4,
+        "FANG": 183.95,
+        "FAST": 50.1,
+        "GILD": 151.83,
+        "GOOG": 338.0254,
+        "GOOGL": 341.48,
+        "GS": 916.9214,
+        "HD": 288.638,
+        "IBM": 220.21,
+        "INTC": 116.7893,
+        "INTU": 268.05,
+        "ISRG": 411.89,
+        "JNJ": 267.63,
+        "JPM": 335.5439,
+        "KDP": 31.03,
+        "KLAC": 197.92,
+        "KO": 86.95,
+        "LRCX": 325.6,
+        "LULU": 97.18,
+        "MAR": 361.5589,
+        "MCD": 234.11,
+        "MCHP": 78.9,
+        "MDB": 336.4899,
+        "MELI": 1729.0,
+        "MSFT": 509.32,
+        "MU": 1071.88,
+        "NFLX": 70.59,
+        "NVDA": 228.3531,
+        "NXPI": 237.5,
+        "ORLY": 86.07,
+        "PANW": 388.1,
+        "PCAR": 112.5841,
+        "PDD": 77.51,
+        "PEP": 128.7999,
+        "PYPL": 53.82,
+        "QCOM": 184.4999,
+        "REGN": 755.0,
+        "ROST": 234.4,
+        "SBUX": 95.8,
+        "TEAM": 175.6578,
+        "TSLA": 354.057,
+        "TXN": 281.85,
+        "UNH": 374.7,
+        "WMT": 106.94,
+        "XOM": 161.11,
+        "HON": 210.8,
+        "VRTX": 529.8775
+      },
+      "fees": 123.91631163462546,
+      "slippage": 12.39153270715393,
+      "spread": 0.0,
+      "sell_tax": 0.0,
+      "realized_pnl": -15.530989161770563,
+      "trade_count": 359,
+      "equity": 10005.58569409206,
+      "net_pnl": 5.585694092060294,
+      "holdings_value": 9987.524400000002,
+      "symbol_realized_pnl": {
+        "KLAC": 161.74117028435734,
+        "NFLX": 77.49717018342251,
+        "ORLY": -0.7413288416267392,
+        "LULU": -2.7140998134094048,
+        "TEAM": -178.57628657184307,
+        "AMZN": -1.7889344950012855,
+        "CSCO": -1.3987162392317742,
+        "AMD": -1.4306844567382768,
+        "MDB": -3.119824537298541,
+        "MCD": -2.34759718121029,
+        "BAC": -0.5730863151286769,
+        "GOOGL": -2.3467736342253716,
+        "NVDA": -3.510303880995167,
+        "INTC": -1.7038509718001933,
+        "INTU": 0.7837772272156371,
+        "KO": -1.8179260683891272,
+        "PEP": -1.1467572153006245,
+        "QCOM": -0.8730541898331126,
+        "CRM": -2.9838650647233464,
+        "DIS": -1.0213013391915382,
+        "HON": -3.638957545408971,
+        "ROST": -0.48803502850651626,
+        "WMT": -0.4205182799377525,
+        "FAST": -1.6448044051311612,
+        "GOOG": -4.214731048159706,
+        "MCHP": -0.8857537304855327,
+        "BKNG": 0.09347256739883392,
+        "CHTR": -5.72605297005542,
+        "IBM": -0.5469953996993695,
+        "HD": -1.6642985569213238,
+        "JPM": -1.3704685045136102,
+        "FANG": -15.895620135977339,
+        "PYPL": -0.11013728850053184,
+        "JNJ": -0.21774584312743173,
+        "PDD": -0.42506972020127876,
+        "NXPI": 3.688667500095221,
+        "ADBE": 0.850563005458099,
+        "CVX": -2.489890501991283,
+        "KDP": -0.3704875870979407,
+        "LRCX": -0.5977876293823101,
+        "XOM": -0.319982830361937,
+        "TXN": -1.3754437360322527,
+        "AAPL": -1.7422258584656447,
+        "ADP": 0.22181148696898845,
+        "AMAT": 0.3288544288879507,
+        "UNH": -3.042280578234795,
+        "GILD": 0.4847522118774634,
+        "MAR": 1.2756535151061144,
+        "ISRG": 0.677524715493746,
+        "TSLA": -2.0884018443817354,
+        "AVGO": -0.8831510933746358,
+        "PCAR": -4.230434866072528,
+        "SBUX": -0.320172796304405
+      }
+    }
+  },
+  "execution": "next completed bar close; cash-only equities and ETFs",
+  "allocation": "per-currency tradable model weights; action-gated whole-share orders with cost-aware cash limits",
+  "kr_sell_tax_assumption": 0.001
+}

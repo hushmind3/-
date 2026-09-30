@@ -20,4 +20,5 @@ This instruction applies to every agent and contributor working in this project.
 - Launchers must reject runtime paths outside this project instead of silently creating them.
 - Update `README.md` whenever project paths, runtime behavior, or operating rules change.
 - The champion selected by the user is the current baseline. A SHA256 identifies which champion was present during a validation window; it is not a fixed allowlist or promotion lock. Promote only after at least 64 identical future paper-account bars show higher net return, and reject promotion if the champion changes during that window.
-- Keep runtime state local under the project directory and exclude it from Git; exclude model weight files (`.pt`, `.pth`, `.ckpt`, `.safetensors`) as well. Historical commits may still contain older runtime snapshots.
+- Keep each active runtime under `runtime/markets/<market>/live` and include project files and runtime state in GitHub so a downloaded project retains its account, replay, cursor, metrics, market data, and other saved state. Exclude only model weight files (`.pt`, `.pth`, `.ckpt`, `.safetensors`). Never place runtime state outside the project.
+- This repository is public: never commit API keys, secrets, access tokens, or real account credentials. Paper-account state is portable project data; OS credential-store contents are not.
