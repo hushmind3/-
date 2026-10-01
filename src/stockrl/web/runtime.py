@@ -216,6 +216,9 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             agent = self.children.get("agent")
             if agent is None or agent.poll() is not None:
                 return {"error": "Model process is not running."}
+            agent_metrics = _json(self.profile / "agent" / "metrics.json")
+            if agent_metrics.get("candidate_validation_active"):
+                return {"error": "An active promotion trial must finish before reloading the model; this protects the comparison."}
             stop_request = self.profile / "agent" / "stop.request"
             if stop_request.exists():
                 return {"error": "Model reload is already in progress."}

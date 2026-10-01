@@ -137,6 +137,7 @@ class _StatusMixin:
             latest_decisions = decision_cache["latest"]
             latest_quotes = quote_cache["latest"]
             fresh_symbols = set(feed_metrics.get("fresh_symbols_5m", []))
+            configured_symbols = {str(item.get("symbol", "")) for item in instruments}
             instrument_status = []
             for item in instruments:
                 symbol = item.get("symbol", "")
@@ -219,11 +220,20 @@ class _StatusMixin:
             validation_accounts_available = True
             validation_initial_cash = {}
             validation_last_timestamps = {}
+            validation_cost_signatures = {}
             for model_name, account_file in (
                     ("champion", "candidate_validation_champion.json"),
                     ("candidate", "candidate_validation_candidate.json")):
                 account_path = state / account_file
                 account = _json(account_path)
+                try:
+                    validation_cost_signatures[model_name] = (
+                        str(account["execution"]),
+                        float(account["kr_sell_tax_assumption"]),
+                        float(metrics.get("fee_rate", self.fee)),
+                        float(metrics.get("slippage_bps", 1.0)))
+                except (KeyError, TypeError, ValueError):
+                    validation_cost_signatures[model_name] = None
                 validation_last_timestamps[model_name] = account.get("last_timestamp")
                 validation_initial_cash[model_name] = {
                     currency: float(book.get("initial_cash", 0.0))
@@ -306,7 +316,10 @@ class _StatusMixin:
                 "fee_rate": float(metrics.get("fee_rate", self.fee)),
                 "slippage_bps": float(metrics.get("slippage_bps", 1.0)),
                 "krw_sell_tax_rate": KR_SELL_TAX_ASSUMPTION,
-                "same_cost_rules": bool(validation_accounts_available),
+                "same_cost_rules": bool(validation_accounts_available and
+                    validation_cost_signatures.get("champion") is not None and
+                    validation_cost_signatures.get("champion") ==
+                    validation_cost_signatures.get("candidate")),
                 "action_rule": "same highest-probability action; no exploration draw",
                 "same_action_rule": bool(validation_state.get("same_action_rule", False)),
                 "comparison_valid": bool(validation_state.get("comparison_valid", False)),
@@ -399,6 +412,7 @@ class _StatusMixin:
                     "version":metrics.get("champion_training_version",0),
                     "inference_count":metrics.get("champion_live_inference_count",0),
                     "last_inference_seconds":metrics.get("champion_live_last_inference_seconds"),
+                    "last_full_decision_timestamp":metrics.get("champion_last_full_decision_timestamp"),
                     "skipped_observations":0,
                     "policy":metrics.get("champion_policy_diagnostics",{}),
                     "last_tradable_policy":metrics.get("champion_last_tradable_policy_diagnostics",{})},
@@ -531,7 +545,7 @@ class _StatusMixin:
                         "configured_tradable":sum(item.get("asset_class") in ("equity","etf") for item in instruments),
                         "context_only":sum(item.get("asset_class") not in ("equity","etf") for item in instruments),
                         "stored":input_availability(row for symbol,row in latest_quotes.items()
-                                                     if symbol in {str(item.get("symbol", "")) for item in instruments}),
+                                                     if symbol in configured_symbols),
                         "fresh_quotes":input_availability(row for symbol,row in latest_quotes.items() if symbol in fresh_symbols),
                         "second_resolution":{"1s":False,"15s":False,"30s":False}},
                     "real_orders_enabled": False,

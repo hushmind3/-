@@ -36,7 +36,7 @@ function renderAccountDiagnostics(d){
   const profile=account.inference_profile||mInferenceProfile(d,role),queue=isChampion?0:num(d.metrics?.shared_observation?.pending);
   const part=v=>v==null?"미측정":decimal(v,2)+"초";
   $(role+"AccountMeta").className="account-meta"+(health?.status==="stale"?" delayed":"");
-  text(role+"AccountMeta","계좌·완료 판단 기준 "+timeOf(account.last_timestamp)+" · 시세 대비 "+(health?.lag_seconds==null?"지연 미측정":whole(health.lag_seconds)+"초 지연")+" · 관측 가중치 v"+whole(account.version)+". 최근 GPU 대기 "+part(profile.wait_seconds)+" / 입력·계산 "+part(profile.forward_seconds)+(isChampion?"":" · 미처리 관찰 "+whole(queue)+"개"));
+  text(role+"AccountMeta","마지막 실제 모델 판단 "+timeOf(account.last_full_decision_timestamp)+" · 계좌 평가·관찰 처리 "+timeOf(account.last_timestamp)+" · 시세 대비 "+(health?.lag_seconds==null?"지연 미측정":whole(health.lag_seconds)+"초 지연")+" · 관측 가중치 v"+whole(account.version)+". 최근 GPU 대기 "+part(profile.wait_seconds)+" / 입력·계산 "+part(profile.forward_seconds)+(isChampion?"":" · 미처리 관찰 "+whole(queue)+"개"));
   const positions=["KRW","USD"].flatMap(c=>(books[c]?.positions||[]).map(p=>[instrumentLabel(p.symbol,d),c,whole(p.quantity)+"주",accountMoney(p.average_cost,c),accountMoney(p.mark,c)+(p.mark_available?"":" (평단 대체)"),accountPercent(p.weight),accountMoney(p.unrealized_pnl,c)]));
   $(isChampion?"positions":"candidateLiveHoldings").innerHTML=positions.length?accountTable(["종목","통화","수량","평단","평가가격","계좌 비중","평가손익"],positions):"보유 종목 없음";
   const costs=["KRW","USD"].filter(c=>books[c]).map(c=>{const b=books[c];return [c,accountMoney(b.fees,c),accountMoney(b.sell_tax,c),accountMoney(b.spread,c),accountMoney(b.slippage,c),accountPercent(b.cost_return_rate),b.reconciliation_ok?"일치":"불일치"]});
