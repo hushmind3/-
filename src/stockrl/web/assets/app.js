@@ -368,6 +368,7 @@ async function refresh() {
   } catch (error) {
     badge("systemBadge", "서버 연결 끊김", "bad");
     renderLearningSituation({ ...current, status_unavailable: true });
+    renderWorkflowStatus({ status_unavailable: true });
     text("runTitle", "서버 연결 실패");
     text("runDetail", error.message);
     feedback("로컬 서버 상태를 읽지 못했습니다. 5초 후 다시 확인합니다.", true);
@@ -411,6 +412,7 @@ function render(d) {
     renderExperienceFlow(d);
     renderLearnerSummary(d);
     renderTrialSummary(d);
+    renderWorkflowStatus(d);
   } finally {
     commitView();
   }

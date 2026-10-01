@@ -1038,6 +1038,16 @@ function renderDualLearning(d) {
     "1w": "주봉",
     "1mo": "월봉",
   };
+  const requiredBars = {
+    "1m": 129,
+    "3m": 65,
+    "5m": 65,
+    "15m": 33,
+    "60m": 5,
+    "1d": 65,
+    "1w": 53,
+    "1mo": 25,
+  };
   for (const [scale, label] of Object.entries(names)) {
     const info = m.multiscale_input_status?.[scale],
       coverage = info?.mean_history_coverage ?? m.multiscale_coverage?.[scale],
@@ -1045,13 +1055,26 @@ function renderDualLearning(d) {
       a = m.candidate_last_completed_round?.timeframe_samples?.[scale];
     const values = [
       label,
+      whole(requiredBars[scale]) + "개 완료 봉",
       coverage == null
         ? "측정 대기"
-        : (Number(coverage) * 100).toFixed(1) + "%",
+        : (Number(coverage) * 100).toFixed(2) + "%",
       info
         ? whole(info.available_symbols) + " / " + whole(info.observed_symbols)
         : "측정 대기",
-      info ? whole(info.complete_history_symbols) + "종목" : "측정 대기",
+      info
+        ? "충분 " +
+          whole(info.complete_history_symbols) +
+          " / 부족 " +
+          whole(
+            Math.max(
+              0,
+              Number(info.observed_symbols) -
+                Number(info.complete_history_symbols),
+            ),
+          ) +
+          "종목"
+        : "측정 대기",
       c == null
         ? "측정 대기"
         : whole(c) +
@@ -1068,6 +1091,30 @@ function renderDualLearning(d) {
     timeframeRows.push(values);
   }
   html("timeframeLearningRows", () => tableRows(timeframeRows));
+  const incomplete = Object.entries(names)
+    .filter(([scale]) => {
+      const row = m.multiscale_input_status?.[scale];
+      return (
+        row &&
+        Number(row.complete_history_symbols) < Number(row.observed_symbols)
+      );
+    })
+    .map(([, label]) => label);
+  text(
+    "timeframeInputWarning",
+    !m.multiscale_input_status
+      ? "과거 기록 충분 여부 미확인"
+      : incomplete.length
+        ? "기록 부족: " +
+          incomplete.join(" · ") +
+          " — 확보된 일부 기록으로 판단·학습하고 있습니다. 아래 ‘최근 학습’ 건수는 입력 포함 여부이며, 과거 기록이 충분하다는 뜻은 아닙니다."
+        : "모든 시간봉에서 필요한 과거 봉 수를 충족했습니다.",
+  );
+  property(
+    "timeframeInputWarning",
+    "className",
+    "notice " + (incomplete.length ? "input-incomplete" : ""),
+  );
 
   text(
     "replayDetail",

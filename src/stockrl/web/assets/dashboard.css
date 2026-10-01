@@ -1808,3 +1808,133 @@ body {
   color: #263c59;
   margin-right: 6px;
 }
+
+/* Operator hierarchy: live states first, reasons next, details on demand. */
+.workflow-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.workflow-strip a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #ced9eb;
+  border-radius: 12px;
+  color: #253d60;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.workflow-strip span {
+  color: #53657d;
+  font-size: 13px;
+}
+.workflow-strip strong {
+  font-size: 15px;
+}
+#learningAtGlance {
+  background: #eaf1ff;
+  font-weight: 650;
+}
+.stage-facts {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.stage-facts div {
+  margin: 8px 0;
+}
+.stage-facts dt {
+  color: #6b5b39;
+  font-size: 12px;
+}
+.stage-facts dd {
+  margin: 0;
+  color: #4c3918;
+  font-weight: 600;
+}
+#learningLifecycle > div:first-child {
+  background: #fff9ed;
+  border-color: #ecd9b5;
+}
+#learningLifecycle > div:last-child {
+  background: #eef9f3;
+  border-color: #c4e1d1;
+}
+#learningLifecycle > div:first-child strong {
+  color: #805317;
+}
+#learningLifecycle > div:last-child strong {
+  color: #176f4b;
+}
+.mode-meanings {
+  display: grid;
+  gap: 7px;
+  padding-top: 14px;
+  font-size: 14px;
+  color: #43556f;
+}
+.trial-next {
+  padding: 14px 16px;
+  border-left: 4px solid #4269b0;
+  background: #eff4fc;
+  color: #2b4469;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 12px 0;
+}
+.input-incomplete {
+  background: #fff7e8;
+  border-color: #e7cc9c;
+  color: #725018;
+}
+#timeframeLearningRows td {
+  white-space: normal;
+  line-height: 1.6;
+}
+.learning-lifecycle small {
+  line-height: 1.7;
+}
+@media (max-width: 1000px) {
+  .workflow-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .workflow-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .learning-lifecycle {
+    grid-template-columns: 1fr;
+  }
+  .stage-facts div {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
+  }
+  .mode-switches {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 680px) {
+  .workflow-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .workflow-strip a {
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+  .workflow-strip strong {
+    font-size: 13px;
+  }
+}

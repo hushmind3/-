@@ -251,6 +251,53 @@ async function main() {
         );
       for (const id of Object.keys(a)) {
         if (!(id in b)) continue;
+        if (id === "timeframeLearningRows" && open) {
+          const oldRows = [
+            ...before.w.document.querySelectorAll("#timeframeLearningRows tr"),
+          ];
+          const newRows = [
+            ...after.w.document.querySelectorAll("#timeframeLearningRows tr"),
+          ];
+          assert.equal(newRows.length, oldRows.length);
+          for (let i = 0; i < oldRows.length; i++) {
+            const x = [...oldRows[i].cells].map((c) => c.textContent),
+              y = [...newRows[i].cells].map((c) => c.textContent);
+            assert.equal(y.length, 7);
+            assert.match(y[1], /개 완료 봉$/);
+            assert.equal(y[0], x[0]);
+            assert.equal(y[3], x[2]);
+            if (x[1].endsWith("%"))
+              assert(Math.abs(parseFloat(x[1]) - parseFloat(y[2])) <= 0.06);
+            else assert.equal(y[2], x[1]);
+            if (x[3] === "측정 대기") assert.equal(y[4], x[3]);
+            else
+              assert(
+                y[4].startsWith(
+                  "충분 " + parseInt(x[3]).toLocaleString("ko-KR") + " / 부족 ",
+                ),
+              );
+            assert.equal(y[5], x[4]);
+            assert.equal(y[6], x[5]);
+          }
+          fieldChecks++;
+          continue;
+        }
+        if (id === "learningBtn") {
+          assert.deepEqual(
+            [b[id][0].replace("경험 학습", "replay 학습"), ...b[id].slice(1)],
+            a[id],
+          );
+          fieldChecks++;
+          continue;
+        }
+        if (id === "pendingRewardReasons") {
+          assert.equal(
+            b[id][0].replaceAll("손익 확인 대기 없음", "결과 평가 대기 없음"),
+            a[id][0],
+          );
+          fieldChecks++;
+          continue;
+        }
         if (["learningFlowHealth", "learningState"].includes(id)) {
           assert(b[id][0].length > 0, `${name}: meaningful learning status`);
           fieldChecks++;

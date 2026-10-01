@@ -1485,6 +1485,9 @@ function renderExperienceFlow(d) {
   text("flowPending", pending == null ? "미측정" : whole(pending) + "건");
   text("flowEligible", eligible == null ? "미측정" : whole(eligible) + "건");
   text("flowCompleted", whole(completed) + "건");
+  const pendingState = pendingOutcomeState(d);
+  text("flowPendingWindow", pendingState.window);
+  text("flowPendingWaitReason", pendingState.reason);
   const labels = {
     missing_market_input: "시세 입력 복구 필요",
     next_quote: "해당 종목의 후속 시세 대기",
@@ -1503,7 +1506,7 @@ function renderExperienceFlow(d) {
       ": " +
       (Object.entries(status.reasons || {})
         .map(([key, count]) => (labels[key] || key) + " " + whole(count) + "건")
-        .join(" · ") || "결과 평가 대기 없음")
+        .join(" · ") || "손익 확인 대기 없음")
     );
   });
   const settled =
@@ -1613,12 +1616,12 @@ function learningSituation(d) {
           ? "준비된 경험 모두 학습 완료 · 결과 대기"
           : "준비된 경험 모두 학습 완료 · 새 경험 대기"
         : pending
-          ? "학습 ON · 결과 평가 대기"
+          ? "학습 ON · 손익 확인 중"
           : "학습 ON · 새 경험 대기";
     return {
       title,
       reason:
-        "학습은 ON입니다. 지금 학습 가능한 경험은 0건이며, 결과 평가 중인 경험은 " +
+        "학습은 ON입니다. 지금 학습 가능한 경험은 0건이며, 손익 확인 중인 판단 기록은 " +
         whole(pending) +
         "건입니다." +
         (blocked
@@ -1627,8 +1630,8 @@ function learningSituation(d) {
             "건은 별도 확인이 필요합니다."
           : ""),
       next: pending
-        ? "후속 시세와 평가 조건을 충족해 보상이 확정되면 자동으로 학습합니다. 고정 시작 시각은 없습니다."
-        : "새 행동의 결과가 평가되어 replay에 들어오면 자동으로 학습합니다.",
+        ? "손익이 확정된 기록부터 자동으로 학습합니다."
+        : "새 판단의 손익이 확정되면 자동으로 학습합니다.",
       tone: blocked ? "warn" : "",
     };
   }
@@ -1829,4 +1832,143 @@ function renderTrialSummary(d) {
         ? "이전 시험 무효 · 새 대결 대기"
         : "새 고정 시험본 대결 대기";
   text("trialLeader", leader);
+  text("trialNextAction", trialNextAction(d));
+}
+
+// Operator summaries read the same API snapshot as the detailed tables.
+function pendingOutcomeState(d) {
+  const m = d.metrics || {},
+    seconds = Number(m.reward_credit?.duration_seconds);
+  const labels = {
+    next_quote: "새 시세",
+    reward_horizon: "손익 확인 시간 경과",
+    fill: "가상 주문 체결",
+    missing_market_input: "시세 입력 복구",
+    blocked: "기록 오류 해결",
+  };
+  const reasons = {};
+  for (const role of ["champion", "candidate"])
+    for (const [key, count] of Object.entries(
+      m[role + "_pending_reward_status"]?.reasons || {},
+    ))
+      reasons[key] = (reasons[key] || 0) + num(count);
+  const rows = Object.entries(reasons).filter(([, count]) => count > 0);
+  const count = m.replay_pending_count ?? m.pending_experiences;
+  const accounted = rows.reduce((sum, [, n]) => sum + n, 0);
+  const detail = rows
+    .map(
+      ([key, value]) =>
+        (labels[key] || "원인 미확인") + " · " + whole(value) + "건",
+    )
+    .join(" / ");
+  const updating = count != null && accounted !== Number(count);
+  return {
+    window:
+      Number.isFinite(seconds) && seconds > 0
+        ? "현재 설정 " + whole(seconds / 60) + "분"
+        : "기간 미확인",
+    reason: rows.length
+      ? detail +
+        (updating
+          ? " / 사유 집계 갱신 중" +
+            (Number(count) > accounted
+              ? " · " + whole(Number(count) - accounted) + "건"
+              : "")
+          : "")
+      : count == null
+        ? "상태 미확인"
+        : Number(count) === 0
+          ? "대기 없음"
+          : "대기 이유 미확인",
+  };
+}
+function trialNextAction(d) {
+  const v = d.validation_comparison || {};
+  if (d.status_unavailable)
+    return "서버 연결 끊김 · 승급전 상태를 확인할 수 없습니다.";
+  if (!d.agent_process_running)
+    return "모델 프로세스가 정지했습니다. 시작 후 시험을 진행합니다.";
+  if (v.active && d.observe_enabled === false)
+    return "모델 판단 OFF · 판단을 켜면 시험도 다시 진행됩니다.";
+  if (v.active) {
+    const required = Number(v.bars_required),
+      current = Number(v.bars_current);
+    const remaining =
+      Number.isFinite(required) && Number.isFinite(current)
+        ? Math.max(0, required - current)
+        : null;
+    return (
+      (remaining == null
+        ? "시험 진행량 확인 중"
+        : "평가할 시장 시점 " + whole(remaining) + "개 남음") +
+      " · 새 시세를 받으며 평가 → 일일 판정 " +
+      (d.daily_cycle?.next_reset_utc
+        ? timeOf(d.daily_cycle.next_reset_utc)
+        : "시각 미확인") +
+      " · 장기 가상계좌는 유지"
+    );
+  }
+  if (v.comparison_valid && ["promoted", "rejected"].includes(v.status))
+    return "판정 완료 · 다음 시험은 새 고정 모델과 별도 시험계좌로 시작합니다. 장기 가상계좌는 유지됩니다.";
+  return "새 시험본 준비 대기 · 같은 시장·시작 자금·비용으로 두 모델을 비교합니다.";
+}
+function renderWorkflowStatus(d) {
+  const m = d.metrics || {},
+    h = d.agent_health || {},
+    c = h.candidate || {};
+  if (d.status_unavailable) {
+    for (const id of [
+      "workflowFeed",
+      "workflowInference",
+      "workflowPaper",
+      "workflowTrial",
+    ])
+      text(id, "연결 끊김 · 미확인");
+    return;
+  }
+  text(
+    "workflowFeed",
+    d.feed_running
+      ? "수집 중 · " +
+          whole((d.feed_metrics?.fresh_symbols_5m || []).length) +
+          "종목 수신"
+      : "정지",
+  );
+  text(
+    "workflowInference",
+    !d.agent_process_running
+      ? "프로세스 정지"
+      : d.observe_enabled === false
+        ? "OFF"
+        : h.status === "error" || c.status === "error"
+          ? "오류 · 확인 필요"
+          : h.lag_seconds == null || c.lag_seconds == null
+            ? "지연 미측정"
+            : "ON · 시세 처리 지연 " +
+              whole(Math.max(Number(h.lag_seconds), Number(c.lag_seconds))) +
+              "초",
+  );
+  text(
+    "workflowPaper",
+    d.paper_enabled == null
+      ? "상태 미확인"
+      : d.paper_enabled
+        ? "ON · 가상계좌 체결"
+        : "OFF",
+  );
+  const v = d.validation_comparison || {};
+  text(
+    "workflowTrial",
+    v.active
+      ? !d.agent_process_running
+        ? "프로세스 정지 · 중지"
+        : d.observe_enabled === false
+          ? "판단 OFF · 중지"
+          : whole(v.bars_current) + " / " + whole(v.bars_required) + "시점"
+      : v.status === "promoted" && v.comparison_valid
+        ? "Candidate 승급 완료"
+        : v.status === "rejected" && v.comparison_valid
+          ? "Champion 유지"
+          : "시험 대기",
+  );
 }

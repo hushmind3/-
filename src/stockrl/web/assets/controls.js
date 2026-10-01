@@ -259,7 +259,7 @@ function renderModeControls(d) {
   for (const [id, on, label] of [
     ["observeBtn", observe, "모델 판단"],
     ["paperBtn", paper, "가상계좌 체결"],
-    ["learningBtn", learning, "replay 학습"],
+    ["learningBtn", learning, "경험 학습"],
   ]) {
     text(id, label + ": " + (on ? "ON" : "OFF"));
     toggleClass(id, "active", on);

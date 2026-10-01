@@ -49,3 +49,9 @@ Experience counts distinguish results still being evaluated, eligible replay bac
 `learningSituation()` in `dashboard.js` is the shared source for the header learning link, learning badge, visible explanation, and per-model state. The explanation shows current work, why it waits, the condition for the next round, and each model's last confirmed completion. Zero eligible backlog is distinguished from learning OFF, GPU scheduling waits, errors and missing measurements. Run `node tests/frontend_learning_status.cjs` for its dependency-free state checks.
 
 `tests/test_pending_rewards.py` checks closed-session settlement against authentic saved quotes, missing/open-market quotes, and unfilled-order expiration. `tests/test_online_pipeline.py` checks compaction retaining real closed-market history and daily counts after quarantined rows are removed. These fixes preserve learning inputs and never fabricate a next-day fill.
+
+## Operator status contract
+
+The five-part header shows collection, decision processing lag, paper execution, learning, and trial progress from one status response. Pending outcome records are distinguished from eligible training experience. The pending card shows the configured reward interval and aggregated reasons from both models; asynchronous differences between the current DB total and worker reason counts are explicitly labeled as an updating reason tally. Required timeframe history is shown as completed bar counts (lookback + 1), with sufficient and insufficient symbol counts. Inclusion in a training sample is never labeled as complete history. The input shortage warning stays visible on the learning page. Formatting coverage to two decimal places avoids displaying incomplete monthly history as 100.0%.
+
+Existing buttons and API mutations are preserved. UI-only changes need browser reload, not a model or server restart.

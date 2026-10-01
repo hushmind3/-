@@ -30,7 +30,7 @@ const cases = [
       ...base,
       metrics: { replay_eligible_backlog: 0, replay_pending_count: 10 },
     },
-    /^학습 ON.*결과 평가 대기/,
+    /^학습 ON.*손익 확인 중/,
   ],
   [
     "disconnected",
@@ -147,4 +147,116 @@ console.log(
     learningStateCases: cases.length,
     matchingSummaryAndBadge: "passed",
   }),
+);
+
+const pendingCases = [
+  [{ metrics: {} }, /미확인/, /미확인/],
+  [{ metrics: { replay_pending_count: 0 } }, /미확인/, /대기 없음/],
+  [
+    {
+      metrics: {
+        replay_pending_count: 2062,
+        reward_credit: { duration_seconds: 3600 },
+        champion_pending_reward_status: { reasons: { next_quote: 1031 } },
+        candidate_pending_reward_status: { reasons: { next_quote: 1031 } },
+      },
+    },
+    /60분/,
+    /새 시세 · 2,062건/,
+  ],
+  [
+    {
+      metrics: {
+        replay_pending_count: 5,
+        reward_credit: { duration_seconds: 900 },
+        champion_pending_reward_status: {
+          reasons: { reward_horizon: 3, fill: 2 },
+        },
+      },
+    },
+    /15분/,
+    /손익 확인 시간 경과 · 3건.*가상 주문 체결 · 2건/,
+  ],
+  [
+    {
+      metrics: {
+        replay_pending_count: 2,
+        champion_pending_reward_status: {
+          reasons: { missing_market_input: 1, blocked: 1 },
+        },
+      },
+    },
+    /미확인/,
+    /시세 입력 복구.*기록 오류 해결/,
+  ],
+];
+for (const [d, window, reason] of pendingCases) {
+  const state = context.pendingOutcomeState(d);
+  assert.match(state.window, window);
+  assert.match(state.reason, reason);
+}
+const trialCases = [
+  [
+    {
+      agent_process_running: true,
+      observe_enabled: false,
+      validation_comparison: { active: true },
+    },
+    /모델 판단 OFF/,
+  ],
+  [
+    {
+      agent_process_running: true,
+      observe_enabled: true,
+      validation_comparison: {
+        active: true,
+        bars_current: 69,
+        bars_required: 390,
+      },
+      daily_cycle: { next_reset_utc: "07:00" },
+    },
+    /321개 남음.*07:00/,
+  ],
+  [
+    {
+      agent_process_running: true,
+      validation_comparison: { status: "promoted", comparison_valid: true },
+    },
+    /판정 완료.*장기 가상계좌는 유지/,
+  ],
+  [{ agent_process_running: false }, /프로세스가 정지/],
+  [{ status_unavailable: true }, /연결 끊김/],
+];
+for (const [d, re] of trialCases) assert.match(context.trialNextAction(d), re);
+console.log(
+  JSON.stringify({
+    pendingExplanationCases: pendingCases.length,
+    trialNextActionCases: trialCases.length,
+  }),
+);
+
+assert.match(
+  context.pendingOutcomeState({
+    metrics: {
+      replay_pending_count: 100,
+      champion_pending_reward_status: { reasons: { next_quote: 90 } },
+    },
+  }).reason,
+  /사유 집계 갱신 중 · 10건/,
+);
+
+const modelSource = fs.readFileSync("src/stockrl/multiscale.py", "utf8");
+const modelLookbacks = [
+  ...modelSource
+    .match(/_LOOKBACK_BARS\s*=\s*\{([^}]+)\}/)[1]
+    .matchAll(/"([^" ]+)":\s*(\d+)/g),
+].map(([, name, n]) => [name, Number(n) + 1]);
+const uiSource = fs.readFileSync("src/stockrl/web/assets/details.js", "utf8");
+for (const [name, n] of modelLookbacks)
+  assert(
+    new RegExp('"' + name + '":\\s*' + n + "[,\\s]").test(uiSource),
+    name + " required completed bars match model",
+  );
+console.log(
+  JSON.stringify({ timeframeRequirementChecks: modelLookbacks.length }),
 );
