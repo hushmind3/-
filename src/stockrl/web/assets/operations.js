@@ -100,7 +100,7 @@ render=function(d){
  renderBeforeAccountDiagnostics(d);renderAccountDiagnostics(d);renderDailyOperation(d);renderInferenceWork(d);renderOperationsOverview(d);
  const metrics=d.metrics||{},health=d.agent_health||{},candidate=health.candidate||{};
  const championDecision=metrics.champion_last_full_decision_timestamp||d.account_observability?.champion?.policy?.timestamp;
- const candidateDecision=d.account_observability?.candidate?.policy?.timestamp;
+ const candidateDecision=d.account_observability?.candidate?.last_full_decision_timestamp;
  text("opChampionTime","관찰 처리 "+timeOf(health.agent_cursor_timestamp_utc)+" · 실제 판단 "+timeOf(championDecision));
  text("opCandidateQueue","처리 대기 "+whole(candidate.pending)+"개 · 관찰 처리 "+timeOf(candidate.cursor_timestamp_utc)+" · 실제 판단 "+timeOf(candidateDecision));
  text("agentDetail","시세 "+timeOf(health.latest_feed_timestamp_utc)+" / 관찰 처리 "+timeOf(health.agent_cursor_timestamp_utc)+" / 실제 모델 판단 "+timeOf(championDecision));

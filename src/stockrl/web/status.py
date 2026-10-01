@@ -192,10 +192,13 @@ class _StatusMixin:
             candidate_live_account = {
                 "available": (bool(candidate_observer_books) and
                     candidate_observer_state.get("status") in
-                    ("observing", "training_and_observing")),
+                    ("observing", "training_and_observing", "context_only", "judgment_paused")),
                 "status": candidate_observer_state.get("status", "waiting_for_candidate_update"),
                 "last_timestamp": candidate_observer_state.get("last_timestamp",
                     candidate_observer_account.get("last_timestamp")),
+                "last_observation_timestamp": candidate_observer_state.get("last_timestamp",
+                    candidate_observer_account.get("last_timestamp")),
+                "last_full_decision_timestamp": candidate_observer_state.get("last_full_decision_timestamp"),
                 "candidate_version": candidate_observer_state.get("candidate_version"),
                 "candidate_training": bool(metrics.get("candidate_training")),
                 "last_inference_seconds": candidate_observer_state.get("last_inference_seconds"),
@@ -328,6 +331,7 @@ class _StatusMixin:
                 "candidate_skipped_observations": int(metrics.get("candidate_live_queue_drops", 0)),
                 "shared_observation":metrics.get("shared_observation",{}),
                 "last_bar_timestamps_equal": (
+                    bool(paper_account.get("last_timestamp")) and
                     paper_account.get("last_timestamp") ==
                     candidate_observer_account.get("last_timestamp")),
                 "reason_not_a_fair_score": (
@@ -407,6 +411,7 @@ class _StatusMixin:
                     "skipped_observations":metrics.get("candidate_live_queue_drops",0),
                     "observer_status":candidate_observer_state.get("status"),
                     "observer_error":candidate_live_account["error"],
+                    "last_full_decision_timestamp":candidate_observer_state.get("last_full_decision_timestamp"),
                     "policy":candidate_observer_state.get("policy_diagnostics",{}),
                     "last_tradable_policy":candidate_observer_state.get(
                         "last_tradable_policy_diagnostics",{})},
@@ -525,7 +530,8 @@ class _StatusMixin:
                         "model_input":metrics.get("model_input_symbol_count"),
                         "configured_tradable":sum(item.get("asset_class") in ("equity","etf") for item in instruments),
                         "context_only":sum(item.get("asset_class") not in ("equity","etf") for item in instruments),
-                        "stored":input_availability(latest_quotes.values()),
+                        "stored":input_availability(row for symbol,row in latest_quotes.items()
+                                                     if symbol in {str(item.get("symbol", "")) for item in instruments}),
                         "fresh_quotes":input_availability(row for symbol,row in latest_quotes.items() if symbol in fresh_symbols),
                         "second_resolution":{"1s":False,"15s":False,"30s":False}},
                     "real_orders_enabled": False,
