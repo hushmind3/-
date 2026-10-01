@@ -153,6 +153,18 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(replay.stats()["daily"][0]["completed"],1)
             self.assertEqual(replay.stats()["daily"][0]["exposures"],4)
 
+    def test_discarded_invalid_rows_do_not_remain_in_daily_backlog(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            replay=GlobalReplayBuffer(journal_path=Path(directory)/"replay.sqlite3",dual_learning=True)
+            replay.add(self.experience())
+            ids=replay.row_ids_for(replay.pending_batch(8))
+            replay.quarantine(ids,"invalid historical input")
+            replay.discard_row_ids(ids)
+            day=replay.stats()["daily"][0]
+            self.assertEqual((day["enqueued"],day["completed"]),(1,0))
+            self.assertEqual((day["remaining"],day["remaining_total"],day["blocked"]),(0,0,0))
+            self.assertEqual(day["removed_without_completion"],1)
+
     def test_both_models_train_restore_and_frozen_pair_competes(self):
         cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
                               n_markets=4,n_asset_types=4,max_seq_len=8)
@@ -286,6 +298,37 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(len(stored),727)
             self.assertEqual(pd.to_datetime(stored.date,utc=True).iloc[0],dates[73])
             self.assertEqual(pd.to_datetime(stored.date,utc=True).iloc[-1],dates[799])
+
+    def test_reader_preserves_closed_equity_window(self):
+        import pandas as pd
+        dates=pd.date_range("2026-09-30",periods=400,freq="min")
+        active=pd.DataFrame({"date":dates,"symbol":"ACTIVE","asset_class":"equity"})
+        closed=pd.DataFrame({"date":dates[:150],"symbol":"CLOSED.KS","asset_class":"equity"})
+        reader=IncrementalMarketCSV("unused.csv",retain_timestamps=128)
+        reader.processed_through=str(dates[350])
+        trimmed=reader._trim(pd.concat([active,closed],ignore_index=True))
+        kept=trimmed.loc[trimmed.symbol=="CLOSED.KS"]
+        self.assertEqual(len(kept),128)
+        self.assertEqual(list(kept.date),list(dates[22:150]))
+
+    def test_feed_compaction_carries_closed_equity_quotes(self):
+        import pandas as pd
+        from stockrl.live_feed import AppendOnlyMarketCSV
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"market.csv"; (path.parent/"agent").mkdir()
+            dates=pd.date_range("2026-09-30",periods=800,freq="min",tz="UTC")
+            atomic_json({"last_timestamp":dates[700].isoformat()},path.parent/"agent"/"live_cursor.json")
+            writer=AppendOnlyMarketCSV(path);writer.COMPACT_CSV_BYTES=1;writer._next_csv_compaction=1
+            try:
+                rows=[{"date":stamp.isoformat(),"symbol":"ACTIVE","market":"US","asset_class":"equity","close":100} for stamp in dates]
+                rows += [{"date":stamp.isoformat(),"symbol":"CLOSED.KS","market":"KRX","asset_class":"equity","close":110} for stamp in dates[:200]]
+                writer.append(rows)
+            finally:
+                writer.close()
+            kept=pd.read_csv(path).query("symbol=='CLOSED.KS'")
+            self.assertEqual(len(kept),128)
+            self.assertEqual(list(pd.to_datetime(kept.date,utc=True)),list(dates[72:200]))
+            self.assertTrue((kept.close==110).all())
 
     def test_shared_forward_preserves_every_experience_gradient(self):
         torch.manual_seed(9)

@@ -1,4 +1,4 @@
-"""Install replay maintenance improvements at a saved learner boundary."""
+"""Install replay maintenance and DB counters at a saved learner boundary."""
 import ast
 import time
 from pathlib import Path
@@ -12,7 +12,7 @@ def install_replay_updates(replay):
         return
     tree = ast.parse(path.read_text(encoding="utf-8"))
     cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "GlobalReplayBuffer")
-    names = {"_ensure_performance_indexes", "acknowledge_training", "compact"}
+    names = {"_ensure_performance_indexes", "acknowledge_training", "compact", "_metadata", "stats"}
     methods = [node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name in names]
     namespace = dict(vars(replay_store))
     namespace["time"] = time

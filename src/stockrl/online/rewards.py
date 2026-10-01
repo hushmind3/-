@@ -1,5 +1,8 @@
 """Executed outcome rewards and delayed action credit."""
 from __future__ import annotations
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+from collections import Counter
 import numpy as np
 from ..global_transformer import ACTION_NAMES, GlobalMarketPanel
 from ..paper_account import _currency
@@ -15,6 +18,86 @@ def net_action_reward(action:int, forward_return:float, previous_position:int,
     gross=float(position)*float(forward_return)
     fee_cost=float(fee)*turnover; slippage_cost=float(slippage)*turnover
     return gross-fee_cost-slippage_cost,fee_cost,slippage_cost
+
+
+def closed_market_credit_ready(dec, panel, index, allow_unfilled=False):
+    """Settle elapsed wall-clock credit at a real closing mark, never an outage.
+
+    Korea includes the extended venue until 20:00 KST; US equities include the
+    existing pre/after-market range until 20:00 New York time. A five-minute
+    buffer avoids treating the final bars as a completed session. No synthetic
+    quote or fabricated price movement is introduced.
+    """
+    seconds = int(dec.get("credit_seconds") or 0)
+    if not seconds or (not allow_unfilled and dec.get("fill_expected") and not dec.get("fill_seen")):
+        return False
+    symbol = dec.get("symbol")
+    if symbol not in panel.symbols:
+        return False
+    market, asset = panel.groups[symbol]
+    if asset != "equity" or market not in ("KRX", "KOSDAQ", "US"):
+        return False
+    current = panel.dates[index]
+    start = np.datetime64(dec.get("fill_timestamp", dec["timestamp"]))
+    if current < start + np.timedelta64(seconds, "s"):
+        return False
+    local = datetime.fromtimestamp(float(current.astype("datetime64[s]").astype(int)), timezone.utc).astimezone(
+        ZoneInfo("America/New_York" if market == "US" else "Asia/Seoul"))
+    minute = local.hour * 60 + local.minute
+    opening = 4 * 60 if market == "US" else 8 * 60
+    if local.weekday() < 5 and opening <= minute < 20 * 60 + 5:
+        return False
+    symbol_index = panel.symbols.index(symbol)
+    seen = np.flatnonzero(panel.observed[:index+1, symbol_index])
+    return bool(len(seen) and panel.dates[seen[-1]] >= start
+                and np.isfinite(panel.closes[index, symbol_index])
+                and panel.closes[index, symbol_index] > 0)
+
+
+
+def saved_closing_panel(pending, live_panel, index):
+    """Recover a removed venue from its latest durable, actually observed input.
+
+    The saved decision price is the real observed close, not a synthetic quote.
+    Reuse the complete shared input for successor value; never mix today's US
+    state into yesterday's Korean closing input or create a terminal episode.
+    """
+    from types import SimpleNamespace
+    missing=[d for d in pending if d.get("symbol") not in live_panel.symbols
+             and str(d.get("symbol","")).endswith((".KS",".KQ"))
+             and "features" in d and d.get("input_symbols")]
+    if not missing:
+        return None
+    usable=[d for d in missing if d.get("entry_price",0)>0
+            and d["valid_mask"][-1,d["input_symbols"].index(d["symbol"])]]
+    if not usable:
+        return None
+    sources=[d for d in usable if not (d.get("fill_expected") and not d.get("fill_seen"))]
+    latest=max(sources or usable,key=lambda d:d["timestamp"])
+    stamp=latest["timestamp"]; symbols=latest["input_symbols"]
+    quotes={}
+    for dec in sorted(usable,key=lambda d:d["timestamp"]):
+        if dec["timestamp"]<=stamp:
+            quotes[dec["symbol"]]=(float(dec["entry_price"]),dec["timestamp"])
+    dates=np.asarray(sorted({v[1] for v in quotes.values()}|{str(live_panel.dates[index])}),dtype="datetime64[ns]")
+    observed=np.zeros((len(dates),len(symbols)),dtype=bool)
+    closes=np.full(observed.shape,np.nan)
+    groups={}
+    for j,symbol in enumerate(symbols):
+        groups[symbol]=("KOSDAQ" if symbol.endswith(".KQ") else "KRX","equity")
+        if symbol in quotes and latest["valid_mask"][:,j].any():
+            price,quoted=quotes[symbol]
+            row=int(np.searchsorted(dates,np.datetime64(quoted)))
+            observed[row,j]=True; closes[row:,j]=price
+    successor=Experience(latest["features"],latest["symbol_ids"],latest["market_ids"],
+        latest["asset_ids"],latest["valid_mask"],0,1,0.,stamp,
+        market_context=latest.get("market_context"),multiscale_state=latest.get("multiscale_state"),
+        daily_history=latest.get("daily_history"),portfolio_state=latest.get("portfolio_state"),
+        account_state=latest.get("account_state"),goal_state=latest.get("goal_state"))
+    return SimpleNamespace(symbols=symbols,groups=groups,
+        dates=dates,
+        observed=observed,closes=closes,saved_reward_input=successor,
+        reward_equity=float(latest.get("equity_before",0)))
 
 
 class _RewardMixin:
@@ -123,25 +206,42 @@ class _RewardMixin:
             account.state.get("episode_id","legacy"),account.reward_points())
         self.metrics[origin_model+"_reward_score"]=score
         if not pending:
+            self.metrics[origin_model+"_pending_reward_status"] = {"total":0,"reasons":{},"oldest":None}
             return pending
-        now = float(account.normalized_equity())
+        recovered=[]
+        if not hasattr(panel,"saved_reward_input"):
+            closing=saved_closing_panel(pending,panel,end_index)
+            if closing is not None:
+                repair=[d for d in pending if d.get("symbol") not in panel.symbols
+                        and d.get("symbol") in closing.symbols
+                        and closed_market_credit_ready(d,closing,len(closing.dates)-1,allow_unfilled=True)]
+                if repair:
+                    recovered=self._mature_portfolio(repair,closing,len(closing.dates)-1,filled_orders,account,origin_model)
+                    repair_ids={id(d) for d in repair}
+                    pending=[d for d in pending if id(d) not in repair_ids]
+        now = float(getattr(panel,"reward_equity",account.normalized_equity()))
         fills_by_id={str(fill.get("decision_id")):fill for fill in filled_orders
                      if fill.get("decision_id")}
         fills_by_order={(str(fill.get("order_date")),str(fill.get("symbol"))):fill
                         for fill in filled_orders if fill.get("order_date")}
-        keep=[]; account_transition_added=set(); credit_successor=None
+        keep=list(recovered); account_transition_added=set(); credit_successor=getattr(panel,"saved_reward_input",None)
         matured_experiences=[]; matured_acks=[]
+        waiting = Counter()
+        def retain(dec, reason):
+            keep.append(dec)
+            waiting[reason] += 1
         for dec in pending:
             if dec.get("blocked_reason"):
-                keep.append(dec); continue
+                retain(dec,"blocked"); continue
             if dec.get("reward_version")!=REWARD_VERSION:
                 dec["blocked_reason"]="reward schema is incompatible"
-                keep.append(dec)
+                retain(dec,"blocked")
                 continue
             stamp=np.datetime64(dec["timestamp"]); current=panel.dates[end_index]
             symbol=dec.get("symbol")
             if symbol not in panel.symbols:
-                keep.append(dec); continue
+                waiting_fill=dec.get("fill_expected") and not dec.get("fill_seen")
+                retain(dec,"fill" if waiting_fill else "missing_market_input"); continue
             symbol_ix=panel.symbols.index(symbol)
             reset_terminal=bool(dec.get("reset_terminal"))
             goal_points=dec.get("reset_goal_points",account.goal_points()) if reset_terminal else account.goal_points()
@@ -150,14 +250,27 @@ class _RewardMixin:
             goal_terminal=bool(goal_before and same_goal_episode and not dec.get("goal_complete_before")
                 and all(goal_points.get(c,0)>0 for c in goal_points))
             terminal=reset_terminal or goal_terminal
-            if not terminal and (current<=stamp or not panel.observed[end_index,symbol_ix]):
-                keep.append(dec); continue
+            # A paper order with no next-bar fill expires with its session.
+            # Record the real unexecuted result; never carry yesterday's order
+            # into tomorrow or manufacture a fill to unblock learning.
+            if dec.get("fill_expected") and not dec.get("fill_seen") and closed_market_credit_ready(dec,panel,end_index,allow_unfilled=True):
+                order=account.state.get("pending",{}).get(symbol)
+                if order and (order.get("decision_id")==dec.get("decision_id") or
+                        (not order.get("decision_id") and order.get("date")==dec.get("timestamp"))):
+                    account.state["pending"].pop(symbol,None)
+                dec["fill_expected"]=False;dec["trade_executed"]=False
+                dec["session_order_expired"]=True
+                key=origin_model+"_expired_session_orders"
+                self.metrics[key]=int(self.metrics.get(key,0))+1
+            closed_mark = not terminal and closed_market_credit_ready(dec,panel,end_index)
+            if not terminal and (current<=stamp or not panel.observed[end_index,symbol_ix]) and not closed_mark:
+                retain(dec,"next_quote" if current>stamp else "reward_horizon"); continue
             input_symbols=dec.get("input_symbols")
             input_symbol_index=(input_symbols.index(symbol) if input_symbols and symbol in input_symbols
                                 else int(dec["symbol_index"]))
             if not 0<=input_symbol_index<dec["features"].shape[1]:
                 dec["blocked_reason"]="decision symbol is missing from its saved input"
-                keep.append(dec)
+                retain(dec,"blocked")
                 continue
             if int(dec.get("action",1))!=1 and not dec.get("fill_expected"):
                 # Still learn its zero executed outcome. Never credit unrelated
@@ -174,14 +287,14 @@ class _RewardMixin:
                         dec["symbol_pnl_before"]=float(
                             fill.get("symbol_pnl_before_fill",dec.get("symbol_pnl_before",0.0)))
                     dec["bars_elapsed"]=0
-                    keep.append(dec)
+                    retain(dec,"reward_horizon")
                     continue
                 queued=account.state.get("pending",{}).get(symbol)
                 still_queued=bool(queued and (
                     queued.get("decision_id")==dec.get("decision_id") or
                     (not queued.get("decision_id") and queued.get("date")==dec.get("timestamp"))))
                 if still_queued:
-                    keep.append(dec)
+                    retain(dec,"fill")
                 else:
                     dec["fill_expected"]=False
                     dec["trade_executed"]=False
@@ -191,10 +304,10 @@ class _RewardMixin:
                     continue
             reward_start=np.datetime64(dec.get("fill_timestamp",dec["timestamp"]))
             if current<=reward_start and not terminal:
-                keep.append(dec); continue
+                retain(dec,"reward_horizon"); continue
             if dec.get("credit_observations_target"):
                 if str(current)<=dec.get("credit_last_timestamp",str(stamp)) and not terminal:
-                    keep.append(dec); continue
+                    retain(dec,"reward_horizon"); continue
                 dec["credit_last_timestamp"]=str(current)
                 dec["credit_observations_elapsed"]=int(dec.get("credit_observations_elapsed",0))+1
                 matured=(current>=reward_start+np.timedelta64(int(dec["credit_seconds"]),"s")
@@ -206,7 +319,7 @@ class _RewardMixin:
             else:
                 matured=current>=reward_start+np.timedelta64(self.horizon_amount,"s")
             if not matured and not terminal:
-                keep.append(dec); continue
+                retain(dec,"reward_horizon"); continue
             final_equity=float(dec.get("reset_equity",now)) if terminal else now
             account_reward = final_equity - float(dec.get("equity_before", final_equity))
             symbol_reward = ((float(dec["reset_symbol_net_pnl"]) if reset_terminal else account.symbol_net_pnl(symbol))
@@ -258,6 +371,14 @@ class _RewardMixin:
                     behavior_log_prob=dec.get("behavior_log_prob"),
                     trade_executed=dec.get("trade_executed",True))
                 exp.origin_model=origin_model;account_exp.origin_model=origin_model
+                if closed_mark:
+                    last_quote = np.flatnonzero(panel.observed[:end_index+1,symbol_ix])[-1]
+                    for experience in (exp,account_exp):
+                        experience.reward_settlement="closed_market_last_real_mark"
+                        experience.reward_end_timestamp=str(current)
+                        experience.reward_quote_timestamp=str(panel.dates[last_quote])
+                    key=origin_model+"_closed_market_rewards_settled"
+                    self.metrics[key]=int(self.metrics.get(key,0))+1
                 if goal_before and same_goal_episode:
                     currency=_currency(*panel.groups[symbol])
                     deltas={c:max(0.0,float(goal_points.get(c,0))-float(goal_before.get(c,0))) for c in goal_points}
@@ -309,4 +430,7 @@ class _RewardMixin:
             # One atomic durable commit per observation. Neither an experience
             # nor its pending acknowledgement can be lost independently.
             self.replay.add_many(matured_experiences,pending_acks=matured_acks)
+        self.metrics[origin_model+"_pending_reward_status"] = {
+            "total":len(keep),"reasons":dict(waiting),
+            "oldest":min((dec["timestamp"] for dec in keep),default=None)}
         return keep

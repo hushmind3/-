@@ -75,8 +75,8 @@ class IncrementalMarketCSV:
         if len(prior):
             cutoff=min(cutoff,prior.iloc[-min(128,len(prior))])
         recent=frame.loc[stamps>=cutoff]
-        reference=~frame.get("asset_class",pd.Series("equity",index=frame.index)).astype(str).str.casefold().eq("equity")
-        carry=frame.loc[(stamps<cutoff)&reference].groupby("symbol",sort=False).tail(20)
+        carry=frame.groupby("symbol",sort=False).tail(128)
+        carry=carry.loc[stamps.loc[carry.index]<cutoff]
         return pd.concat((carry,recent),ignore_index=True).sort_values(
             ["date","symbol"],kind="stable").reset_index(drop=True)
 

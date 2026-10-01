@@ -106,7 +106,7 @@ def _utc_stamp(epoch: int | float) -> str:
 class AppendOnlyMarketCSV:
     """Append bars once; compact only history acknowledged by the observer."""
     RETAIN_TIMESTAMPS = 512
-    REFERENCE_CARRY_ROWS = 20
+    REFERENCE_CARRY_ROWS = 128
     DEDUPE_DAYS = 8
     # One rolling cache, compacted in place before it consumes the runtime budget.
     COMPACT_CSV_BYTES = 16 * 1024 * 1024
@@ -202,6 +202,7 @@ class AppendOnlyMarketCSV:
             protected_ns=int(context_rows[-1][0])
             cutoff_ns=min(cutoff_ns,protected_ns) if cutoff_ns is not None else None
             carry_by_symbol={}
+            recent_counts={}
             wrote_recent=False
             for chunk in pd.read_csv(self.path,chunksize=100_000):
                 stamps=pd.to_datetime(chunk["date"],utc=True,errors="coerce")
@@ -210,8 +211,7 @@ class AppendOnlyMarketCSV:
                 else:
                     stamp_ns=stamps.astype("int64",copy=False)
                     recent_mask=stamps.notna() & (stamp_ns>=cutoff_ns)
-                    reference=~chunk["asset_class"].astype(str).str.casefold().eq("equity")
-                    old_reference=chunk.loc[stamps.notna() & (stamp_ns<cutoff_ns) & reference]
+                    old_reference=chunk.loc[stamps.notna() & (stamp_ns<cutoff_ns)]
                     for symbol,rows in old_reference.groupby("symbol",sort=False):
                         prior=carry_by_symbol.get(symbol)
                         merged=rows if prior is None else pd.concat((prior,rows),ignore_index=True)
@@ -219,11 +219,15 @@ class AppendOnlyMarketCSV:
                             self.REFERENCE_CARRY_ROWS)
                 recent=chunk.loc[recent_mask]
                 if not recent.empty:
+                    for symbol,count in recent.groupby("symbol").size().items():
+                        recent_counts[symbol]=recent_counts.get(symbol,0)+int(count)
                     recent.to_csv(recent_temporary,index=False,columns=FEED_COLUMNS,
                                   mode="a" if wrote_recent else "w",header=not wrote_recent)
                     wrote_recent=True
-            carry=(pd.concat(carry_by_symbol.values(),ignore_index=True)
-                   if carry_by_symbol else pd.DataFrame(columns=FEED_COLUMNS))
+            carry_rows=[rows.tail(max(0,self.REFERENCE_CARRY_ROWS-recent_counts.get(symbol,0)))
+                        for symbol,rows in carry_by_symbol.items()]
+            carry=(pd.concat(carry_rows,ignore_index=True)
+                   if carry_rows else pd.DataFrame(columns=FEED_COLUMNS))
             if not carry.empty:
                 carry=carry.sort_values(["date","symbol"],kind="stable")
             carry.to_csv(temporary,index=False,columns=FEED_COLUMNS)

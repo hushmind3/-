@@ -407,6 +407,9 @@ function render(d) {
     renderOperationsOverview(d);
     renderObservationStatus(d);
     renderRuntimeUpdates(d);
+    renderExperienceFlow(d);
+    renderLearnerSummary(d);
+    renderTrialSummary(d);
   } finally {
     commitView();
   }
@@ -414,6 +417,8 @@ function render(d) {
 
 // Start after all four files have loaded. UI updates never restart the models.
 function startDashboard() {
+  selectDashboardPage();
+  window.addEventListener("hashchange", selectDashboardPage);
   setClock();
   setInterval(setClock, 1000);
   refresh();
@@ -431,5 +436,20 @@ function startDashboard() {
     },
     true,
   );
+}
+
+// Navigation changes visibility only; all controls retain their state and API.
+function selectDashboardPage() {
+  const target = location.hash.slice(1) || "control";
+  const element = document.getElementById(target);
+  const page = element?.closest("[data-view]")?.dataset.view || "overview";
+  for (const view of document.querySelectorAll("[data-view]"))
+    view.hidden = view.dataset.view !== page;
+  for (const link of document.querySelectorAll(".sidebar a[data-page]")) {
+    if (link.dataset.page === page) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  if (current) render(current);
+  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
 }
 document.addEventListener("DOMContentLoaded", startDashboard, { once: true });

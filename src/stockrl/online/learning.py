@@ -388,7 +388,7 @@ class _LearningMixin:
 
     def _train_model(self,learner):
         global prefix_input
-        self._refresh_runtime_update_driver()
+        self._refresh_runtime_update_driver()  # includes elapsed reward settlement updates
         from . import prefix_cache as prefix_module
         prefix_stamp=os.stat(prefix_module.__file__).st_mtime_ns
         if getattr(prefix_module,"_hot_source_stamp",None)!=prefix_stamp:
@@ -397,7 +397,7 @@ class _LearningMixin:
             prefix_module._hot_source_stamp=prefix_stamp
         with self._gpu_work(learner+"_learning_setup"):
             prefix_input=prefix_module.install_prefix_forward()
-        install_replay_updates(self.replay)
+        install_replay_updates(self.replay)  # Keep live counters aligned with durable rows.
         if not hasattr(self,"_frozen_prefix_cache"):
             self._frozen_prefix_cache=FrozenPrefixCache()
         # Retain current/successor encodings for both independent accounts.

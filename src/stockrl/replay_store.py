@@ -95,7 +95,8 @@ class GlobalReplayBuffer:
                  "portfolio_value_transition", "forward_return", "behavior_log_prob",
                  "trade_executed", "origin_model", "credit_observations",
                  "bootstrap_window_key", "bootstrap_symbol_index", "bootstrap_discount",
-                 "goal_reward_points", "portfolio_goal_reward_points", "goal_terminal", "goal_episode_id")
+                 "goal_reward_points", "portfolio_goal_reward_points", "goal_terminal", "goal_episode_id",
+                 "reward_settlement", "reward_end_timestamp", "reward_quote_timestamp")
         return pickle.dumps({name: getattr(exp, name) for name in names
                              if hasattr(exp, name)}, protocol=5)
 
@@ -658,9 +659,14 @@ class GlobalReplayBuffer:
             blocked_by_day=dict(db.execute("SELECT day,COUNT(*) FROM experiences WHERE error IS NOT NULL OR eligible=0 GROUP BY day"))
             blocked_reasons=dict(db.execute("SELECT COALESCE(error,'unsupported reward schema'),COUNT(*) FROM experiences WHERE error IS NOT NULL OR eligible=0 GROUP BY COALESCE(error,'unsupported reward schema')"))
             completed_retained=db.execute(f"SELECT COUNT(*) FROM experiences WHERE eligible=1 AND error IS NULL AND {count_expr}>=?",(passes,)).fetchone()[0]
+            remaining_by_day=dict(db.execute(
+                f"SELECT day,COUNT(*) FROM experiences WHERE {count_expr}<? OR error IS NOT NULL OR eligible=0 GROUP BY day",
+                (passes,)))
+            retained_by_day=dict(db.execute("SELECT day,COUNT(*) FROM experiences GROUP BY day"))
             daily = [{"day": day, "enqueued": queued, "first_trained": first,
-                      "completed":done,"exposures":exposures,"remaining":max(0,queued-done-blocked_by_day.get(day,0)),
-                      "blocked":blocked_by_day.get(day,0),"remaining_total":queued-done}
+                      "completed":done,"exposures":exposures,"remaining":max(0,remaining_by_day.get(day,0)-blocked_by_day.get(day,0)),
+                      "blocked":blocked_by_day.get(day,0),"remaining_total":remaining_by_day.get(day,0),
+                      "removed_without_completion":max(0,queued-done-retained_by_day.get(day,0))}
                      for day, queued, first, done, exposures in db.execute(
                          "SELECT day,enqueued,first_trained,completed,exposures FROM daily_learning ORDER BY day DESC LIMIT 14")]
             oldest = db.execute(f"SELECT MIN(timestamp) FROM experiences WHERE eligible=1 AND error IS NULL AND {count_expr}<?", (passes,)).fetchone()[0]

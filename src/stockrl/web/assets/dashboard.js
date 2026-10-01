@@ -1472,3 +1472,224 @@ function tableRows(rows) {
     )
     .join("");
 }
+
+// Learning lifecycle counts use the same replay metrics as the worker.
+function renderExperienceFlow(d) {
+  const m = d.metrics || {};
+  const pending = m.replay_pending_count ?? m.pending_experiences;
+  const eligible = m.replay_eligible_backlog;
+  const completed = (m.daily_learning || []).reduce(
+    (sum, day) => sum + num(day.completed),
+    0,
+  );
+  text("flowPending", pending == null ? "미측정" : whole(pending) + "건");
+  text("flowEligible", eligible == null ? "미측정" : whole(eligible) + "건");
+  text("flowCompleted", whole(completed) + "건");
+  const labels = {
+    missing_market_input: "시세 입력 복구 필요",
+    next_quote: "해당 종목의 후속 시세 대기",
+    reward_horizon: "결과 평가 시간 경과 대기",
+    fill: "실제 가상체결 대기",
+    blocked: "입력·보상 형식 확인 필요",
+  };
+  const reasons = ["champion", "candidate"].map((role) => {
+    const status = m[role + "_pending_reward_status"];
+    if (!status)
+      return (
+        (role === "champion" ? "Champion" : "Candidate") + ": 평가 사유 미측정"
+      );
+    return (
+      (role === "champion" ? "Champion" : "Candidate") +
+      ": " +
+      (Object.entries(status.reasons || {})
+        .map(([key, count]) => (labels[key] || key) + " " + whole(count) + "건")
+        .join(" · ") || "결과 평가 대기 없음")
+    );
+  });
+  const settled =
+    num(m.champion_closed_market_rewards_settled) +
+    num(m.candidate_closed_market_rewards_settled);
+  text(
+    "pendingRewardReasons",
+    reasons.join(" | ") +
+      (settled
+        ? " | 장 종료 후 실제 마지막 입력으로 평가 완료 " +
+          whole(settled) +
+          "건"
+        : ""),
+  );
+  const error =
+    m.learner_statistics_error ||
+    m.agent_last_input_error ||
+    m.last_champion_error ||
+    m.last_candidate_error;
+  property("learningErrorNotice", "hidden", !error);
+  text("learningErrorNotice", error ? "학습 오류: " + error : "");
+  if (error) {
+    badge("learningState", "학습 오류 확인 필요", "red");
+    return;
+  }
+  if (d.learning_enabled === false || !d.agent_process_running) return;
+  const active = m.champion_training
+    ? "Champion"
+    : m.candidate_training
+      ? "Candidate"
+      : null;
+  if (active) {
+    badge("learningState", active + " 학습 중", "blue");
+    text(
+      "learningFlowHealth",
+      active +
+        "가 replay를 학습하고 있습니다. 두 모델 모두 학습·저장을 확인한 경험만 삭제합니다.",
+    );
+  } else if (eligible === 0) {
+    badge("learningState", "학습 가능 경험 0 · 결과 대기", "");
+    text(
+      "learningFlowHealth",
+      "현재 학습 가능한 경험을 모두 처리했습니다. 결과 평가 중인 " +
+        whole(pending) +
+        "건은 후속 손익이 확정되면 학습으로 넘어갑니다.",
+    );
+  }
+}
+
+function renderLearnerSummary(d) {
+  const m = d.metrics || {};
+  for (const role of ["champion", "candidate"]) {
+    const round = m[role + "_last_completed_round"];
+    const active = !!m[role + "_training"];
+    const remaining = m[role + "_eligible_replay_count"];
+    const label =
+      d.learning_enabled === false
+        ? "학습 OFF"
+        : active
+          ? "학습 중"
+          : remaining
+            ? "다음 학습 준비"
+            : "새 학습 경험 대기";
+    text("learner" + role + "State", label);
+    text(
+      "learner" + role + "Work",
+      "남은 경험 " +
+        (remaining == null ? "미측정" : whole(remaining) + "건") +
+        (active
+          ? " · 현재 " + whole(m[role + "_samples_current"]) + "건 처리"
+          : ""),
+    );
+    text(
+      "learner" + role + "Last",
+      round
+        ? "최근 완료 " +
+            timeOf(round.completed_utc) +
+            " · " +
+            whole(round.samples) +
+            "건 · " +
+            decimal(round.total_seconds, 1) +
+            "초 · " +
+            decimal(round.samples_per_total_second, 1) +
+            "건/초"
+        : "아직 완료된 학습 회차 없음",
+    );
+    text(
+      "learner" + role + "Loss",
+      round?.loss_mean == null ? "미측정" : decimal(round.loss_mean, 5),
+    );
+  }
+}
+
+function renderTrialSummary(d) {
+  const v = d.validation_comparison || {};
+  const bars = num(v.bars_current),
+    required = num(v.bars_required || 390);
+  property("trialProgressMeter", "max", required);
+  property("trialProgressMeter", "value", Math.min(bars, required));
+  text(
+    "trialProgressLabel",
+    whole(bars) +
+      " / " +
+      whole(required) +
+      "개 시장 시점 · " +
+      decimal(100 * Math.min(bars / required, 1), 1) +
+      "%",
+  );
+  const scores = {};
+  for (const role of ["champion", "candidate"]) {
+    const books = v[role] || {};
+    const rates = ["KRW", "USD"].map((c) => books[c]?.net_return_rate);
+    const known =
+      v.accounts_available &&
+      rates.every((x) => x != null && Number.isFinite(Number(x)));
+    if (known) {
+      const trades = ["KRW", "USD"].reduce(
+        (n, c) => n + num(books[c]?.trade_count),
+        0,
+      );
+      const positions = ["KRW", "USD"].reduce(
+        (n, c) => n + num(books[c]?.position_count),
+        0,
+      );
+      const decisions = v.last_decisions?.[role] || [];
+      const buys = decisions.filter((x) => x.action === "BUY").length;
+      const holds = decisions.filter((x) => x.action === "HOLD").length;
+      const sells = decisions.filter((x) => x.action === "SELL").length;
+      text(
+        role === "champion"
+          ? "trialChampionActivity"
+          : "trialCandidateActivity",
+        "시험 체결 " +
+          whole(trades) +
+          "건 · 보유 " +
+          whole(positions) +
+          "종목" +
+          (decisions.length
+            ? "\n최근 입력 종목 판단: 매수 " +
+              buys +
+              " · 관망 " +
+              holds +
+              " · 매도 " +
+              sells
+            : ""),
+      );
+    } else
+      text(
+        role === "champion"
+          ? "trialChampionActivity"
+          : "trialCandidateActivity",
+        "시험 계좌 미확인",
+      );
+    scores[role] = known ? rates.reduce((s, x) => s + Number(x), 0) / 2 : null;
+    text(
+      role === "champion" ? "trialChampionScoreNow" : "trialCandidateScoreNow",
+      known ? (scores[role] * 100).toFixed(4) + "%" : "시험 계좌 미확인",
+    );
+  }
+  const matching = [
+    "same_starting_cash",
+    "same_market_input",
+    "same_market_timeline",
+    "same_last_bar",
+    "same_cost_rules",
+    "same_action_rule",
+  ].every((key) => v[key]);
+  let leader;
+  if (v.active && d.observe_enabled === false)
+    leader = "판단 OFF · 승급전 일시정지";
+  else if (v.active && !matching) leader = "대결 진행 · 동일 조건 확인 필요";
+  else if (v.active && scores.champion != null && scores.candidate != null)
+    leader =
+      scores.candidate === scores.champion
+        ? "현재 동률 · 진행 중"
+        : (scores.candidate > scores.champion
+            ? "현재 Candidate 앞섬"
+            : "현재 Champion 앞섬") + " · 잠정 성과";
+  else if (v.status === "promoted" && v.comparison_valid)
+    leader = "판정 완료 · Candidate 승급";
+  else if (v.status === "rejected" && v.comparison_valid)
+    leader = "판정 완료 · Champion 유지";
+  else
+    leader =
+      v.status === "discarded" || v.status === "rejected"
+        ? "이전 시험 무효 · 새 대결 대기"
+        : "새 고정 시험본 대결 대기";
+  text("trialLeader", leader);
+}

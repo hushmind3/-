@@ -1206,3 +1206,567 @@ tr:last-child td {
 #runtimeDetails {
   scroll-margin-top: 15px;
 }
+
+/* Operator workspace: six views, persistent navigation, compact daily controls. */
+[hidden] {
+  display: none !important;
+}
+html {
+  scroll-padding-top: 22px;
+}
+.app {
+  max-width: 1760px;
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 0 26px;
+  padding: 0 26px 40px;
+}
+.top {
+  grid-column: 1 / -1;
+  padding: 22px 0;
+  margin-bottom: 6px;
+}
+.logo {
+  font-size: 18px;
+  border-radius: 14px;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 0;
+  align-self: start;
+  position: sticky;
+  top: 0;
+}
+.nav-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 4px 14px 12px;
+}
+.sidebar a {
+  color: #61708b;
+  text-decoration: none;
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-weight: 650;
+  font-size: 14px;
+}
+.sidebar a:hover {
+  background: #e9eef8;
+}
+.sidebar a[aria-current="page"] {
+  background: #245fe7;
+  color: white;
+  box-shadow: 0 6px 18px #245fe725;
+}
+.nav-foot {
+  color: #8a96ac;
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 28px 14px;
+}
+.workspace {
+  min-width: 0;
+}
+.page-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 0 20px;
+  gap: 12px;
+}
+.page-heading h1 {
+  font-size: 23px;
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+.page-heading span {
+  color: #7d89a0;
+  font-size: 12px;
+}
+.input-status {
+  font-size: 12px;
+  padding: 11px 16px;
+  line-height: 1.7;
+  background: #edf2fc;
+  border: 0;
+  border-radius: 12px;
+}
+section {
+  scroll-margin-top: 18px;
+}
+.card {
+  border-radius: 18px;
+  box-shadow: 0 3px 16px #24385204;
+}
+.hero {
+  padding: 22px;
+}
+.hero-top h1 {
+  font-size: 22px;
+}
+.hero-top p {
+  font-size: 13px;
+}
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.control-grid > .compact-detail {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.control-box {
+  padding: 16px;
+}
+.control-grid > .compact-detail .control-box {
+  border: 0;
+  margin-top: 12px;
+  background: transparent;
+}
+.choice-row {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.choice {
+  font-size: 13px;
+  padding: 11px 13px;
+}
+.button-row {
+  gap: 7px;
+}
+.button {
+  font-size: 12px;
+  padding: 9px 12px;
+}
+.caption {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.status-grid {
+  gap: 10px;
+  margin-top: 12px;
+}
+.status-card {
+  padding: 15px;
+}
+.action-overview {
+  margin-top: 12px;
+}
+.action-card {
+  padding: 15px;
+}
+.action-card strong {
+  font-size: 28px;
+}
+#control > .compact-detail {
+  margin-bottom: 15px;
+}
+#operationsOverview {
+  margin: 18px 0;
+}
+.account-grid {
+  gap: 16px;
+}
+.account-card {
+  padding: 22px;
+}
+.account-card h3 {
+  font-size: 18px;
+}
+.account-card .section-head {
+  margin-bottom: 15px;
+}
+.account-card .detail-list {
+  font-size: 12px;
+}
+.account-card .detail-list > div {
+  padding: 10px 0;
+}
+.compact-detail {
+  padding: 11px 14px;
+  background: #f7f9fd;
+  border: 1px solid #e9edf5;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+.compact-detail > summary {
+  color: #61708b;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 650;
+}
+.compact-detail > p,
+.compact-detail > div {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.compact-detail .notice {
+  margin: 12px 0 0;
+}
+#learning > .section-head {
+  display: none;
+}
+#experienceLearning {
+  padding: 24px;
+}
+.learning-lifecycle {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 12px;
+}
+.learning-lifecycle > div {
+  padding: 18px;
+  background: #f6f8fd;
+  border: 1px solid #e1e8f6;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.learning-lifecycle span {
+  font-size: 13px;
+  color: #667692;
+  font-weight: 650;
+}
+.learning-lifecycle strong {
+  font-size: 27px;
+  color: #263e68;
+  letter-spacing: -0.04em;
+}
+.learning-lifecycle small {
+  color: #8291aa;
+  font-size: 11px;
+}
+.pending-reasons {
+  color: #64748e;
+  background: #edf3ff;
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-size: 12px;
+  line-height: 1.9;
+  margin-bottom: 16px;
+}
+#sharedGoalSummary table {
+  font-size: 12px;
+}
+#sharedGoalSummary {
+  overflow-x: auto;
+}
+footer {
+  padding-top: 20px;
+  font-size: 11px;
+}
+@media (max-width: 1000px) {
+  .app {
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 0 16px;
+    padding: 0 16px 32px;
+  }
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+  .control-grid {
+    grid-template-columns: 1fr;
+  }
+  .control-grid > .compact-detail {
+    grid-row: auto;
+  }
+  .page-heading span {
+    display: none;
+  }
+}
+@media (max-width: 680px) {
+  .app {
+    display: block;
+    padding: 0 12px 25px;
+  }
+  .top {
+    padding: 16px 0;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #f3f6fb;
+    padding: 8px 0 14px;
+  }
+  .sidebar a {
+    white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .nav-label,
+  .nav-foot {
+    display: none;
+  }
+  .learning-lifecycle {
+    grid-template-columns: 1fr;
+  }
+  .page-heading {
+    padding-top: 12px;
+  }
+}
+.trial-summary {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.trial-summary > div,
+.learner-summary > div {
+  background: #f6f8fd;
+  border: 1px solid #e1e8f6;
+  border-radius: 13px;
+  padding: 18px;
+}
+.trial-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.trial-progress strong {
+  font-size: 15px;
+}
+.trial-progress span,
+.trial-progress small,
+.trial-score small {
+  color: #7c8ba4;
+  font-size: 12px;
+}
+.trial-progress progress {
+  width: 100%;
+  height: 9px;
+  accent-color: #245fe7;
+}
+.trial-score {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.trial-score > span {
+  color: #64748e;
+  font-size: 13px;
+  font-weight: 650;
+}
+.trial-score > strong {
+  color: #243e68;
+  font-size: 30px;
+}
+#promotionTrial .model-comparison {
+  font-size: 12px;
+}
+#validationTrialStatus {
+  color: #697b96;
+  font-size: 13px;
+}
+#validationFairnessChecks {
+  background: #edf7f1;
+  color: #40725d;
+  font-size: 12px;
+  padding: 13px 16px;
+}
+.learner-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.learner-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.learner-title > span {
+  color: #245fe7;
+  font-size: 12px;
+}
+.learner-summary small {
+  display: block;
+  color: #7d8da5;
+  font-size: 12px;
+  margin: 9px 0;
+  line-height: 1.7;
+}
+.learner-loss {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #e1e8f6;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.learner-loss span {
+  color: #7d8da5;
+  font-size: 12px;
+}
+#operationsOverview .ops-status {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 800px) {
+  .trial-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .trial-progress {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 680px) {
+  .learner-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Readability: useful information must stay legible in the narrow app panel. */
+body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #18243b;
+}
+:root {
+  --muted: #52627b;
+}
+.sidebar a {
+  font-size: 15px;
+}
+.page-heading span,
+.nav-label,
+.nav-foot {
+  color: #52627b;
+  font-size: 14px;
+}
+.identity small,
+.clock,
+.pill {
+  font-size: 13px;
+}
+.caption,
+.help,
+.account-meta,
+.compact-detail > p,
+.compact-detail > div {
+  font-size: 14px;
+  color: #52627b;
+}
+.compact-detail > summary {
+  font-size: 15px;
+  color: #344760;
+}
+.choice,
+.button {
+  font-size: 15px;
+}
+.control-label,
+.status-card small,
+.action-card small {
+  font-size: 14px;
+  color: #52627b;
+}
+.input-status,
+.pending-reasons,
+#validationFairnessChecks,
+#validationTrialStatus {
+  font-size: 14px;
+  color: #435772;
+}
+.learning-lifecycle span,
+.trial-score > span,
+.learner-title > span {
+  font-size: 14px;
+  color: #435772;
+}
+.learning-lifecycle small,
+.trial-progress span,
+.trial-progress small,
+.trial-score small,
+.learner-summary small,
+.learner-loss span {
+  font-size: 14px;
+  color: #52627b;
+}
+.account-card .detail-list,
+#promotionTrial .model-comparison,
+#sharedGoalSummary table {
+  font-size: 14px;
+}
+.account-overview small,
+.mini-card small,
+.mini-card > span {
+  font-size: 14px;
+  color: #52627b;
+}
+.account-card h3 {
+  font-size: 20px;
+}
+.account-overview .account-currency-card small {
+  font-size: 14px;
+}
+.learner-title strong {
+  font-size: 18px;
+}
+@media (max-width: 680px) {
+  .sidebar a {
+    font-size: 14px;
+  }
+  .choice,
+  .button {
+    font-size: 14px;
+    padding: 11px 12px;
+  }
+  .account-card,
+  #experienceLearning,
+  #promotionTrial {
+    padding: 18px;
+  }
+}
+.trial-account-note {
+  color: #435772;
+  background: #edf3ff;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 15px;
+}
+
+/* Keep the primary trial account comparison readable in the app panel. */
+#promotionTrial > div > .model-comparison {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+#promotionTrial > div > .model-comparison th,
+#promotionTrial > div > .model-comparison td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px 10px;
+}
+.trial-trades {
+  font-size: 14px;
+  color: #435772;
+  line-height: 1.7;
+  white-space: pre-line;
+  margin: 8px 0 0;
+}
+
+@media (min-width: 540px) and (max-width: 680px) {
+  .learning-lifecycle {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .learning-lifecycle > div {
+    padding: 14px 12px;
+  }
+  .learning-lifecycle strong {
+    font-size: 24px;
+  }
+}

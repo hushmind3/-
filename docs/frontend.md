@@ -5,13 +5,15 @@ The dashboard uses plain HTML/CSS and four JavaScript files. No frontend build o
 | File | Responsibility | Typical edit |
 | --- | --- | --- |
 | `src/stockrl/web/assets/app.js` | API, shared state, DOM updates, polling, explicit render sequence | Refresh cycle, shared number/date formatting |
-| `src/stockrl/web/assets/dashboard.js` | Markets, decisions, Champion/Candidate paper accounts | Account cards, positions, decision table |
+| `src/stockrl/web/assets/dashboard.js` | Markets, decisions, paper accounts and operator summaries | Account cards, experience lifecycle, learner cards, trial scores |
 | `src/stockrl/web/assets/controls.js` | All operator actions, credentials, independent mode controls | Button behavior, API payload, command feedback |
 | `src/stockrl/web/assets/details.js` | Replay, learning, models, promotion and runtime diagnostics | Learning counters, GPU metrics, expandable diagnostics |
 | `src/stockrl/web_dashboard.html` | Page structure, existing IDs, buttons, expandable panels | Layout and labels |
 | `src/stockrl/web/assets/dashboard.css` | All styles | Spacing, colors, responsive layout |
 
 ## Edit rules
+
+The six navigation views are operations/accounts, markets/decisions, experience learning, promotion trial, connections, and diagnostics. Navigation hides other views without destroying controls or state. Original anchors and control IDs remain available. Each screen starts with its relevant summary; technical details expand on demand. GPU scheduling belongs in diagnostics, and frozen trial accounts are explicitly separate from the continuing live paper accounts.
 
 - Start at the relevant named function. Render functions are declared once; do not wrap or redefine a previous renderer.
 - `app.js: render()` lists the complete render order. The final text and property values are committed once per frame.
@@ -26,7 +28,7 @@ The dashboard uses plain HTML/CSS and four JavaScript files. No frontend build o
 
 ## Contract regression and measurements
 
-`tests/frontend_regression.cjs` compares this frontend with Git commit `71a2488`. It checks existing HTML IDs, 13 action/filter buttons, 23 expandable panels (including the generated runtime panel), API routes, rendered fields in five system states, search/filter behavior, and 24 independent mode actions. All HTTP actions are mocked: it never changes the live server or accounts.
+`tests/frontend_regression.cjs` compares this frontend with Git commit `71a2488`. It checks preservation of existing HTML IDs, 13 action/filter buttons, 12 API routes, rendered fields in five system states with details collapsed and expanded, search/filter behavior, 24 independent mode actions, six-view navigation and trial score calculations. Additional summaries and expandable panels are allowed. All HTTP actions are mocked: it never changes the live server or accounts.
 
 Node and jsdom are needed only for this development check. Keep tooling outside the project:
 
@@ -40,4 +42,8 @@ To compare a real status snapshot as well, first save `/api/status` to a tempora
 
 The script prints field/action counts and before/after median render time and DOM mutation counts. These timings are jsdom measurements of frontend work, not browser frame rates, GPU throughput, or model learning speed. Real browser checks must additionally cover loading, search and opening detail panels.
 
-The only intentional wording difference from the baseline is the separator between Champion and Candidate lag values, which previously ran together.
+Intentional changes include screen organization, operator labels, explicit learner activity and result-wait states. Account arithmetic and existing numeric fields retain their meaning. Trial scores use the same average of KRW/USD net return rates as the comparison, and remain provisional while the trial runs. Zero trial return is explained alongside actual fills, holdings and latest decision counts.
+
+Experience counts distinguish results still being evaluated, eligible replay backlog, and completed training. Completed rows disappear after both model checkpoints are confirmed; the date ledger preserves their counts. The displayed date-record completion sum covers the dates returned by the API (currently up to 14), rather than claiming lifetime coverage. Daily remaining counts come from actual retained DB rows; removed malformed rows are reported separately and are never relabeled as trained.
+
+`tests/test_pending_rewards.py` checks closed-session settlement against authentic saved quotes, missing/open-market quotes, and unfilled-order expiration. `tests/test_online_pipeline.py` checks compaction retaining real closed-market history and daily counts after quarantined rows are removed. These fixes preserve learning inputs and never fabricate a next-day fill.

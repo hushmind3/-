@@ -24,7 +24,7 @@ class RuntimeUpdates:
         self.last_check = 0.0
         self.code = {}
         if watch_code:
-            for name in ("stockrl.online.losses", "stockrl.online.learning"):
+            for name in ("stockrl.online.losses", "stockrl.online.learning", "stockrl.online.rewards", "stockrl.online.replay_updates"):
                 module = sys.modules.get(name)
                 if module is not None:
                     path = Path(module.__file__)
@@ -47,6 +47,13 @@ class RuntimeUpdates:
         status = agent.metrics["runtime_updates"]
         changed_status=False
         try:
+            # Adopt auxiliary monitoring when this controller is hot-applied.
+            if "stockrl.online.learning" in self.code:
+                for module_name in ("stockrl.online.rewards", "stockrl.online.replay_updates"):
+                    if module_name not in self.code:
+                        original=sys.modules[module_name]
+                        self.code[module_name]=(Path(original.__file__),"",-1)
+                        status["code_modules"]=list(self.code)
             stamp = self.path.stat().st_mtime_ns
             if stamp != self.stamp:
                 desired = operating_rules(self.path)
@@ -108,10 +115,27 @@ class RuntimeUpdates:
             module.__dict__.update(__package__=original.__package__, __file__=str(path))
             exec(compile(source,str(path),"exec"),module.__dict__)
             staged[name] = module
+        reward_module=staged.get("stockrl.online.rewards")
+        if reward_module is not None:
+            old_rewards=sys.modules["stockrl.online.rewards"]._RewardMixin
+            for name,value in vars(reward_module._RewardMixin).items():
+                if callable(value) or isinstance(value,(staticmethod,classmethod)):
+                    setattr(old_rewards,name,value)
         learning = sys.modules["stockrl.online.learning"]
+        replay_updates=staged.get("stockrl.online.replay_updates")
+        if replay_updates is not None:
+            install=replay_updates.install_replay_updates
+            sys.modules["stockrl.online.replay_updates"].install_replay_updates=install
+            learning.install_replay_updates=install
+            if agent is not None and getattr(agent,"replay",None) is not None:
+                agent.replay._performance_code_stamp=None
+                install(agent.replay)
+            learning._LearningMixin._train_model.__globals__["install_replay_updates"]=install
         losses = staged.get("stockrl.online.losses",sys.modules["stockrl.online.losses"])
         updated = staged.get("stockrl.online.learning")
         if updated is not None:
+            if replay_updates is not None:
+                updated.install_replay_updates=replay_updates.install_replay_updates
             updated.shared_experience_losses = losses.shared_experience_losses
             # Rebind methods on the existing mixin; the current learner thread
             # and all inference/model objects retain their identity.

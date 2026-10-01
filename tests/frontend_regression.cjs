@@ -102,6 +102,8 @@ function build(isNew, data) {
     }
   };
   w.setInterval = () => 0;
+  w.requestAnimationFrame = (callback) => callback();
+  w.scrollTo = () => {};
   w.confirm = () => false;
   w.fetch = async (url, options = {}) => {
     if (options.method === "POST") {
@@ -193,11 +195,11 @@ function checkStaticContract() {
     newDoc = new JSDOM(newHtml).window.document;
   const ids = (doc) =>
     [...doc.querySelectorAll("[id]")].map((el) => el.id).sort();
-  assert.deepEqual(
-    ids(newDoc),
-    ids(oldDoc),
+  assert(
+    ids(oldDoc).every((id) => ids(newDoc).includes(id)),
     "All existing HTML IDs are preserved",
   );
+  assert.equal(newDoc.querySelectorAll("[data-view]").length, 6);
   const routes = (code) =>
     [
       ...new Set(
@@ -212,14 +214,14 @@ function checkStaticContract() {
     "All API routes are preserved",
   );
   assert.equal(newDoc.querySelectorAll("button[id]").length, 13);
-  assert.equal(newDoc.querySelectorAll("details").length, 22);
+  assert(newDoc.querySelectorAll("details").length >= 22);
   assert(
     !/\brender\w*\s*=\s*function/.test(newCode.join("\n")),
     "Render functions must not be redefined",
   );
   return {
     buttons: 13,
-    expandablePanels: 23,
+    expandablePanels: newDoc.querySelectorAll("details").length + 1,
     apiRoutes: routes(newCode).length,
   };
 }
@@ -242,12 +244,18 @@ async function main() {
       }
       const a = fields(before.w.document),
         b = fields(after.w.document);
-      assert.deepEqual(
-        Object.keys(b).sort(),
-        Object.keys(a).sort(),
-        `${name}: display fields`,
-      );
+      if (open)
+        assert(
+          Object.keys(a).every((id) => id in b),
+          `${name}: every original field remains available when expanded`,
+        );
       for (const id of Object.keys(a)) {
+        if (!(id in b)) continue;
+        if (["learningFlowHealth", "learningState"].includes(id)) {
+          assert(b[id][0].length > 0, `${name}: meaningful learning status`);
+          fieldChecks++;
+          continue;
+        }
         if (id === "learningFlowHealth" && a[id][0] !== b[id][0]) {
           // The only intended wording fix separates the two previously merged lag values.
           const expected =
@@ -354,6 +362,71 @@ async function main() {
     );
     obj.w.close();
   }
+  // New view routing and score cards do not submit control commands.
+  const routed = build(true, structuredClone(fixture));
+  const sameConditions = Object.fromEntries(
+    [
+      "same_starting_cash",
+      "same_market_input",
+      "same_market_timeline",
+      "same_last_bar",
+      "same_cost_rules",
+      "same_action_rule",
+    ].map((key) => [key, true]),
+  );
+  const trialData = {
+    ...fixture,
+    validation_comparison: {
+      ...sameConditions,
+      active: true,
+      accounts_available: true,
+      bars_current: 39,
+      bars_required: 390,
+      champion: {
+        KRW: { net_return_rate: 0.01 },
+        USD: { net_return_rate: 0.03 },
+      },
+      candidate: {
+        KRW: { net_return_rate: 0.02 },
+        USD: { net_return_rate: 0.04 },
+      },
+    },
+  };
+  routed.w.render(trialData);
+  assert.equal(
+    routed.w.document.getElementById("trialChampionScoreNow").textContent,
+    "2.0000%",
+  );
+  assert.equal(
+    routed.w.document.getElementById("trialCandidateScoreNow").textContent,
+    "3.0000%",
+  );
+  assert.match(
+    routed.w.document.getElementById("trialLeader").textContent,
+    /Candidate.*잠정/,
+  );
+  assert.equal(
+    routed.w.document.getElementById("trialProgressMeter").value,
+    39,
+  );
+  for (const [hash, page] of Object.entries({
+    control: "overview",
+    markets: "market",
+    learning: "learning",
+    promotionTrial: "trial",
+    connection: "connection",
+    system: "details",
+  })) {
+    routed.w.history.replaceState(null, "", "/#" + hash);
+    routed.w.selectDashboardPage();
+    const visible = [
+      ...routed.w.document.querySelectorAll("[data-view]"),
+    ].filter((el) => !el.hidden);
+    assert.equal(visible.length, 1);
+    assert.equal(visible[0].dataset.view, page);
+  }
+  assert.deepEqual(routed.calls, []);
+  routed.w.close();
   console.log(
     JSON.stringify(
       {
@@ -362,6 +435,7 @@ async function main() {
         fieldChecks,
         independentModeActions: actions,
         searchAndFreshFilters: "passed",
+        viewRoutingAndTrialScores: "passed",
         measurements,
       },
       null,

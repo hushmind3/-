@@ -764,6 +764,18 @@ function renderDailyLearning(d) {
         )
       : '<tr><td colspan="5">경험 생성 대기</td></tr>',
   );
+  const removed = rows.reduce(
+    (n, day) => n + num(day.removed_without_completion),
+    0,
+  );
+  text(
+    "removedExperienceNote",
+    removed
+      ? "기록 기간 중 학습 완료로 집계하지 않고 별도 제거한 경험 " +
+          whole(removed) +
+          "건. 현재 DB의 미학습 잔여에는 포함하지 않습니다."
+      : "",
+  );
   const bytes = Number(m.replay_file_bytes || 0),
     blocked =
       Number(m.replay_quarantined_count || 0) +
