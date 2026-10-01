@@ -125,8 +125,9 @@ render=function(d){
   document.getElementById("runtimeDetails").appendChild(panel);
  }
  const m=d.metrics||{},u=m.runtime_updates,r=u&&u.applied_rules;
- const lines=["UI 수정: 새로고침으로 적용 · 웹서버 재시작: 시세 수집·모델 프로세스 유지",
-  "학습 설정·계산 코드 수정: 현재 학습·저장을 끝낸 뒤 다음 회차부터 적용"];
+ const lines=["화면(JS/CSS): 새로고침 · 학습 규칙·loss/learner: 현재 회차 저장 후 hot apply",
+  "모델 판단·관찰 Python: ‘모델 코드 적용’ 버튼으로 모델만 저장 후 재시작 · 시세 수집/웹 유지",
+  "웹 API/server Python: 웹서버 재시작만 · feed/agent 유지"];
  if(r){
   lines.push(`현재 적용: batch ${r.training_batch_size} × optimizer ${r.training_optimizer_steps} · 결과 연결 ${r.reward_credit_seconds}초`);
   lines.push(`GPU 학습: ${m.champion_optimizer_backend||"확인 중"} / ${m.candidate_optimizer_backend||"확인 중"} · 손실 계산 ${m.candidate_loss_backend||m.champion_loss_backend||"확인 중"}`);

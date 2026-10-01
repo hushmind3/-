@@ -76,15 +76,16 @@ function renderDailyLearning(d){
 const previousRenderLearningFlow=renderLearningFlow;
 function renderDualLearning(d){
  const m=d.metrics||{};
- const activeRole=m.champion_training?"champion":m.candidate_training?"candidate":null,backlog=Number(m.replay_eligible_backlog||0),passes=m.candidate_replay_passes;
- const status=!d.running?"시스템 정지 · 저장된 마지막 학습 상태":activeRole?(activeRole==="champion"?"Champion":"Candidate")+" 학습 중 · 다른 모델은 다음 회차 대기":backlog?"학습 가능한 경험 "+whole(backlog)+"건 · 다음 회차 준비":"학습 가능한 미학습 0건 · 새 결과 경험 대기";
+ const activeRole=m.champion_training?"champion":m.candidate_training?"candidate":null,backlog=Number(m.replay_eligible_backlog||0),passes=m.candidate_replay_passes,learningOn=d.learning_enabled!==false;
+ const status=!d.running?"시스템 정지 · 저장된 마지막 학습 상태":!learningOn?"replay 학습 중지 · 미학습 "+whole(backlog)+"건 보존":activeRole?(activeRole==="champion"?"Champion":"Candidate")+" 학습 중 · 다른 모델은 다음 회차 대기":backlog?"학습 가능한 경험 "+whole(backlog)+"건 · 다음 회차 준비":"학습 가능한 미학습 0건 · 새 결과 경험 대기";
  text("dualLearningStatus",status);
- badge("learningState",!d.running?"정지":activeRole?"학습 중":backlog?"회차 준비":"새 경험 대기",!d.running?"bad":activeRole?"blue":"");
- badge("candidateBadge",!d.running?"정지":activeRole?"두 모델 순차 학습":backlog?"학습 회차 준비":m.candidate_validation_active?"미학습 0 · 대결 진행":"새 경험 대기",activeRole?"blue":"");
- text("learningFlowHealth",status+(activeRole?" · optimizer "+whole(m[activeRole+"_optimizer_steps_current"])+" / "+whole(m[activeRole+"_optimizer_steps_target"])+"회":"")+" | 평가 대기 "+whole(m.replay_pending_count??m.pending_experiences)+"건 | 대결 "+whole(m.candidate_validation_bars)+" / "+whole(m.candidate_min_validation_dates||390)+"개 시장 분 | 시세 지연 "+num(d.agent_health?.lag_seconds).toFixed(0)+"초");
+ badge("learningState",!d.running?"정지":!learningOn?"학습 OFF":activeRole?"학습 중":backlog?"회차 준비":"새 경험 대기",!d.running?"bad":activeRole?"blue":"");
+ badge("candidateBadge",!d.running?"정지":!learningOn?"학습 OFF · 경험 보존":activeRole?"두 모델 순차 학습":backlog?"학습 회차 준비":m.candidate_validation_active?"미학습 0 · 대결 진행":"새 경험 대기",activeRole?"blue":"");
+ const health=d.agent_health||{},candidateHealth=health.candidate||{};
+ text("learningFlowHealth",status+(activeRole?" · optimizer "+whole(m[activeRole+"_optimizer_steps_current"])+" / "+whole(m[activeRole+"_optimizer_steps_target"])+"회":"")+" | 평가 대기 "+whole(m.replay_pending_count??m.pending_experiences)+"건 | 대결 "+whole(m.candidate_validation_bars)+" / "+whole(m.candidate_min_validation_dates||390)+"개 시장 분 | Champion 지연 "+num(health.lag_seconds).toFixed(0)+"초 · Candidate 지연 "+num(candidateHealth.lag_seconds).toFixed(0)+"초");
  for(const role of ["champion","candidate"]){
   const title=role==="champion"?"Champion":"Candidate",active=!!m[role+"_training"],prefix="dual"+title;
-  text(prefix+"State",!d.running?"정지":active?"학습 중":Number(m[role+"_eligible_replay_count"])?"학습 회차 대기":"남은 경험 완료 · 새 경험 대기");
+  text(prefix+"State",!d.running?"정지":!learningOn?"학습 OFF · "+whole(m[role+"_eligible_replay_count"]||0)+"건 보존":active?"학습 중":Number(m[role+"_eligible_replay_count"])?"학습 회차 대기":"남은 경험 완료 · 새 경험 대기");
   text(prefix+"Version",whole(m[role==="champion"?"champion_training_version":"candidate_model_version"]));
   text(prefix+"Runs",whole(m[role+"_completed_training_runs"])+"회");
   text(prefix+"Exposures",whole(role==="champion"?m.champion_paper_examples_trained:m.paper_examples_trained)+"개 paper 경험");
