@@ -724,6 +724,7 @@ class _LearningMixin:
             "frozen_prefix_cache":self._frozen_prefix_cache.snapshot(),
             "step_compute_seconds":metrics["last_candidate_step_compute_seconds"],
             "peak_allocated_bytes":metrics["last_candidate_peak_allocated_bytes"],
+            "peak_reserved_bytes":metrics["last_candidate_peak_reserved_bytes"],
             "completed_utc":metrics["last_update_utc"],
             "model_version":replay_commit["model_version"]}
         metrics["candidate_last_completed_round"]["timeframe_samples"]=timeframe_samples

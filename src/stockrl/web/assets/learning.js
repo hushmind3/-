@@ -12,7 +12,7 @@ function renderModelComparison(d){
   text(candidate?"compareWeightDelta":"compareChampionWeightDelta",(version==null?"학습 버전 미기록":"최근 학습 완료 v"+whole(version))+" · L1 "+(delta==null?"미측정":Number(delta).toExponential(3)));
   text("compare"+title+"Compute",whole(m[role+"_live_inference_count"])+"회 · 경과 시간 누계 "+seconds(m[role+"_live_inference_seconds_total"]));
   text("compare"+title+"Learning",r.completed_utc?whole(r.unique_samples)+"개 경험 · optimizer "+whole(r.optimizer_steps)+"회 · 계산 "+seconds(r.compute_seconds)+" / 총 "+seconds(r.total_seconds)+" · "+timeOf(r.completed_utc):"완료 회차 미측정");
-  text("compare"+title+"Gpu",r.completed_utc?"allocated "+bytes(r.peak_allocated_bytes)+" · reserved "+bytes(m["last_"+role+"_peak_reserved_bytes"]):"완료 회차 미측정");
+  text("compare"+title+"Gpu",r.completed_utc?"allocated "+bytes(r.peak_allocated_bytes)+" · reserved "+bytes(r.peak_reserved_bytes):"완료 회차 미측정");
  }
  const history=m.candidate_gate_history||[],finished=[...history].reverse().find(h=>
   h.candidate_version!=null&&h.champion_version!=null&&Number(h.required_bars)>=required&&Number(h.bars)>=Number(h.required_bars)&&
