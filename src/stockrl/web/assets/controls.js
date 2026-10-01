@@ -3,9 +3,9 @@ renderControls=function(d){
  baseRenderControls(d);
  const changing=!!(d.stopping||d.restarting),observe=!!d.observe_enabled,paper=!!d.paper_enabled,learning=d.learning_enabled!==false;
  $("serverRestartBtn").disabled=busy||changing;
- const validationActive=!!d.metrics?.candidate_validation_active;
- $("agentReloadBtn").disabled=busy||changing||!d.running||!d.agent_process_running||validationActive;
- $("agentReloadBtn").title=validationActive?"진행 중인 승급전을 보존하기 위해 대결이 끝난 뒤 다시 적용할 수 있습니다.":"모델 상태를 저장한 뒤 모델 프로세스만 재시작합니다. 시세 수집과 웹은 유지됩니다.";
+ const validationActive=!!d.metrics?.candidate_validation_active,reloadPending=!!d.agent_reload_pending;
+ $("agentReloadBtn").disabled=busy||changing||!d.running||!d.agent_process_running||reloadPending;
+ $("agentReloadBtn").title=reloadPending?"\uC7AC\uC801\uC6A9\uC740 \uC2B9\uAE09\uC804 \uC885\uB8CC \uD6C4 \uC790\uB3D9 \uC801\uC6A9\uB429\uB2C8\uB2E4.":validationActive?"\uC2B9\uAE09\uC804 \uC911 \uC7AC\uC801\uC6A9\uC744 \uC608\uC57D\uD569\uB2C8\uB2E4.":"\uC800\uC7A5 \uD6C4 \uBAA8\uB378\uB9CC \uC7AC\uC2DC\uC791\uD569\uB2C8\uB2E4. \uC2DC\uC138 \uC218\uC9D1\uACFC \uC6F9\uC740 \uC720\uC9C0\uB429\uB2C8\uB2E4.";
  for(const [id,on,label] of [["observeBtn",observe,"모델 판단"],["paperBtn",paper,"가상계좌 체결"],["learningBtn",learning,"replay 학습"]]){
   text(id,label+": "+(on?"ON":"OFF"));$(id).classList.toggle("active",on);$(id).setAttribute("aria-pressed",String(on));$(id).disabled=busy||changing;
  }

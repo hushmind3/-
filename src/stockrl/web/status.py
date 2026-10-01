@@ -468,6 +468,7 @@ class _StatusMixin:
                 status_logs=[alert]+status_logs[-7:]
             return {"running": self.run_requested, "stopping": self.stopping,
                     "restarting": self.restart_request is not None,
+                    "agent_reload_pending": self.agent_reload_pending,
                     "mode": self.mode, "horizon": self.horizon,
                     "feed_running": feed_running,
                     "agent_running": agent_running,

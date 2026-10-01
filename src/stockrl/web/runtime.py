@@ -37,6 +37,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         self.children: dict[str, subprocess.Popen] = {}
         self.run_requested = False
         self.stopping = False
+        self.agent_reload_pending = False
         self.daily_cycle_pending=False
         self.account_reset_lock=threading.Lock()
         self.operating_rules=operating_rules()
@@ -216,16 +217,20 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             agent = self.children.get("agent")
             if agent is None or agent.poll() is not None:
                 return {"error": "Model process is not running."}
-            agent_metrics = _json(self.profile / "agent" / "metrics.json")
-            if agent_metrics.get("candidate_validation_active"):
-                return {"error": "An active promotion trial must finish before reloading the model; this protects the comparison."}
             stop_request = self.profile / "agent" / "stop.request"
             if stop_request.exists():
                 return {"error": "Model reload is already in progress."}
+            agent_metrics = _json(self.profile / "agent" / "metrics.json")
             try:
-                self.operating_rules = operating_rules()
+                updated_rules = operating_rules()
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
                 return {"error": f"Training settings were not applied: {exc}"}
+            self.operating_rules = updated_rules
+            if agent_metrics.get("candidate_validation_active"):
+                self.agent_reload_pending = True
+                self._log(f"{time.strftime('%H:%M:%S')} model reload queued until the active promotion trial finishes")
+                return {"ok": True, "pending": True,
+                        "message": "Model reload queued until the active promotion trial finishes."}
             stop_request.touch()
             self._log(f"{time.strftime('%H:%M:%S')} model reload requested; replay/account state will be saved, feed stays running")
             return {"ok": True, "message": "Model is saving state and will restart; feed and web stay running."}
@@ -238,6 +243,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
                 return {"ok": True, "message": "System is already stopping."}
             self.run_requested = False
             self.stopping = True
+            self.agent_reload_pending = False
             if self.profile:
                 (self.profile / "feed.stop").touch()
                 (self.profile / "agent" / "stop.request").parent.mkdir(parents=True, exist_ok=True)
@@ -289,6 +295,16 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             with self.lock:
                 if not self.run_requested or not self.profile:
                     continue
+                if self.agent_reload_pending and not self.stopping:
+                    agent = self.children.get("agent")
+                    if agent is not None and agent.poll() is None:
+                        agent_metrics = _json(self.profile / "agent" / "metrics.json")
+                        if not agent_metrics.get("candidate_validation_active"):
+                            stop_request = self.profile / "agent" / "stop.request"
+                            if not stop_request.exists():
+                                stop_request.touch()
+                            self.agent_reload_pending = False
+                            self._log(f"{time.strftime('%H:%M:%S')} queued model reload started after promotion trial")
                 for name, proc in list(self.children.items()):
                     code = proc.poll()
                     if code is None:
