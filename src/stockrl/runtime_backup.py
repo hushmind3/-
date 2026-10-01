@@ -1,5 +1,6 @@
 """Restore a lossless, per-file GitHub-sized SQLite backup on a fresh checkout."""
 import gzip
+from contextlib import closing
 import hashlib
 import json
 import os
@@ -29,7 +30,7 @@ def restore_sqlite_backup(path):
             output.flush();os.fsync(output.fileno())
         if digest.hexdigest()!=manifest['sha256'] or temporary.stat().st_size!=manifest['bytes']:
             raise ValueError('SQLite backup checksum or size mismatch; original parts preserved')
-        with sqlite3.connect(temporary.as_uri()+'?mode=ro',uri=True) as db:
+        with closing(sqlite3.connect(temporary.as_uri()+'?mode=ro',uri=True)) as db:
             if db.execute('PRAGMA quick_check').fetchone()[0]!='ok':
                 raise ValueError('Restored SQLite integrity check failed')
         os.replace(temporary,path)
