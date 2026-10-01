@@ -50,18 +50,26 @@ class KiwoomRealtimeStream:
         self.by_code = {}
         self.krx_codes = []
         self.nxt_codes = []
+        self.subscription_codes=[]
         self.nxt_seen_codes = set()
         self.krx_seen_codes = set()
         for instrument in instruments:
             code = str(instrument.get("provider_symbol", instrument["symbol"])).split(".")[0]
             self.by_code[code] = instrument
             self.by_code[f"{code}_NX"] = instrument
+            self.by_code[f"{code}_AL"] = instrument
             self.krx_codes.append(code)
             self.nxt_codes.append(f"{code}_NX")
+            self.subscription_codes.append(f"{code}_AL" if self.environment=="real" else code)
+        self.subscription_codes=list(dict.fromkeys(self.subscription_codes))
+        if len(self.subscription_codes)>200:
+            raise ValueError("Kiwoom session permits 200 subscribed identities; configured instruments were not silently omitted")
         self.bars = {}
         self.retry = 2
         self.stats = {"connected": False, "symbols": len(instruments),
                       "last_message_utc": None, "last_error": None, "source": "kiwoom_ws",
+                      "subscription_mode":"SOR_combined" if self.environment=="real" else "KRX_mock",
+                      "subscription_count":len(self.subscription_codes),"subscription_limit":200,
                       "nxt_subscribed": len(self.nxt_codes), "nxt_active_symbols": 0,
                       "nxt_last_message_utc": None, "nxt_ticks": 0,
                       "krx_subscribed": len(self.krx_codes), "krx_active_symbols": 0,
@@ -145,7 +153,10 @@ class KiwoomRealtimeStream:
             if old and bucket > old["_bucket"]:
                 self._flush(symbol, old)
                 old = None
-            volume = _number(values.get("15"), absolute=True) or 0.0
+            signed_volume=_number(values.get("15"))
+            volume=abs(signed_volume or 0.0)
+            buy_volume=volume if signed_volume is not None and signed_volume>0 else 0.0
+            sell_volume=volume if signed_volume is not None and signed_volume<0 else 0.0
             bid = _number(values.get("28"), absolute=True)
             ask = _number(values.get("27"), absolute=True)
             if old is None:
@@ -156,6 +167,7 @@ class KiwoomRealtimeStream:
                     "open": price, "high": price, "low": price, "close": price,
                     "volume": volume, "bid": bid, "ask": ask,
                     "trade_count": 1,
+                    "buy_volume":buy_volume,"sell_volume":sell_volume,
                 }
             else:
                 old["high"] = max(old["high"], price)
@@ -163,15 +175,16 @@ class KiwoomRealtimeStream:
                 old["close"] = price
                 old["volume"] += volume
                 old["trade_count"] += 1
+                old["buy_volume"]+=buy_volume;old["sell_volume"]+=sell_volume
                 old["bid"] = bid if bid is not None else old["bid"]
                 old["ask"] = ask if ask is not None else old["ask"]
             accepted += 1
-            if code.endswith("_NX") or str(values.get("9081", "")).upper() == "NXT":
+            if code.endswith("_NX") or str(values.get("9081", "")).upper() in ("NXT","2"):
                 nxt_accepted += 1
-                self.nxt_seen_codes.add(code.removesuffix("_NX"))
+                self.nxt_seen_codes.add(code.removesuffix("_NX").removesuffix("_AL"))
             else:
                 krx_accepted += 1
-                self.krx_seen_codes.add(code)
+                self.krx_seen_codes.add(code.removesuffix("_AL"))
         if accepted:
             now_utc = datetime.now(timezone.utc).isoformat()
             state = {"last_message_utc": now_utc, "last_error": None}
@@ -209,13 +222,13 @@ class KiwoomRealtimeStream:
                     break
             if not logged_in:
                 raise RuntimeError("Kiwoom WebSocket login response timed out")
-            self._set(connected=True, last_error=None)
-            # The plain code subscribes to KRX trades. NXT's separate code
-            # carries the _NX suffix; both map back to one model symbol.
-            for group, codes in (("1", self.krx_codes), ("2", self.nxt_codes)):
-                if codes:
-                    await ws.send(json.dumps({"trnm": "REG", "grp_no": group, "refresh": "1",
-                        "data": [{"item": codes, "type": ["0B"]}]}, separators=(",", ":")))
+            self._set(connected=False, last_error=None)
+            # Official 0B item supports SOR (_AL), one identity for both venues.
+            groups=[self.subscription_codes[i:i+50] for i in range(0,len(self.subscription_codes),50)]
+            registrations_left=len(groups)
+            for index,codes in enumerate(groups,1):
+                await ws.send(json.dumps({"trnm":"REG","grp_no":str(index),"refresh":"1",
+                    "data":[{"item":codes,"type":["0B"]}]},separators=(",",":")))
             while not self.stop.is_set():
                 try:
                     raw = await asyncio.wait_for(ws.recv(), timeout=1.0)
@@ -226,6 +239,10 @@ class KiwoomRealtimeStream:
                     await ws.send(json.dumps(message, separators=(",", ":")))
                 elif message.get("trnm") == "REG" and int(message.get("return_code", 0)) != 0:
                     raise RuntimeError(f"Kiwoom WebSocket registration rejected: {message.get('return_msg', message)}")
+                elif message.get("trnm")=="REG":
+                    registrations_left=max(0,registrations_left-1)
+                    if registrations_left==0:
+                        self._set(connected=True,last_error=None)
                 else:
                     self._on_message(message)
 

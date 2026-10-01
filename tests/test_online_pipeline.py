@@ -5,6 +5,8 @@ from tempfile import TemporaryDirectory
 import json
 import queue
 import unittest
+import threading
+from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -16,6 +18,8 @@ from stockrl.global_transformer import GlobalMarketPanel, GlobalMarketTransforme
 from stockrl.market_training import ContextConditionedTransformer, CONTEXT_FEATURES
 from stockrl.multiscale import MULTISCALE_FEATURE_COUNT
 from stockrl.paper_account import PaperAccount
+from stockrl.account_diagnostics import summarize_account, summarize_policy
+from stockrl.operating_rules import daily_boundary, operating_rules
 from stockrl.state_io import atomic_json
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -184,7 +188,11 @@ class PipelineTests(unittest.TestCase):
                 # Champion may continue learning after the fair trial snapshot.
                 # The gate compares the two frozen versions, not today's hashes.
                 self.assertNotEqual(agent._sha256_file(agent.champion_path),trial["source_champion_sha256"])
-                self.assertTrue(agent._commit_candidate(agent.validation_candidate,.1,0.0,128,
+                self.assertFalse(agent._commit_candidate(agent.validation_candidate,-.01,-.02,390,
+                    trial["source_champion_sha256"],trial_state=trial))
+                self.assertFalse(agent._commit_candidate(agent.validation_candidate,.1,0.0,389,
+                    trial["source_champion_sha256"],trial_state=trial))
+                self.assertTrue(agent._commit_candidate(agent.validation_candidate,.1,0.0,390,
                     trial["source_champion_sha256"],trial_state=trial))
                 self.assertEqual(agent.metrics["promotions"],1)
 
@@ -423,6 +431,121 @@ class PipelineTests(unittest.TestCase):
             with patch("stockrl.state_io.os.replace",side_effect=transient): atomic_json({"ok":True},path)
             self.assertEqual(json.loads(path.read_text()),{"ok":True})
             self.assertFalse(path.with_name("account.json.tmp").exists())
+
+
+class AccountDiagnosticsTests(unittest.TestCase):
+    def test_long_context_uses_completed_history_and_caches_unchanged_windows(self):
+        import pandas as pd
+        from stockrl.multiscale import DailyBarStore, MultiscaleFeatures, BASE_MULTISCALE_FEATURE_COUNT
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"daily.sqlite3";store=DailyBarStore(path)
+            dates=pd.date_range("2024-01-01",periods=600,freq="D",tz="UTC")
+            store.upsert([{"date":str(date),"symbol":"TEST.KS","open":100+i,
+                "high":101+i,"low":99+i,"close":100+i,"volume":1000+i}
+                for i,date in enumerate(dates)])
+            store.close()
+            frame=pd.DataFrame({"date":[dates[0]],"symbol":["TEST.KS"],
+                "open":[100],"high":[101],"low":[99],"close":[100],"volume":[1000]})
+            timestamp=np.datetime64("2024-02-15T10:00")
+            builder=MultiscaleFeatures(frame,["TEST.KS"],path,timestamp)
+            first=builder.at(timestamp)
+            # Rows after the point-in-time cutoff cannot supply a full 600-day history.
+            self.assertLess(float(first[0,BASE_MULTISCALE_FEATURE_COUNT+5*6+5]),.1)
+            self.assertGreater(float(first[0,BASE_MULTISCALE_FEATURE_COUNT+5]),.99)
+            cached=len(builder.summary_cache)
+            second=builder.at(timestamp+np.timedelta64(1,"m"))
+            self.assertEqual(len(builder.summary_cache),cached)
+            np.testing.assert_array_equal(first[0,BASE_MULTISCALE_FEATURE_COUNT:BASE_MULTISCALE_FEATURE_COUNT+4],
+                                          second[0,BASE_MULTISCALE_FEATURE_COUNT:BASE_MULTISCALE_FEATURE_COUNT+4])
+
+    def test_daily_boundary_is_once_at_seven_kst(self):
+        before=datetime(2026,10,1,21,59,tzinfo=timezone.utc)
+        after=datetime(2026,10,1,22,0,tzinfo=timezone.utc)
+        self.assertEqual(daily_boundary(before),("2026-10-01","2026-10-01T22:00:00+00:00"))
+        self.assertEqual(daily_boundary(after),("2026-10-02","2026-10-02T22:00:00+00:00"))
+
+    def test_extended_context_preserves_existing_adapter_weights(self):
+        from stockrl.market_training import ContextConditionedTransformer
+        from stockrl.global_transformer import load_compatible_state_dict
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,n_markets=4,n_asset_types=4,max_seq_len=8)
+        model=ContextConditionedTransformer(GlobalMarketTransformer(cfg))
+        state={k:v.detach().clone() for k,v in model.state_dict().items()}
+        for name in ("multiscale_policy.0.weight","multiscale_value.0.weight"):
+            state[name]=state[name][:,:48]
+        load_compatible_state_dict(model,state)
+        for name in ("multiscale_policy.0.weight","multiscale_value.0.weight"):
+            torch.testing.assert_close(model.state_dict()[name][:,:48],state[name])
+            self.assertEqual(float(model.state_dict()[name][:,48:].abs().sum()),0)
+
+    def test_fill_statistics_do_not_invent_old_position_age(self):
+        account=PaperAccount.in_memory(.001,.0001)
+        account._fill("TEST","USD","BUY",100,0,1000,"2026-10-01T00:00:00")
+        account._fill("TEST","USD","SELL",102,0,1,"2026-10-01T00:05:00")
+        statistics=account.state["books"]["USD"]["trade_statistics"]
+        self.assertEqual(statistics["holding_count"],1)
+        self.assertEqual(statistics["holding_seconds_sum"],300)
+        self.assertEqual(statistics["sell_wins"],1)
+        position=account.state["books"]["USD"]["positions"]["TEST"]
+        position.pop("opened_timestamp")
+        account._fill("TEST","USD","SELL",102,0,1,"2026-10-01T00:10:00")
+        self.assertEqual(statistics["holding_count"],1)
+
+    def test_reset_retains_pending_and_ends_its_old_account_episode(self):
+        from stockrl.web_app import Supervisor
+        with TemporaryDirectory(dir=ROOT) as directory:
+            supervisor=Supervisor.__new__(Supervisor)
+            supervisor.runtime=Path(directory); supervisor.mode="live"; supervisor.horizon="1m"
+            supervisor.profile=Path(directory)/"live"; state=supervisor.profile/"agent";state.mkdir(parents=True)
+            supervisor.fee=.001;supervisor.lock=threading.RLock();supervisor.account_reset_lock=threading.Lock()
+            supervisor.stopping=False;supervisor.run_requested=False;supervisor._latest_csv_cache={}
+            supervisor.daily_cycle_pending=False;supervisor.operating_rules=operating_rules()
+            account=PaperAccount(state/"paper_account.json",.001,.0001)
+            account._fill("TEST.KS","KRW","BUY",100,0,1000,"2026-09-30T01:00:00")
+            account.state["books"]["KRW"]["marks"]["TEST.KS"]=100;account.save()
+            replay=GlobalReplayBuffer(journal_path=state/"replay.sqlite3",dual_learning=True)
+            replay.save_pending([],[{"timestamp":"2026-09-30T01:00:00","symbol":"TEST.KS","fill_seen":True}])
+            self.assertTrue(supervisor.reset_paper_accounts()["ok"])
+            pending=replay.load_pending("portfolio")
+            self.assertEqual(len(pending),1)
+            self.assertTrue(pending[0]["reset_terminal"])
+            self.assertNotEqual(pending[0]["reset_equity"],2.0)
+            self.assertEqual(PaperAccount(state/"paper_account.json",.001,.0001).state["books"]["KRW"]["positions"],{})
+            self.assertEqual(len(supervisor._daily_cycle_status()["history"]),1)
+
+    def test_net_cost_and_holdings_use_one_nonmutating_formula(self):
+        account={"last_timestamp":"2026-10-01T00:00:00","pending":{},"fills":[],
+            "books":{"USD":{"initial_cash":1000,"cash":890,
+                "positions":{"TEST":{"quantity":1,"average_cost":100}},
+                "marks":{"TEST":95},"realized_pnl":-10,"fees":8,"slippage":2}}}
+        before=json.dumps(account,sort_keys=True)
+        book=summarize_account(account)["books"]["USD"]
+        self.assertEqual(book["equity"],985)
+        self.assertEqual(book["net_pnl"],-15)
+        self.assertEqual(book["recorded_pnl_plus_costs"],-5)
+        self.assertTrue(book["reconciliation_ok"])
+        self.assertAlmostEqual(book["net_return_rate"],-.015)
+        self.assertAlmostEqual(book["positions"][0]["weight"],95/985)
+        self.assertEqual(json.dumps(account,sort_keys=True),before)
+
+    def test_policy_measures_only_observed_tradable_symbols(self):
+        panel=Panel(); account=PaperAccount.in_memory(.001,.0001)
+        before=json.dumps(account.state,sort_keys=True)
+        result=summarize_policy(panel,0,np.full((2,3),1/3),[0,2],
+            [.4,.4,.2],account,set(),str(panel.dates[0]))
+        self.assertEqual(result["observed_tradable_symbols"],1)
+        self.assertEqual(result["action_counts"],{"SELL":1,"HOLD":0,"BUY":0})
+        self.assertEqual(result["sell_without_position"],1)
+        self.assertAlmostEqual(result["mean_normalized_entropy"],1)
+        self.assertAlmostEqual(result["effective_cash_target"]["KRW"],1/3)
+        self.assertIsNone(result["effective_cash_target"]["USD"])
+        self.assertEqual(json.dumps(account.state,sort_keys=True),before)
+
+    def test_inconsistent_ledger_is_flagged_not_silently_repaired(self):
+        account={"books":{"USD":{"initial_cash":1000,"cash":900}}}
+        book=summarize_account(account)["books"]["USD"]
+        self.assertFalse(book["reconciliation_ok"])
+        self.assertEqual(book["reconciliation_difference"],-100)
+        self.assertEqual(account["books"]["USD"]["cash"],900)
 
 
 if __name__=="__main__": unittest.main()

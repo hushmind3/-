@@ -3129,3 +3129,364 @@
 2026-10-01 07:28:55,969 INFO polled=2 fetched=1440 appended=0 failures=0
 2026-10-01 07:29:31,420 INFO polled=82 fetched=54463 appended=59 failures=0
 2026-10-01 07:29:47,285 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:31:22,316 INFO polled=82 fetched=54524 appended=87 failures=0
+2026-10-01 07:31:38,200 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:31:54,010 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:32:30,067 INFO polled=82 fetched=54576 appended=64 failures=0
+2026-10-01 07:32:45,882 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:33:02,260 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:33:38,456 INFO polled=82 fetched=54616 appended=54 failures=0
+2026-10-01 07:33:54,272 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:34:10,416 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:34:48,441 INFO polled=82 fetched=54651 appended=43 failures=0
+2026-10-01 07:35:04,871 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:35:20,730 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:35:59,556 INFO polled=82 fetched=54690 appended=56 failures=0
+2026-10-01 07:36:15,819 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:36:31,689 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:37:11,338 INFO polled=82 fetched=54735 appended=56 failures=0
+2026-10-01 07:37:27,808 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:37:43,763 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:38:21,773 INFO polled=82 fetched=54775 appended=56 failures=0
+2026-10-01 07:38:37,777 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:38:53,940 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:39:51,730 INFO polled=82 fetched=54837 appended=75 failures=0
+2026-10-01 07:40:07,903 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:40:23,702 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:41:00,029 INFO polled=82 fetched=54872 appended=45 failures=0
+2026-10-01 07:41:16,456 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:41:32,382 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:42:12,073 INFO polled=82 fetched=54910 appended=48 failures=0
+2026-10-01 07:42:28,705 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:42:44,656 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:43:24,507 INFO polled=82 fetched=54954 appended=55 failures=0
+2026-10-01 07:43:40,464 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:43:56,358 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:45:10,149 INFO polled=82 fetched=55019 appended=78 failures=0
+2026-10-01 07:45:26,521 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:45:42,494 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:46:19,042 INFO polled=82 fetched=55060 appended=56 failures=0
+2026-10-01 07:46:35,236 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:46:51,244 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:47:29,124 INFO polled=82 fetched=55110 appended=64 failures=0
+2026-10-01 07:47:44,935 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:48:01,339 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 07:48:38,194 INFO polled=82 fetched=55161 appended=62 failures=0
+2026-10-01 07:48:54,018 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:49:10,184 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:49:46,819 INFO polled=82 fetched=55201 appended=49 failures=0
+2026-10-01 07:50:03,054 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:50:18,866 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:50:55,319 INFO polled=82 fetched=55239 appended=48 failures=0
+2026-10-01 07:51:11,695 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:51:27,660 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:52:08,223 INFO polled=82 fetched=55273 appended=45 failures=0
+2026-10-01 07:52:24,655 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:52:40,595 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:53:21,680 INFO polled=82 fetched=55316 appended=51 failures=0
+2026-10-01 07:53:24,188 ERROR Kiwoom WebSocket disconnected: received 1000 (OK) Bye; then sent 1000 (OK) Bye; retrying in 2s
+2026-10-01 07:53:38,175 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:53:54,102 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:54:34,301 INFO polled=82 fetched=55373 appended=69 failures=0
+2026-10-01 07:54:50,251 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:55:06,658 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:55:46,854 INFO polled=82 fetched=55415 appended=56 failures=0
+2026-10-01 07:56:03,305 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:56:19,186 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:56:55,985 INFO polled=82 fetched=55453 appended=50 failures=0
+2026-10-01 07:57:12,478 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:57:28,431 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:58:08,635 INFO polled=82 fetched=55487 appended=49 failures=0
+2026-10-01 07:58:25,012 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:58:40,969 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 07:59:20,393 INFO polled=82 fetched=55528 appended=52 failures=0
+2026-10-01 07:59:36,819 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 07:59:52,734 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:00:09,562 WARNING EURUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 08:00:09,562 WARNING KRW=X failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 08:00:09,563 WARNING JPY=X failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 08:00:09,564 WARNING GBPUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 08:00:30,920 INFO polled=82 fetched=49922 appended=57 failures=4
+2026-10-01 08:00:46,237 WARNING EURUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 08:00:46,238 WARNING KRW=X failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 08:00:46,239 WARNING JPY=X failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 08:00:46,240 WARNING GBPUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 08:00:46,889 INFO polled=6 fetched=1440 appended=0 failures=4
+2026-10-01 08:01:03,319 INFO polled=2 fetched=1465 appended=27 failures=4
+2026-10-01 08:01:20,189 WARNING EURUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 08:01:20,190 WARNING GBPUSD=X failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 08:01:40,623 INFO polled=82 fetched=49973 appended=62 failures=2
+2026-10-01 08:01:56,990 INFO polled=2 fetched=1443 appended=3 failures=2
+2026-10-01 08:02:13,296 INFO polled=2 fetched=1480 appended=42 failures=2
+2026-10-01 08:02:51,889 INFO polled=82 fetched=49997 appended=50 failures=0
+2026-10-01 08:03:08,384 INFO polled=2 fetched=1481 appended=43 failures=0
+2026-10-01 08:03:24,807 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 08:04:03,759 INFO polled=82 fetched=50030 appended=43 failures=0
+2026-10-01 08:04:20,269 INFO polled=2 fetched=1483 appended=45 failures=0
+2026-10-01 08:04:36,814 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 08:05:16,825 INFO polled=82 fetched=50060 appended=42 failures=0
+2026-10-01 08:05:33,337 INFO polled=2 fetched=1484 appended=46 failures=0
+2026-10-01 08:05:49,772 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:06:30,131 INFO polled=82 fetched=50152 appended=103 failures=0
+2026-10-01 08:06:46,565 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-10-01 08:07:02,977 INFO polled=2 fetched=1473 appended=35 failures=0
+2026-10-01 08:07:43,079 INFO polled=82 fetched=50165 appended=58 failures=0
+2026-10-01 08:07:59,510 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 08:08:16,000 INFO polled=2 fetched=1480 appended=42 failures=0
+2026-10-01 08:08:55,939 INFO polled=82 fetched=50201 appended=57 failures=0
+2026-10-01 08:09:12,362 INFO polled=2 fetched=1481 appended=43 failures=0
+2026-10-01 08:09:28,784 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-10-01 08:10:31,280 INFO polled=82 fetched=50249 appended=63 failures=0
+2026-10-01 08:10:47,250 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:11:03,704 INFO polled=2 fetched=1469 appended=31 failures=0
+2026-10-01 08:11:44,435 INFO polled=82 fetched=50312 appended=75 failures=0
+2026-10-01 08:12:00,928 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:12:17,413 INFO polled=2 fetched=1479 appended=41 failures=0
+2026-10-01 08:12:57,339 INFO polled=82 fetched=50336 appended=51 failures=0
+2026-10-01 08:13:13,775 INFO polled=2 fetched=1481 appended=43 failures=0
+2026-10-01 08:13:30,347 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-10-01 08:14:10,694 INFO polled=82 fetched=50369 appended=51 failures=0
+2026-10-01 08:14:27,297 INFO polled=2 fetched=1485 appended=47 failures=0
+2026-10-01 08:14:43,622 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:15:19,052 INFO polled=82 fetched=50423 appended=69 failures=0
+2026-10-01 08:15:35,296 INFO polled=2 fetched=1473 appended=33 failures=0
+2026-10-01 08:15:51,100 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:16:30,824 INFO polled=82 fetched=50499 appended=97 failures=0
+2026-10-01 08:16:47,292 INFO polled=2 fetched=1449 appended=9 failures=0
+2026-10-01 08:17:03,762 INFO polled=2 fetched=1466 appended=28 failures=0
+2026-10-01 08:17:44,033 INFO polled=82 fetched=50523 appended=75 failures=0
+2026-10-01 08:18:00,514 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-10-01 08:18:16,978 INFO polled=2 fetched=1479 appended=41 failures=0
+2026-10-01 08:18:57,081 INFO polled=82 fetched=50556 appended=59 failures=0
+2026-10-01 08:19:13,620 INFO polled=2 fetched=1477 appended=39 failures=0
+2026-10-01 08:19:30,053 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-10-01 08:20:10,579 INFO polled=82 fetched=50586 appended=51 failures=0
+2026-10-01 08:20:27,106 INFO polled=2 fetched=1482 appended=44 failures=0
+2026-10-01 08:20:43,577 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 08:21:24,166 INFO polled=82 fetched=50637 appended=65 failures=0
+2026-10-01 08:21:40,594 INFO polled=2 fetched=1473 appended=33 failures=0
+2026-10-01 08:21:56,576 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:22:36,558 INFO polled=82 fetched=50715 appended=105 failures=0
+2026-10-01 08:22:52,982 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-10-01 08:23:09,468 INFO polled=2 fetched=1474 appended=36 failures=0
+2026-10-01 08:23:49,403 INFO polled=82 fetched=50723 appended=60 failures=0
+2026-10-01 08:24:05,866 INFO polled=2 fetched=1474 appended=36 failures=0
+2026-10-01 08:24:22,074 INFO polled=2 fetched=1451 appended=11 failures=0
+2026-10-01 08:24:58,282 INFO polled=82 fetched=50758 appended=51 failures=0
+2026-10-01 08:25:14,777 INFO polled=2 fetched=1482 appended=44 failures=0
+2026-10-01 08:25:31,265 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-10-01 08:26:11,711 INFO polled=82 fetched=50788 appended=46 failures=0
+2026-10-01 08:26:28,229 INFO polled=2 fetched=1484 appended=46 failures=0
+2026-10-01 08:26:44,217 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:27:25,096 INFO polled=82 fetched=50855 appended=80 failures=0
+2026-10-01 08:27:41,651 INFO polled=2 fetched=1465 appended=25 failures=0
+2026-10-01 08:27:57,626 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:28:38,109 INFO polled=82 fetched=50934 appended=109 failures=0
+2026-10-01 08:28:54,611 INFO polled=2 fetched=1447 appended=7 failures=0
+2026-10-01 08:29:11,075 INFO polled=2 fetched=1473 appended=35 failures=0
+2026-10-01 08:29:51,120 INFO polled=82 fetched=50941 appended=56 failures=0
+2026-10-01 08:30:07,679 INFO polled=2 fetched=1478 appended=40 failures=0
+2026-10-01 08:30:24,117 INFO polled=2 fetched=1450 appended=10 failures=0
+2026-10-01 08:31:04,824 INFO polled=82 fetched=50973 appended=65 failures=0
+2026-10-01 08:31:21,358 INFO polled=2 fetched=1492 appended=54 failures=0
+2026-10-01 08:31:37,840 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-10-01 08:32:18,636 INFO polled=82 fetched=51033 appended=66 failures=0
+2026-10-01 08:32:35,170 INFO polled=2 fetched=1491 appended=53 failures=0
+2026-10-01 08:32:51,619 INFO polled=2 fetched=1445 appended=5 failures=0
+2026-10-01 08:33:31,513 INFO polled=82 fetched=51133 appended=116 failures=0
+2026-10-01 08:33:48,057 INFO polled=2 fetched=1456 appended=16 failures=0
+2026-10-01 08:34:04,570 INFO polled=2 fetched=1473 appended=35 failures=0
+2026-10-01 08:34:45,117 INFO polled=82 fetched=51158 appended=79 failures=0
+2026-10-01 08:35:01,564 INFO polled=2 fetched=1460 appended=21 failures=0
+2026-10-01 08:35:18,048 INFO polled=2 fetched=1475 appended=35 failures=0
+2026-10-01 08:35:58,543 INFO polled=82 fetched=51198 appended=67 failures=0
+2026-10-01 08:36:14,972 INFO polled=2 fetched=1486 appended=48 failures=0
+2026-10-01 08:36:31,473 INFO polled=2 fetched=1448 appended=8 failures=0
+2026-10-01 08:37:12,593 INFO polled=82 fetched=51237 appended=65 failures=0
+2026-10-01 08:37:29,081 INFO polled=2 fetched=1492 appended=54 failures=0
+2026-10-01 08:37:45,561 INFO polled=2 fetched=1444 appended=4 failures=0
+2026-10-01 08:38:25,739 INFO polled=82 fetched=51307 appended=90 failures=0
+2026-10-01 08:38:42,273 INFO polled=2 fetched=1475 appended=35 failures=0
+2026-10-01 08:38:58,713 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:39:39,197 INFO polled=82 fetched=51408 appended=136 failures=0
+2026-10-01 08:39:55,822 INFO polled=2 fetched=1450 appended=10 failures=0
+2026-10-01 08:40:12,283 INFO polled=2 fetched=1474 appended=36 failures=0
+2026-10-01 08:40:52,512 INFO polled=82 fetched=51414 appended=65 failures=0
+2026-10-01 08:41:08,967 INFO polled=2 fetched=1476 appended=38 failures=0
+2026-10-01 08:41:25,543 INFO polled=2 fetched=1449 appended=9 failures=0
+2026-10-01 08:42:05,222 INFO polled=82 fetched=51448 appended=54 failures=0
+2026-10-01 08:42:21,877 INFO polled=2 fetched=1485 appended=47 failures=0
+2026-10-01 08:42:38,412 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:43:14,353 INFO polled=82 fetched=51487 appended=55 failures=0
+2026-10-01 08:43:30,649 INFO polled=2 fetched=1481 appended=43 failures=0
+2026-10-01 08:43:46,926 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 08:44:23,540 INFO polled=82 fetched=51561 appended=89 failures=0
+2026-10-01 08:44:39,787 INFO polled=2 fetched=1462 appended=22 failures=0
+2026-10-01 08:44:56,063 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 08:45:32,270 INFO polled=82 fetched=51623 appended=93 failures=0
+2026-10-01 08:45:48,685 INFO polled=2 fetched=1446 appended=6 failures=0
+2026-10-01 08:46:04,923 INFO polled=2 fetched=1463 appended=25 failures=0
+2026-10-01 08:46:48,299 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 2s
+2026-10-01 08:46:50,631 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 4s
+2026-10-01 08:46:55,058 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 8s
+2026-10-01 08:47:03,431 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 16s
+2026-10-01 08:47:15,183 INFO polled=107 fetched=62990 appended=11423 failures=0
+2026-10-01 08:47:19,891 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 32s
+2026-10-01 08:47:31,482 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:47:47,590 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:47:52,599 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:48:35,539 INFO polled=107 fetched=63051 appended=79 failures=0
+2026-10-01 08:48:51,745 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:48:53,518 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:49:39,226 INFO polled=107 fetched=63094 appended=54 failures=0
+2026-10-01 08:49:54,459 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:49:55,438 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:50:42,380 INFO polled=107 fetched=63132 appended=54 failures=0
+2026-10-01 08:50:55,424 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:50:58,528 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:51:46,097 INFO polled=107 fetched=63180 appended=60 failures=0
+2026-10-01 08:51:56,385 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:52:02,742 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:52:50,120 INFO polled=107 fetched=63220 appended=52 failures=0
+2026-10-01 08:52:57,331 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:53:06,890 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:53:54,305 INFO polled=107 fetched=63258 appended=52 failures=0
+2026-10-01 08:53:58,225 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:54:10,974 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:54:57,796 INFO polled=107 fetched=63305 appended=60 failures=0
+2026-10-01 08:54:59,154 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:55:14,595 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:56:00,128 ERROR Kiwoom WebSocket disconnected: Kiwoom WebSocket registration rejected: 실시간 항목 등록에 실패했습니다. 등록 종목이 허용 개수(200)를 초과했습니다; retrying in 60s
+2026-10-01 08:56:01,548 INFO polled=107 fetched=63345 appended=51 failures=0
+2026-10-01 08:56:18,222 INFO polled=2 fetched=1440 appended=2 failures=0
+2026-10-01 08:57:39,933 INFO polled=107 fetched=63412 appended=90 failures=0
+2026-10-01 08:57:56,022 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:58:42,235 INFO polled=107 fetched=63450 appended=53 failures=0
+2026-10-01 08:58:58,195 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 08:59:44,805 INFO polled=107 fetched=63494 appended=58 failures=0
+2026-10-01 09:00:01,300 INFO polled=2 fetched=1442 appended=2 failures=0
+2026-10-01 09:00:18,997 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:00:18,998 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:00:18,999 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:00:49,027 INFO polled=110 fetched=63527 appended=45 failures=3
+2026-10-01 09:01:04,778 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:01:04,779 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:01:04,780 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:01:06,051 INFO polled=5 fetched=1544 appended=106 failures=3
+2026-10-01 09:01:53,834 INFO polled=107 fetched=63569 appended=47 failures=3
+2026-10-01 09:02:09,485 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:02:09,486 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:02:09,487 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:02:10,725 INFO polled=5 fetched=1544 appended=106 failures=3
+2026-10-01 09:02:58,744 INFO polled=107 fetched=63582 appended=19 failures=3
+2026-10-01 09:03:14,271 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:03:14,272 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:03:14,273 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:03:15,514 INFO polled=5 fetched=1544 appended=106 failures=3
+2026-10-01 09:03:35,829 INFO polled=12 fetched=8334 appended=14 failures=3
+2026-10-01 09:03:51,815 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:04:08,416 INFO polled=2 fetched=1545 appended=107 failures=3
+2026-10-01 09:04:24,440 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:04:44,458 INFO polled=12 fetched=8343 appended=14 failures=3
+2026-10-01 09:05:00,469 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:05:16,083 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:05:16,084 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:05:16,085 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:05:17,303 INFO polled=5 fetched=1545 appended=107 failures=3
+2026-10-01 09:05:33,481 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:05:53,591 INFO polled=12 fetched=8351 appended=13 failures=3
+2026-10-01 09:06:10,282 INFO polled=2 fetched=1545 appended=107 failures=3
+2026-10-01 09:06:26,443 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:06:42,597 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:07:02,777 INFO polled=12 fetched=8359 appended=13 failures=3
+2026-10-01 09:07:19,584 INFO polled=2 fetched=1545 appended=107 failures=3
+2026-10-01 09:07:35,766 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:07:51,916 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:08:13,536 INFO polled=12 fetched=8479 appended=126 failures=3
+2026-10-01 09:08:30,200 INFO polled=2 fetched=1442 appended=2 failures=3
+2026-10-01 09:08:54,733 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:08:54,734 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:08:54,735 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:08:59,447 INFO polled=15 fetched=8376 appended=4 failures=3
+2026-10-01 09:09:14,812 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:09:14,813 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:09:14,814 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:09:16,238 INFO polled=5 fetched=1542 appended=104 failures=3
+2026-10-01 09:09:32,286 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:09:47,837 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:09:47,838 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:09:47,839 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:09:48,517 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-10-01 09:10:09,093 INFO polled=12 fetched=8500 appended=130 failures=3
+2026-10-01 09:10:25,736 INFO polled=2 fetched=1443 appended=3 failures=3
+2026-10-01 09:10:41,742 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:10:57,389 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:10:57,389 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:10:57,390 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:10:58,056 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-10-01 09:11:18,362 INFO polled=12 fetched=8510 appended=120 failures=3
+2026-10-01 09:11:34,945 INFO polled=2 fetched=1442 appended=2 failures=3
+2026-10-01 09:11:50,943 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:12:07,497 INFO polled=2 fetched=1540 appended=102 failures=3
+2026-10-01 09:12:27,688 INFO polled=12 fetched=8421 appended=20 failures=3
+2026-10-01 09:12:43,639 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:12:59,510 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:12:59,511 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:12:59,511 WARNING ^N225 failed (Yahoo chart contained no usable OHLCV bars); retry in 240s
+2026-10-01 09:13:00,197 INFO polled=5 fetched=1440 appended=0 failures=3
+2026-10-01 09:13:16,918 INFO polled=2 fetched=1545 appended=107 failures=3
+2026-10-01 09:13:36,991 INFO polled=12 fetched=8426 appended=16 failures=3
+2026-10-01 09:13:52,998 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:14:09,567 INFO polled=2 fetched=1544 appended=106 failures=3
+2026-10-01 09:14:26,061 INFO polled=2 fetched=1441 appended=1 failures=3
+2026-10-01 09:14:46,262 INFO polled=12 fetched=8437 appended=17 failures=3
+2026-10-01 09:15:02,794 INFO polled=2 fetched=1523 appended=84 failures=3
+2026-10-01 09:15:19,329 INFO polled=2 fetched=1463 appended=23 failures=3
+2026-10-01 09:15:35,332 INFO polled=2 fetched=1440 appended=0 failures=3
+2026-10-01 09:15:55,547 INFO polled=12 fetched=8447 appended=16 failures=3
+2026-10-01 09:16:11,904 INFO polled=2 fetched=1539 appended=101 failures=3
+2026-10-01 09:16:28,237 INFO polled=2 fetched=1446 appended=6 failures=3
+2026-10-01 09:16:49,357 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:16:49,358 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 15s
+2026-10-01 09:16:53,358 INFO polled=15 fetched=8459 appended=18 failures=2
+2026-10-01 09:17:08,881 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:17:08,882 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 30s
+2026-10-01 09:17:10,290 INFO polled=4 fetched=1537 appended=99 failures=2
+2026-10-01 09:17:26,736 INFO polled=2 fetched=1444 appended=4 failures=2
+2026-10-01 09:17:42,034 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:17:42,034 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 60s
+2026-10-01 09:17:42,702 INFO polled=4 fetched=1440 appended=0 failures=2
+2026-10-01 09:18:02,142 INFO polled=13 fetched=8469 appended=17 failures=2
+2026-10-01 09:18:18,843 INFO polled=2 fetched=1544 appended=106 failures=2
+2026-10-01 09:18:35,287 INFO polled=2 fetched=1441 appended=1 failures=2
+2026-10-01 09:18:50,632 WARNING ^KS11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:18:50,632 WARNING ^KQ11 failed (Yahoo chart contained no usable OHLCV bars); retry in 120s
+2026-10-01 09:18:51,374 INFO polled=4 fetched=1440 appended=0 failures=2
+2026-10-01 09:19:11,127 INFO polled=13 fetched=8589 appended=128 failures=2
+2026-10-01 09:19:27,662 INFO polled=2 fetched=1445 appended=5 failures=2
+2026-10-01 09:19:43,668 INFO polled=2 fetched=1440 appended=0 failures=2
+2026-10-01 09:19:59,739 INFO polled=2 fetched=1440 appended=0 failures=2
+2026-10-01 09:20:19,169 INFO polled=13 fetched=8602 appended=120 failures=2
+2026-10-01 09:20:35,572 INFO polled=2 fetched=1443 appended=3 failures=2
+2026-10-01 09:20:52,123 INFO polled=4 fetched=1442 appended=2 failures=0
+2026-10-01 09:21:08,584 INFO polled=2 fetched=1541 appended=103 failures=0
+2026-10-01 09:21:28,424 INFO polled=13 fetched=8517 appended=23 failures=0
+2026-10-01 09:21:44,621 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 09:22:01,307 INFO polled=4 fetched=1446 appended=6 failures=0
+2026-10-01 09:22:17,930 INFO polled=2 fetched=1543 appended=105 failures=0
+2026-10-01 09:22:39,128 INFO polled=13 fetched=8522 appended=16 failures=0
+2026-10-01 09:22:55,134 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 09:23:12,001 INFO polled=4 fetched=1547 appended=107 failures=0
+2026-10-01 09:23:28,528 INFO polled=2 fetched=1443 appended=3 failures=0
+2026-10-01 09:23:47,883 INFO polled=13 fetched=8533 appended=16 failures=0
+2026-10-01 09:24:04,225 INFO polled=2 fetched=1537 appended=99 failures=0
+2026-10-01 09:24:20,683 INFO polled=4 fetched=1457 appended=11 failures=0
+2026-10-01 09:24:36,961 INFO polled=2 fetched=1441 appended=1 failures=0
+2026-10-01 09:24:56,523 INFO polled=13 fetched=8541 appended=14 failures=0
+2026-10-01 09:25:12,795 INFO polled=2 fetched=1541 appended=103 failures=0
+2026-10-01 09:25:29,065 INFO polled=4 fetched=1455 appended=7 failures=0
+2026-10-01 09:25:44,925 INFO polled=2 fetched=1440 appended=0 failures=0
+2026-10-01 09:26:05,995 INFO polled=13 fetched=8628 appended=93 failures=0
+2026-10-01 09:26:22,537 INFO polled=2 fetched=1472 appended=32 failures=0
+2026-10-01 09:26:39,351 INFO polled=4 fetched=1456 appended=6 failures=0
+2026-10-01 09:26:55,751 INFO polled=2 fetched=1441 appended=1 failures=0

@@ -23,9 +23,12 @@ from torch.distributions import Categorical
 from .global_transformer import (ACTION_NAMES, GlobalMarketPanel, GlobalMarketTransformer,
                                  TransformerConfig, parameter_count, load_compatible_state_dict)
 from .paper_account import PaperAccount, _currency
+from .account_diagnostics import summarize_policy
+from .operating_rules import operating_rules
 from .state_io import atomic_json
 from .multiscale import (MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES,
-                         TIMEFRAME_FEATURE_NAMES)
+                         TIMEFRAME_FEATURE_NAMES, MULTISCALE_FEATURE_ORDER,
+                         BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES)
 
 REWARD_VERSION="symbol_and_portfolio_v5"
 PAPER_EXPLORATION_EPSILON=0.05
@@ -146,6 +149,8 @@ class Experience:
     forward_return: float | None = None
     behavior_log_prob: float | None = None
     trade_executed: bool = True
+    origin_model: str = "champion"
+    daily_history: np.ndarray | None = None
 
 
 from .replay_store import GlobalReplayBuffer, ReplayStorageFull
@@ -174,7 +179,7 @@ def _atomic_json(obj,path:Path):
 def should_promote(candidate_score:float, champion_score:float, minimum_delta:float=0.0)->bool:
     """Finite, strict promotion gate shared by online control and its checks."""
     return bool(np.isfinite(candidate_score) and np.isfinite(champion_score)
-                and candidate_score>champion_score+minimum_delta)
+                and candidate_score>0 and candidate_score>champion_score+minimum_delta)
 
 
 def parse_horizon(value: int | str) -> tuple[str, int]:
@@ -214,12 +219,11 @@ def save_model(path:Path, model:GlobalMarketTransformer, cfg:TransformerConfig, 
         payload["context_features"]=list(CONTEXT_FEATURES)
         payload["symbol_map"]=model._stockrl_symbol_map
         payload["market_context_model"]=True
-        payload["multiscale_feature_order"]=[f"{scale}:{feature}"
-            for scale in TIMEFRAME_NAMES for feature in TIMEFRAME_FEATURE_NAMES]
+        payload["multiscale_feature_order"]=list(MULTISCALE_FEATURE_ORDER)
     _atomic_save(payload,path,temp_dir=temp_dir)
 
 
-def load_model(path:Path,device:torch.device):
+def load_model(path:Path,device:torch.device,instrument_config:Path|None=None):
     ckpt=torch.load(path,map_location="cpu",weights_only=False)
     cfg=TransformerConfig(**ckpt["config"])
     state=ckpt["state_dict"]
@@ -230,9 +234,9 @@ def load_model(path:Path,device:torch.device):
         from .market_training import CONTEXT_FEATURES, ContextConditionedTransformer
         if ckpt.get("context_features",list(CONTEXT_FEATURES))!=list(CONTEXT_FEATURES):
             raise ValueError("checkpoint market_context feature order does not match the inference schema")
-        multiscale_order=[f"{scale}:{feature}" for scale in TIMEFRAME_NAMES
-                          for feature in TIMEFRAME_FEATURE_NAMES]
-        if ckpt.get("multiscale_feature_order",multiscale_order)!=multiscale_order:
+        multiscale_order=list(MULTISCALE_FEATURE_ORDER)
+        saved_order=ckpt.get("multiscale_feature_order",multiscale_order)
+        if saved_order!=multiscale_order[:len(saved_order)]:
             raise ValueError("checkpoint multiscale feature order does not match the inference schema")
         symbol_map=ckpt.get("symbol_map")
         if not isinstance(symbol_map,dict) or len(symbol_map)!=cfg.max_symbols:
@@ -250,6 +254,10 @@ def load_model(path:Path,device:torch.device):
         if device.type=="cuda": model=model.half()
     model._stockrl_replay_commit=ckpt.get("replay_commit",{})
     del ckpt
+    if instrument_config is not None:
+        from .instrument_ids import extend_live_symbols
+        instruments=json.loads(Path(instrument_config).read_text(encoding="utf-8"))["instruments"]
+        cfg=extend_live_symbols(model,cfg,instruments)
     model.to(device).eval()
     return model,cfg
 
@@ -273,23 +281,34 @@ class MarketObservation:
         self.market_context=(panel.market_context[start:index+1].copy()
                              if panel.market_context is not None else None)
         self.multiscale=panel.multiscale_at(index).copy()
+        history=(panel.daily_history_at(index) if hasattr(panel,"daily_history_at") else None)
+        self.daily_history=history.copy() if history is not None else None
 
     def multiscale_at(self,index):
         if index!=len(self.dates)-1:
             raise ValueError("observation has only its captured multiscale state")
         return self.multiscale
 
+    def daily_history_at(self,index):
+        return self.daily_history
+
 
 class OnlineGlobalAgent:
+    @staticmethod
+    def _daily_history_kwargs(panel,index,device):
+        history=panel.daily_history_at(index) if hasattr(panel,"daily_history_at") else None
+        return {"daily_history":torch.as_tensor(history[None],device=device,dtype=torch.float32)} if history is not None else {}
+
     def __init__(self, state_dir: str|Path, device="auto", config:TransformerConfig|None=None,
                  capacity=4_096, window=128, horizon=1, fee=.001, slippage_bps=1.0,
                  min_replay=8, batch_size=4, updates_per_candidate=8, lr=2e-6, seed=7,
                  candidate_interval=16, initial_champion: str|Path|None=None,
                  teacher_replay_path: str|Path|None=None,
-                 model_dir: str|Path|None=None):
+                 model_dir: str|Path|None=None,instrument_config:str|Path|None=None):
         from .core import device_for
         from .paths import ensure_project_path, validate_model_dir
         self.state_dir=ensure_project_path(state_dir, "runtime")
+        self.instrument_config=ensure_project_path(instrument_config,"instrument config") if instrument_config else None
         self.model_dir=validate_model_dir(model_dir)
         if initial_champion is not None:
             source = Path(initial_champion).expanduser().resolve()
@@ -325,7 +344,7 @@ class OnlineGlobalAgent:
             # writing to or replacing the source checkpoint.
             shutil.copy2(initial_champion,self.champion_path)
         if self.champion_path.exists():
-            self.champion,self.cfg=load_model(self.champion_path,self.device)
+            self.champion,self.cfg=load_model(self.champion_path,self.device,self.instrument_config)
         else:
             if model_dir is not None or initial_champion is not None:
                 raise FileNotFoundError(f"configured champion checkpoint does not exist: {self.champion_path}")
@@ -361,10 +380,16 @@ class OnlineGlobalAgent:
         if not self.paper_account.path.exists(): self.paper_account.save()
         self.candidate_live_account=PaperAccount(
             self.state_dir/"candidate_observer_account.json",self.fee,self.slippage)
+        recovered=self.replay.observer_account()
+        if recovered:
+            self.candidate_live_account.state=recovered
+        self.candidate_portfolio_pending=self.replay.load_pending("candidate_portfolio")
         self.candidate_live_state_path=self.state_dir/"candidate_observer_state.json"
         self.candidate_live_thread=threading.Thread(
             target=self._candidate_live_worker,name="candidate-live-observer",daemon=True)
-        self.validation_window_bars=128
+        self.operating_rules=operating_rules()
+        self.validation_window_bars=int(self.operating_rules["validation_min_market_minutes"])
+        self.daily_promotion=self.operating_rules["promotion_schedule"]=="daily"
         self.validation_queue=queue.Queue(maxsize=32)
         self.validation_last_enqueued_minute=None
         self.validation_generation=0
@@ -506,7 +531,7 @@ class OnlineGlobalAgent:
             self.candidate_trained_replay_row_ids.difference_update(finalized)
         candidate_path=self.model_dir/"candidate.pt"
         if candidate_path.is_file():
-            self.candidate,candidate_cfg=load_model(candidate_path,self.device)
+            self.candidate,candidate_cfg=load_model(candidate_path,self.device,self.instrument_config)
             if asdict(candidate_cfg)!=asdict(self.cfg):
                 raise ValueError("candidate checkpoint architecture does not match champion")
             if self.device.type=="cuda":
@@ -603,7 +628,7 @@ class OnlineGlobalAgent:
                 self.candidate=self._new_model_like(source,self.device)
                 self.candidate.load_state_dict(source.state_dict())
         else:
-            candidate,cfg=load_model(path,self.device)
+            candidate,cfg=load_model(path,self.device,self.instrument_config)
             if asdict(cfg)!=asdict(self.cfg):
                 raise ValueError("candidate checkpoint architecture does not match champion")
             self.candidate=candidate
@@ -633,38 +658,33 @@ class OnlineGlobalAgent:
         if self.candidate_live_thread.is_alive(): self.candidate_live_thread.join(timeout=300)
 
     def _queue_candidate_live_observation(self,panel,index,paper_enabled,uniforms):
-        item=(panel,int(index),bool(paper_enabled),tuple(float(x) for x in uniforms))
-        try:
-            self.candidate_live_queue.put_nowait(item)
-        except queue.Full:
-            try:
-                self.candidate_live_queue.get_nowait()
-                self.candidate_live_queue.task_done()
-                self.metrics["candidate_live_queue_drops"]=(
-                    int(self.metrics.get("candidate_live_queue_drops",0))+1)
-            except queue.Empty:
-                pass
-            try: self.candidate_live_queue.put_nowait(item)
-            except queue.Full: pass
+        snapshot=MarketObservation(panel,index,self.window)
+        self.replay.enqueue_market_observation(snapshot,bool(paper_enabled),tuple(float(x) for x in uniforms))
 
     def _candidate_live_worker(self):
         """Run an independent observational paper account for current candidate weights."""
-        while not self.stop.is_set():
-            try:
-                panel,index,paper_enabled,uniforms=self.candidate_live_queue.get(timeout=.25)
-            except queue.Empty:
+        while not self.stop.is_set() or self.replay.market_observation_stats()["pending"]:
+            item=self.replay.next_market_observation()
+            if item is None:
+                self.stop.wait(.25)
                 continue
+            stamp,data=item
+            panel=MarketObservation.__new__(MarketObservation)
+            panel.__dict__.update(data)
+            index=len(panel.dates)-1
+            paper_enabled=bool(data["paper_enabled"]);uniforms=data["uniforms"]
+            if self.candidate_live_model is None:
+                if self.stop.is_set():
+                    break  # Required observations remain in SQLite for restart.
+                self.stop.wait(.25)
+                continue
+            saved_account=pickle.loads(pickle.dumps(self.candidate_live_account.state,protocol=5))
+            committed=False
             try:
-                stamp=str(panel.dates[index])
-                latest=str(self.current_market_timestamp or stamp)
-                # If a newer bar is already queued, skip stale decisions and
-                # keep the observer account close to the live market.
-                if stamp<latest and not self.candidate_live_queue.empty():
-                    self.metrics["candidate_live_queue_drops"]=(
-                        int(self.metrics.get("candidate_live_queue_drops",0))+1)
-                    continue
                 account=self.candidate_live_account
-                account.process_bar(panel,index,paper_enabled)
+                filled_orders=account.process_bar(panel,index,paper_enabled)
+                self.candidate_portfolio_pending=self._mature_portfolio(
+                    self.candidate_portfolio_pending,panel,index,filled_orders,account=account,origin_model="candidate")
                 if self.candidate_live_model is None:
                     self.metrics["candidate_live_status"]="waiting_for_candidate_update"
                     account.save()
@@ -696,7 +716,7 @@ class OnlineGlobalAgent:
                                     mt=torch.as_tensor(panel.multiscale_at(index)[None],device=device)
                                     logits,_,allocation=model(*args,portfolio_state=pt,
                                         account_state=at,return_allocation=True,
-                                        multiscale_state=mt)
+                                        multiscale_state=mt,**self._daily_history_kwargs(panel,index,device))
                                     allocation=allocation[0].float().cpu().numpy()
                                 else:
                                     logits,_=model(*args); allocation=None
@@ -707,8 +727,35 @@ class OnlineGlobalAgent:
                 probabilities,actions=self._paper_policy_actions(
                     logits[0].float().cpu().numpy(),pstate,uniforms)
                 elapsed=time.perf_counter()-started
-                account.queue_decisions(panel,index,probabilities,paper_enabled,
+                submitted=account.queue_decisions(panel,index,probabilities,paper_enabled,
                     allocation=allocation,actions=actions)
+                x,sid,mid,aid,mask=window[:5]
+                inputs={"features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
+                    "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
+                    "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
+                    "multiscale_state":panel.multiscale_at(index).astype(np.float16),
+                    "daily_history":getattr(panel,"daily_history",None),
+                    "input_symbols":list(panel.symbols),"portfolio_state":np.asarray(pstate,dtype=np.float16),
+                    "account_state":np.asarray(astate,dtype=np.float32)}
+                for j,symbol in enumerate(panel.symbols):
+                    market,asset=panel.groups[symbol]
+                    if paper_enabled and panel.observed[index,j] and _currency(market,asset) is not None:
+                        action=int(actions[j]);decision_id=f"{stamp}|{symbol}"
+                        self.candidate_portfolio_pending.append({**inputs,"index":index,"symbol_index":j,
+                            "symbol":symbol,"action":action,"timestamp":stamp,"decision_id":decision_id,
+                            "reward_version":REWARD_VERSION,"origin_model":"candidate",
+                            "behavior_log_prob":float(np.log(max(float(probabilities[j,action]),1e-12))),
+                            "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
+                            "regime":abs(float(panel.features[index,j,6])),"is_validation":False,
+                            "equity_before":account.normalized_equity(),
+                            "symbol_pnl_before":account.symbol_net_pnl(symbol),
+                            "fill_expected":decision_id in (submitted or set())})
+                self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
+                committed=True
+                policy_diagnostics=summarize_policy(panel,index,probabilities,actions,
+                    allocation,account,submitted or set(),stamp)
+                if policy_diagnostics["observed_tradable_symbols"]:
+                    self.metrics["candidate_last_tradable_policy_diagnostics"]=policy_diagnostics
                 account.save()
                 decisions=[]
                 for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions)):
@@ -729,9 +776,14 @@ class OnlineGlobalAgent:
                     "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
                     "candidate_training":bool(self.metrics.get("candidate_training")),
                     "last_inference_seconds":elapsed,"inference_count":self.metrics[
-                        "candidate_live_inference_count"],"last_decisions":decisions},
+                        "candidate_live_inference_count"],"last_decisions":decisions,
+                    "policy_diagnostics":policy_diagnostics,
+                    "last_tradable_policy_diagnostics":self.metrics.get(
+                        "candidate_last_tradable_policy_diagnostics",{})},
                     self.candidate_live_state_path)
             except Exception as exc:
+                self.candidate_live_account.state=self.replay.observer_account() if committed else saved_account
+                self.candidate_portfolio_pending=self.replay.load_pending("candidate_portfolio")
                 self.metrics["candidate_live_errors"]=(
                     int(self.metrics.get("candidate_live_errors",0))+1)
                 self.metrics["candidate_live_status"]="error"
@@ -740,8 +792,9 @@ class OnlineGlobalAgent:
                     "candidate_version":self.candidate_live_model_version,
                     "error":self.metrics["candidate_live_error"],"last_decisions":[]},
                     self.candidate_live_state_path)
-            finally:
-                self.candidate_live_queue.task_done()
+                if self.stop.is_set():
+                    break  # Preserve the failed observation instead of spinning during shutdown.
+                self.stop.wait(1.0)
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
         args=[x.to(self.device) for x in self._window(panel,index)]
@@ -757,7 +810,7 @@ class OnlineGlobalAgent:
                 mstate=torch.as_tensor(panel.multiscale_at(index)[None],device=self.device)
                 logits,values,allocation=model(*args,portfolio_state=pstate,
                                                 account_state=astate,return_allocation=True,
-                                                multiscale_state=mstate)
+                                                multiscale_state=mstate,**self._daily_history_kwargs(panel,index,self.device))
             else:
                 logits,values=model(*args); allocation=None
             elapsed=time.perf_counter()-t
@@ -768,6 +821,7 @@ class OnlineGlobalAgent:
             int(self.metrics.get("champion_live_inference_count",0))+1)
         self.metrics["champion_live_inference_seconds_total"]=(
             float(self.metrics.get("champion_live_inference_seconds_total",0.0))+elapsed)
+        self.metrics["champion_live_last_inference_seconds"]=elapsed
         if self.metrics.get("candidate_training"):
             self.metrics["inference_during_candidate"]=int(self.metrics.get("inference_during_candidate",0))+1
         if len(self.metrics["inference_seconds"])>2000: self.metrics["inference_seconds"]=self.metrics["inference_seconds"][-2000:]
@@ -904,16 +958,18 @@ class OnlineGlobalAgent:
                 "regular",dec)
         return keep
 
-    def _mature_portfolio(self, pending, panel, end_index: int, filled_orders=()):
+    def _mature_portfolio(self, pending, panel, end_index: int, filled_orders=(),account=None,origin_model="champion"):
         """Turn completed paper-account transitions into reward experiences.
 
         The reward uses the account's net-of-cost normalized equity change.
         Trade actions begin their horizon on the linked next-bar fill; HOLD
         observations use their decision time because they create no order.
         """
+        account=account or self.paper_account
+        pending_kind="portfolio" if origin_model=="champion" else "candidate_portfolio"
         if not pending:
             return pending
-        now = float(self.paper_account.normalized_equity())
+        now = float(account.normalized_equity())
         fills_by_id={str(fill.get("decision_id")):fill for fill in filled_orders
                      if fill.get("decision_id")}
         fills_by_order={(str(fill.get("order_date")),str(fill.get("symbol"))):fill
@@ -931,7 +987,8 @@ class OnlineGlobalAgent:
             if symbol not in panel.symbols:
                 keep.append(dec); continue
             symbol_ix=panel.symbols.index(symbol)
-            if current<=stamp or not panel.observed[end_index,symbol_ix]:
+            terminal=bool(dec.get("reset_terminal"))
+            if not terminal and (current<=stamp or not panel.observed[end_index,symbol_ix]):
                 keep.append(dec); continue
             input_symbols=dec.get("input_symbols")
             input_symbol_index=(input_symbols.index(symbol) if input_symbols and symbol in input_symbols
@@ -956,7 +1013,7 @@ class OnlineGlobalAgent:
                     dec["bars_elapsed"]=0
                     keep.append(dec)
                     continue
-                queued=self.paper_account.state.get("pending",{}).get(symbol)
+                queued=account.state.get("pending",{}).get(symbol)
                 still_queued=bool(queued and (
                     queued.get("decision_id")==dec.get("decision_id") or
                     (not queued.get("decision_id") and queued.get("date")==dec.get("timestamp"))))
@@ -970,24 +1027,25 @@ class OnlineGlobalAgent:
                 if still_queued:
                     continue
             reward_start=np.datetime64(dec.get("fill_timestamp",dec["timestamp"]))
-            if current<=reward_start:
+            if current<=reward_start and not terminal:
                 keep.append(dec); continue
             if self.horizon_kind=="bars":
                 dec["bars_elapsed"]=int(dec.get("bars_elapsed",0))+1
                 matured=dec["bars_elapsed"]>=self.horizon_amount
             else:
                 matured=current>=reward_start+np.timedelta64(self.horizon_amount,"s")
-            if not matured:
+            if not matured and not terminal:
                 keep.append(dec); continue
-            account_reward = now - float(dec.get("equity_before", now))
-            symbol_reward = (self.paper_account.symbol_net_pnl(symbol)
+            final_equity=float(dec.get("reset_equity",now)) if terminal else now
+            account_reward = final_equity - float(dec.get("equity_before", final_equity))
+            symbol_reward = ((float(dec["reset_symbol_net_pnl"]) if terminal else account.symbol_net_pnl(symbol))
                              - float(dec.get("symbol_pnl_before", 0.0)))
             if dec.get("trade_executed") is False:
                 symbol_reward=0.0
             if dec.get("promotion_holdout",False):
                 self.metrics["promotion_validation_outcomes"] = int(
                     self.metrics.get("promotion_validation_outcomes",0))+1
-                self.replay.acknowledge_pending("portfolio",dec)
+                self.replay.acknowledge_pending(pending_kind,dec)
                 continue
             entry=float(dec.get("fill_price",dec.get("entry_price",0.0)))
             exit_price=float(panel.closes[end_index,symbol_ix])
@@ -998,6 +1056,7 @@ class OnlineGlobalAgent:
                     reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"),
                     multiscale_state=dec.get("multiscale_state"),
+                    daily_history=dec.get("daily_history"),
                     portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),forward_return=forward_return,
                     behavior_log_prob=dec.get("behavior_log_prob"),
@@ -1005,7 +1064,7 @@ class OnlineGlobalAgent:
             if dec.get("is_validation",False):
                 self._append_validation(self.portfolio_validation,self.portfolio_validation_dates,
                                         exp.timestamp,exp)
-                self.replay.acknowledge_pending("portfolio",dec)
+                self.replay.acknowledge_pending(pending_kind,dec)
             else:
                 timestamp=dec["timestamp"]
                 # Keep one allocation-credit row per symbol. It carries that
@@ -1013,20 +1072,22 @@ class OnlineGlobalAgent:
                 # whole-account result; never attach the whole account return
                 # to whichever symbol happened to mature first.
                 first_account_transition=(timestamp not in account_transition_added and
-                    not self.replay.has_portfolio_value(timestamp))
+                    not self.replay.has_portfolio_value(timestamp,origin_model))
                 account_exp=Experience(dec["features"],dec["symbol_ids"],dec["market_ids"],dec["asset_ids"],
                     dec["valid_mask"],input_symbol_index,int(dec["action"]),float(symbol_reward),timestamp,
                     "paper_account_portfolio",float(dec.get("regime",0.0)),
                     reward_version=REWARD_VERSION,
                     market_context=dec.get("market_context"),
                     multiscale_state=dec.get("multiscale_state"),
+                    daily_history=dec.get("daily_history"),
                     portfolio_state=dec.get("portfolio_state"),
                     account_state=dec.get("account_state"),portfolio_reward=float(account_reward),
                     portfolio_transition=True,portfolio_value_transition=first_account_transition,
                     forward_return=forward_return,
                     behavior_log_prob=dec.get("behavior_log_prob"),
                     trade_executed=dec.get("trade_executed",True))
-                self.replay.add_many([exp,account_exp],pending_ack=("portfolio",
+                exp.origin_model=origin_model;account_exp.origin_model=origin_model
+                self.replay.add_many([exp,account_exp],pending_ack=(pending_kind,
                     f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
                 if first_account_transition:
                     account_transition_added.add(timestamp)
@@ -1266,6 +1327,8 @@ class OnlineGlobalAgent:
                     # starts strictly after its own snapshot time.
                     stamp=str(panel.dates[ti]); validation=False
                     multiscale_state=panel.multiscale_at(ti).astype(np.float16)
+                    if hasattr(panel,"daily_history_status_at"):
+                        self.metrics["daily_history_input_status"]=panel.daily_history_status_at(ti)
                     actual_symbols=np.asarray([
                         not str(symbol).startswith("__PAD__") for symbol in panel.symbols],dtype=bool)
                     if actual_symbols.any():
@@ -1279,8 +1342,16 @@ class OnlineGlobalAgent:
                                 "complete_history_symbols":int((multiscale_state[actual_symbols,k*width+5]>=.999).sum()),
                                 "mean_history_coverage":float(multiscale_state[actual_symbols,k*width+5].mean())}
                             for k,scale in enumerate(TIMEFRAME_NAMES)}
+                        self.metrics["long_context_input_status"]={
+                            name:{"available_symbols":int((multiscale_state[actual_symbols,
+                                BASE_MULTISCALE_FEATURE_COUNT+k*width+4]>0).sum()),
+                                "observed_symbols":int(actual_symbols.sum()),
+                                "mean_history_coverage":float(multiscale_state[actual_symbols,
+                                    BASE_MULTISCALE_FEATURE_COUNT+k*width+5].mean())}
+                            for k,name in enumerate(LONG_CONTEXT_NAMES)}
                     rows=[]
                     pending_inputs={"features":x[0].numpy().astype(np.float16),
+                        "daily_history":panel.daily_history_at(ti) if hasattr(panel,"daily_history_at") else None,
                         "symbol_ids":sid[0].numpy(),"market_ids":mid[0].numpy(),
                         "asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
                         "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
@@ -1320,6 +1391,11 @@ class OnlineGlobalAgent:
                     submitted_order_ids=self.paper_account.queue_decisions(
                         panel,ti,probs,paper_enabled,allocation=allocation,actions=actions)
                     submitted_order_ids=submitted_order_ids or set()
+                    self.metrics["champion_policy_diagnostics"]=summarize_policy(
+                        panel,ti,probs,actions,allocation,self.paper_account,submitted_order_ids,stamp)
+                    if self.metrics["champion_policy_diagnostics"]["observed_tradable_symbols"]:
+                        self.metrics["champion_last_tradable_policy_diagnostics"]=self.metrics[
+                            "champion_policy_diagnostics"]
                     for dec in portfolio_pending:
                         if dec.get("timestamp")==stamp:
                             dec["fill_expected"]=(dec.get("decision_id") in submitted_order_ids)
@@ -1361,6 +1437,20 @@ class OnlineGlobalAgent:
             if self.thread.is_alive(): self.thread.join(timeout=300)
             if self.validation_queue_thread.is_alive():
                 self.validation_queue_thread.join(timeout=300)
+            if self.candidate_live_thread.is_alive():
+                self.candidate_live_thread.join(timeout=300)
+            daily_request=self.state_dir/"daily_cycle.request"
+            if daily_request.exists():
+                request=json.loads(daily_request.read_text(encoding="utf-8"))
+                if self.validation_active:
+                    self._finish_candidate_validation(
+                        self.validation_candidate_account.normalized_equity()-2.0,
+                        self.validation_champion_account.normalized_equity()-2.0,None)
+                _atomic_json({"finished_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),
+                    "session_key":request.get("session_key"),
+                    "validation_active":False,"bars":self.validation_bars},
+                    self.state_dir/"daily_cycle.completed.json")
+                daily_request.unlink(missing_ok=True)
             self.metrics["candidate_training"]=False
             self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
             self.replay.save_pending(pending,portfolio_pending)
@@ -1448,6 +1538,7 @@ class OnlineGlobalAgent:
                                 portfolio_state=torch.as_tensor(np.asarray(pstate)[None],device=model_device,dtype=torch.float32),
                                 account_state=torch.as_tensor(np.asarray(astate)[None],device=model_device,dtype=torch.float32),
                                 multiscale_state=torch.as_tensor(panel.multiscale_at(ti)[None],device=model_device),
+                                **self._daily_history_kwargs(panel,ti,model_device),
                                 return_allocation=True)
                             allocation=allocation[0].float().cpu().numpy()
                         else:
@@ -1556,8 +1647,11 @@ class OnlineGlobalAgent:
                           else np.zeros((experience.features.shape[1], 8), dtype=np.float16))
             a_rows.append(experience.account_state if experience.account_state is not None
                           else np.zeros(8, dtype=np.float32))
-            m_rows.append(experience.multiscale_state if experience.multiscale_state is not None
-                          else np.zeros((experience.features.shape[1],MULTISCALE_FEATURE_COUNT),dtype=np.float16))
+            multi=(experience.multiscale_state if experience.multiscale_state is not None
+                   else np.zeros((experience.features.shape[1],MULTISCALE_FEATURE_COUNT),dtype=np.float16))
+            if BASE_MULTISCALE_FEATURE_COUNT<=multi.shape[-1]<MULTISCALE_FEATURE_COUNT:
+                multi=np.pad(multi,((0,0),(0,MULTISCALE_FEATURE_COUNT-multi.shape[-1])))
+            m_rows.append(multi)
         return (args,
                 torch.as_tensor(np.stack(p_rows),device=self.device,dtype=torch.float32),
                 torch.as_tensor(np.stack(a_rows),device=self.device,dtype=torch.float32),
@@ -1600,7 +1694,7 @@ class OnlineGlobalAgent:
                 try:
                     if learner=="candidate": self._restore_candidate_checkpoint()
                     else:
-                        restored,_=load_model(self.champion_path,self.device)
+                        restored,_=load_model(self.champion_path,self.device,self.instrument_config)
                         with self.lock: self.champion=restored.eval()
                         commit=getattr(restored,"_stockrl_replay_commit",{})
                         if commit.get("learner")=="champion":
@@ -1635,7 +1729,8 @@ class OnlineGlobalAgent:
         modules.extend(getattr(candidate,name,None) for name in
                        ("context_policy","context_value","portfolio_action",
                         "portfolio_allocation","portfolio_cash",
-                        "multiscale_policy","multiscale_value"))
+                        "multiscale_policy","multiscale_value","daily_history_encoder",
+                        "daily_history_policy","daily_history_value"))
         for module in modules:
             if module is not None:
                 for parameter in module.parameters():
@@ -1733,6 +1828,8 @@ class OnlineGlobalAgent:
         elapsed=[]; compute_elapsed=[]
         candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
         timeframe_samples=dict.fromkeys(TIMEFRAME_NAMES,0)
+        long_context_samples=dict.fromkeys(LONG_CONTEXT_NAMES,0)
+        daily_history_samples=0
         sampled_ids=set()
         # The SQLite queue is authoritative; the small RAM cache is not the
         # backlog. Each learner takes every eligible row once, oldest first.
@@ -1753,13 +1850,15 @@ class OnlineGlobalAgent:
             malformed=[e for e in batch if (
                 (e.portfolio_state is not None and np.shape(e.portfolio_state)!=(e.features.shape[1],8)) or
                 (e.account_state is not None and np.shape(e.account_state)!=(8,)) or
-                (e.multiscale_state is not None and np.shape(e.multiscale_state)!=(e.features.shape[1],MULTISCALE_FEATURE_COUNT)))]
+                (e.multiscale_state is not None and np.shape(e.multiscale_state) not in (
+                    (e.features.shape[1],MULTISCALE_FEATURE_COUNT),(e.features.shape[1],96),
+                    (e.features.shape[1],BASE_MULTISCALE_FEATURE_COUNT))))]
             if malformed:
                 self.replay.quarantine(self.replay.row_ids_for(malformed),"saved portfolio input shape is incompatible")
                 rejected={id(e) for e in malformed}
                 batch=[e for e in batch if id(e) not in rejected]
                 if not batch: continue
-            candidate_sample_keys.update((e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
+            candidate_sample_keys.update((e.origin_model,e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
                                          for e in batch)
             ti=time.perf_counter(); opt.zero_grad(set_to_none=True); valid_samples=0; loss_values=[]
             with self.candidate_live_inference_lock:
@@ -1782,7 +1881,9 @@ class OnlineGlobalAgent:
                     args,pstate,astate,mstate=self._pack([group[0]])
                     if use_portfolio:
                         logits,values,allocations=candidate(*args,portfolio_state=pstate,
-                            account_state=astate,return_allocation=True,multiscale_state=mstate)
+                            account_state=astate,return_allocation=True,multiscale_state=mstate,
+                            **({"daily_history":torch.as_tensor(group[0].daily_history[None],device=self.device,dtype=torch.float32)}
+                               if getattr(group[0],"daily_history",None) is not None else {}))
                     else:
                         logits,values=candidate(*args); allocations=None
                     losses=[]
@@ -1814,11 +1915,18 @@ class OnlineGlobalAgent:
             used_experiences.extend(successful_batch)
             for experience in successful_batch:
                 scale_input=experience.multiscale_state
+                if getattr(experience,"daily_history",None) is not None and np.any(experience.daily_history[...,5]>0):
+                    daily_history_samples+=1
                 if scale_input is not None:
                     width=len(TIMEFRAME_FEATURE_NAMES)
                     for k,scale in enumerate(TIMEFRAME_NAMES):
                         if np.any(np.asarray(scale_input)[:,k*width+4]>0):
                             timeframe_samples[scale]+=1
+                    if np.shape(scale_input)[-1]>=BASE_MULTISCALE_FEATURE_COUNT:
+                        for k,name in enumerate(LONG_CONTEXT_NAMES):
+                            column=BASE_MULTISCALE_FEATURE_COUNT+k*width+4
+                            if column<np.shape(scale_input)[-1] and np.any(np.asarray(scale_input)[:,column]>0):
+                                long_context_samples[name]+=1
             metrics["update_losses"].append(float(np.mean(loss_values)))
             metrics["update_losses"]=metrics["update_losses"][-2000:]
             if self.device.type=="cuda":
@@ -1961,6 +2069,8 @@ class OnlineGlobalAgent:
             "completed_utc":metrics["last_update_utc"],
             "model_version":replay_commit["model_version"]}
         metrics["candidate_last_completed_round"]["timeframe_samples"]=timeframe_samples
+        metrics["candidate_last_completed_round"]["long_context_samples"]=long_context_samples
+        metrics["candidate_last_completed_round"]["daily_history_samples"]=daily_history_samples
         self.candidate_retry_attempts=0; self.candidate_retry_after=0.0
         self._write_metrics()
         del candidate,opt
@@ -2095,7 +2205,8 @@ class OnlineGlobalAgent:
             depth,int(self.metrics.get("candidate_validation_queue_max_depth",0)))
 
     def _validation_worker(self):
-        while not self.stop.is_set():
+        while not self.stop.is_set() or ((self.state_dir/"daily_cycle.request").exists()
+                                        and not self.validation_queue.empty()):
             try:
                 generation,panel,index,stamp,queued_at=self.validation_queue.get(timeout=.25)
             except queue.Empty:
@@ -2178,7 +2289,7 @@ class OnlineGlobalAgent:
                                 mt=torch.as_tensor(panel.multiscale_at(index)[None],device=model_device)
                                 logits,_,allocation=model(*model_args,portfolio_state=pt,
                                                           account_state=at,return_allocation=True,
-                                                          multiscale_state=mt)
+                                                          multiscale_state=mt,**self._daily_history_kwargs(panel,index,model_device))
                                 allocation=allocation[0].float().cpu().numpy()
                             else:
                                 logits,_=model(*model_args); allocation=None
@@ -2216,7 +2327,7 @@ class OnlineGlobalAgent:
                           "source_champion_sha256":self.validation_source_sha256,
                           "generation":generation})
             self._atomic_json(state,self.validation_state_path)
-            if self.validation_bars>=self.validation_window_bars:
+            if self.validation_bars>=self.validation_window_bars and not self.daily_promotion:
                 # KRW and USD returns are normalized by their matching seed
                 # cash, so unrelated currencies are never added as raw money.
                 candidate_score=cand_account.normalized_equity()-2.0
@@ -2260,6 +2371,14 @@ class OnlineGlobalAgent:
             from datetime import datetime,timezone
             self.metrics["last_rejection_utc"]=datetime.now(timezone.utc).isoformat()
             self.metrics["last_candidate_promoted"]=False
+            history=self.metrics.setdefault("candidate_gate_history",[])
+            history.append({"time_utc":self.metrics["last_rejection_utc"],"applied":False,
+                "reason":error,"candidate_score":candidate_score,"champion_score":champion_score,
+                "candidate_version":snapshot_version,"champion_version":state.get("source_champion_version"),
+                "bars":self.validation_bars,"required_bars":self.validation_window_bars,
+                "candidate_profitable":candidate_score is not None and candidate_score>0,
+                "candidate_beats_champion":candidate_score is not None and champion_score is not None and candidate_score>champion_score})
+            self.metrics["candidate_gate_history"]=history[-20:]
             self._atomic_json({**state,"status":"rejected","reason":error,
                                "bars":self.validation_bars,
                                "same_market_timeline":False,"same_market_input":False,
@@ -2285,7 +2404,7 @@ class OnlineGlobalAgent:
         self._write_metrics()
         del candidate
         self._release_cuda_cache()
-        if self.candidate is not None and self.candidate_version>snapshot_version:
+        if not self.stop.is_set() and self.candidate is not None and self.candidate_version>snapshot_version:
             self._begin_candidate_validation(self.candidate)
 
     def _commit_candidate(self,candidate,score_new:float,score_old:float,validation_bars:int,
@@ -2307,7 +2426,7 @@ class OnlineGlobalAgent:
             promoted_model,_=load_model(staged,self.device)
             promoted_sha=self._sha256_file(staged).upper()
             baseline_next=self.state_dir/"promotion_baseline.next"
-            self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed 128-bar frozen-snapshot paper gate"},
+            self._atomic_json({"sha256":promoted_sha,"set_reason":"candidate passed profitable daily frozen-snapshot paper gate"},
                               baseline_next)
             with self.lock:
                 if (frozen_pair and int(self.metrics.get("promotions",0))!=(trial_state or {}).get("source_promotion_epoch")) or (not frozen_pair and self._sha256_file(self.champion_path)!=source_champion_sha256):
@@ -2326,10 +2445,16 @@ class OnlineGlobalAgent:
         history=self.metrics.setdefault("candidate_gate_history",[])
         reason=("sequential paper-account net return improved" if promote else
                 "model pair invalidated during comparison" if not source_valid else
+                "candidate paper-account net return was not positive" if score_new<=0 else
                 "candidate paper-account net return did not beat champion")
         history.append({"time_utc":self.metrics["last_promotion_utc" if promote else "last_rejection_utc"],
                         "applied":promote,"reason":reason,
-                        "candidate_score":float(score_new),"champion_score":float(score_old)})
+                        "candidate_score":float(score_new),"champion_score":float(score_old),
+                        "candidate_version":candidate_version,
+                        "champion_version":(trial_state or {}).get("source_champion_version"),
+                        "bars":validation_bars,"required_bars":self.validation_window_bars,
+                        "candidate_profitable":bool(score_new>0),
+                        "candidate_beats_champion":bool(score_new>score_old)})
         self.metrics["candidate_gate_history"]=history[-20:]
         self._atomic_json({"status":"promoted" if promote else "rejected",
                            "bars":validation_bars,"candidate_score":float(score_new),
@@ -2370,6 +2495,8 @@ class OnlineGlobalAgent:
           "champion_eligible_replay_count":replay_stats["model_remaining"]["champion"],
           "champion_untrained_replay_count":replay_stats["model_untrained"]["champion"],
           "dual_learning_enabled":True,
+          "shared_observation":self.replay.market_observation_stats(),
+          "learning_experience_origins":"champion_and_candidate_own_account_outcomes",
           "champion_learning_enabled":not self.stop.is_set(),
           "champion_training_version":self.champion_training_version,
           "champion_batch_size":self.batch_size,
@@ -2401,6 +2528,7 @@ class OnlineGlobalAgent:
           "candidate_optimizer_steps_target":self.updates_per_candidate,
           "candidate_samples_target":self.updates_per_candidate*self.batch_size,
           "candidate_min_validation_dates":self.validation_window_bars,
+          "promotion_schedule":"daily" if self.daily_promotion else "market_bars",
           "candidate_validation_bars":self.validation_bars,
           "candidate_validation_queue_depth":self.validation_queue.qsize(),
           "candidate_validation_queue_capacity":self.validation_queue.maxsize,
@@ -2462,6 +2590,8 @@ def benchmark_model(model, panel, window=128, repeats=3, device=None):
     args[0]=args[0].to(dtype=next(model.parameters()).dtype)
     extra=({"multiscale_state":torch.as_tensor(panel.multiscale_at(end_index)[None],device=dev)}
            if contextual else {})
+    if contextual:
+        extra.update(OnlineGlobalAgent._daily_history_kwargs(panel,end_index,dev))
     samples=[]
     with torch.inference_mode():
         model(*args,**extra)

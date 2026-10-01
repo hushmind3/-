@@ -6,9 +6,11 @@ without changing the existing checkpoint's backbone or symbol IDs.
 """
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 import math
+import hashlib
 from pathlib import Path
 import sqlite3
 
@@ -16,12 +18,26 @@ import numpy as np
 import pandas as pd
 
 from .paths import ensure_project_path
+from .operating_rules import operating_rules
 
 
 TIMEFRAME_NAMES = ("1m", "3m", "5m", "15m", "60m", "1d", "1w", "1mo")
 TIMEFRAME_FEATURE_NAMES = ("ret1_pct", "ret_window_pct", "range_pct",
                            "log_volume_ratio", "freshness", "coverage")
-MULTISCALE_FEATURE_COUNT = len(TIMEFRAME_NAMES) * len(TIMEFRAME_FEATURE_NAMES)
+LONG_CONTEXT_FEATURE_NAMES=("return_pct","volatility_pct","range_pct",
+                            "log_volume_ratio","freshness","coverage")
+_RULES=operating_rules()
+LONG_CONTEXT_WINDOWS=tuple(int(x) for x in _RULES["daily_context_windows"])
+LONG_CONTEXT_SPECS={**{f"{x}d":("1d",x) for x in LONG_CONTEXT_WINDOWS},
+    f"{_RULES['weekly_context_bars']}w":("1w",int(_RULES['weekly_context_bars'])),
+    f"{_RULES['monthly_context_bars']}mo":("1mo",int(_RULES['monthly_context_bars'])),
+    **_RULES.get("extra_context_windows",{})}
+LONG_CONTEXT_NAMES=tuple(LONG_CONTEXT_SPECS)
+DAILY_ENCODER_BARS=int(_RULES.get("daily_encoder_bars",1300))
+MULTISCALE_FEATURE_ORDER=tuple(f"{scale}:{feature}" for scale in TIMEFRAME_NAMES for feature in TIMEFRAME_FEATURE_NAMES)+tuple(
+    f"{scale}:{feature}" for scale in LONG_CONTEXT_NAMES for feature in LONG_CONTEXT_FEATURE_NAMES)
+BASE_MULTISCALE_FEATURE_COUNT=len(TIMEFRAME_NAMES)*len(TIMEFRAME_FEATURE_NAMES)
+MULTISCALE_FEATURE_COUNT = len(MULTISCALE_FEATURE_ORDER)
 _LOOKBACK_BARS = {"1m": 128, "3m": 64, "5m": 64, "15m": 32,
                   "60m": 4, "1d": 64, "1w": 52, "1mo": 24}
 _MINUTE_NS = 60_000_000_000
@@ -33,10 +49,13 @@ _DURATIONS_NS = {
 }
 
 
-class DailyBarStore:
-    """At most 600 completed daily OHLCV rows per symbol in one SQLite file."""
+_DAILY_ROWS_CACHE=None
+_DAILY_AGGREGATE_CACHE=OrderedDict()
 
-    MAX_BARS_PER_SYMBOL = 600
+class DailyBarStore:
+    """Bounded multi-year completed daily OHLCV rows per symbol."""
+
+    MAX_BARS_PER_SYMBOL = int(_RULES.get("daily_store_bars_per_symbol",1500))
 
     def __init__(self, path: str | Path):
         self.path = ensure_project_path(path, "multiscale daily bars")
@@ -45,8 +64,7 @@ class DailyBarStore:
         self.db.execute("PRAGMA auto_vacuum=INCREMENTAL")
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA journal_size_limit=4194304")
-        page_bytes=int(self.db.execute("PRAGMA page_size").fetchone()[0])
-        self.db.execute(f"PRAGMA max_page_count={max(1,32*1024*1024//page_bytes)}")
+        self.db.execute("PRAGMA max_page_count=4294967294")
         self.db.execute("""CREATE TABLE IF NOT EXISTS daily_bars (
             symbol TEXT NOT NULL, stamp_ns INTEGER NOT NULL,
             open REAL NOT NULL, high REAL NOT NULL, low REAL NOT NULL,
@@ -57,6 +75,10 @@ class DailyBarStore:
     def has_symbol(self, symbol: str) -> bool:
         return self.db.execute(
             "SELECT 1 FROM daily_bars WHERE symbol=? LIMIT 1", (symbol,)).fetchone() is not None
+
+    def needs_long_history(self,symbol):
+        count=self.db.execute("SELECT COUNT(*) FROM daily_bars WHERE symbol=?",(symbol,)).fetchone()[0]
+        return count<DAILY_ENCODER_BARS
 
     def symbol_count(self) -> int:
         return int(self.db.execute("SELECT COUNT(DISTINCT symbol) FROM daily_bars").fetchone()[0])
@@ -95,22 +117,25 @@ class DailyBarStore:
 
 
 def _load_daily(path: Path, symbols: set[str], latest_ns: int) -> dict[str, list[tuple]]:
+    global _DAILY_ROWS_CACHE
     if not path.is_file() or not symbols:
         return {}
     uri = f"{path.resolve().as_uri()}?mode=ro"
     try:
-        with sqlite3.connect(uri, uri=True, timeout=5) as db:
-            rows = db.execute("""SELECT symbol,stamp_ns,open,high,low,close,volume
-                FROM daily_bars WHERE stamp_ns<=? ORDER BY symbol,stamp_ns""",
-                (latest_ns,)).fetchall()
-    except (sqlite3.Error, OSError):
+        signature=(str(path.resolve()),tuple((p.stat().st_size,p.stat().st_mtime_ns)
+            if p.exists() else None for p in (path,Path(str(path)+"-wal"))))
+        if _DAILY_ROWS_CACHE is not None and _DAILY_ROWS_CACHE[0]==signature:
+            return {symbol:[row for row in _DAILY_ROWS_CACHE[1].get(symbol,[]) if row[0]<=latest_ns]
+                for symbol in symbols}
+        with closing(sqlite3.connect(uri,uri=True,timeout=5)) as db:
+            rows=db.execute("SELECT symbol,stamp_ns,open,high,low,close,volume FROM daily_bars ORDER BY symbol,stamp_ns").fetchall()
+    except (sqlite3.Error,OSError):
         return {}
-    out: dict[str, list[tuple]] = defaultdict(list)
-    for symbol, stamp, op, high, low, close, volume in rows:
-        if symbol in symbols:
-            out[symbol].append((int(stamp), float(op), float(high), float(low),
-                                float(close), float(volume)))
-    return out
+    out=defaultdict(list)
+    for symbol,stamp,op,high,low,close,volume in rows:
+        out[symbol].append((int(stamp),float(op),float(high),float(low),float(close),float(volume)))
+    _DAILY_ROWS_CACHE=(signature,out)
+    return {symbol:[row for row in out.get(symbol,[]) if row[0]<=latest_ns] for symbol in symbols}
 
 
 def _aggregate(rows: list[tuple], period: str) -> list[tuple]:
@@ -157,6 +182,8 @@ class MultiscaleFeatures:
     def __init__(self, frame: pd.DataFrame, symbols: list[str], daily_path: Path,
                  latest_timestamp: np.datetime64):
         self.symbols = symbols
+        self.summary_cache={}
+        self.daily_token_cache={}
         latest_ns = int(latest_timestamp.astype("datetime64[ns]").astype(np.int64))
         daily = _load_daily(daily_path, set(symbols), latest_ns)
         self.bars: dict[tuple[str, str], tuple[np.ndarray, list[tuple]]] = {}
@@ -178,9 +205,21 @@ class MultiscaleFeatures:
                                      clean(row.low,close), close, max(0.0,clean(row.volume,0.0))))
             for period in TIMEFRAME_NAMES:
                 rows = intraday if period.endswith("m") and period != "1mo" else daily.get(symbol, [])
-                bars = _aggregate(rows, period) if rows else []
-                self.bars[(symbol, period)] = (
-                    np.asarray([bar[0] for bar in bars], dtype=np.int64), bars)
+                if rows and period in ("1d","1w","1mo"):
+                    key=(symbol,period,hashlib.sha256(np.asarray(rows,dtype=np.float64).tobytes()).digest())
+                    aggregate=_DAILY_AGGREGATE_CACHE.get(key)
+                    if aggregate is None:
+                        bars=_aggregate(rows,period)
+                        aggregate=(np.asarray([bar[0] for bar in bars],dtype=np.int64),bars)
+                        _DAILY_AGGREGATE_CACHE[key]=aggregate
+                        if len(_DAILY_AGGREGATE_CACHE)>1024:
+                            _DAILY_AGGREGATE_CACHE.popitem(last=False)
+                    else:
+                        _DAILY_AGGREGATE_CACHE.move_to_end(key)
+                    self.bars[(symbol,period)]=aggregate
+                else:
+                    bars=_aggregate(rows,period) if rows else []
+                    self.bars[(symbol,period)]=(np.asarray([bar[0] for bar in bars],dtype=np.int64),bars)
 
     def at(self, timestamp: np.datetime64) -> np.ndarray:
         # The one-minute bar stamped T becomes available after its T+1m close.
@@ -210,4 +249,62 @@ class MultiscaleFeatures:
                 start = scale * width
                 output[j, start:start + width] = np.clip(
                     (ret1, ret_window, spread, volume_delta, freshness, coverage), -10.0, 10.0)
+            for k,name in enumerate(LONG_CONTEXT_NAMES):
+                period,lookback=LONG_CONTEXT_SPECS[name]
+                available,bars=self.bars[(symbol,period)]
+                end=int(np.searchsorted(available,asof_ns,side="right"))
+                if not end: continue
+                key=(symbol,name,end)
+                content=self.summary_cache.get(key)
+                if content is None:
+                    recent=bars[max(0,end-lookback):end]
+                    closes=np.asarray([bar[4] for bar in recent],dtype=np.float64)
+                    returns=np.diff(np.log(np.maximum(closes,1e-9)))
+                    content=(100*(closes[-1]/max(closes[0],1e-9)-1),
+                        100*float(returns.std()) if len(returns) else 0,
+                        100*(max(bar[2] for bar in recent)-min(bar[3] for bar in recent))/max(closes[-1],1e-9),
+                        math.log1p(max(0,bars[end-1][5]))-float(np.mean([math.log1p(max(0,bar[5])) for bar in recent])),
+                        min(1,len(recent)/lookback))
+                    self.summary_cache[key]=content
+                freshness=math.exp(-max(0,asof_ns-int(available[end-1]))/_DURATIONS_NS[period])
+                start=BASE_MULTISCALE_FEATURE_COUNT+k*width
+                output[j,start:start+width]=np.clip((*content[:4],freshness,content[4]),-10,10)
         return output
+
+    def daily_at(self,timestamp):
+        """Every available completed day enters the small learnable encoder."""
+        asof=int(timestamp.astype("datetime64[ns]").astype(np.int64))+_MINUTE_NS
+        result=np.zeros((len(self.symbols),DAILY_ENCODER_BARS,6),dtype=np.float16)
+        for j,symbol in enumerate(self.symbols):
+            available,bars=self.bars[(symbol,"1d")]
+            end=int(np.searchsorted(available,asof,side="right"))
+            if not end:
+                continue
+            key=(symbol,end)
+            tokens=self.daily_token_cache.get(key)
+            if tokens is None:
+                rows=bars[max(0,end-DAILY_ENCODER_BARS):end]
+                prices=np.asarray([[row[1],row[2],row[3],row[4]] for row in rows],dtype=np.float64)
+                previous=np.concatenate(([prices[0,3]],prices[:-1,3]))
+                returns=np.clip(100*(prices/np.maximum(previous[:,None],1e-9)-1),-10,10)
+                volume=np.log1p(np.maximum([row[5] for row in rows],0))
+                delta=np.clip(volume-volume.mean(),-10,10)
+                tokens=np.concatenate((returns,delta[:,None],np.ones((len(rows),1))),axis=1).astype(np.float16)
+                self.daily_token_cache[key]=tokens
+            result[j,-len(tokens):]=tokens
+        return result
+
+    def daily_status_at(self,timestamp):
+        asof=int(timestamp.astype("datetime64[ns]").astype(np.int64))+_MINUTE_NS
+        rows=[]
+        for symbol in self.symbols:
+            if symbol.startswith("__PAD__"):
+                continue
+            available,bars=self.bars[(symbol,"1d")]
+            end=int(np.searchsorted(available,asof,side="right"))
+            count=min(end,DAILY_ENCODER_BARS)
+            years=((available[end-1]-available[max(0,end-DAILY_ENCODER_BARS)])/_DAY_NS/365.25 if count else 0)
+            rows.append({"symbol":symbol,"bars":count,"years":float(years),"five_years_available":bool(years>=5)})
+        return {"max_bars":DAILY_ENCODER_BARS,"symbols":rows,
+            "five_year_symbols":sum(row["five_years_available"] for row in rows),
+            "observed_symbols":len(rows),"missing_symbols":sum(row["bars"]==0 for row in rows)}

@@ -23,6 +23,7 @@ from torch.utils.checkpoint import checkpoint
 from .global_transformer import (GLOBAL_FEATURES, GlobalMarketTransformer,
                                  TransformerConfig, stable_id, load_compatible_state_dict)
 from .multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_FEATURE_NAMES
+from .daily_encoder import DailyHistoryEncoder
 
 
 CONTEXT_FEATURES = (
@@ -148,6 +149,11 @@ class ContextConditionedTransformer(nn.Module):
             nn.Linear(MULTISCALE_FEATURE_COUNT, 64), nn.GELU(), nn.Linear(64, 3))
         self.multiscale_value = nn.Sequential(
             nn.Linear(MULTISCALE_FEATURE_COUNT, 64), nn.GELU(), nn.Linear(64, 1))
+        self.daily_history_encoder=DailyHistoryEncoder()
+        self.daily_history_policy=nn.Linear(32,3)
+        self.daily_history_value=nn.Linear(32,1)
+        nn.init.zeros_(self.daily_history_policy.weight);nn.init.zeros_(self.daily_history_policy.bias)
+        nn.init.zeros_(self.daily_history_value.weight);nn.init.zeros_(self.daily_history_value.bias)
         self.portfolio_action = nn.Sequential(
             nn.Linear(16, 64), nn.GELU(), nn.Linear(64, 3))
         self.portfolio_allocation = nn.Sequential(
@@ -174,7 +180,8 @@ class ContextConditionedTransformer(nn.Module):
                 portfolio_state: torch.Tensor | None = None,
                 account_state: torch.Tensor | None = None,
                 return_allocation: bool = False,
-                multiscale_state: torch.Tensor | None = None):
+                multiscale_state: torch.Tensor | None = None,
+                daily_history: torch.Tensor | None = None):
         if self.activation_checkpointing and self.training:
             logits, values = self._checkpointed_backbone(
                 features, symbol_ids, market_ids, asset_ids, valid_mask, time_scale_ids)
@@ -204,6 +211,13 @@ class ContextConditionedTransformer(nn.Module):
                       .sum(dim=-1) > 0).float()
             logits = logits + (self.multiscale_policy(multi)*active[...,None]).to(logits.dtype)
             values = values + (self.multiscale_value(multi).squeeze(-1)*active).to(values.dtype)
+        if daily_history is not None:
+            if daily_history.shape[:2]!=logits.shape[:2]:
+                raise ValueError("daily history symbols must match current model input")
+            memory=self.daily_history_encoder(daily_history)
+            active=(daily_history[...,5].sum(dim=-1)>0).float()
+            logits=logits+(self.daily_history_policy(memory)*active[...,None]).to(logits.dtype)
+            values=values+(self.daily_history_value(memory).squeeze(-1)*active).to(values.dtype)
         if portfolio_state is None and account_state is None:
             if return_allocation:
                 raise ValueError("portfolio_state and account_state are required for allocation output")

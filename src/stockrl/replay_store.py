@@ -21,7 +21,7 @@ import numpy as np
 
 CURRENT_REWARD_VERSION = "symbol_and_portfolio_v5"
 ARRAY_NAMES = ("features", "symbol_ids", "market_ids", "asset_ids", "valid_mask",
-               "market_context", "multiscale_state", "portfolio_state", "account_state")
+               "market_context", "multiscale_state", "portfolio_state", "account_state","daily_history")
 TRAINING_SOURCES = ("paper_account_symbol", "paper_account_portfolio")
 
 
@@ -43,6 +43,7 @@ class GlobalReplayBuffer:
         self.row_ids = {}
         self.window_cache = OrderedDict()
         self.frame_cache = OrderedDict()
+        self.long_history_cache=OrderedDict()
         self._memory_uses = {}
         self._champion_memory_uses = {}
         self.dual_learning=bool(dual_learning)
@@ -88,7 +89,7 @@ class GlobalReplayBuffer:
         names = ("symbol_index", "action", "reward", "timestamp", "source", "regime",
                  "reward_version", "portfolio_reward", "portfolio_transition",
                  "portfolio_value_transition", "forward_return", "behavior_log_prob",
-                 "trade_executed")
+                 "trade_executed", "origin_model")
         return pickle.dumps({name: getattr(exp, name) for name in names
                              if hasattr(exp, name)}, protocol=5)
 
@@ -113,9 +114,16 @@ class GlobalReplayBuffer:
                        ((ref,) for ref in frame_rows))
         arrays = {name: getattr(exp, name, None) for name in ARRAY_NAMES
                   if name not in ("features", "valid_mask", "market_context")}
+        history=arrays.get("daily_history")
+        history_key=None
+        if history is not None:
+            raw=pickle.dumps(history,protocol=5)
+            history_key=hashlib.sha256(raw).hexdigest()
+            db.execute("INSERT OR IGNORE INTO long_history_inputs VALUES(?,?)",(history_key,zlib.compress(raw,1)))
+            arrays["daily_history"]=None
         payload = zlib.compress(pickle.dumps({"encoding": "rolling_frames_v1",
-            "frames": refs, "arrays": arrays}, protocol=5), level=1)
-        db.execute("INSERT INTO windows(key,payload) VALUES(?,?)", (key, payload))
+            "frames": refs, "arrays": arrays,"long_history_key":history_key}, protocol=5), level=1)
+        db.execute("INSERT INTO windows(key,payload,long_history_key) VALUES(?,?,?)", (key, payload,history_key))
         return key
 
     def _read_window(self, db, key):
@@ -146,6 +154,16 @@ class GlobalReplayBuffer:
             arrays["valid_mask"] = np.stack([frame["valid_mask"] for frame in frames])
             arrays["market_context"] = (None if frames[0]["market_context"] is None else
                 np.stack([frame["market_context"] for frame in frames]))
+        history_key=stored.get("long_history_key")
+        if history_key:
+            if history_key not in self.long_history_cache:
+                row=db.execute("SELECT payload FROM long_history_inputs WHERE key=?",(history_key,)).fetchone()
+                if row is None:
+                    raise ValueError("unlearned long-history input is missing")
+                self.long_history_cache[history_key]=pickle.loads(zlib.decompress(row[0]))
+                if len(self.long_history_cache)>2:
+                    self.long_history_cache.popitem(last=False)
+            arrays["daily_history"]=self.long_history_cache[history_key]
         self.window_cache[key] = arrays
         if len(self.window_cache) > 4:
             self.window_cache.popitem(last=False)
@@ -161,8 +179,15 @@ class GlobalReplayBuffer:
         with closing(self._connect()) as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("CREATE TABLE IF NOT EXISTS windows (key TEXT PRIMARY KEY,payload BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS long_history_inputs (key TEXT PRIMARY KEY,payload BLOB NOT NULL)")
+            if "long_history_key" not in {r[1] for r in db.execute("PRAGMA table_info(windows)")}:
+                db.execute("ALTER TABLE windows ADD COLUMN long_history_key TEXT")
             db.execute("CREATE TABLE IF NOT EXISTS experiences (id INTEGER PRIMARY KEY AUTOINCREMENT,window_key TEXT NOT NULL,metadata BLOB NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS pending_records (kind TEXT NOT NULL,record_key TEXT NOT NULL,metadata BLOB NOT NULL,PRIMARY KEY(kind,record_key))")
+            db.execute("CREATE TABLE IF NOT EXISTS market_observations (stamp TEXT PRIMARY KEY,window_key TEXT NOT NULL,payload BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS observer_state (name TEXT PRIMARY KEY,payload BLOB NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS origin_counts (role TEXT PRIMARY KEY,created INTEGER NOT NULL DEFAULT 0)")
+            db.execute("CREATE TABLE IF NOT EXISTS observation_counts (name TEXT PRIMARY KEY,total INTEGER NOT NULL DEFAULT 0)")
             db.execute("CREATE TABLE IF NOT EXISTS frames (key BLOB PRIMARY KEY,payload BLOB NOT NULL,refs INTEGER NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS portfolio_value_stamps (timestamp TEXT PRIMARY KEY)")
             db.execute("CREATE TABLE IF NOT EXISTS daily_learning (day TEXT PRIMARY KEY,enqueued INTEGER NOT NULL DEFAULT 0,first_trained INTEGER NOT NULL DEFAULT 0,completed INTEGER NOT NULL DEFAULT 0,exposures INTEGER NOT NULL DEFAULT 0)")
@@ -225,9 +250,12 @@ class GlobalReplayBuffer:
         for (blob,) in db.execute("SELECT metadata FROM pending_records"):
             metadata=pickle.loads(blob)
             pending_stamps.add(metadata.get("timestamp"))
+            if metadata.get("origin_model")=="candidate":
+                pending_stamps.add("candidate|"+metadata.get("timestamp",""))
             key = metadata.get("_window_key")
             if key:
                 pending_keys.add(key)
+        pending_keys.update(row[0] for row in db.execute("SELECT window_key FROM market_observations"))
         unused = db.execute("SELECT key,payload FROM windows WHERE key NOT IN (SELECT window_key FROM experiences)").fetchall()
         for key, blob in unused:
             if key in pending_keys:
@@ -239,6 +267,7 @@ class GlobalReplayBuffer:
             db.execute("DELETE FROM windows WHERE key=?", (key,))
             self.window_cache.pop(key, None)
         db.execute("DELETE FROM frames WHERE refs<=0")
+        db.execute("DELETE FROM long_history_inputs WHERE key NOT IN (SELECT long_history_key FROM windows WHERE long_history_key IS NOT NULL)")
         for (stamp,) in db.execute("SELECT timestamp FROM portfolio_value_stamps WHERE timestamp NOT IN (SELECT timestamp FROM experiences)").fetchall():
             if stamp not in pending_stamps:
                 db.execute("DELETE FROM portfolio_value_stamps WHERE timestamp=?",(stamp,))
@@ -257,16 +286,22 @@ class GlobalReplayBuffer:
                     for exp in experiences:
                         key=self._store_window(db,exp)
                         symbol_id=int(exp.symbol_ids[exp.symbol_index])
-                        identity=hashlib.sha256(repr((exp.source,exp.timestamp,symbol_id,exp.action)).encode()).hexdigest()
+                        identity_fields=(exp.source,exp.timestamp,symbol_id,exp.action)
+                        if getattr(exp,"origin_model","champion")!="champion":
+                            identity_fields=(*identity_fields,exp.origin_model)
+                        identity=hashlib.sha256(repr(identity_fields).encode()).hexdigest()
                         cursor=db.execute("INSERT OR IGNORE INTO experiences(window_key,metadata,timestamp,day,eligible,experience_key) VALUES(?,?,?,?,?,?)",
                             (key,self._metadata(exp),exp.timestamp,self._day(exp.timestamp),
                              int(self._training_eligible(vars(exp))),identity))
                         if cursor.rowcount:
                             saved.append((exp,int(cursor.lastrowid),key))
+                            origin=getattr(exp,"origin_model","champion")
+                            db.execute("INSERT INTO origin_counts(role,created) VALUES(?,1) ON CONFLICT(role) DO UPDATE SET created=created+1",(origin,))
                             db.execute("INSERT INTO daily_learning(day,enqueued) VALUES(?,1) ON CONFLICT(day) DO UPDATE SET enqueued=enqueued+1",
                                        (self._day(exp.timestamp),))
                             if exp.portfolio_value_transition:
-                                db.execute("INSERT OR IGNORE INTO portfolio_value_stamps VALUES(?)",(exp.timestamp,))
+                                value_stamp=(exp.timestamp if origin=="champion" else origin+"|"+exp.timestamp)
+                                db.execute("INSERT OR IGNORE INTO portfolio_value_stamps VALUES(?)",(value_stamp,))
                     if pending_ack:
                         db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
                 for exp,row_id,key in saved:
@@ -281,11 +316,95 @@ class GlobalReplayBuffer:
                     raise ReplayStorageFull("Replay disk is full; unlearned rows were retained.") from exc
                 raise
 
-    def has_portfolio_value(self,timestamp):
+    def has_portfolio_value(self,timestamp,origin="champion"):
         if not self.journal_path:
-            return any(row.portfolio_value_transition and row.timestamp==timestamp for row in self.items)
+            return any(row.portfolio_value_transition and row.timestamp==timestamp and getattr(row,"origin_model","champion")==origin for row in self.items)
         with self.lock, closing(self._connect()) as db:
-            return db.execute("SELECT 1 FROM portfolio_value_stamps WHERE timestamp=?",(timestamp,)).fetchone() is not None
+            key=timestamp if origin=="champion" else origin+"|"+timestamp
+            return db.execute("SELECT 1 FROM portfolio_value_stamps WHERE timestamp=?",(key,)).fetchone() is not None
+
+    def enqueue_market_observation(self, panel, paper_enabled, uniforms):
+        """One durable FIFO observation; retained until Candidate commits its account."""
+        if not self.journal_path:
+            raise ValueError("mandatory observation needs the shared replay journal")
+        stamp=str(panel.dates[-1])
+        arrays={name:getattr(panel,name,None) for name in ARRAY_NAMES}
+        arrays["features"]=panel.features.astype(np.float16)
+        arrays["valid_mask"]=panel.observed
+        arrays["multiscale_state"]=panel.multiscale.astype(np.float16)
+        arrays["market_context"]=panel.market_context.astype(np.float16) if panel.market_context is not None else None
+        arrays["daily_history"]=getattr(panel,"daily_history",None)
+        metadata={"dates":panel.dates,"symbols":panel.symbols,"groups":panel.groups,
+            "closes":panel.closes,"ever_observed":panel.ever_observed,
+            "paper_enabled":paper_enabled,"uniforms":uniforms}
+        with self.lock, closing(self._connect()) as db, db:
+            if db.execute("SELECT 1 FROM market_observations WHERE stamp=?",(stamp,)).fetchone():
+                return
+            key=self._store_window(db,SimpleNamespace(**arrays))
+            db.execute("INSERT INTO market_observations VALUES(?,?,?)",
+                (stamp,key,zlib.compress(pickle.dumps(metadata,protocol=5),1)))
+            db.execute("INSERT INTO observation_counts VALUES('common',1) ON CONFLICT(name) DO UPDATE SET total=total+1")
+
+    def next_market_observation(self):
+        with self.lock, closing(self._connect()) as db:
+            row=db.execute("SELECT stamp,window_key,payload FROM market_observations ORDER BY stamp LIMIT 1").fetchone()
+            if not row:
+                return None
+            data=pickle.loads(zlib.decompress(row[2])); data.update(self._read_window(db,row[1]))
+            data["observed"]=data.pop("valid_mask");data["multiscale"]=data.pop("multiscale_state")
+            return row[0],data
+
+    def market_observation_stats(self):
+        if not self.journal_path:
+            return {"pending":0,"oldest":None}
+        with self.lock, closing(self._connect()) as db:
+            count,oldest=db.execute("SELECT COUNT(*),MIN(stamp) FROM market_observations").fetchone()
+            totals=dict(db.execute("SELECT name,total FROM observation_counts"))
+            origins=dict(db.execute("SELECT role,created FROM origin_counts"))
+            return {"pending":count,"oldest":oldest,"common":totals.get("common",0),
+                "candidate_completed":totals.get("candidate",0),"experience_origins":origins}
+
+    def commit_observer(self, stamp, account_state, pending):
+        with self.lock, closing(self._connect()) as db, db:
+            self._save_pending_rows(db,"candidate_portfolio",pending)
+            db.execute("INSERT OR REPLACE INTO observer_state VALUES('candidate',?)",
+                (pickle.dumps(account_state,protocol=5),))
+            deleted=db.execute("DELETE FROM market_observations WHERE stamp=?",(stamp,)).rowcount
+            if deleted:
+                db.execute("INSERT INTO observation_counts VALUES('candidate',1) ON CONFLICT(name) DO UPDATE SET total=total+1")
+
+    def save_pending_kind(self,kind,pending):
+        with self.lock, closing(self._connect()) as db, db:
+            self._save_pending_rows(db,kind,pending)
+
+    def set_observer_account(self,account_state):
+        with self.lock, closing(self._connect()) as db, db:
+            db.execute("INSERT OR REPLACE INTO observer_state VALUES('candidate',?)",
+                (pickle.dumps(account_state,protocol=5),))
+
+    def observer_account(self):
+        if not self.journal_path:
+            return None
+        with self.lock, closing(self._connect()) as db:
+            row=db.execute("SELECT payload FROM observer_state WHERE name='candidate'").fetchone()
+            return pickle.loads(row[0]) if row else None
+
+    def _save_pending_rows(self,db,kind,rows):
+        keep=set(); window_by_arrays={}
+        for item in rows:
+            key=f"{item.get('timestamp','')}|{item.get('symbol',item.get('symbol_index',''))}"
+            keep.add(key)
+            metadata={name:value for name,value in item.items() if name not in ARRAY_NAMES}
+            if "features" in item:
+                identity=tuple(id(item.get(name)) for name in ARRAY_NAMES)
+                if identity not in window_by_arrays:
+                    window_by_arrays[identity]=self._store_window(db,SimpleNamespace(**item))
+                metadata["_window_key"]=window_by_arrays[identity]
+            db.execute("INSERT OR REPLACE INTO pending_records VALUES(?,?,?)",
+                (kind,key,pickle.dumps(metadata,protocol=5)))
+        for (key,) in db.execute("SELECT record_key FROM pending_records WHERE kind=?",(kind,)).fetchall():
+            if key not in keep:
+                db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",(kind,key))
 
     def save_pending(self, regular, portfolio):
         if not self.journal_path:

@@ -18,6 +18,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 from .paths import default_runtime_dir, ensure_project_path, validate_model_dir
 from .paper_account import KR_SELL_TAX_ASSUMPTION, SEED_CASH
+from .account_diagnostics import summarize_account, valid_bid_ask_count, input_availability
+from .operating_rules import operating_rules, daily_boundary
+from .state_io import atomic_json
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -95,6 +98,30 @@ def _agent_progress_health(data_path: Path, state_dir: Path,
         "lag_bars": lag_bars,
         "threshold_seconds": 300,
     }
+
+
+def _candidate_progress_health(champion_health: dict, metrics: dict,
+                               process_running: bool) -> dict:
+    """Report compulsory Candidate observation separately from process survival."""
+    latest=_utc_datetime(champion_health.get("latest_feed_timestamp_utc"))
+    cursor=_utc_datetime(metrics.get("candidate_live_last_timestamp"))
+    queue=metrics.get("shared_observation") or {}
+    lag=max(0,int((latest-cursor).total_seconds())) if latest and cursor else None
+    error=metrics.get("candidate_live_error")
+    if not process_running:
+        status,reason="stopped","agent process is stopped"
+    elif error:
+        status,reason="error",str(error)
+    elif lag is None:
+        status,reason="starting","Candidate compulsory observation has not completed yet"
+    elif lag>300:
+        status,reason="stale",f"Candidate compulsory observation trails feed by {lag}s"
+    else:
+        status,reason="healthy","Candidate compulsory observation is within five minutes of feed"
+    return {"status":status,"reason":reason,"lag_seconds":lag,
+        "cursor_timestamp_utc":cursor.isoformat() if cursor else None,
+        "pending":int(queue.get("pending",0)),"oldest_pending":queue.get("oldest"),
+        "threshold_seconds":300}
 
 
 def _market_group(item: dict) -> str:
@@ -200,6 +227,9 @@ class Supervisor:
         self.children: dict[str, subprocess.Popen] = {}
         self.run_requested = False
         self.stopping = False
+        self.daily_cycle_pending=False
+        self.account_reset_lock=threading.Lock()
+        self.operating_rules=operating_rules()
         self.restart_request: tuple[str, str | None] | None = None
         self.log_tail: list[str] = []
         self.log_handles = {}
@@ -341,10 +371,14 @@ class Supervisor:
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
                 "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
-                "--candidate-every", str(self.candidate_every), "--batch-size", "8", "--updates", "8",
+                "--candidate-every", str(self.candidate_every),
+                "--batch-size", str(self.operating_rules["training_batch_size"]),
+                "--updates", str(self.operating_rules["training_optimizer_steps"]),
                 "--fee", str(self.fee), "--horizon", self.horizon,
                 "--device", self._device()]
         seed = self.initial_champion or (self.model_dir / "champion.pt")
+        if self.mode=="live":
+            args.extend(["--instrument-config",str(self.config)])
         if seed.is_file():
             args.extend(["--initial-champion", str(seed)])
         self._spawn(name, args, self.profile / "logs" / "agent.log")
@@ -467,7 +501,11 @@ class Supervisor:
             threading.Thread(target=self._stop_children, daemon=True).start()
         return {"ok": True, "message": "Stopping; learning state is being saved."}
 
-    def reset_paper_accounts(self) -> dict:
+    def reset_paper_accounts(self, daily=False, session_key=None) -> dict:
+        with self.account_reset_lock:
+            return self._reset_paper_accounts(daily,session_key)
+
+    def _reset_paper_accounts(self, daily=False, session_key=None) -> dict:
         """Reset the live Champion and Candidate observer paper ledgers safely."""
         with self.lock:
             if self.stopping:
@@ -477,8 +515,11 @@ class Supervisor:
             profile = self.profile or (self.runtime / self.mode)
 
         if was_running:
+            if daily:
+                (profile/"agent"/"daily_cycle.completed.json").unlink(missing_ok=True)
+                atomic_json({"session_key":session_key},profile/"agent"/"daily_cycle.request")
             self.stop()
-            deadline = time.monotonic() + 45.0
+            deadline = time.monotonic() + 120.0
             while time.monotonic() < deadline:
                 with self.lock:
                     stopped = not self.stopping and not self.run_requested
@@ -487,13 +528,67 @@ class Supervisor:
                 time.sleep(0.1)
             else:
                 return {"error": "Live workers did not stop; paper accounts were not reset."}
+            if daily:
+                completed=_json(profile/"agent"/"daily_cycle.completed.json")
+                if completed.get("session_key")!=session_key:
+                    return {"error":"Daily competition did not finish; paper accounts were not reset."}
 
         state = profile / "agent"
         state.mkdir(parents=True, exist_ok=True)
         from .paper_account import PaperAccount
 
+        old_accounts={role:_json(state/filename) for role,filename in (
+            ("champion","paper_account.json"),("candidate","candidate_observer_account.json"))}
+        if (state/"replay.sqlite3").is_file():
+            from .replay_store import GlobalReplayBuffer
+            replay=GlobalReplayBuffer(journal_path=state/"replay.sqlite3",dual_learning=True)
+            if replay.market_observation_stats()["pending"]:
+                # A forced worker stop may leave compulsory observations awaiting
+                # their original account episode. Do not change that episode.
+                if was_running:
+                    self.start(mode,horizon)
+                return {"error":"Candidate observations are still pending; accounts were not reset. Retry after the observation queue drains."}
+            regular=replay.load_pending("regular"); portfolio=replay.load_pending("portfolio")
+            old_ledger=PaperAccount(state/"paper_account.json",self.fee,0.0)
+            for experience in portfolio:
+                if experience.get("reset_terminal"):
+                    continue
+                experience["reset_terminal"]=True
+                experience["reset_equity"]=old_ledger.normalized_equity()
+                experience["reset_symbol_net_pnl"]=old_ledger.symbol_net_pnl(experience.get("symbol",""))
+                if not experience.get("fill_seen"):
+                    experience["fill_expected"]=False; experience["trade_executed"]=False
+            replay.save_pending(regular,portfolio)
+            observer_pending=replay.load_pending("candidate_portfolio")
+            old_observer=PaperAccount(state/"candidate_observer_account.json",self.fee,0.0)
+            for experience in observer_pending:
+                if experience.get("reset_terminal"):
+                    continue
+                experience["reset_terminal"]=True
+                experience["reset_equity"]=old_observer.normalized_equity()
+                experience["reset_symbol_net_pnl"]=old_observer.symbol_net_pnl(experience.get("symbol",""))
+                if not experience.get("fill_seen"):
+                    experience["fill_expected"]=False;experience["trade_executed"]=False
+            replay.save_pending_kind("candidate_portfolio",observer_pending)
+        cycle=self._daily_cycle_status()
+        completed_utc=datetime.now(timezone.utc).isoformat()
+        record=cycle.get("pending_record") or {"session":cycle["session_key"],"ended_utc":completed_utc,
+            "reason":"scheduled_daily" if daily else "manual",
+            "validation":{key:value for key,value in _json(state/"candidate_validation.json").items()
+                if key in ("status","reason","bars","candidate_score","champion_score","source_candidate_version","source_champion_version")},
+            "accounts":{role:{currency:{key:book.get(key) for key in (
+                "initial_cash","equity","net_pnl","net_return_rate","costs","fees","sell_tax","spread","slippage","trade_count","position_count")}
+                for currency,book in summarize_account(account)["books"].items()}
+                for role,account in old_accounts.items()}}
+        history=(cycle.get("history",[])+[record])[-int(self.operating_rules["daily_history_limit"]):]
+        atomic_json({"session_key":cycle["session_key"],"last_reset_utc":cycle.get("last_reset_utc"),
+            "history":cycle.get("history",[]),"pending_record":record,
+            "pending_session_key":session_key or cycle["current_session_key"]},state/"daily_account_summary.json")
+
         for filename in ("paper_account.json", "candidate_observer_account.json"):
             PaperAccount(state / filename, self.fee, 0.0).reset()
+        if (state/"replay.sqlite3").is_file():
+            replay.set_observer_account(PaperAccount(state/"candidate_observer_account.json",self.fee,0.0).state)
 
         decisions_path = state / "decisions.csv"
         decisions_path.write_text("date,symbol,action,value,p_sell,p_hold,p_buy\n",
@@ -509,7 +604,8 @@ class Supervisor:
         observer = _json(observer_path)
         observer.update({"status": "waiting_for_candidate_update",
                          "last_timestamp": None, "last_decisions": [],
-                         "last_inference_seconds": None, "error": None})
+                         "last_inference_seconds": None, "error": None,
+                         "policy_diagnostics":{},"last_tradable_policy_diagnostics":{}})
         temporary = observer_path.with_suffix(".json.reset.tmp")
         temporary.write_text(json.dumps(observer, ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(temporary, observer_path)
@@ -520,10 +616,14 @@ class Supervisor:
                         "fee_total": 0.0, "slippage_total": 0.0,
                         "paper_account_reset_utc": datetime.now(timezone.utc).isoformat(),
                         "candidate_live_status": "waiting_for_candidate",
-                        "candidate_live_last_timestamp": None})
+                        "candidate_live_last_timestamp": None,
+                        "champion_policy_diagnostics":{},"champion_last_tradable_policy_diagnostics":{},
+                        "candidate_last_tradable_policy_diagnostics":{}})
         temporary = metrics_path.with_suffix(".json.reset.tmp")
         temporary.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
         os.replace(temporary, metrics_path)
+        atomic_json({"session_key":cycle.get("pending_session_key",session_key or cycle["current_session_key"]),
+            "last_reset_utc":completed_utc,"history":history},state/"daily_account_summary.json")
 
         if was_running:
             result = self.start(mode, horizon)
@@ -564,6 +664,17 @@ class Supervisor:
     def _monitor(self):
         while True:
             time.sleep(2)
+            if self.run_requested and not self.stopping and self.mode=="live" and not self.daily_cycle_pending:
+                cycle=self._daily_cycle_status()
+                if cycle["session_key"]!=cycle["current_session_key"] or cycle.get("pending_record"):
+                    self.daily_cycle_pending=True
+                    def run_cycle(key=cycle["current_session_key"],daily=not cycle.get("pending_record") or cycle["pending_record"].get("reason")=="scheduled_daily"):
+                        try:
+                            result=self.reset_paper_accounts(daily=daily,session_key=key)
+                            self._log("Daily competition and account reset: "+str(result))
+                        finally:
+                            self.daily_cycle_pending=False
+                    threading.Thread(target=run_cycle,daemon=True,name="daily-competition").start()
             with self.lock:
                 if not self.run_requested or not self.profile:
                     continue
@@ -583,13 +694,29 @@ class Supervisor:
                     time.sleep(.1)
                     self._launch(name)
 
+    def _daily_cycle_status(self):
+        profile=self.profile or self.runtime/self.mode
+        path=profile/"agent"/"daily_account_summary.json"
+        key,next_reset=daily_boundary(hour=int(self.operating_rules["account_reset_hour_kst"]))
+        saved=_json(path)
+        if not saved:
+            # Enabling the schedule does not pretend old cumulative results
+            # are a complete day, or reset the current account mid-session.
+            saved={"session_key":key,"last_reset_utc":None,"history":[]}
+            atomic_json(saved,path)
+        return {**saved,"current_session_key":key,"next_reset_utc":next_reset,
+            "hour_kst":int(self.operating_rules["account_reset_hour_kst"]),
+            "in_progress":self.daily_cycle_pending,
+            "order":"finish frozen daily competition, then reset observation ledgers"}
+
     def status(self) -> dict:
         with self.lock:
             profile = self.profile or (self.runtime / self.mode)
             state, data = profile / "agent", profile / "market.csv"
             metrics = _json(state / "metrics.json")
             feed_metrics = _json(profile / ("live_feed_metrics.json" if self.mode == "live" else "mock_feed_metrics.json"))
-            instruments=_json(self.config).get("instruments",[])
+            instrument_settings=_json(self.config)
+            instruments=instrument_settings.get("instruments",[])
             path = state / "decisions.csv"
             decision_cache = self._latest_by_symbol(path, "decisions")
             quote_cache = self._latest_by_symbol(data, "quotes")
@@ -620,39 +747,7 @@ class Supervisor:
             paper_account = _json(state / "paper_account.json")
             candidate_observer_account = _json(state / "candidate_observer_account.json")
             candidate_observer_state = _json(state / "candidate_observer_state.json")
-            candidate_observer_books = {}
-            for currency, book in candidate_observer_account.get("books", {}).items():
-                positions = book.get("positions", {})
-                marks = book.get("marks", {})
-                holdings_value = sum(float(position.get("quantity", 0.0)) * float(
-                    marks.get(symbol, position.get("average_cost", 0.0)))
-                    for symbol, position in positions.items())
-                initial_cash = float(book.get("initial_cash", 0.0))
-                equity = float(book.get("cash", 0.0)) + holdings_value
-                unrealized = sum(float(position.get("quantity", 0.0)) * (
-                    float(marks.get(symbol, position.get("average_cost", 0.0)))
-                    - float(position.get("average_cost", 0.0)))
-                    for symbol, position in positions.items())
-                candidate_observer_books[currency] = {
-                    "initial_cash": initial_cash,
-                    "cash": float(book.get("cash", 0.0)),
-                    "net_pnl": equity - initial_cash,
-                    "net_return_rate": ((equity - initial_cash) / initial_cash
-                                        if initial_cash else 0.0),
-                    "realized_pnl": float(book.get("realized_pnl", 0.0)),
-                    "unrealized_pnl": unrealized,
-                    "costs": sum(float(book.get(key, 0.0)) for key in
-                                 ("fees", "sell_tax", "spread", "slippage")),
-                    "trade_count": int(book.get("trade_count", 0)),
-                    "position_count": sum(1 for position in positions.values()
-                                          if float(position.get("quantity", 0.0)) != 0.0),
-                    "positions": [{"symbol": symbol,
-                                   "quantity": float(position.get("quantity", 0.0)),
-                                   "average_cost": float(position.get("average_cost", 0.0)),
-                                   "mark": float(marks.get(symbol, position.get("average_cost", 0.0)))}
-                                  for symbol, position in sorted(positions.items())
-                                  if float(position.get("quantity", 0.0)) != 0.0],
-                }
+            candidate_observer_books = summarize_account(candidate_observer_account)["books"]
             candidate_live_account = {
                 "available": (bool(candidate_observer_books) and
                     candidate_observer_state.get("status") in
@@ -661,8 +756,7 @@ class Supervisor:
                 "last_timestamp": candidate_observer_state.get("last_timestamp",
                     candidate_observer_account.get("last_timestamp")),
                 "candidate_version": candidate_observer_state.get("candidate_version"),
-                "candidate_training": bool(candidate_observer_state.get("candidate_training",
-                    metrics.get("candidate_training"))),
+                "candidate_training": bool(metrics.get("candidate_training")),
                 "last_inference_seconds": candidate_observer_state.get("last_inference_seconds"),
                 "inference_count": int(metrics.get("candidate_live_inference_count", 0)),
                 "inference_seconds_total": float(metrics.get(
@@ -741,9 +835,12 @@ class Supervisor:
                           validation_state.get("status") == "collecting",
                 "bars_current": int(metrics.get("candidate_validation_bars",
                                                  validation_state.get("bars", 0)) or 0),
-                "bars_required": int(metrics.get("candidate_min_validation_dates", 128) or 128),
+                "bars_required": int(self.operating_rules["validation_min_market_minutes"]),
                 "snapshot_version": metrics.get("candidate_validation_snapshot_version",
                                                  validation_state.get("source_candidate_version")),
+                "champion_snapshot_version":validation_state.get("source_champion_version"),
+                "started_utc":validation_state.get("started_utc"),
+                "promotion_schedule":self.operating_rules["promotion_schedule"],
                 "accounts_available": validation_accounts_available,
                 "last_timestamp": (validation_state.get("last_timestamp") or
                                    validation_last_timestamps.get("champion")),
@@ -788,44 +885,18 @@ class Supervisor:
                 "same_action_sampling": "same exploration probability and random draws for each queued market observation",
                 "candidate_snapshot_version": candidate_observer_state.get("candidate_version"),
                 "candidate_skipped_observations": int(metrics.get("candidate_live_queue_drops", 0)),
+                "shared_observation":metrics.get("shared_observation",{}),
                 "last_bar_timestamps_equal": (
                     paper_account.get("last_timestamp") ==
                     candidate_observer_account.get("last_timestamp")),
                 "reason_not_a_fair_score": (
-                    "운영 관찰 계좌는 Candidate 가중치가 바뀐 여러 시점과 일부 건너뛴 관측을 누적합니다. "
-                    "승급 점수는 별도 128분 동일 구간 시험만 사용합니다."),
+                    "운영 계좌는 계속 학습하며 바뀐 여러 모델 버전의 결과를 누적합니다. "
+                    "승급 점수는 별도 고정본의 하루 승급전만 사용합니다."),
             }
-            paper_positions = {}
-            paper_financials = {}
-            for currency, book in paper_account.get("books", {}).items():
-                held = book.get("positions", {})
-                for symbol, position in held.items():
-                    quantity = float(position.get("quantity", 0.0))
-                    if quantity:
-                        paper_positions[f"{currency}:{symbol}"] = {
-                            "symbol": symbol, "currency": currency, "quantity": quantity,
-                            "average_cost": float(position.get("average_cost", 0.0)),
-                            "mark": float(book.get("marks", {}).get(symbol, position.get("average_cost", 0.0)))
-                        }
-                unrealized = sum(
-                    float(position.get("quantity", 0.0)) * (
-                        float(book.get("marks", {}).get(symbol, position.get("average_cost", 0.0)))
-                        - float(position.get("average_cost", 0.0)))
-                    for symbol, position in held.items())
-                paper_financials[currency] = {
-                    "initial_cash": float(book.get("initial_cash", 0.0)),
-                    "cash": float(book.get("cash", 0.0)),
-                    "net_pnl": float(book.get("net_pnl", 0.0)),
-                    "realized_pnl": float(book.get("realized_pnl", 0.0)),
-                    "unrealized_pnl": unrealized,
-                    "trade_count": int(book.get("trade_count", 0)),
-                    "position_count": sum(1 for position in held.values()
-                                           if float(position.get("quantity", 0.0)) != 0.0),
-                    "fees": float(book.get("fees", 0.0)),
-                    "sell_tax": float(book.get("sell_tax", 0.0)),
-                    "spread": float(book.get("spread", 0.0)),
-                    "slippage": float(book.get("slippage", 0.0)),
-                }
+            champion_summary=summarize_account(paper_account)
+            paper_financials=champion_summary["books"]
+            paper_positions={f"{currency}:{position['symbol']}":{**position,"currency":currency}
+                for currency,book in paper_financials.items() for position in book["positions"]}
             probability_counts = {}
             for row in latest_decisions.values():
                 try:
@@ -844,7 +915,7 @@ class Supervisor:
             }
             learning_candidate_every = int(metrics.get("candidate_every", self.candidate_every))
             learning_min_replay = int(metrics.get("candidate_min_replay", 8))
-            learning_min_holdout = int(metrics.get("candidate_min_validation_dates", 128))
+            learning_min_holdout = int(self.operating_rules["validation_min_market_minutes"])
             learning_replay = int(metrics.get("candidate_eligible_replay_count",
                 metrics.get("trainable_replay_count", metrics.get("replay_count", 0))))
             learning_holdout = int(metrics.get("candidate_validation_bars", metrics.get("validation_window_dates", 0)))
@@ -871,7 +942,47 @@ class Supervisor:
                               "reason":"mock agent process status" if agent_process_running else "agent process is stopped",
                               "latest_feed_timestamp_utc":None,"agent_cursor_timestamp_utc":None,
                               "lag_seconds":None,"lag_bars":None,"threshold_seconds":300}
+            agent_health["candidate"]=_candidate_progress_health(agent_health,metrics,agent_process_running)
             agent_running=(agent_process_running and agent_health["status"]=="healthy")
+            candidate_summary=summarize_account(candidate_observer_account)
+            # Compatibility fields and the new view share exactly one ledger formula.
+            paper_financials=champion_summary["books"]
+            candidate_live_account["books"]=candidate_summary["books"]
+            account_observability={
+                "champion":{**champion_summary,
+                    "training":bool(agent_process_running and metrics.get("champion_training")),
+                    "version":metrics.get("champion_training_version",0),
+                    "inference_count":metrics.get("champion_live_inference_count",0),
+                    "last_inference_seconds":metrics.get("champion_live_last_inference_seconds"),
+                    "skipped_observations":0,
+                    "policy":metrics.get("champion_policy_diagnostics",{}),
+                    "last_tradable_policy":metrics.get("champion_last_tradable_policy_diagnostics",{})},
+                "candidate":{**candidate_summary,
+                    "training":bool(agent_process_running and metrics.get("candidate_training")),
+                    "version":candidate_observer_state.get("candidate_version"),
+                    "inference_count":metrics.get("candidate_live_inference_count",0),
+                    "last_inference_seconds":candidate_observer_state.get("last_inference_seconds"),
+                    "skipped_observations":metrics.get("candidate_live_queue_drops",0),
+                    "observer_status":candidate_observer_state.get("status"),
+                    "observer_error":candidate_live_account["error"],
+                    "policy":candidate_observer_state.get("policy_diagnostics",{}),
+                    "last_tradable_policy":candidate_observer_state.get(
+                        "last_tradable_policy_diagnostics",{})},
+                "fee_rate":float(metrics.get("fee_rate",self.fee)),
+                "slippage_bps":float(metrics.get("slippage_bps",1.0)),
+                "krw_sell_tax_assumption":KR_SELL_TAX_ASSUMPTION,
+                "usd_round_trip_cost_rate_before_spread":2*(
+                    float(metrics.get("fee_rate",self.fee))+
+                    float(metrics.get("slippage_bps",1.0))/10000),
+                "quoted_bid_ask_symbols":valid_bid_ask_count(latest_quotes.values()),
+                "quoted_bid_ask_scope":"latest stored quotes; not necessarily fresh",
+                "minute_bar_input":True,"full_orderbook_available":False,
+                "training_experience_source":"both_independent_paper_accounts",
+                "shared_observation":metrics.get("shared_observation",{}),
+                "live_policy_mode":"probability_sampling",
+                "validation_policy_mode":"highest_probability_no_exploration",
+                "reward_horizon":self.horizon,
+                "real_orders_enabled":False}
             feed_metrics["broker_provider"]=provider_status["provider"]
             feed_metrics["provider_environment"]=provider_status["environment"]
             if not feed_running:
@@ -960,6 +1071,17 @@ class Supervisor:
                     "validation_comparison": validation_comparison,
                     "live_account_comparison": live_account_comparison,
                     "candidate_live_account": candidate_live_account,
+                    "daily_cycle":self._daily_cycle_status(),
+                    "universe_expansion":instrument_settings.get("universe_expansion",{}),
+                    "account_observability":account_observability,
+                    "input_availability":{
+                        "configured":len(instruments),"fresh":len(fresh_symbols),
+                        "model_input":metrics.get("model_input_symbol_count"),
+                        "configured_tradable":sum(item.get("asset_class") in ("equity","etf") for item in instruments),
+                        "context_only":sum(item.get("asset_class") not in ("equity","etf") for item in instruments),
+                        "stored":input_availability(latest_quotes.values()),
+                        "fresh_quotes":input_availability(row for symbol,row in latest_quotes.items() if symbol in fresh_symbols),
+                        "second_resolution":{"1s":False,"15s":False,"30s":False}},
                     "real_orders_enabled": False,
                     "physical_gpu": self._physical_gpu(),
                     "logs": "\n".join(status_logs) or "Broker API is not connected; orders remain OFF."}

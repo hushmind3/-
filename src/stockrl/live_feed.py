@@ -271,11 +271,16 @@ class LiveMarketCollector:
         if configured_timeframes!=TIMEFRAME_NAMES:
             raise ValueError(f"decision_timeframes must match the model feature order: {TIMEFRAME_NAMES}")
         self.daily_store=DailyBarStore(self.output.with_name("timeframes.sqlite3"))
+        history_counts=dict(self.daily_store.db.execute(
+            "SELECT symbol,COUNT(*) FROM daily_bars GROUP BY symbol"))
+        # Fill missing/new instruments before refreshing already complete history.
+        self.daily_instruments=sorted(self.instruments,key=lambda item:(
+            history_counts.get(str(item["symbol"]),0)>0,
+            history_counts.get(str(item["symbol"]),0)>=1300))
         self.daily_next_due: dict[str,float]={}
         self.daily_failures: dict[str,int]={}
-        self.daily_pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix="daily-context")
-        self.daily_future=None
-        self.daily_item=None
+        self.daily_pool=ThreadPoolExecutor(max_workers=5,thread_name_prefix="daily-context")
+        self.daily_futures={}
         self.index = AppendOnlyMarketCSV(self.output)
         self.poll_seconds = max(1.0, poll_seconds)
         self.timeout = timeout
@@ -445,35 +450,33 @@ class LiveMarketCollector:
         # derived from these completed bars, never inferred from a 512-minute
         # live cache or from a still-forming higher-timeframe candle.
         daily_fetched=0
-        if self.daily_future is not None and self.daily_future.done():
-            name=str(self.daily_item["symbol"])
+        for name,(item,future) in list(self.daily_futures.items()):
+            if not future.done():
+                continue
             try:
-                daily_fetched=self.daily_store.upsert(self.daily_future.result())
+                daily_fetched+=self.daily_store.upsert(future.result())
                 self.daily_failures[name]=0
                 self.daily_next_due[name]=now+86_400.0
             except Exception as exc:
                 failures=self.daily_failures.get(name,0)+1
                 self.daily_failures[name]=failures
                 self.daily_next_due[name]=now+min(3600.0,60.0*2**min(failures,6))
-                logging.warning("%s daily context failed (%s)",name,exc)
-            self.daily_future=None
-            self.daily_item=None
-        if self.daily_future is None:
-            for item in self.instruments:
-                name=str(item["symbol"])
-                provider=str(item.get("provider","yahoo")).lower()
-                if provider not in ("yahoo","kraken") or now<self.daily_next_due.get(name,0.0):
-                    continue
-                daily_item=dict(item)
-                if provider=="yahoo":
-                    daily_item["interval"]="1d"
-                    daily_item["range"]=("5d" if self.daily_store.has_symbol(name) else "5y")
-                else:
-                    daily_item["interval"]=1440
-                self.daily_item=item
-                self.daily_future=self.daily_pool.submit(
-                    self.provider_adapters[provider].fetch,daily_item)
+                logging.warning("daily history %s failed: %s",name,exc)
+            del self.daily_futures[name]
+        for item in self.daily_instruments:
+            if len(self.daily_futures)>=5:
                 break
+            name=str(item["symbol"]);provider=str(item.get("provider","yahoo")).lower()
+            if name in self.daily_futures or provider not in ("yahoo","kraken") or now<self.daily_next_due.get(name,0.0):
+                continue
+            daily_item=dict(item)
+            if provider=="yahoo":
+                daily_item["interval"]="1d"
+                daily_item["range"]=("10y" if self.daily_store.needs_long_history(name) else "5d")
+            else:
+                daily_item["interval"]=1440
+            future=self.daily_pool.submit(self.provider_adapters[provider].fetch,daily_item)
+            self.daily_futures[name]=(item,future)
         while True:
             try:
                 rows.append(self.broker_rows.get_nowait())
@@ -503,6 +506,9 @@ class LiveMarketCollector:
                    "broker_symbols": self.broker_status.get("symbols", 0),
                    "broker_last_message_utc": self.broker_status.get("last_message_utc"),
                    "broker_nxt_subscribed": self.broker_status.get("nxt_subscribed", 0),
+                   "broker_subscription_mode":self.broker_status.get("subscription_mode"),
+                   "broker_subscription_count":self.broker_status.get("subscription_count",0),
+                   "broker_subscription_limit":self.broker_status.get("subscription_limit",200),
                    "broker_nxt_active_symbols": self.broker_status.get("nxt_active_symbols", 0),
                    "broker_nxt_last_message_utc": self.broker_status.get("nxt_last_message_utc"),
                    "broker_nxt_ticks": self.broker_status.get("nxt_ticks", 0),

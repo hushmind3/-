@@ -1,0 +1,28 @@
+"""Shared, explicit operating settings and the KST daily boundary."""
+import json
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+SEOUL = ZoneInfo("Asia/Seoul")
+
+
+def operating_rules():
+    path=Path(__file__).resolve().parents[2]/"configs"/"online_learning.json"
+    rules=json.loads(path.read_text(encoding="utf-8"))
+    if not 0 <= int(rules["account_reset_hour_kst"]) <= 23:
+        raise ValueError("account_reset_hour_kst must be 0..23")
+    if int(rules["validation_min_market_minutes"]) < 1:
+        raise ValueError("validation_min_market_minutes must be positive")
+    for key in ("training_batch_size","training_optimizer_steps"):
+        if int(rules[key]) < 1:
+            raise ValueError(f"{key} must be positive")
+    return rules
+
+
+def daily_boundary(now=None, hour=7):
+    local=(now or datetime.now(timezone.utc)).astimezone(SEOUL)
+    boundary=local.replace(hour=hour,minute=0,second=0,microsecond=0)
+    if local < boundary:
+        boundary-=timedelta(days=1)
+    return boundary.date().isoformat(), (boundary+timedelta(days=1)).astimezone(timezone.utc).isoformat()

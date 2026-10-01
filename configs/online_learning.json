@@ -1,0 +1,14 @@
+{
+  "training_batch_size": 64,
+  "training_optimizer_steps": 8,
+  "validation_min_market_minutes": 390,
+  "promotion_schedule": "daily",
+  "account_reset_hour_kst": 7,
+  "daily_history_limit": 31,
+  "daily_context_windows": [20, 60, 120, 252, 504, 600],
+  "weekly_context_bars": 104,
+  "monthly_context_bars": 36,
+  "extra_context_windows": {"1260d": ["1d",1260],"260w": ["1w",260],"60mo": ["1mo",60]},
+  "daily_encoder_bars": 1300,
+  "daily_store_bars_per_symbol": 1500
+}

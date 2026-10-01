@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from .state_io import atomic_json
 
@@ -188,7 +189,7 @@ class PaperAccount:
                 position["average_cost"] = (old_cost + notional + fee) / (old_quantity + quantity)
             else:
                 book["positions"][symbol] = {"quantity": quantity,
-                                              "average_cost": (notional + fee) / quantity}
+                    "average_cost": (notional + fee) / quantity,"opened_timestamp":timestamp}
             tax = 0.0
             realized = 0.0
         elif action == "SELL":
@@ -217,11 +218,35 @@ class PaperAccount:
         book["sell_tax"] += tax
         book["spread"] += quantity * price * half_spread
         book["slippage"] += quantity * price * self.slippage
+        statistics=book.setdefault("trade_statistics",{
+            "first_timestamp":timestamp,"buy_count":0,"sell_count":0,
+            "sell_wins":0,"sell_losses":0,"sell_flat":0,"sell_realized_sum":0.0,
+            "holding_count":0,"holding_seconds_sum":0.0,
+            "holding_seconds_min":None,"holding_seconds_max":None})
+        statistics["last_timestamp"]=timestamp
+        statistics["buy_count" if action=="BUY" else "sell_count"]+=1
+        holding_seconds=None
+        if action=="SELL":
+            statistics["sell_wins" if realized>0 else "sell_losses" if realized<0 else "sell_flat"]+=1
+            statistics["sell_realized_sum"]+=realized
+            if position.get("opened_timestamp"):
+                def utc(value):
+                    parsed=datetime.fromisoformat(str(value)[:26].replace("Z","+00:00"))
+                    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed
+                try:
+                    holding_seconds=max(0,(utc(timestamp)-utc(position["opened_timestamp"])).total_seconds())
+                except (ValueError,TypeError):
+                    holding_seconds=None
+                if holding_seconds is not None:
+                    statistics["holding_count"]+=1
+                    statistics["holding_seconds_sum"]+=holding_seconds
+                    for key,fn in (("holding_seconds_min",min),("holding_seconds_max",max)):
+                        statistics[key]=holding_seconds if statistics[key] is None else fn(statistics[key],holding_seconds)
         fill={"date": timestamp, "symbol": symbol,
             "currency": currency, "action": action, "quantity": quantity,
             "price": fill_price, "fee": fee, "sell_tax": tax,
             "realized_pnl": realized, "decision_id": decision_id,
-            "order_date": order_date}
+            "order_date": order_date,"holding_seconds":holding_seconds}
         self.state["fills"].append(fill)
         self.state["fills"] = self.state["fills"][-200:]
         if book["cash"] < -1e-6 or any(p["quantity"] < 0 for p in book["positions"].values()):

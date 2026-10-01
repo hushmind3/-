@@ -167,6 +167,13 @@ def load_compatible_state_dict(model: nn.Module, state: dict, strict: bool = Tru
     migrated = dict(state)
     for key in target:
         if key in migrated:
+            if key in ("multiscale_policy.0.weight","multiscale_value.0.weight") and migrated[key].shape!=target[key].shape:
+                prior=migrated[key]
+                if prior.ndim!=2 or prior.shape[0]!=target[key].shape[0] or prior.shape[1]>target[key].shape[1]:
+                    raise ValueError("incompatible multiscale adapter shape")
+                expanded=torch.zeros_like(target[key])
+                expanded[:,:prior.shape[1]]=prior.to(expanded)
+                migrated[key]=expanded
             continue
         if key.endswith("time_scale_embedding.weight"):
             migrated[key] = torch.zeros_like(target[key])
@@ -174,7 +181,8 @@ def load_compatible_state_dict(model: nn.Module, state: dict, strict: bool = Tru
               key.startswith("portfolio_allocation.") or
               key.startswith("portfolio_cash.") or
               key.startswith("multiscale_policy.") or
-              key.startswith("multiscale_value.")):
+              key.startswith("multiscale_value.") or
+              key.startswith("daily_history_")):
             # Keep adapter hidden-layer initialization; their final layers are
             # zero-initialized by ContextConditionedTransformer.__init__.
             migrated[key] = target[key]
@@ -494,3 +502,11 @@ class GlobalMarketPanel:
         if not self.observed[start,symbol] or not self.observed[end,symbol] or not np.isfinite(a*b) or a<=0:
             return 0.0
         return float(b/a-1)
+
+    def daily_history_at(self,index):
+        self.multiscale_at(index)
+        return self._multiscale_builder.daily_at(self.dates[index])
+
+    def daily_history_status_at(self,index):
+        self.multiscale_at(index)
+        return self._multiscale_builder.daily_status_at(self.dates[index])
