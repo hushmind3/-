@@ -16,6 +16,8 @@ FIELDS = (
     "total_seconds", "compute_seconds", "checkpoint_seconds", "optimizer_state_seconds",
     "replay_acknowledge_seconds", "optimizer_state_resumed", "samples_per_compute_second",
     "samples_per_total_second", "peak_allocated_bytes", "frozen_prefix_cache",
+    "setup_seconds", "batch_load_seconds", "gpu_wait_seconds", "window_forwards",
+    "loss_mean", "loss_min", "loss_max", "gradient_norm_mean", "replay_rows_deleted",
 )
 
 

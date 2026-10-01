@@ -14,6 +14,7 @@ import pickle
 import random
 import sqlite3
 import threading
+import time
 import zlib
 
 import numpy as np
@@ -212,6 +213,7 @@ class GlobalReplayBuffer:
                          int(self._training_eligible(metadata)), row_id))
                 db.execute("CREATE UNIQUE INDEX IF NOT EXISTS experience_key_idx ON experiences(experience_key)")
                 db.execute("CREATE INDEX IF NOT EXISTS experience_fifo_idx ON experiences(eligible,error,training_uses,timestamp,id)")
+                self._ensure_performance_indexes(db)
                 db.execute("INSERT OR IGNORE INTO daily_learning(day,enqueued) SELECT day,COUNT(*) FROM experiences GROUP BY day")
                 db.execute("CREATE TABLE IF NOT EXISTS replay_settings(key TEXT PRIMARY KEY,value TEXT)")
                 if self.dual_learning and not db.execute("SELECT 1 FROM replay_settings WHERE key='dual_learning'").fetchone():
@@ -520,6 +522,16 @@ class GlobalReplayBuffer:
         excluded = [self.row_ids.get(key, key) for key in (exclude_ids or ())]
         return self.pending_batch(batch_size, exclude_row_ids=excluded)
 
+    @staticmethod
+    def _ensure_performance_indexes(db):
+        for name, columns in (
+            ("experience_window_idx", "window_key"),
+            ("experience_successor_idx", "bootstrap_window_key"),
+            ("experience_timestamp_idx", "timestamp"),
+            ("experience_champion_fifo_idx", "eligible,error,champion_training_uses,timestamp,id"),
+        ):
+            db.execute(f"CREATE INDEX IF NOT EXISTS {name} ON experiences({columns})")
+
     def acknowledge_training(self, uses_by_id, passes=1, learner="candidate"):
         """Consume only after every required learner confirms its checkpoint."""
         if learner not in ("candidate","champion"):
@@ -534,8 +546,18 @@ class GlobalReplayBuffer:
         completed = 0
         deleted_ids=set()
         with self.lock, closing(self._connect()) as db, db:
-            for row_id, target in uses_by_id.items():
-                row = db.execute("SELECT training_uses,champion_training_uses,day FROM experiences WHERE id=?", (int(row_id),)).fetchone()
+            targets = {int(row_id): int(target) for row_id, target in uses_by_id.items()}
+            rows = {}
+            keys = list(targets)
+            for offset in range(0, len(keys), 500):
+                chunk = keys[offset:offset+500]
+                marks = ",".join("?" for _ in chunk)
+                rows.update((row[0], row[1:]) for row in db.execute(
+                    f"SELECT id,training_uses,champion_training_uses,day FROM experiences WHERE id IN ({marks})", chunk))
+            updates = []
+            daily = {}
+            for row_id, target in targets.items():
+                row = rows.get(row_id)
                 previous=(row[1] if learner=="champion" else row[0]) if row else 0
                 if row is None or int(target) <= previous:
                     continue
@@ -545,14 +567,20 @@ class GlobalReplayBuffer:
                 else: candidate_uses=int(target)
                 after=min(candidate_uses,champion_uses) if self.dual_learning else candidate_uses
                 done=int(after>=passes)
-                db.execute("UPDATE daily_learning SET first_trained=first_trained+?,completed=completed+?,exposures=exposures+? WHERE day=?",
-                    (int(before==0 and after>0),done,int(target)-previous,day))
-                db.execute(f"UPDATE experiences SET {column}=? WHERE id=?", (int(target), int(row_id)))
+                counters = daily.setdefault(day, [0, 0, 0])
+                counters[0] += int(before==0 and after>0)
+                counters[1] += done
+                counters[2] += int(target)-previous
+                updates.append((int(target), int(row_id)))
                 if done:
-                    db.execute("DELETE FROM experiences WHERE id=?", (int(row_id),))
                     deleted_ids.add(int(row_id))
                     completed += 1
-            self._collect_unused_windows(db)
+            db.executemany(f"UPDATE experiences SET {column}=? WHERE id=?", updates)
+            db.executemany("UPDATE daily_learning SET first_trained=first_trained+?,completed=completed+?,exposures=exposures+? WHERE day=?",
+                ((*values, day) for day, values in daily.items()))
+            if completed:
+                db.executemany("DELETE FROM experiences WHERE id=?", ((row_id,) for row_id in deleted_ids))
+                self._collect_unused_windows(db)
         if completed:
             self.items = deque((row for row in self.items if getattr(row,"_replay_row_id",None) not in deleted_ids),maxlen=min(self.capacity,128))
             self._prune_row_ids()
@@ -562,12 +590,20 @@ class GlobalReplayBuffer:
     def compact(self):
         if not self.journal_path:
             return
+        started = time.monotonic()
         with self.lock, closing(self._connect()) as db:
-            db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
             free = db.execute("PRAGMA freelist_count").fetchone()[0]
             page = db.execute("PRAGMA page_size").fetchone()[0]
-            if free * page > 2 * 1024 * 1024:
+            total = db.execute("PRAGMA page_count").fetchone()[0]
+            empty = not db.execute("SELECT 1 FROM experiences LIMIT 1").fetchone()
+            due = started-getattr(self, "_last_vacuum_time", -300) >= 300
+            worthwhile = free*page >= 64*1024*1024 and free >= total//4
+            # Completed rows are already deleted. SQLite reuses their free pages.
+            # Do not rewrite the entire growing DB for every 256-row batch.
+            if free*page > 2*1024*1024 and (empty or (due and worthwhile)):
+                db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
                 db.execute("VACUUM")
+                self._last_vacuum_time = time.monotonic()
 
     def finalize_completed(self, passes):
         """Apply a changed pass target only to already checkpoint-confirmed rows."""

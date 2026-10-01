@@ -203,6 +203,8 @@ Dear teachers, please send your feedback to [**hushmind@gmail.com**](mailto:hush
 - 두 모델 모두 저장까지 완료한 경험만 삭제합니다. 미학습 경험은 그대로 유지합니다.
 - 실행 중에는 모델별 Adam 누적 상태를 CPU RAM에 유지해 다음 배치에 이어 씁니다. 승급 등으로 모델 버전이 달라지면 이전 optimizer 상태를 재사용하지 않습니다. 프로세스 재시작 시에는 optimizer 상태를 새로 시작합니다.
 - `python scripts/measure_learning_runtime.py --rounds 4`는 실제 완료된 배치를 모델별 4회 관찰하고 종료합니다. 추가 학습이나 모드 변경 없이 계산·저장·replay 반영 시간과 처리량을 JSON 파일 하나에 갱신합니다. 기본 파일은 `runtime/learning_measurement.json`이며 `--output`으로 변경할 수 있습니다.
+- `python scripts/tune_learning_throughput.py --apply-best`는 저장 묶음 1·2·4·8회를 자동 비교합니다. 설정별 준비 회차 후 두 모델이 각각 4,096건을 학습한 계산·저장·DB 반영 시간, GPU 대기, VRAM, loss와 gradient norm을 기록합니다. 오류나 수동 설정 변경이 있으면 중단하며, 정상 완료하면 저장까지 포함한 처리량이 가장 높은 설정을 적용합니다. 실시간 시장 입력과 추론 부하는 달라질 수 있으므로 이 결과를 모든 상황의 절대적인 최적값으로 보지 않습니다.
+- 완료한 replay 행은 즉시 삭제하되, DB 전체 `VACUUM`은 매 배치 실행하지 않습니다. 빈 페이지는 다음 입력에서 재사용하고, 큰 정리 이득이 있거나 경험이 모두 소진되면 파일을 압축합니다. 미학습 경험을 용량 때문에 버리지 않습니다.
 
 ## 실행 중 수정과 GPU 학습 최적화
 

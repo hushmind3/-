@@ -15,6 +15,7 @@ from .data import Experience, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON
 from .losses import shared_experience_losses
 from .prefix_cache import FrozenPrefixCache, prefix_input, install_prefix_forward
 from .optimizer_state import restore_optimizer, remember_optimizer
+from .replay_updates import install_replay_updates
 
 class _LearningMixin:
     def _refresh_runtime_update_driver(self):
@@ -145,7 +146,11 @@ class _LearningMixin:
     def _learning_gpu_segment(self,role,durations):
         """Release CUDA after one shared-window backward or optimizer operation."""
         self.metrics["learning_wait_reason"]=self._live_learning_wait_reason()
+        wait_started=time.perf_counter()
         with self._gpu_work(role):
+            learner=role.split("_",1)[0]
+            self.metrics[learner+"_learning_gpu_wait_seconds_round"]=float(
+                self.metrics.get(learner+"_learning_gpu_wait_seconds_round",0))+time.perf_counter()-wait_started
             self.metrics["learning_wait_reason"]=None
             started=time.perf_counter()
             if self.device.type=="cuda":
@@ -384,8 +389,13 @@ class _LearningMixin:
     def _train_model(self,learner):
         self._refresh_runtime_update_driver()
         install_prefix_forward()
+        install_replay_updates(self.replay)
         if not hasattr(self,"_frozen_prefix_cache"):
             self._frozen_prefix_cache=FrozenPrefixCache()
+        # Retain current/successor encodings for both independent accounts.
+        # Each insertion still checks available VRAM before keeping a tensor.
+        self._frozen_prefix_cache.max_bytes=512*1024*1024
+        self._frozen_prefix_cache.max_entries=8
         metrics=TrainingMetrics(self.metrics,learner)
         from datetime import datetime, timezone
         training_started=time.perf_counter()
@@ -399,6 +409,8 @@ class _LearningMixin:
         metrics["last_candidate_peak_reserved_bytes"]=None
         self.metrics[learner+"_learning_gpu_segments"]=0
         self.metrics[learner+"_learning_gpu_segment_seconds_max"]=0.0
+        self.metrics[learner+"_learning_gpu_wait_seconds_round"]=0.0
+        setup_started=time.perf_counter()
         with self.lock:
             source_champion=self.champion
         with self._gpu_work(learner+"_learning_setup"):
@@ -425,6 +437,7 @@ class _LearningMixin:
         metrics["candidate_optimizer_state_resumed"]=restore_optimizer(self,learner,opt,model_version)
         metrics["candidate_optimizer_backend"]="fused_adamw" if self.device.type=="cuda" else "adamw"
         metrics["candidate_loss_backend"]="shared_window_vectorized"
+        setup_seconds=time.perf_counter()-setup_started
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
             torch.cuda.reset_peak_memory_stats(self.device)
@@ -432,6 +445,7 @@ class _LearningMixin:
         else:
             training_baseline_allocated=0
         elapsed=[]; compute_elapsed=[]
+        batch_load_seconds=0.0; all_losses=[]; gradient_norms=[]
         candidate_samples=0; candidate_sample_keys=set(); used_experiences=[]
         timeframe_samples=dict.fromkeys(TIMEFRAME_NAMES,0)
         long_context_samples=dict.fromkeys(LONG_CONTEXT_NAMES,0)
@@ -449,8 +463,10 @@ class _LearningMixin:
         for update_ix in range(self.updates_per_candidate):
             if self.stop.is_set() or not self._wait_for_live_inference():
                 break
+            load_started=time.perf_counter()
             batch=self.replay.pending_batch(self.batch_size,self.candidate_replay_passes,
                 exclude_row_ids=sampled_ids,learner=learner)
+            batch_load_seconds+=time.perf_counter()-load_started
             if not batch: break
             sampled_ids.update(self.replay.row_ids_for(batch))
             malformed=[e for e in batch if (
@@ -508,10 +524,11 @@ class _LearningMixin:
             if not valid_samples:
                 continue
             with self._learning_gpu_segment(learner+"_learning_step",step_segments):
-                nn.utils.clip_grad_norm_(trainable_parameters,1.0,foreach=True)
+                gradient_norm=nn.utils.clip_grad_norm_(trainable_parameters,1.0,foreach=True)
                 with self.candidate_model_lock:
                     opt.step()
                     if self.device.type=="cuda": torch.cuda.synchronize(self.device)
+                gradient_norms.append(float(gradient_norm.detach().cpu()))
             compute_elapsed.append(sum(step_segments))
             candidate_samples+=valid_samples
             metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in successful_batch)
@@ -532,6 +549,7 @@ class _LearningMixin:
                             if column<np.shape(scale_input)[-1] and np.any(np.asarray(scale_input)[:,column]>0):
                                 long_context_samples[name]+=1
             metrics["update_losses"].append(float(np.mean(loss_values)))
+            all_losses.extend(loss_values)
             metrics["update_losses"]=metrics["update_losses"][-2000:]
             if self.device.type=="cuda":
                 torch.cuda.synchronize(self.device)
@@ -676,6 +694,15 @@ class _LearningMixin:
             "goal_bonus_samples":sum(bool(e.goal_reward_points or e.portfolio_goal_reward_points) for e in used_experiences),
             "legacy_short_reward_samples":sum(not e.credit_observations and not e.source.startswith("teacher") for e in used_experiences),
             "total_seconds":metrics["last_candidate_total_seconds"],
+            "setup_seconds":setup_seconds,
+            "batch_load_seconds":batch_load_seconds,
+            "gpu_wait_seconds":self.metrics.get(learner+"_learning_gpu_wait_seconds_round",0.0),
+            "window_forwards":metrics.get("candidate_window_forwards_current",0),
+            "loss_mean":float(np.mean(all_losses)) if all_losses else None,
+            "loss_min":float(np.min(all_losses)) if all_losses else None,
+            "loss_max":float(np.max(all_losses)) if all_losses else None,
+            "gradient_norm_mean":float(np.mean(gradient_norms)) if gradient_norms else None,
+            "replay_rows_deleted":consumed,
             "checkpoint_seconds":checkpoint_seconds,
             "optimizer_state_seconds":optimizer_state_seconds,
             "replay_acknowledge_seconds":acknowledge_seconds,

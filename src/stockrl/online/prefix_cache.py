@@ -10,7 +10,7 @@ from .data import ONLINE_TRAINABLE_BLOCKS
 
 
 class FrozenPrefixCache:
-    def __init__(self, max_bytes=256*1024*1024, max_entries=2):
+    def __init__(self, max_bytes=512*1024*1024, max_entries=8):
         self.max_bytes=max_bytes;self.max_entries=max_entries
         self.entries=OrderedDict();self.bytes=0;self.hits=0;self.misses=0
 
