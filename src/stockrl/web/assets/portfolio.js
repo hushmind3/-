@@ -10,7 +10,7 @@ function renderAccountDiagnostics(d){
   const active=Boolean(d.agent_process_running),enabled=Boolean(d.paper_enabled);
   const badge=isChampion?"championLiveBadge":"candidateLiveBadge";
   const error=account.observer_error||health?.status==="error";
-  text(badge,error?"판단 오류":!active?"정지 · 마지막 기록":health?.status==="stale"?"시세보다 "+Math.ceil(num(health.lag_seconds)/60)+"분 지연":enabled?"판단·가상매매":"관찰만");
+  text(badge,error?"판단 오류":!active?"정지 · 마지막 기록":d.observe_enabled===false?"판단 OFF · 계좌 평가 유지":health?.status==="stale"?"시세보다 "+Math.ceil(num(health.lag_seconds)/60)+"분 지연":enabled?"판단·가상매매":"관찰만");
   $(badge).className="pill "+(error?"danger":health?.status==="stale"?"warn":active&&health?.status==="healthy"?"good":"");
   const currentHasTrades=num(currentPolicy.observed_tradable_symbols)>0;
   const policy=currentHasTrades?currentPolicy:account.last_tradable_policy||{};
