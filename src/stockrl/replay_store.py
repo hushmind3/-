@@ -232,7 +232,7 @@ class GlobalReplayBuffer:
                 self._decode(db, row)
 
     def _decode(self, db, row):
-        from .global_online import Experience
+        from .online.data import Experience
         row_id, key, blob, uses = row
         metadata = pickle.loads(blob)
         if metadata.get("portfolio_transition") and "portfolio_value_transition" not in metadata:

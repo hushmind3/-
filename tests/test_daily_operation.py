@@ -22,6 +22,18 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_extracted_contextual_benchmark_preserves_public_entrypoint(self):
+        from stockrl.global_online import benchmark_model
+        panel=Panel()
+        class ContextPolicy(FixedPolicy):
+            _stockrl_uses_market_context=True
+            def forward(self,*args,**kwargs):
+                batch,_,symbols,_=args[0].shape
+                return torch.zeros(batch,symbols,3),torch.zeros(batch,symbols)
+        result=benchmark_model(ContextPolicy(),panel,window=4,repeats=1,device=torch.device("cpu"))
+        self.assertEqual(result["inference_repeats"],1)
+        self.assertGreaterEqual(result["inference_seconds_p50"],0)
+
     def test_context_quotes_do_not_trigger_stock_policy(self):
         panel=Panel()
         panel.observed[2,0]=False
