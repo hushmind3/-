@@ -80,7 +80,7 @@ function renderDualLearning(d){
  const status=!d.running?"시스템 정지 · 저장된 마지막 학습 상태":!learningOn?"replay 학습 중지 · 미학습 "+whole(backlog)+"건 보존":activeRole?(activeRole==="champion"?"Champion":"Candidate")+" 학습 중 · 다른 모델은 다음 회차 대기":backlog?"학습 가능한 경험 "+whole(backlog)+"건 · 다음 회차 준비":"학습 가능한 미학습 0건 · 새 결과 경험 대기";
  text("dualLearningStatus",status);
  badge("learningState",!d.running?"정지":!learningOn?"학습 OFF":activeRole?"학습 중":backlog?"회차 준비":"새 경험 대기",!d.running?"bad":activeRole?"blue":"");
- badge("candidateBadge",!d.running?"정지":!learningOn?"학습 OFF · 경험 보존":activeRole?"두 모델 순차 학습":backlog?"학습 회차 준비":m.candidate_validation_active?"미학습 0 · 대결 진행":"새 경험 대기",activeRole?"blue":"");
+ badge("candidateBadge",!d.running?"정지":!learningOn?"학습 OFF · 경험 보존":activeRole?"두 모델 순차 학습":backlog?"학습 회차 준비":m.candidate_validation_active&&d.observe_enabled===false?"\uC2B9\uAE09\uC804 \uC77C\uC2DC\uC815\uC9C0 \u00B7 \uD310\uB2E8 OFF":m.candidate_validation_active?"\uBBF8\uD559\uC2B5 0 \u00B7 \uB300\uACB0 \uC9C4\uD589":"\uC0C8 \uACBD\uD5D8 \uB300\uAE30",activeRole?"blue":"");
  const health=d.agent_health||{},candidateHealth=health.candidate||{};
  text("learningFlowHealth",status+(activeRole?" · optimizer "+whole(m[activeRole+"_optimizer_steps_current"])+" / "+whole(m[activeRole+"_optimizer_steps_target"])+"회":"")+" | 평가 대기 "+whole(m.replay_pending_count??m.pending_experiences)+"건 | 대결 "+whole(m.candidate_validation_bars)+" / "+whole(m.candidate_min_validation_dates||390)+"개 시장 분 | Champion 지연 "+num(health.lag_seconds).toFixed(0)+"초 · Candidate 지연 "+num(candidateHealth.lag_seconds).toFixed(0)+"초");
  for(const role of ["champion","candidate"]){
