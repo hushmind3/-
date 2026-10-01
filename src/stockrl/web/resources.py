@@ -6,8 +6,7 @@ DASHBOARD_PATH = Path(__file__).resolve().parents[1] / "web_dashboard.html"
 ASSET_DIR = Path(__file__).with_name("assets")
 PAGE = DASHBOARD_PATH.read_text(encoding="utf-8")
 
-ASSET_NAMES = frozenset(("dashboard.css", "core.js", "controls.js", "accounts.js",
-                        "learning.js", "portfolio.js", "operations.js", "startup.js"))
+ASSET_NAMES = frozenset(("dashboard.css", "app.js", "dashboard.js", "controls.js", "details.js"))
 
 
 def dashboard_asset(route):
