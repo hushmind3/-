@@ -197,6 +197,13 @@ ITCH, FI-2010, FinRL, TradeMaster, MacroHFT 등 공개 시장 데이터와 연�
 
 Dear teachers, please send your feedback to [**hushmind@gmail.com**](mailto:hushmind@gmail.com)
 
+## 연속 학습과 자동 측정
+
+- 현재 저장 묶음은 optimizer **1회**입니다. 준비된 경험을 최대 256건까지 학습한 뒤 checkpoint를 저장하고 해당 모델의 완료를 replay에 반영합니다. 256건이 다 모일 때까지 기다리지 않습니다.
+- 두 모델 모두 저장까지 완료한 경험만 삭제합니다. 미학습 경험은 그대로 유지합니다.
+- 실행 중에는 모델별 Adam 누적 상태를 CPU RAM에 유지해 다음 배치에 이어 씁니다. 승급 등으로 모델 버전이 달라지면 이전 optimizer 상태를 재사용하지 않습니다. 프로세스 재시작 시에는 optimizer 상태를 새로 시작합니다.
+- `python scripts/measure_learning_runtime.py --rounds 4`는 실제 완료된 배치를 모델별 4회 관찰하고 종료합니다. 추가 학습이나 모드 변경 없이 계산·저장·replay 반영 시간과 처리량을 JSON 파일 하나에 갱신합니다. 기본 파일은 `runtime/learning_measurement.json`이며 `--output`으로 변경할 수 있습니다.
+
 ## 실행 중 수정과 GPU 학습 최적화
 
 - HTML/CSS/JS 수정은 브라우저 새로고침으로 적용합니다.

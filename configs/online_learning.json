@@ -1,6 +1,6 @@
 {
   "training_batch_size": 256,
-  "training_optimizer_steps": 8,
+  "training_optimizer_steps": 1,
   "preopen_learning_priority": true,
   "reward_credit_observations": 60,
   "reward_credit_seconds": 3600,

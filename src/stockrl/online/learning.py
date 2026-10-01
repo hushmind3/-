@@ -14,6 +14,7 @@ from .checkpoint import load_model, save_model
 from .data import Experience, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, TrainingMetrics
 from .losses import shared_experience_losses
 from .prefix_cache import FrozenPrefixCache, prefix_input, install_prefix_forward
+from .optimizer_state import restore_optimizer, remember_optimizer
 
 class _LearningMixin:
     def _refresh_runtime_update_driver(self):
@@ -421,6 +422,7 @@ class _LearningMixin:
             trainable_parameters,lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8,
             **({"fused":True} if self.device.type=="cuda" else {"foreach":False}))
+        metrics["candidate_optimizer_state_resumed"]=restore_optimizer(self,learner,opt,model_version)
         metrics["candidate_optimizer_backend"]="fused_adamw" if self.device.type=="cuda" else "adamw"
         metrics["candidate_loss_backend"]="shared_window_vectorized"
         if self.device.type=="cuda":
@@ -603,8 +605,9 @@ class _LearningMixin:
         uses={getattr(e,"_replay_row_id",self.replay.row_ids.get(id(e),id(e))):
               int(getattr(e,"_replay_training_uses",0))+1 for e in used_experiences}
         replay_commit={"uses":uses,"passes":self.candidate_replay_passes,"learner":learner,
-                       "model_version":model_version+len(elapsed),
-                       "candidate_version":model_version+len(elapsed)}
+                        "model_version":model_version+len(elapsed),
+                        "candidate_version":model_version+len(elapsed)}
+        checkpoint_started=time.perf_counter()
         if learner=="champion":
             staged=self.state_dir/"champion.learning.next"
             try:
@@ -628,7 +631,13 @@ class _LearningMixin:
             save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,
                        temp_dir=self.state_dir,replay_commit=replay_commit)
             candidate._stockrl_replay_commit=replay_commit
+        checkpoint_seconds=time.perf_counter()-checkpoint_started
+        optimizer_state_started=time.perf_counter()
+        remember_optimizer(self,learner,opt,replay_commit["model_version"])
+        optimizer_state_seconds=time.perf_counter()-optimizer_state_started
+        acknowledge_started=time.perf_counter()
         consumed=self.replay.acknowledge_training(uses,self.candidate_replay_passes,learner=learner)
+        acknowledge_seconds=time.perf_counter()-acknowledge_started
         if learner=="candidate":
             with self.candidate_model_lock:
                 self.candidate_version=replay_commit["model_version"]
@@ -667,6 +676,10 @@ class _LearningMixin:
             "goal_bonus_samples":sum(bool(e.goal_reward_points or e.portfolio_goal_reward_points) for e in used_experiences),
             "legacy_short_reward_samples":sum(not e.credit_observations and not e.source.startswith("teacher") for e in used_experiences),
             "total_seconds":metrics["last_candidate_total_seconds"],
+            "checkpoint_seconds":checkpoint_seconds,
+            "optimizer_state_seconds":optimizer_state_seconds,
+            "replay_acknowledge_seconds":acknowledge_seconds,
+            "optimizer_state_resumed":metrics["candidate_optimizer_state_resumed"],
             "compute_seconds":metrics["last_candidate_compute_seconds"],
             "samples_per_compute_second":candidate_samples/max(metrics["last_candidate_compute_seconds"],1e-9),
             "samples_per_total_second":candidate_samples/max(metrics["last_candidate_total_seconds"],1e-9),
