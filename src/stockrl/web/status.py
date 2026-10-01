@@ -173,9 +173,21 @@ class _StatusMixin:
                         origins=dict(db.execute("SELECT role,created FROM origin_counts"))
                     metrics["shared_observation"]={"pending":pending,"oldest":oldest,
                         "common":totals.get("common",0),"candidate_completed":totals.get("candidate",0),
-                        "experience_origins":origins}
-                except sqlite3.Error:
-                    pass  # Startup or schema migration: retain last known values.
+                        "experience_origins":origins,"source":"live_db",
+                        "updated_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),
+                        "read_error":None}
+                except sqlite3.Error as exc:
+                    shared=dict(metrics.get("shared_observation") or {})
+                    shared.update(source="last_saved_metrics",
+                        updated_utc=shared.get("updated_utc") or metrics.get("last_update_utc"),
+                        read_error=type(exc).__name__)
+                    metrics["shared_observation"]=shared
+            else:
+                shared=dict(metrics.get("shared_observation") or {})
+                shared.update(source="replay_db_missing",
+                    updated_utc=shared.get("updated_utc") or metrics.get("last_update_utc"),
+                    read_error="replay database not found")
+                metrics["shared_observation"]=shared
             if candidate_observer_state.get("observation_profile"):
                 metrics["candidate_live_observation_profile"]=candidate_observer_state["observation_profile"]
             observer_state_path=state/"candidate_observer_state.json"
