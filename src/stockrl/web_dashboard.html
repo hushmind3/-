@@ -26,6 +26,13 @@
           ><span class="clock" id="clock">--:-- KST</span>
         </div>
       </header>
+      <a
+        href="#learning"
+        class="learning-glance"
+        id="learningAtGlance"
+        aria-label="현재 학습 상태 보기"
+        >학습 상태 확인 중</a
+      >
       <nav class="sidebar" aria-label="작업 화면">
         <div class="nav-label">운용 에이전트</div>
         <a href="#control" data-page="overview">운영 · 계좌</a
@@ -564,6 +571,26 @@
                 <h3>경험 처리 · 두 모델 학습</h3>
                 <span class="pill" id="learningState">대기</span>
               </div>
+              <section
+                class="learning-situation"
+                aria-label="지금 학습 상태"
+                aria-live="polite"
+              >
+                <strong id="learningSituationTitle"
+                  >실제 학습 상태 확인 중</strong
+                >
+                <p id="learningSituationReason">
+                  현재 처리와 대기 이유를 불러옵니다.
+                </p>
+                <p>
+                  <b>다음 학습</b>
+                  <span id="learningSituationNext">확인 중</span>
+                </p>
+                <p>
+                  <b>마지막 완료</b>
+                  <span id="learningSituationLast">확인 중</span>
+                </p>
+              </section>
               <div class="learning-lifecycle" id="learningLifecycle">
                 <div>
                   <span>① 결과 평가 중</span><strong id="flowPending">—</strong
@@ -1586,7 +1613,8 @@
           </section>
         </div>
         <footer class="footer">
-          Continual Trading Agent실 · 모든 시각은 한국 시간(KST) · 실제 주문 OFF
+          Continual Trading Agent 운영실 · 모든 시각은 한국 시간(KST) · 실제
+          주문 OFF
         </footer>
       </main>
     </div>

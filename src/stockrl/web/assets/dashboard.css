@@ -1770,3 +1770,41 @@ body {
     font-size: 24px;
   }
 }
+
+/* Plain explanation is visible before lifecycle counters, on every state. */
+.learning-glance {
+  grid-column: 1 / -1;
+  display: block;
+  color: #30486a;
+  background: #eaf1fc;
+  border: 1px solid #cedbf0;
+  border-radius: 10px;
+  padding: 9px 14px;
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.learning-situation {
+  background: #f2f7ff;
+  border: 1px solid #cbdaf2;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+  color: #30435f;
+}
+.learning-situation > strong {
+  display: block;
+  font-size: 18px;
+  color: #213c63;
+  margin-bottom: 8px;
+}
+.learning-situation p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 6px;
+}
+.learning-situation p b {
+  color: #263c59;
+  margin-right: 6px;
+}

@@ -1518,39 +1518,159 @@ function renderExperienceFlow(d) {
           "건"
         : ""),
   );
+  renderLearningSituation(d);
+}
+
+// Explain the same measured state everywhere; no inference or control requests.
+function learningSituation(d) {
+  if (d.status_unavailable)
+    return {
+      title: "서버 연결 끊김 · 학습 상태 미확인",
+      reason: "최신 상태를 받을 수 없어 현재 학습 여부를 확인할 수 없습니다.",
+      next: "5초마다 연결을 다시 확인합니다. 마지막 완료 내역은 이전에 확인된 기록입니다.",
+      tone: "warn",
+    };
+  const m = d.metrics || {};
+  const known = (v) => v != null && Number.isFinite(Number(v));
+  const eligible = known(m.replay_eligible_backlog)
+    ? Number(m.replay_eligible_backlog)
+    : null;
+  const pendingValue = m.replay_pending_count ?? m.pending_experiences;
+  const pending = known(pendingValue) ? Number(pendingValue) : null;
   const error =
     m.learner_statistics_error ||
     m.agent_last_input_error ||
     m.last_champion_error ||
     m.last_candidate_error;
-  property("learningErrorNotice", "hidden", !error);
-  text("learningErrorNotice", error ? "학습 오류: " + error : "");
-  if (error) {
-    badge("learningState", "학습 오류 확인 필요", "red");
-    return;
-  }
-  if (d.learning_enabled === false || !d.agent_process_running) return;
-  const active = m.champion_training
-    ? "Champion"
-    : m.candidate_training
-      ? "Candidate"
-      : null;
-  if (active) {
-    badge("learningState", active + " 학습 중", "blue");
-    text(
-      "learningFlowHealth",
-      active +
-        "가 replay를 학습하고 있습니다. 두 모델 모두 학습·저장을 확인한 경험만 삭제합니다.",
-    );
-  } else if (eligible === 0) {
-    badge("learningState", "학습 가능 경험 0 · 결과 대기", "");
-    text(
-      "learningFlowHealth",
-      "현재 학습 가능한 경험을 모두 처리했습니다. 결과 평가 중인 " +
+  const active = ["champion", "candidate"]
+    .filter((role) => m[role + "_training"])
+    .map((role) => (role === "champion" ? "Champion" : "Candidate"))
+    .join(" · ");
+  const wait = String(m.learning_wait_reason || "");
+  if (d.agent_process_running !== true)
+    return {
+      title:
+        d.agent_process_running === false
+          ? "학습 프로세스 정지"
+          : "학습 프로세스 상태 미확인",
+      reason: "현재 실행 중인 학습 프로세스가 확인되지 않습니다.",
+      next: "운영 · 계좌에서 시스템 실행 상태를 확인하세요.",
+      tone: "warn",
+      error,
+    };
+  if (d.learning_enabled === false)
+    return {
+      title: "학습 OFF · 경험 보존",
+      reason: "사용자가 학습을 껐습니다. 미학습 경험은 DB에 남아 있습니다.",
+      next: "운영 · 계좌에서 replay 학습을 ON으로 바꾸면 이어서 학습합니다.",
+      tone: "",
+      error,
+    };
+  if (error)
+    return {
+      title: "학습 오류 확인 필요",
+      reason: error,
+      next: "오류 해결이 필요합니다. 학습 완료로 표시하지 않습니다.",
+      tone: "bad",
+      error,
+    };
+  if (d.learning_enabled !== true)
+    return {
+      title: "학습 설정 미확인",
+      reason: "서버가 학습 ON/OFF를 아직 보내지 않았습니다.",
+      next: "다음 상태 수신에서 설정을 확인합니다.",
+      tone: "warn",
+    };
+  if (active)
+    return {
+      title: active + (wait ? " 학습 회차 진행 · 연산 대기" : " 학습 중"),
+      reason:
+        wait || "replay 경험으로 가중치를 갱신하고 학습 결과를 저장합니다.",
+      next: wait
+        ? "대기 조건이 해소되면 현재 회차를 이어갑니다."
+        : "두 모델의 학습·저장 완료를 확인한 경험부터 삭제합니다.",
+      tone: "blue",
+    };
+  if (eligible === null || pending === null)
+    return {
+      title: "학습량 미확인",
+      reason:
+        "학습 가능한 경험과 결과 평가 대기 건수를 아직 확인하지 못했습니다.",
+      next: "다음 상태 수신에서 실제 잔여량을 확인합니다.",
+      tone: "warn",
+    };
+  const blocked =
+    num(m.replay_quarantined_count) + num(m.replay_unsupported_count);
+  if (eligible === 0) {
+    const completed =
+      ["champion", "candidate"].some(
+        (role) => m[role + "_last_completed_round"]?.completed_utc,
+      ) || (m.daily_learning || []).some((day) => num(day.completed) > 0);
+    const title = blocked
+      ? "학습 대기 · 보류 확인 필요"
+      : completed
+        ? pending
+          ? "준비된 경험 모두 학습 완료 · 결과 대기"
+          : "준비된 경험 모두 학습 완료 · 새 경험 대기"
+        : pending
+          ? "학습 ON · 결과 평가 대기"
+          : "학습 ON · 새 경험 대기";
+    return {
+      title,
+      reason:
+        "학습은 ON입니다. 지금 학습 가능한 경험은 0건이며, 결과 평가 중인 경험은 " +
         whole(pending) +
-        "건은 후속 손익이 확정되면 학습으로 넘어갑니다.",
-    );
+        "건입니다." +
+        (blocked
+          ? " 학습할 수 없는 보류 " +
+            whole(blocked) +
+            "건은 별도 확인이 필요합니다."
+          : ""),
+      next: pending
+        ? "후속 시세와 평가 조건을 충족해 보상이 확정되면 자동으로 학습합니다. 고정 시작 시각은 없습니다."
+        : "새 행동의 결과가 평가되어 replay에 들어오면 자동으로 학습합니다.",
+      tone: blocked ? "warn" : "",
+    };
   }
+  return {
+    title: wait ? "학습 ON · 처리 순서 대기" : "학습 ON · 다음 회차 준비",
+    reason:
+      (wait || "다음 학습 회차를 준비하고 있습니다.") +
+      " 학습 가능한 경험 " +
+      whole(eligible) +
+      "건이 남아 있습니다.",
+    next: wait
+      ? "대기 조건이 해소되면 남은 경험부터 학습합니다."
+      : "저장된 경험을 순서대로 학습합니다.",
+    tone: "blue",
+  };
+}
+
+function renderLearningSituation(d) {
+  const m = d.metrics || {},
+    state = learningSituation(d);
+  badge("learningState", state.title, state.tone);
+  text("learningAtGlance", state.title + " · 학습 상태 보기");
+  text("learningSituationTitle", state.title);
+  text("learningSituationReason", state.reason);
+  text("learningSituationNext", state.next);
+  text("learningFlowHealth", state.reason + " " + state.next);
+  property("learningErrorNotice", "hidden", !state.error);
+  text("learningErrorNotice", state.error ? "학습 오류: " + state.error : "");
+  const last = ["champion", "candidate"]
+    .map((role) => {
+      const label = role === "champion" ? "Champion" : "Candidate",
+        row = m[role + "_last_completed_round"];
+      return (
+        label +
+        ": " +
+        (row?.completed_utc
+          ? timeOf(row.completed_utc) + " · " + whole(row.samples) + "건"
+          : "완료 기록 미확인")
+      );
+    })
+    .join(" / ");
+  text("learningSituationLast", last);
 }
 
 function renderLearnerSummary(d) {
@@ -1559,14 +1679,31 @@ function renderLearnerSummary(d) {
     const round = m[role + "_last_completed_round"];
     const active = !!m[role + "_training"];
     const remaining = m[role + "_eligible_replay_count"];
+    const state = learningSituation(d);
     const label =
-      d.learning_enabled === false
-        ? "학습 OFF"
-        : active
-          ? "학습 중"
-          : remaining
-            ? "다음 학습 준비"
-            : "새 학습 경험 대기";
+      d.agent_process_running !== true
+        ? d.agent_process_running === false
+          ? "학습 프로세스 정지"
+          : "학습 프로세스 미확인"
+        : d.learning_enabled === false
+          ? "학습 OFF"
+          : d.learning_enabled !== true
+            ? "학습 설정 미확인"
+            : state.error
+              ? "학습 오류 확인 필요"
+              : active
+                ? m.learning_wait_reason
+                  ? "학습 회차 진행 · 연산 대기"
+                  : "학습 중"
+                : remaining == null
+                  ? "잔여량 미확인"
+                  : remaining > 0
+                    ? m.learning_wait_reason
+                      ? "처리 순서 대기"
+                      : "다음 학습 준비"
+                    : num(m.replay_pending_count ?? m.pending_experiences) > 0
+                      ? "준비된 경험 처리 완료 · 결과 대기"
+                      : "준비된 경험 처리 완료 · 새 경험 대기";
     text("learner" + role + "State", label);
     text(
       "learner" + role + "Work",
