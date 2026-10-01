@@ -962,6 +962,7 @@ class Supervisor:
                     "version":candidate_observer_state.get("candidate_version"),
                     "inference_count":metrics.get("candidate_live_inference_count",0),
                     "last_inference_seconds":candidate_observer_state.get("last_inference_seconds"),
+                    "inference_profile":candidate_observer_state.get("inference_profile",{}),
                     "skipped_observations":metrics.get("candidate_live_queue_drops",0),
                     "observer_status":candidate_observer_state.get("status"),
                     "observer_error":candidate_live_account["error"],
@@ -1115,7 +1116,11 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
         def do_GET(self):
             route = urlparse(self.path).path
             if route == "/":
-                return self._send(PAGE, content_type="text/html; charset=utf-8")
+                try:
+                    page=Path(__file__).with_name("web_dashboard.html").read_text(encoding="utf-8")
+                except OSError:
+                    page=PAGE
+                return self._send(page, content_type="text/html; charset=utf-8")
             if route == "/api/health":
                 return self._send({"ok": True, "service": "stockrl", "port": port})
             if route == "/api/status":

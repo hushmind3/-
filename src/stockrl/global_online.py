@@ -545,11 +545,7 @@ class OnlineGlobalAgent:
             self.metrics["candidate_checkpoint_loaded"]=True
             self.metrics["candidate_has_learning"]=(
                 self._sha256_file(candidate_path)!=self._sha256_file(self.champion_path))
-            observer=self._new_model_like(self.candidate,torch.device("cpu"))
-            observer.load_state_dict(self.candidate.state_dict())
-            observer.eval(); observer.requires_grad_(False)
-            self.candidate_live_model=observer
-            self.candidate_live_model_version=self.candidate_version
+            self._publish_candidate_observer(self.candidate,self.candidate_version)
         if validation_state.get("status")=="collecting":
             self.validation_restart_needs_fresh_trial=True
         else:
@@ -607,18 +603,39 @@ class OnlineGlobalAgent:
     def _new_model_like(self, source, device):
         contextual=bool(getattr(source,"_stockrl_uses_market_context",False))
         source_dtype=next(source.parameters()).dtype
-        if contextual:
-            from .market_training import ContextConditionedTransformer
-            backbone=GlobalMarketTransformer(self.cfg)
-            if device.type=="cuda" or source_dtype==torch.float16: backbone=backbone.half()
-            model=ContextConditionedTransformer(backbone)
-            model.context_policy.float(); model.context_value.float()
-            model._stockrl_uses_market_context=True
-            model._stockrl_symbol_map=dict(source._stockrl_symbol_map)
-        else:
-            model=GlobalMarketTransformer(self.cfg)
-            if device.type=="cuda" or source_dtype==torch.float16: model=model.half()
-        return model.to(device)
+        # Every caller immediately loads an existing state_dict. Allocate its
+        # final storage directly instead of initializing 0.5B random FP32
+        # parameters and then converting/discarding them before that copy.
+        with torch.device("meta"):
+            if contextual:
+                from .market_training import ContextConditionedTransformer
+                backbone=GlobalMarketTransformer(self.cfg)
+                if device.type=="cuda" or source_dtype==torch.float16: backbone=backbone.half()
+                model=ContextConditionedTransformer(backbone)
+                model.context_policy.float(); model.context_value.float()
+                model._stockrl_uses_market_context=True
+                model._stockrl_symbol_map=dict(source._stockrl_symbol_map)
+            else:
+                model=GlobalMarketTransformer(self.cfg)
+                if device.type=="cuda" or source_dtype==torch.float16: model=model.half()
+        return model.to_empty(device=device)
+
+    def _publish_candidate_observer(self, source, version):
+        """Atomically publish completed weights into reusable observer storage."""
+        started=time.perf_counter()
+        with self.candidate_live_model_lock:
+            observer=self.candidate_live_model
+            reused=observer is not None
+            if observer is None:
+                observer=self._new_model_like(source,torch.device("cpu"))
+            observer.load_state_dict(source.state_dict())
+            observer.eval(); observer.requires_grad_(False)
+            encoder=getattr(observer,"daily_history_encoder",None)
+            if encoder is not None: encoder.cache=None
+            self.candidate_live_model=observer
+            self.candidate_live_model_version=version
+        self.metrics["candidate_observer_publish_seconds"]=time.perf_counter()-started
+        self.metrics["candidate_observer_storage_reused"]=reused
 
     def _restore_candidate_checkpoint(self):
         path=self.model_dir/"candidate.pt"
@@ -660,6 +677,7 @@ class OnlineGlobalAgent:
     def _queue_candidate_live_observation(self,panel,index,paper_enabled,uniforms):
         snapshot=MarketObservation(panel,index,self.window)
         self.replay.enqueue_market_observation(snapshot,bool(paper_enabled),tuple(float(x) for x in uniforms))
+        return snapshot
 
     def _candidate_live_worker(self):
         """Run an independent observational paper account for current candidate weights."""
@@ -696,17 +714,23 @@ class OnlineGlobalAgent:
                 pstate,astate=account.model_inputs(panel,index)
                 window=self._window(panel,index)
                 started=time.perf_counter()
+                profile={}
                 with self.candidate_live_model_lock:
                     model=self.candidate_live_model
                     if model is None: raise RuntimeError("candidate observer snapshot is not loaded")
+                    observer_version=self.candidate_live_model_version
                     originally_offloaded=(self.device.type=="cuda" and
                         next(model.parameters()).device.type=="cpu")
                     with self.candidate_live_inference_lock:
+                        profile["wait_seconds"]=time.perf_counter()-started
+                        phase_started=time.perf_counter()
                         if originally_offloaded: model.to(self.device)
+                        profile["upload_seconds"]=time.perf_counter()-phase_started
                         device=next(model.parameters()).device
                         was_training=model.training
                         model.eval()
                         try:
+                            phase_started=time.perf_counter()
                             args=[value.to(device) for value in window]
                             args[0]=args[0].to(dtype=next(model.parameters()).dtype)
                             with torch.inference_mode():
@@ -721,12 +745,19 @@ class OnlineGlobalAgent:
                                 else:
                                     logits,_=model(*args); allocation=None
                             if device.type=="cuda": torch.cuda.synchronize(device)
+                            # Wall time includes input preparation and waiting
+                            # for shared CUDA work; this is not exclusive GPU time.
+                            profile["forward_seconds"]=time.perf_counter()-phase_started
                         finally:
                             model.train(was_training)
+                            phase_started=time.perf_counter()
                             if originally_offloaded: model.to("cpu")
+                            profile["download_seconds"]=time.perf_counter()-phase_started
                 probabilities,actions=self._paper_policy_actions(
                     logits[0].float().cpu().numpy(),pstate,uniforms)
                 elapsed=time.perf_counter()-started
+                profile["total_seconds"]=elapsed
+                self.metrics["candidate_live_inference_profile"]=profile
                 submitted=account.queue_decisions(panel,index,probabilities,paper_enabled,
                     allocation=allocation,actions=actions)
                 x,sid,mid,aid,mask=window[:5]
@@ -738,8 +769,12 @@ class OnlineGlobalAgent:
                     "input_symbols":list(panel.symbols),"portfolio_state":np.asarray(pstate,dtype=np.float16),
                     "account_state":np.asarray(astate,dtype=np.float32)}
                 for j,symbol in enumerate(panel.symbols):
+                    # Padding has a model ID but no traded instrument metadata.
+                    # Check the observation mask before looking up its group.
+                    if not paper_enabled or not panel.observed[index,j]:
+                        continue
                     market,asset=panel.groups[symbol]
-                    if paper_enabled and panel.observed[index,j] and _currency(market,asset) is not None:
+                    if _currency(market,asset) is not None:
                         action=int(actions[j]);decision_id=f"{stamp}|{symbol}"
                         self.candidate_portfolio_pending.append({**inputs,"index":index,"symbol_index":j,
                             "symbol":symbol,"action":action,"timestamp":stamp,"decision_id":decision_id,
@@ -772,10 +807,10 @@ class OnlineGlobalAgent:
                 self.metrics["candidate_live_error"]=None
                 self.metrics["candidate_live_last_timestamp"]=stamp
                 self._atomic_json({"status":self.metrics["candidate_live_status"],
-                    "last_timestamp":stamp,"candidate_version":self.candidate_live_model_version,
+                    "last_timestamp":stamp,"candidate_version":observer_version,
                     "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
                     "candidate_training":bool(self.metrics.get("candidate_training")),
-                    "last_inference_seconds":elapsed,"inference_count":self.metrics[
+                    "last_inference_seconds":elapsed,"inference_profile":profile,"inference_count":self.metrics[
                         "candidate_live_inference_count"],"last_decisions":decisions,
                     "policy_diagnostics":policy_diagnostics,
                     "last_tradable_policy_diagnostics":self.metrics.get(
@@ -1402,8 +1437,8 @@ class OnlineGlobalAgent:
                     self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
                     self.replay.save_pending(pending,portfolio_pending)
                     self.paper_account.save()
-                    self._queue_candidate_live_observation(panel,ti,paper_enabled,uniforms)
-                    self._collect_candidate_validation(panel,ti)
+                    common_snapshot=self._queue_candidate_live_observation(panel,ti,paper_enabled,uniforms)
+                    self._collect_candidate_validation(panel,ti,snapshot=common_snapshot)
                     import pandas as pd
                     if rows:
                         # Decision history is an observation aid, not replay.
@@ -2033,12 +2068,7 @@ class OnlineGlobalAgent:
                 self._atomic_json({"version":2,"candidate_version":self.candidate_version,
                     "queue_source":"replay.sqlite3","last_checkpoint_rows":trained_replay_row_ids},
                     self.candidate_lineage_path)
-                observer=self._new_model_like(candidate,torch.device("cpu"))
-                observer.load_state_dict(candidate.state_dict())
-                observer.eval(); observer.requires_grad_(False)
-                with self.candidate_live_model_lock:
-                    self.candidate_live_model=observer
-                    self.candidate_live_model_version=self.candidate_version
+                self._publish_candidate_observer(candidate,self.candidate_version)
             metrics["candidate_live_status"]="candidate_updated"
             metrics["candidate_has_learning"]=True
         metrics["candidate_training"]=False
@@ -2176,7 +2206,7 @@ class OnlineGlobalAgent:
     def _atomic_json(value,path):
         atomic_json(value,path)
 
-    def _collect_candidate_validation(self,panel,index):
+    def _collect_candidate_validation(self,panel,index,snapshot=None):
         if not self.validation_active or self.validation_candidate is None:
             return
         stamp=str(panel.dates[index])
@@ -2189,7 +2219,8 @@ class OnlineGlobalAgent:
             return
         # One observation per market minute; a burst of individual tick stamps
         # must not fill or accelerate the 128-bar portfolio trial.
-        snapshot=MarketObservation(panel,index,self.window)
+        if snapshot is None:
+            snapshot=MarketObservation(panel,index,self.window)
         item=(self.validation_generation,snapshot,len(snapshot.dates)-1,stamp,time.monotonic())
         try:
             self.validation_queue.put_nowait(item)

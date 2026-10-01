@@ -12,7 +12,7 @@ from stockrl.global_online import GlobalReplayBuffer, OnlineGlobalAgent, REWARD_
 from stockrl.global_transformer import TransformerConfig, GlobalMarketTransformer
 from stockrl.market_training import ContextConditionedTransformer
 from stockrl.paper_account import PaperAccount
-from test_online_pipeline import Panel
+from test_online_pipeline import Panel, FixedPolicy
 from stockrl.daily_encoder import DailyHistoryEncoder
 from unittest.mock import patch
 import queue
@@ -22,6 +22,79 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_candidate_commits_padded_observations_without_trading_padding(self):
+        panel=Panel();panel.symbols[1]="__PAD__0__NASDAQ|EQUITY|A"
+        panel.groups.pop("CONTEXT");panel.observed[:,1]=False;panel.closes[:,1]=np.nan
+        with TemporaryDirectory(dir=ROOT) as directory:
+            root=Path(directory)
+            agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent.replay=GlobalReplayBuffer(journal_path=root/"replay.sqlite3",dual_learning=True)
+            for i in (1,2):agent.replay.enqueue_market_observation(MarketObservation(panel,i,8),True,(.9,.9))
+            agent.window=8;agent.stop=threading.Event();agent.stop.set()
+            agent.metrics={};agent.device=torch.device("cpu")
+            agent.champion=FixedPolicy();agent.candidate_live_model=FixedPolicy()
+            agent.candidate_live_model_version=3
+            agent.candidate_live_model_lock=threading.Lock();agent.candidate_live_inference_lock=threading.Lock()
+            agent.candidate_live_account=PaperAccount.in_memory(.001,.0001)
+            agent.candidate_portfolio_pending=[];agent.candidate_live_state_path=root/"observer.json"
+            agent._mature_portfolio=lambda pending,*args,**kwargs:pending
+            agent._candidate_live_worker()
+            self.assertEqual(agent.replay.market_observation_stats()["pending"],0)
+            self.assertEqual(agent.metrics.get("candidate_live_inference_count"),2)
+            self.assertIsNone(agent.metrics.get("candidate_live_error"))
+            pending=agent.replay.load_pending("candidate_portfolio")
+            self.assertEqual(len(pending),2)
+            self.assertTrue(all(row["symbol"]=="TEST.KS" for row in pending))
+            self.assertGreater(agent.candidate_live_account.state["books"]["KRW"]["trade_count"],0)
+
+    def test_clone_preserves_weights_dtypes_outputs_and_has_independent_storage(self):
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+            n_markets=4,n_asset_types=4,max_seq_len=8)
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.cfg=cfg
+        for contextual in (False,True):
+            with self.subTest(contextual=contextual):
+                backbone=GlobalMarketTransformer(cfg).half()
+                source=ContextConditionedTransformer(backbone) if contextual else backbone
+                if contextual:
+                    source._stockrl_uses_market_context=True
+                    source._stockrl_symbol_map={"KR|equity|TEST.KS":0}
+                source.eval()
+                random_state=torch.get_rng_state().clone()
+                clone=agent._new_model_like(source,torch.device("cpu"))
+                self.assertTrue(torch.equal(random_state,torch.get_rng_state()))
+                clone.load_state_dict(source.state_dict());clone.eval()
+                for (name,expected),(other,actual) in zip(source.named_parameters(),clone.named_parameters()):
+                    self.assertEqual((name,expected.dtype),(other,actual.dtype))
+                    self.assertNotEqual(expected.data_ptr(),actual.data_ptr())
+                    torch.testing.assert_close(expected,actual,atol=0,rtol=0)
+                args=[torch.randn(1,4,2,17).half(),torch.tensor([[0,1]]),
+                    torch.tensor([[0,0]]),torch.tensor([[0,0]]),torch.ones(1,4,2,dtype=torch.bool)]
+                if contextual:args.append(torch.randn(1,4,16))
+                with torch.inference_mode():
+                    for expected,actual in zip(source(*args),clone(*args)):
+                        torch.testing.assert_close(expected,actual,atol=0,rtol=0)
+
+    def test_observer_publish_reuses_storage_and_invalidates_old_daily_memory(self):
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+            n_markets=4,n_asset_types=4,max_seq_len=8)
+        source=ContextConditionedTransformer(GlobalMarketTransformer(cfg))
+        source._stockrl_uses_market_context=True;source._stockrl_symbol_map={}
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.cfg=cfg
+        agent.metrics={};agent.candidate_live_model=None
+        agent.candidate_live_model_lock=threading.Lock()
+        agent._publish_candidate_observer(source,1)
+        observer=agent.candidate_live_model;pointer=next(observer.parameters()).data_ptr()
+        observer.daily_history_encoder.cache=("old",torch.ones(1))
+        with torch.no_grad():next(source.parameters()).add_(.05)
+        agent._publish_candidate_observer(source,2)
+        self.assertIs(observer,agent.candidate_live_model)
+        self.assertEqual(pointer,next(observer.parameters()).data_ptr())
+        self.assertEqual(agent.candidate_live_model_version,2)
+        self.assertTrue(agent.metrics["candidate_observer_storage_reused"])
+        self.assertIsNone(observer.daily_history_encoder.cache)
+        self.assertFalse(any(p.requires_grad for p in observer.parameters()))
+        torch.testing.assert_close(next(observer.parameters()),next(source.parameters()),atol=0,rtol=0)
+
     def test_reset_preserves_original_account_when_required_observations_are_pending(self):
         from stockrl.web_app import Supervisor
         with TemporaryDirectory(dir=ROOT) as directory:
