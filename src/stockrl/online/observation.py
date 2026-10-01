@@ -577,6 +577,7 @@ class _ObservationMixin:
                     multiscale_state=panel.multiscale_at(ti).astype(np.float16)
                     if hasattr(panel,"daily_history_status_at"):
                         self.metrics["daily_history_input_status"]=panel.daily_history_status_at(ti)
+                        self.metrics["daily_history_input_status_utc"]=stamp
                     actual_symbols=np.asarray([
                         not str(symbol).startswith("__PAD__") for symbol in panel.symbols],dtype=bool)
                     if actual_symbols.any():
@@ -590,6 +591,7 @@ class _ObservationMixin:
                                 "complete_history_symbols":int((multiscale_state[actual_symbols,k*width+5]>=.999).sum()),
                                 "mean_history_coverage":float(multiscale_state[actual_symbols,k*width+5].mean())}
                             for k,scale in enumerate(TIMEFRAME_NAMES)}
+                        self.metrics["multiscale_input_status_utc"]=stamp
                         self.metrics["long_context_input_status"]={
                             name:{"available_symbols":int((multiscale_state[actual_symbols,
                                 BASE_MULTISCALE_FEATURE_COUNT+k*width+4]>0).sum()),

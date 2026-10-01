@@ -112,7 +112,7 @@
   </div>
 <details class="account-details"><summary>보상 점수와 결과 연결 방식</summary><div class="notice learning-rule"><strong>동작 설명</strong> 관찰은 시장 입력·모델 판단·결과 평가를 수행합니다. 가상매매를 켜면 paper 계좌에만 체결합니다. 관찰만으로 바꾸면 대기 주문은 다음 시장 봉에서 취소되고 기존 paper 보유는 유지됩니다. 실제 주문은 OFF입니다.</div></details>
   <details class="account-details"><summary>누적 처리·승급 기록</summary><div class="mini" style="margin-top:12px">
-    <div class="card mini-card"><span>결과 확인 완료</span><strong id="maturedCount">—</strong><small>평가 기간 경과</small></div>
+    <div class="card mini-card"><span>구형 방향성 진단 결과</span><strong id="maturedCount">—</strong><small>replay 학습 미포함 · 별도 가격 평가</small></div>
     <div class="card mini-card"><span>현재 DB에 남은 경험</span><strong id="replayCount">—</strong><small id="replayDetail">학습 완료 누계와 다릅니다 · 보류 포함</small></div>
     <div class="card mini-card"><span>두 모델 optimizer 누계</span><strong id="updateCount">—</strong><small id="lastUpdate">마지막 업데이트 확인 중</small></div>
     <div class="card mini-card"><span>Candidate 승급 / 탈락</span><strong id="gateCount" style="font-size:17px">—</strong><small>Champion 자체 학습 갱신과 별도</small></div>
@@ -154,7 +154,7 @@
       <details class="account-details"><summary>실제 입력 확보율·시간봉별 학습 사용량</summary><h4>모든 시간봉 입력 · 실제 확보와 학습 사용</h4>
       <div class="notice" id="modelUniverseSummary" role="status">등록·수신·실제 모델 입력 종목 수를 확인 중입니다.</div>
       <p class="help">본체는 최근 128개 수집 시점, 보조층은 1·3·5·15·60분봉 및 일·주·월봉 요약을 함께 학습합니다. 아래 확보율은 필요한 입력 기록의 평균 충족률이며 전체 시장 수집률이 아닙니다. 우측은 각 모델의 최근 완료 회차에서 해당 시간봉 데이터가 포함된 경험 수입니다. 시간봉마다 replay를 따로 복제하지 않습니다.</p>
-      <div style="overflow-x:auto"><table class="model-comparison" aria-label="시간봉 실제 입력과 학습"><thead><tr><th>시간봉</th><th>입력 기록 확보율</th><th>입력 있음 / 관측 종목</th><th>기록 충족 종목</th><th>Champion 사용 경험</th><th>Candidate 사용 경험</th></tr></thead><tbody id="timeframeLearningRows"></tbody></table></div>
+      <p class="help" id="timeframeMeasurementAt">시간봉 확보율 기준: 미측정</p><div style="overflow-x:auto"><table class="model-comparison" aria-label="시간봉 실제 입력과 학습"><thead><tr><th>시간봉</th><th>입력 기록 확보율</th><th>입력 있음 / 관측 종목</th><th>기록 충족 종목</th><th>Champion 사용 경험</th><th>Candidate 사용 경험</th></tr></thead><tbody id="timeframeLearningRows"></tbody></table></div>
       </details><details class="account-details"><summary>모델 구조·계산량·자원 상세</summary><h4>Champion · Candidate 현재 비교</h4>
       <div style="overflow-x:auto"><table class="model-comparison" aria-label="Champion과 Candidate 비교"><thead><tr><th>비교 항목</th><th>Champion</th><th>Candidate</th></tr></thead><tbody>
         <tr><th>평소 역할 · 양쪽 동일</th><td>실시간 시장 판단 + 독립 가상매매 + 공통 replay 학습</td><td>실시간 시장 판단 + 독립 가상매매 + 공통 replay 학습</td></tr>
@@ -218,7 +218,7 @@
     <p class="help" id="dailyHistorySummary">5년 일봉 확보와 실제 학습 입력 확인 중</p>
     <p class="help" id="accountInputScope">입력 상태를 불러오는 중…</p>
     <details class="account-details"><summary>호가·체결 입력의 실제 가용 종목 수</summary><div id="microstructureAvailability" class="account-scroll">—</div><p class="help">최우선 호가와 전체 호가창은 다릅니다. 기록 값이 있는 종목 수와 최근 5분 실제 갱신 종목 수를 따로 표시합니다.</p></details>
-    <details class="account-details"><summary>장기 문맥 · 최대 5년 일봉·260주·60개월</summary><div id="longContextAvailability" class="account-scroll">—</div><div id="dailyHistoryCoverage" class="account-scroll">—</div><p class="help">작은 학습 모듈이 최대 1,300개 완료 일봉을 읽습니다. 일봉 DB는 종목별 최대 1,500개이며 최초 부족분을 보충합니다. 상장 기간이나 제공처 때문에 부족한 종목은 실제 수량 그대로 표시합니다. 큰 Transformer의 입력 길이는 여전히 128칸입니다.</p></details>
+    <details class="account-details"><summary>장기 문맥 · 최대 5년 일봉·260주·60개월</summary><div id="longContextAvailability" class="account-scroll">—</div><div id="dailyHistoryCoverage" class="account-scroll">—</div><p class="help" id="dailyHistoryMeasurementAt">입력 확보율 기준: 미측정</p><p class="help">작은 학습 모듈이 최대 1,300개 완료 일봉을 읽습니다. 일봉 DB는 종목별 최대 1,500개이며 최초 부족분을 보충합니다. 상장 기간이나 제공처 때문에 부족한 종목은 실제 수량 그대로 표시합니다. 큰 Transformer의 입력 길이는 여전히 128칸입니다.</p></details>
     <details class="account-details"><summary>관찰 종목 확대 · 변경 전과 현재 처리량</summary><div id="universeCapacityComparison" class="account-scroll">—</div><p class="help">한국·미국 25개씩 추가한 첫 단계입니다. 등록된 종목이 모두 지금 거래 중이라는 뜻은 아닙니다. 장 운영 시간과 학습 batch가 다르므로 단일 측정만으로 확장의 속도 효과를 확정하지 않습니다.</p></details>
     <details class="account-details"><summary>최근 일일 성적 · 최대 31개 요약</summary><div id="dailyAccountHistory" class="account-scroll">—</div></details>
     <details class="account-details"><summary>학습 보상 · 매매 방식 · 체결 환경의 한계</summary>

@@ -477,15 +477,31 @@ class _LearningMixin:
             batch_load_seconds+=time.perf_counter()-load_started
             if not batch: break
             sampled_ids.update(self.replay.row_ids_for(batch))
-            malformed=[e for e in batch if (
-                (e.goal_state is not None and np.shape(e.goal_state)!=(6,)) or
-                (e.portfolio_state is not None and np.shape(e.portfolio_state)!=(e.features.shape[1],8)) or
-                (e.account_state is not None and np.shape(e.account_state)!=(8,)) or
-                (e.multiscale_state is not None and np.shape(e.multiscale_state) not in (
-                    (e.features.shape[1],MULTISCALE_FEATURE_COUNT),(e.features.shape[1],96),
-                    (e.features.shape[1],BASE_MULTISCALE_FEATURE_COUNT))))]
+            malformed_by_reason={}
+            for experience in batch:
+                symbols=experience.features.shape[1]
+                shapes={
+                    "goal_state":(np.shape(experience.goal_state),(6,)),
+                    "portfolio_state":(np.shape(experience.portfolio_state),(symbols,8)),
+                    "account_state":(np.shape(experience.account_state),(8,)),
+                    "multiscale_state":(np.shape(experience.multiscale_state),None),
+                }
+                issues=[]
+                for name,(actual,expected) in shapes.items():
+                    if getattr(experience,name) is None:
+                        continue
+                    valid=(actual==expected) if expected is not None else actual in (
+                        (symbols,MULTISCALE_FEATURE_COUNT),(symbols,96),
+                        (symbols,BASE_MULTISCALE_FEATURE_COUNT))
+                    if not valid:
+                        issues.append(f"{name} expected {expected if expected is not None else 'supported multiscale shape'} got {actual}")
+                if issues:
+                    reason="saved portfolio input shape is incompatible: "+"; ".join(issues)
+                    malformed_by_reason.setdefault(reason,[]).append(experience)
+            malformed=[experience for group in malformed_by_reason.values() for experience in group]
             if malformed:
-                self.replay.quarantine(self.replay.row_ids_for(malformed),"saved portfolio input shape is incompatible")
+                for reason,group in malformed_by_reason.items():
+                    self.replay.quarantine(self.replay.row_ids_for(group),reason)
                 rejected={id(e) for e in malformed}
                 batch=[e for e in batch if id(e) not in rejected]
                 if not batch: continue
