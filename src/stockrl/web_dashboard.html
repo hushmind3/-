@@ -44,7 +44,7 @@
     <div class="card hero">
       <div class="hero-top"><div><div class="kicker">현재 실행 상태</div><h1 id="runTitle">서버 확인 중</h1><p id="runDetail">수집기와 모델 상태를 불러오고 있습니다.</p></div><span class="pill" id="appliedBadge">설정 확인 중</span></div>
       <div class="control-grid">
-        <div class="control-box"><span class="control-label">실행 범위</span><div class="choice-row"><button class="choice" id="observeBtn" type="button">시장 관찰·모델 판단: OFF</button><button class="choice" id="paperBtn" type="button">가상계좌 체결·가상매매: OFF</button></div><div class="caption" id="autonomyDetail">관찰은 시장 입력과 모델 판단·결과 평가를 수행합니다. 가상매매는 paper 계좌에만 체결합니다. 실제 주문은 OFF입니다.</div></div>
+        <div class="control-box"><span class="control-label">독립 실행 제어</span><div class="choice-row"><button class="choice" id="observeBtn" type="button" disabled>모델 판단: 확인 중</button><button class="choice" id="paperBtn" type="button" disabled>가상계좌 체결: 확인 중</button><button class="choice" id="learningBtn" type="button" disabled>replay 학습: 확인 중</button></div><div class="caption" id="autonomyDetail">모델 판단·가상 체결·replay 학습은 각각 독립 제어합니다. 시세 수집·저장은 계속됩니다. 실제 주문은 OFF입니다.</div></div>
         <div class="control-box"><span class="control-label">모델 판단 입력</span><div><strong>1·3·5·15·60분봉</strong><br><strong>일봉 · 주봉 · 월봉</strong></div><div class="settings-line"><span id="appliedSettings">여러 시간봉 통합 판단</span></div><div class="caption">매번 여러 시간봉을 한 번에 입력받아 종목·매매·자금 배분을 판단합니다. 각 시간봉에서 확보된 완료 봉을 사용합니다.</div></div>
         <div class="control-box"><span class="control-label">시스템 명령 <span class="pill bad">실제 주문 OFF</span></span><div class="button-row"><button class="button primary" id="applyBtn" type="button">시스템 시작</button><button class="button subtle" id="reconnectBtn" type="button">시세 재연결</button> <button class="button subtle" id="serverRestartBtn" type="button" title="Restart the 8766 service after saving live state">&#49436;&#48260; &#51116;&#49884;&#51089;</button><button class="button danger" id="resetAccountsBtn" type="button" title="Champion과 Candidate 관찰 계좌를 시드머니로 초기화">계좌 초기화</button><button class="button danger" id="stopBtn" type="button">전체 정지</button></div><div class="caption">실제 주문은 사용자가 명시적으로 허용하기 전까지 실행하지 않습니다.</div></div>
       </div>
@@ -307,7 +307,17 @@ $("connectBtn").onclick=()=>runCommand($("connectBtn"),async()=>{const app_key=$
 $("recheckBtn").onclick=()=>runCommand($("recheckBtn"),async()=>{connectResult("저장된 키를 검사하고 있습니다.");const result=await api("/api/provider/test",{provider:"kiwoom",environment:$("environment").value});connectResult(result.message||"키 검사 완료",!result.ok);if(result.ok)environmentTouched=false});
 $("ipBtn").onclick=()=>runCommand($("ipBtn"),async()=>{text("publicIp","조회 중…");const result=await api("/api/provider/public-ip");text("publicIp",result.ip||"조회 실패")});
 const baseRenderControls=renderControls;
-renderControls=function(d){baseRenderControls(d);$("serverRestartBtn").disabled=busy||!!(d.stopping||d.restarting);const observe=!!d.observe_enabled,paper=!!d.paper_enabled;text("observeBtn","\uC2DC\uC7A5 \uAD00\uCC30\u00B7\uBAA8\uB378 \uD310\uB2E8: "+(observe?"ON":"OFF"));text("paperBtn","\uAC00\uC0C1\uACC4\uC88C \uCCB4\uACB0\u00B7\uAC00\uC0C1\uB9E4\uB9E4: "+(paper?"ON":"OFF"));$("observeBtn").classList.toggle("active",observe);$("paperBtn").classList.toggle("active",paper);$("observeBtn").setAttribute("aria-pressed",String(observe));$("paperBtn").setAttribute("aria-pressed",String(paper));$("observeBtn").disabled=busy||!!(d.stopping||d.restarting);$("paperBtn").disabled=busy||!!(d.stopping||d.restarting);text("runTitle",d.running?observe?paper?"\uC2DC\uC7A5 \uAD00\uCC30 \u00B7 \uAC00\uC0C1\uB9E4\uB9E4 \uC911":"\uC2DC\uC7A5 \uAD00\uCC30 \uC911":"\uC2DC\uC7A5 \uAD00\uCC30 \uC911\uC9C0":"\uC2DC\uC2A4\uD15C \uC815\uC9C0");text("runDetail","\uAD00\uCC30 "+(observe?"ON":"OFF")+" | \uAC00\uC0C1\uACC4\uC88C "+(paper?"ON":"OFF")+" | \uC2E4\uC81C \uC8FC\uBB38 OFF");text("autonomyDetail",!observe?"\uAD00\uCC30 OFF | \uC0C8 \uD310\uB2E8\uACFC \uCCB4\uACB0\uC744 \uBA48\uCD94\uACE0 \uAE30\uC874 \uD3EC\uC9C0\uC158\uC740 \uC720\uC9C0\uD569\uB2C8\uB2E4.":paper?"\uAD00\uCC30 ON | \uD310\uB2E8\uC744 paper \uACC4\uC88C\uC5D0\uB9CC \uCCB4\uACB0\uD569\uB2C8\uB2E4. \uC2E4\uC81C \uC8FC\uBB38\uC740 OFF\uC785\uB2C8\uB2E4.":"\uAD00\uCC30 ON | \uC785\uB825\u00B7\uD310\uB2E8\u00B7\uACB0\uACFC \uD3C9\uAC00\uB97C \uACC4\uC18D\uD569\uB2C8\uB2E4. \uB300\uAE30 \uC8FC\uBB38\uC740 \uCDE8\uC18C\uB418\uACE0 \uAE30\uC874 \uBCF4\uC720\uB294 \uC720\uC9C0\uB429\uB2C8\uB2E4.")};
+renderControls=function(d){
+ baseRenderControls(d);
+ const changing=!!(d.stopping||d.restarting),observe=!!d.observe_enabled,paper=!!d.paper_enabled,learning=d.learning_enabled!==false;
+ $("serverRestartBtn").disabled=busy||changing;
+ for(const [id,on,label] of [["observeBtn",observe,"모델 판단"],["paperBtn",paper,"가상계좌 체결"],["learningBtn",learning,"replay 학습"]]){
+  text(id,label+": "+(on?"ON":"OFF"));$(id).classList.toggle("active",on);$(id).setAttribute("aria-pressed",String(on));$(id).disabled=busy||changing;
+ }
+ text("runTitle",d.running?observe?"모델 판단 실행 중":"모델 판단 중지 · 시세 저장 계속":"시스템 정지");
+ text("runDetail","판단 "+(observe?"ON":"OFF")+" | 체결 "+(paper?"ON":"OFF")+" | 학습 "+(learning?"ON":"OFF")+" | 실제 주문 OFF");
+ text("autonomyDetail","판단: 두 모델의 새 추론·승급전. 체결: 기존 주문 실행·새 판단 주문 접수. 학습: 저장된 replay로 두 모델 업데이트. 각각 독립 제어합니다. 판단 OFF에서도 시세 저장·기존 보유 평가·replay 학습은 계속됩니다. 비트코인·환율 등 문맥용 시세만 바뀌면 풀 추론하지 않습니다.");
+};
 const baseRenderLearning=renderLearning;
 renderLearning=function(d){baseRenderLearning(d);const m=d.metrics||{},l=d.learning||{},pf=d.paper_financials||{},format=(value,currency)=>value==null?"\u2014":Number(value).toFixed(2)+" "+currency,krw=pf.KRW||{},usd=pf.USD||{};text("paperReward",m.paper_net_reward==null?"\u2014":(Number(m.paper_net_reward)*100).toFixed(3)+"% (\uBE44\uC6A9 \uCC28\uAC10)");text("krwNetPnl",format(krw.net_pnl,"KRW"));text("usdNetPnl",format(usd.net_pnl,"USD"));text("krwPnlSplit",format(krw.realized_pnl,"KRW")+" / "+format(krw.unrealized_pnl,"KRW"));text("usdPnlSplit",format(usd.realized_pnl,"USD")+" / "+format(usd.unrealized_pnl,"USD"));const cost=(b)=>Number(b.fees||0)+Number(b.sell_tax||0)+Number(b.spread||0)+Number(b.slippage||0);text("paperCosts",format(cost(krw),"KRW")+" | "+format(cost(usd),"USD"));text("positions",Object.values(d.paper_positions||{}).map(p=>p.symbol+" "+whole(p.quantity)+"\uC8FC | "+p.currency).join(" | ")||"\uC5C6\uC74C");text("modelDirections",Object.entries(d.model_directions||{}).map(([symbol,direction])=>symbol+" "+(Number(direction)>0?"\uB9E4\uC218":Number(direction)<0?"\uB9E4\uB3C4":"\uAD00\uB9DD")).join(" | ")||"\uC5C6\uC74C");text("learningThreshold","candidate replay "+whole(l.replay_current)+" / "+whole(l.candidate_every)+" | \uBBF8\uD559\uC2B5 \uAC80\uC99D \uC2DC\uAC01 "+whole(l.holdout_timestamps_current)+" / "+whole(l.holdout_timestamps_required)+" | \uB300\uAE30: "+(l.candidate_skip_reason||"\uC5C6\uC74C"));const status=!l.promotion_gate_ready?"\uC790\uB3D9 \uC2B9\uAE09 \uCC28\uB2E8: "+(l.promotion_blocked_reason||"\uAC80\uC99D \uC870\uAC74 \uBBF8\uC644\uB8CC"):l.candidate_stage==="sequential_paper_validation"?"\uC0C8 paper \uACC4\uC88C \uBE44\uAD50 \uC911":"\uC21C\uCC28 paper \uACC4\uC88C \uBE44\uAD50 \uC900\uBE44 \uC644\uB8CC";text("gateStory",status+" | candidate/champion \uC810\uC218\uB294 \uBE44\uAD50 \uAD6C\uAC04 \uACC4\uC88C \uC21C\uC190\uC775\uC785\uB2C8\uB2E4.");if(!l.promotion_gate_ready&&!m.last_promotion_utc&&!m.last_rejection_utc)text("lastGateResult","\uBE44\uAD50 \uC804 | \uC2B9\uAE09 \uCC28\uB2E8");if(!l.promotion_gate_ready&&!m.last_promotion_utc&&!m.last_rejection_utc)text("lastGateResult","\uBE44\uAD50 \uC804 | \uC2B9\uAE09 \uCC28\uB2E8")};
 function instrumentLabel(symbol,d){const item=(d.instruments||[]).find(row=>row.symbol===symbol);const configured=item?.name?.trim();return configured&&!configured.includes("\uFFFD")?configured:(SYMBOL_NAMES[symbol]||symbol)}
@@ -374,8 +384,9 @@ const baseRenderDecisions=renderDecisions;
 renderDecisions=function(d){baseRenderDecisions(d);for(const row of document.querySelectorAll("#decisionRows tr")){const code=row.querySelector(".asset-code");if(code&&/^(0010S0\.KQ|0161M0\.KQ)/.test(code.textContent)&&!code.textContent.includes("\uC6D0\uBCF8 \uC2EC\uBCFC"))code.textContent+=" | \uC6D0\uBCF8 \uC2EC\uBCFC \uD655\uC778 \uD544\uC694"}};
 const baseRender=render;
 render=function(d){baseRender(d);const x=d.output_diagnostics||{},message=x.warning?"\uBAA8\uB378 \uCD9C\uB825 \uC810\uAC80 \uACBD\uACE0: "+whole(x.largest_identical_group)+"\uC885\uBAA9\uC758 \uD655\uB960 \uC77C\uCE58 (\uC6D0\uC778 \uC870\uC0AC \uD544\uC694)":"\uBAA8\uB378 \uCD9C\uB825 \uC810\uAC80: "+whole(x.unique_probability_vectors)+" \uC885\uB958 / "+whole(x.symbols_with_probabilities)+" \uC885\uBAA9";text("outputDiagnostic",message+" | \uCD5C\uC2E0 \uD310\uB2E8 \uC804\uCCB4 \uB9E4\uC218\uB294 \uB9E4\uC218 \uCD94\uCC9C\uC774 \uC544\uB2D9\uB2C8\uB2E4. \uC2E4\uC81C \uC8FC\uBB38 OFF")};
-$("observeBtn").onclick=()=>runCommand($("observeBtn"),async()=>{const observe=!current?.observe_enabled,paper=observe?!!current?.paper_enabled:false;await api("/api/modes",{observe_enabled:observe,paper_enabled:paper});feedback(observe?"\uC2DC\uC7A5 \uAD00\uCC30\uACFC \uBAA8\uB378 \uD310\uB2E8\uC744 \uCF30\uC2B5\uB2C8\uB2E4.":"\uAD00\uCC30\uACFC \uAC00\uC0C1\uB9E4\uB9E4\uB97C \uB04A\uC2B5\uB2C8\uB2E4. \uAE30\uC874 paper \uBCF4\uC720\uB294 \uC720\uC9C0\uB429\uB2C8\uB2E4.")});
-$("paperBtn").onclick=()=>runCommand($("paperBtn"),async()=>{const paper=!current?.paper_enabled;await api("/api/modes",{paper_enabled:paper,observe_enabled:paper?true:!!current?.observe_enabled});feedback(paper?"\uAD00\uCC30\uACFC \uAC00\uC0C1\uACC4\uC88C \uB9E4\uB9E4\uB97C \uCF30\uC2B5\uB2C8\uB2E4. \uC2E4\uC81C \uC8FC\uBB38\uC740 OFF\uC785\uB2C8\uB2E4.":"\uAC00\uC0C1\uACC4\uC88C \uB9E4\uB9E4\uB97C \uB04A\uC2B5\uB2C8\uB2E4.")});
+$("observeBtn").onclick=()=>runCommand($("observeBtn"),async()=>{const enabled=!current?.observe_enabled;await api("/api/modes",{observe_enabled:enabled});feedback(enabled?"두 모델의 판단을 켰습니다.":"두 모델의 새 판단·승급전을 중지합니다. 시세 저장과 replay 학습은 계속됩니다.")});
+$("paperBtn").onclick=()=>runCommand($("paperBtn"),async()=>{const enabled=!current?.paper_enabled;await api("/api/modes",{paper_enabled:enabled});feedback(enabled?"가상계좌 체결을 켰습니다. 판단·학습 설정은 유지됩니다.":"새 가상 체결을 중지합니다. 보유 평가와 학습 설정은 유지됩니다.")});
+$("learningBtn").onclick=()=>runCommand($("learningBtn"),async()=>{const enabled=current?.learning_enabled===false;await api("/api/modes",{learning_enabled:enabled});feedback(enabled?"두 모델의 replay 학습을 켰습니다.":"현재 학습 batch 저장 후 다음 batch부터 멈춥니다. 미학습 경험은 보존됩니다.")});
 function renderModelComparison(d){
  const m=d.metrics||{},v=d.validation_comparison||{},required=Number(v.bars_required)||390;
  const seconds=x=>x==null?"미측정":Number(x).toFixed(2)+"초",bytes=x=>x==null?"미측정":(Number(x)/1073741824).toFixed(2)+" GiB",score=x=>x==null?"미측정":(Number(x)*100).toFixed(4)+"%";
@@ -642,7 +653,23 @@ function renderOperationsOverview(d){
  // second client threshold based on feed-process wall-clock activity.
  if(d.agent_process_running){badge("agentBadge",health.status==="stale"?"Champion 판단 지연":health.status==="healthy"?"Champion 판단 정상":"판단 상태 확인",health.status==="stale"?"warn":"good");text("agentDetail","시세 "+timeOf(health.latest_feed_timestamp_utc)+" / 완료 판단 "+timeOf(health.agent_cursor_timestamp_utc)+" · "+lag(health.lag_seconds)+" 지연")}
 }
-render=function(d){renderBeforeAccountDiagnostics(d);renderAccountDiagnostics(d);renderDailyOperation(d);renderInferenceWork(d);renderOperationsOverview(d)};
+render=function(d){
+ renderBeforeAccountDiagnostics(d);renderAccountDiagnostics(d);renderDailyOperation(d);renderInferenceWork(d);renderOperationsOverview(d);
+ if(d.observe_enabled===false){
+  badge("agentBadge","판단 OFF","");
+  text("agentDetail","사용자가 새 모델 판단을 중지했습니다. 시세 저장·보유 평가·replay 학습은 계속됩니다.");
+  for(const role of ["champion","candidate"]){
+   badge(role+"LiveBadge","판단 OFF","");
+   text(role==="champion"?"opChampionLag":"opCandidateLag","판단 OFF");
+  }
+  text("opChampionTime","추론 중지 · 시세 저장·보유 평가 계속");
+  text("opCandidateQueue","추론 중지 · 기존 경험 처리·학습 계속");
+ }else{
+  const m=d.metrics||{},observer=d.candidate_live_account||{};
+  if(m.champion_inference_skipped_reason==="context_only")badge("championLiveBadge","문맥 갱신 · 풀 추론 없음","");
+  if(observer.status==="context_only")badge("candidateLiveBadge","문맥 갱신 · 풀 추론 없음","");
+ }
+};
 setClock();setInterval(setClock,1000);refresh();setInterval(refresh,5000);
 </script>
 </body>

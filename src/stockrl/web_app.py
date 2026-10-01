@@ -248,8 +248,7 @@ class Supervisor:
         self.horizon = settings.get("horizon", horizon)
         self.autonomy_enabled = bool(settings.get("paper_enabled", settings.get("autonomy_enabled", True)))
         self.observe_enabled = bool(settings.get("observe_enabled", True))
-        if self.autonomy_enabled:
-            self.observe_enabled = True
+        self.learning_enabled = bool(settings.get("learning_enabled", True))
         self.worker = threading.Thread(target=self._monitor, daemon=True, name="web-supervisor")
         self.worker.start()
 
@@ -414,7 +413,7 @@ class Supervisor:
             self.profile.mkdir(parents=True, exist_ok=True)
             self.settings_path.write_text(json.dumps({"mode": mode, "horizon": self.horizon,
                 "autonomy_enabled":self.autonomy_enabled,"paper_enabled":self.autonomy_enabled,
-                "observe_enabled":self.observe_enabled}, ensure_ascii=False, indent=2), encoding="utf-8")
+                "observe_enabled":self.observe_enabled,"learning_enabled":self.learning_enabled}, ensure_ascii=False, indent=2), encoding="utf-8")
             self._write_autonomy()
             for path in (self.profile / "feed.stop", self.profile / "agent" / "stop.request"):
                 path.unlink(missing_ok=True)
@@ -432,37 +431,33 @@ class Supervisor:
         temporary=target.with_suffix(".json.tmp")
         temporary.write_text(json.dumps({"enabled":self.autonomy_enabled,
                                           "paper_enabled":self.autonomy_enabled,
-                                          "observe_enabled":self.observe_enabled},ensure_ascii=False),encoding="utf-8")
+                                          "observe_enabled":self.observe_enabled,
+                                          "learning_enabled":self.learning_enabled},ensure_ascii=False),encoding="utf-8")
         temporary.replace(target)
         settings=_json(self.settings_path)
         settings.update({"mode":self.mode,"horizon":self.horizon,"autonomy_enabled":self.autonomy_enabled,
-                         "paper_enabled":self.autonomy_enabled,"observe_enabled":self.observe_enabled})
+                         "paper_enabled":self.autonomy_enabled,"observe_enabled":self.observe_enabled,
+                         "learning_enabled":self.learning_enabled})
         self.settings_path.write_text(json.dumps(settings,ensure_ascii=False,indent=2),encoding="utf-8")
 
     def set_autonomy(self, enabled: bool) -> dict:
         with self.lock:
             self.autonomy_enabled=bool(enabled)
-            if self.autonomy_enabled:
-                self.observe_enabled=True
             self._write_autonomy()
             return {"ok":True,"autonomy_enabled":self.autonomy_enabled,
                     "paper_enabled":self.autonomy_enabled,"observe_enabled":self.observe_enabled}
 
-    def set_modes(self, paper_enabled=None, observe_enabled=None) -> dict:
+    def set_modes(self, paper_enabled=None, observe_enabled=None, learning_enabled=None) -> dict:
         with self.lock:
             if paper_enabled is not None:
                 self.autonomy_enabled = bool(paper_enabled)
             if observe_enabled is not None:
                 self.observe_enabled = bool(observe_enabled)
-            if self.autonomy_enabled:
-                self.observe_enabled = True
-            elif not self.observe_enabled:
-                # Pending paper orders are cleared on the next bar; existing
-                # holdings remain in the paper account.
-                self.autonomy_enabled = False
+            if learning_enabled is not None:
+                self.learning_enabled = bool(learning_enabled)
             self._write_autonomy()
             return {"ok": True, "paper_enabled": self.autonomy_enabled,
-                    "observe_enabled": self.observe_enabled}
+                    "observe_enabled": self.observe_enabled,"learning_enabled":self.learning_enabled}
 
     def restart(self, mode: str, horizon: str | None = None) -> dict:
         from .global_online import parse_horizon
@@ -1079,6 +1074,7 @@ class Supervisor:
                     "autonomy_enabled":self.autonomy_enabled,
                     "paper_enabled":self.autonomy_enabled,
                     "observe_enabled":self.observe_enabled,
+                    "learning_enabled":self.learning_enabled,
                     "learning": {
                         "candidate_learning_enabled": metrics.get("candidate_learning_enabled", True),
                         "champion_learning_enabled":metrics.get("champion_learning_enabled",False),
@@ -1239,10 +1235,11 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                 return self._send(supervisor.set_autonomy(payload["enabled"]))
             if route == "/api/modes":
                 if any(key in payload and not isinstance(payload[key], bool)
-                       for key in ("paper_enabled", "observe_enabled")):
+                       for key in ("paper_enabled", "observe_enabled", "learning_enabled")):
                     return self._send({"error":"mode flags must be boolean"},400)
                 return self._send(supervisor.set_modes(payload.get("paper_enabled"),
-                                                       payload.get("observe_enabled")))
+                                                       payload.get("observe_enabled"),
+                                                       payload.get("learning_enabled")))
             if route == "/api/feed/reconnect":
                 if supervisor.mode != "live" or not supervisor.run_requested:
                     return self._send({"error": "Live market feed is not running."}, 400)

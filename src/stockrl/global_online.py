@@ -715,6 +715,23 @@ class OnlineGlobalAgent:
             return nullcontext()
         return scheduler.work(role) if hasattr(scheduler,"work") else scheduler
 
+    def _run_modes(self):
+        """Independent controls; collecting quotes never depends on these flags."""
+        try:
+            state=json.loads((self.state_dir/"autonomy.json").read_text(encoding="utf-8"))
+        except (OSError,ValueError,AttributeError):
+            state={}
+        return {"observe_enabled":bool(state.get("observe_enabled",True)),
+                "paper_enabled":bool(state.get("paper_enabled",state.get("enabled",True))),
+                "learning_enabled":bool(state.get("learning_enabled",True))}
+
+    @staticmethod
+    def _has_tradable_update(panel,index):
+        """Context-only quotes cannot submit stock orders and need no full policy pass."""
+        return any(bool(panel.observed[index,j]) and
+                   _currency(*panel.groups.get(symbol,("",""))) is not None
+                   for j,symbol in enumerate(panel.symbols))
+
     def _candidate_live_worker(self):
         """Run an independent observational paper account for current candidate weights."""
         while not self.stop.is_set() or self.replay.market_observation_stats()["pending"]:
@@ -728,8 +745,12 @@ class OnlineGlobalAgent:
             panel=MarketObservation.__new__(MarketObservation)
             panel.__dict__.update(data)
             index=len(panel.dates)-1
-            paper_enabled=bool(data["paper_enabled"]);uniforms=data["uniforms"]
-            if self.candidate_live_model is None:
+            modes=self._run_modes()
+            paper_enabled=bool(data["paper_enabled"]) and modes["paper_enabled"]
+            uniforms=data["uniforms"]
+            full_inference=(modes["observe_enabled"] and bool(uniforms)
+                            and self._has_tradable_update(panel,index))
+            if full_inference and self.candidate_live_model is None:
                 if self.stop.is_set():
                     break  # Required observations remain in SQLite for restart.
                 self.stop.wait(.25)
@@ -743,6 +764,32 @@ class OnlineGlobalAgent:
                 self.candidate_portfolio_pending=self._mature_portfolio(
                     self.candidate_portfolio_pending,panel,index,filled_orders,account=account,origin_model="candidate")
                 observation_profile["fills_and_rewards_seconds"]=time.perf_counter()-phase_started
+                if not full_inference:
+                    self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
+                    committed=True
+                    account.save()
+                    reason="context_only" if modes["observe_enabled"] else "judgment_paused"
+                    key="candidate_"+reason+"_updates"
+                    self.metrics[key]=int(self.metrics.get(key,0))+1
+                    self.metrics["candidate_live_last_timestamp"]=stamp
+                    self.metrics["candidate_live_status"]=reason
+                    self.metrics["candidate_live_error"]=None
+                    try:
+                        state=json.loads(self.candidate_live_state_path.read_text(encoding="utf-8"))
+                    except (OSError,ValueError):
+                        state={}
+                    # Preserve the last genuine action and its own timestamp.
+                    state.setdefault("last_full_decision_timestamp",state.get("last_timestamp"))
+                    state.update({"status":reason,"last_timestamp":stamp,"error":None,
+                        "candidate_training":bool(self.metrics.get("candidate_training")),
+                        "inference_skipped_reason":reason,
+                        "context_only_updates":self.metrics.get("candidate_context_only_updates",0),
+                        "observation_profile":{**observation_profile,
+                            "inference_seconds":0.0,"total_seconds":time.perf_counter()-observation_started},
+                        "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
+                            if hasattr(self.candidate_live_inference_lock,"snapshot") else {})})
+                    self._atomic_json(state,self.candidate_live_state_path)
+                    continue
                 if self.candidate_live_model is None:
                     self.metrics["candidate_live_status"]="waiting_for_candidate_update"
                     account.save()
@@ -866,7 +913,8 @@ class OnlineGlobalAgent:
                 observation_profile["total_seconds"]=time.perf_counter()-observation_started
                 self.metrics["candidate_live_observation_profile"]=observation_profile
                 self._atomic_json({"status":self.metrics["candidate_live_status"],
-                    "last_timestamp":stamp,"candidate_version":observer_version,
+                    "last_timestamp":stamp,"last_full_decision_timestamp":stamp,
+                    "candidate_version":observer_version,
                     "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
                     "candidate_training":bool(self.metrics.get("candidate_training")),
                     "champion_training":bool(self.metrics.get("champion_training")),
@@ -1463,12 +1511,9 @@ class OnlineGlobalAgent:
                     # Autonomy is distinct from the model's HOLD action. When
                     # disabled, inference and counterfactual learning continue,
                     # but directional paper positions are left unchanged.
-                    try:
-                        mode_state=json.loads((self.state_dir/"autonomy.json").read_text(encoding="utf-8"))
-                        paper_enabled=bool(mode_state.get("paper_enabled",mode_state.get("enabled",True)))
-                        observe_enabled=bool(mode_state.get("observe_enabled",True))
-                    except (OSError,json.JSONDecodeError,AttributeError):
-                        paper_enabled=True; observe_enabled=True
+                    mode_state=self._run_modes()
+                    paper_enabled=mode_state["paper_enabled"]
+                    observe_enabled=mode_state["observe_enabled"]
                     self.metrics["autonomy_enabled"]=paper_enabled
                     self.metrics["paper_enabled"]=paper_enabled
                     self.metrics["observe_enabled"]=observe_enabled
@@ -1476,7 +1521,14 @@ class OnlineGlobalAgent:
                     portfolio_pending=self._mature_portfolio(
                         portfolio_pending,panel,ti,filled_orders)
                     pending=self._mature(pending,panel,ti)
-                    if not observe_enabled:
+                    if not observe_enabled or not self._has_tradable_update(panel,ti):
+                        reason="context_only" if observe_enabled else "judgment_paused"
+                        key="champion_"+reason+"_updates"
+                        self.metrics[key]=int(self.metrics.get(key,0))+1
+                        self.metrics["champion_inference_skipped_reason"]=reason
+                        # Candidate must still mark its account and mature earlier
+                        # actions at this timestamp; it uses the same CPU fast path.
+                        self._queue_candidate_live_observation(panel,ti,paper_enabled,())
                         cursor=str(panel.dates[ti]); self.metrics["observations"]+=1
                         self.metrics["last_market_timestamp"]=cursor
                         self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)
@@ -1486,6 +1538,8 @@ class OnlineGlobalAgent:
                         continue
                     pstate,astate=self.paper_account.model_inputs(panel,ti)
                     logits,values,allocation=self._infer(panel,ti,pstate,astate)
+                    self.metrics["champion_last_full_decision_timestamp"]=str(panel.dates[ti])
+                    self.metrics["champion_inference_skipped_reason"]=None
                     uniforms=[self.policy_rng.random() for _ in range(len(logits))]
                     probs,actions=self._paper_policy_actions(logits,pstate,uniforms)
                     window=self._window(panel,ti)
@@ -1882,6 +1936,9 @@ class OnlineGlobalAgent:
     def _wait_for_live_inference(self):
         last_report=0.0
         while not self.stop.is_set():
+            if not self._run_modes()["learning_enabled"]:
+                self.metrics["learning_wait_reason"]="사용자가 replay 학습을 껐습니다."
+                return False
             reason=self._live_learning_wait_reason()
             self.metrics["learning_wait_reason"]=reason
             if not reason:
@@ -1893,6 +1950,10 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
+            if not self._run_modes()["learning_enabled"]:
+                self.metrics["learning_wait_reason"]="사용자가 replay 학습을 껐습니다."
+                self.stop.wait(.5)
+                continue
             self.metrics["learner_last_heartbeat_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
             try:
                 stats=self.replay.stats(self.candidate_replay_passes)
@@ -2466,6 +2527,8 @@ class OnlineGlobalAgent:
         atomic_json(value,path)
 
     def _collect_candidate_validation(self,panel,index,snapshot=None):
+        if not self._run_modes()["observe_enabled"] or not self._has_tradable_update(panel,index):
+            return
         if not self.validation_active or self.validation_candidate is None:
             return
         stamp=str(panel.dates[index])
@@ -2497,6 +2560,9 @@ class OnlineGlobalAgent:
     def _validation_worker(self):
         while not self.stop.is_set() or ((self.state_dir/"daily_cycle.request").exists()
                                         and not self.validation_queue.empty()):
+            if not self._run_modes()["observe_enabled"]:
+                self.stop.wait(.25)
+                continue
             try:
                 generation,panel,index,stamp,queued_at=self.validation_queue.get(timeout=.25)
             except queue.Empty:

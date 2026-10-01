@@ -22,6 +22,49 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_context_quotes_do_not_trigger_stock_policy(self):
+        panel=Panel()
+        panel.observed[2,0]=False
+        self.assertFalse(OnlineGlobalAgent._has_tradable_update(panel,2))
+        panel.observed[2,0]=True
+        self.assertTrue(OnlineGlobalAgent._has_tradable_update(panel,2))
+        panel.groups["TEST.KS"]=("CRYPTO","crypto")
+        self.assertFalse(OnlineGlobalAgent._has_tradable_update(panel,2))
+
+    def test_controls_are_independent(self):
+        from stockrl.web_app import Supervisor
+        supervisor=Supervisor.__new__(Supervisor)
+        supervisor.lock=threading.RLock()
+        supervisor.autonomy_enabled=True;supervisor.observe_enabled=True
+        supervisor.learning_enabled=True;supervisor._write_autonomy=MagicMock()
+        result=supervisor.set_modes(observe_enabled=False)
+        self.assertFalse(result["observe_enabled"])
+        self.assertTrue(result["paper_enabled"])
+        self.assertTrue(result["learning_enabled"])
+        supervisor.set_modes(paper_enabled=False,learning_enabled=False)
+        result=supervisor.set_modes(paper_enabled=True)
+        self.assertFalse(result["observe_enabled"])
+        self.assertFalse(result["learning_enabled"])
+        self.assertTrue(result["paper_enabled"])
+
+    def test_context_observer_commits_without_model_or_gpu(self):
+        panel=Panel();panel.observed[:,0]=False
+        with TemporaryDirectory(dir=ROOT) as directory:
+            root=Path(directory);agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent.state_dir=root;agent.replay=GlobalReplayBuffer(journal_path=root/"replay.sqlite3",dual_learning=True)
+            for i in (1,2):agent.replay.enqueue_market_observation(MarketObservation(panel,i,8),True,())
+            agent.window=8;agent.stop=threading.Event();agent.stop.set();agent.metrics={}
+            agent.candidate_live_model=None;agent.candidate_live_account=PaperAccount.in_memory(.001,.0001)
+            agent.candidate_portfolio_pending=[];agent.candidate_live_state_path=root/"observer.json"
+            agent.candidate_live_inference_lock=threading.Lock()
+            agent._mature_portfolio=lambda pending,*args,**kwargs:pending
+            agent._gpu_work=MagicMock(side_effect=AssertionError("must not request GPU"))
+            agent._candidate_live_worker()
+            self.assertEqual(agent.replay.market_observation_stats()["pending"],0)
+            self.assertEqual(agent.metrics["candidate_context_only_updates"],2)
+            self.assertEqual(agent.metrics.get("candidate_live_inference_count",0),0)
+            agent._gpu_work.assert_not_called()
+
     def test_after_twenty_learning_priority_returns_at_us_regular_open(self):
         from datetime import datetime,timezone
         from stockrl.gpu_scheduler import FairGpuScheduler
