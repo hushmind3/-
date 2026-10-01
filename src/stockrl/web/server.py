@@ -107,6 +107,9 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             if route == "/api/restart":
                 result = supervisor.restart(payload.get("mode", "live"),payload.get("horizon"))
                 return self._send(result, 200 if result.get("ok") else 400)
+            if route == "/api/agent/reload":
+                result = supervisor.reload_agent()
+                return self._send(result, 200 if result.get("ok") else 409)
             if route == "/api/stop":
                 return self._send(supervisor.stop())
             if route == "/api/paper-accounts/reset":

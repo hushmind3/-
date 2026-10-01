@@ -3,6 +3,7 @@ renderControls=function(d){
  baseRenderControls(d);
  const changing=!!(d.stopping||d.restarting),observe=!!d.observe_enabled,paper=!!d.paper_enabled,learning=d.learning_enabled!==false;
  $("serverRestartBtn").disabled=busy||changing;
+ $("agentReloadBtn").disabled=busy||changing||!d.running||!d.agent_process_running;
  for(const [id,on,label] of [["observeBtn",observe,"모델 판단"],["paperBtn",paper,"가상계좌 체결"],["learningBtn",learning,"replay 학습"]]){
   text(id,label+": "+(on?"ON":"OFF"));$(id).classList.toggle("active",on);$(id).setAttribute("aria-pressed",String(on));$(id).disabled=busy||changing;
  }

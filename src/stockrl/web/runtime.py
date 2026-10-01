@@ -206,6 +206,27 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
                 (self.profile / "feed.stop").touch()
                 self._log(f"{time.strftime('%H:%M:%S')} market feed reloading after provider change")
 
+    def reload_agent(self) -> dict:
+        """Gracefully reload model code/settings while keeping feed and web alive."""
+        with self.lock:
+            if not self.run_requested or not self.profile:
+                return {"error": "Start the system before reloading the model."}
+            if self.stopping:
+                return {"error": "System shutdown is already in progress."}
+            agent = self.children.get("agent")
+            if agent is None or agent.poll() is not None:
+                return {"error": "Model process is not running."}
+            stop_request = self.profile / "agent" / "stop.request"
+            if stop_request.exists():
+                return {"error": "Model reload is already in progress."}
+            try:
+                self.operating_rules = operating_rules()
+            except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+                return {"error": f"Training settings were not applied: {exc}"}
+            stop_request.touch()
+            self._log(f"{time.strftime('%H:%M:%S')} model reload requested; replay/account state will be saved, feed stays running")
+            return {"ok": True, "message": "Model is saving state and will restart; feed and web stay running."}
+
     def stop(self, keep_restart: bool = False):
         with self.lock:
             if not keep_restart:
