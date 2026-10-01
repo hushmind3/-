@@ -3,17 +3,32 @@ from collections import deque
 from contextlib import contextmanager
 import threading
 import time
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 
 class FairGpuScheduler:
-    def __init__(self):
+    def __init__(self,preopen_learning=False,clock=None):
         self.condition=threading.Condition()
         self.queue=deque()
         self.active=None
         self.last={}
+        self.preopen_learning=preopen_learning
+        self.clock=clock or (lambda:datetime.now(timezone.utc))
 
-    @staticmethod
-    def priority(role):
+    def learning_first(self):
+        now=self.clock()
+        korea=now.astimezone(ZoneInfo("Asia/Seoul"))
+        new_york=now.astimezone(ZoneInfo("America/New_York"))
+        return self.preopen_learning and korea.hour>=20 and (new_york.hour,new_york.minute)<(9,30)
+
+    def priority(self,role):
+        if self.learning_first():
+            if "_learning_" in role:
+                return 0
+            if role=="candidate_publish":
+                return 1
+            return 3 if role.startswith("validation_") else 2
         if role in ("champion_live","candidate_live"):
             return 0
         if role=="candidate_publish":
@@ -48,7 +63,11 @@ class FairGpuScheduler:
     def snapshot(self):
         with self.condition:
             now=time.perf_counter()
-            return {"policy":"live_inference_first_then_publish_validation_learning",
+            now_utc=self.clock()
+            market_open=now_utc.astimezone(ZoneInfo("America/New_York")).replace(hour=9,minute=30,second=0,microsecond=0)
+            return {"policy":("preopen_replay_learning_first" if self.learning_first()
+                    else "live_inference_first_then_publish_validation_learning"),
+                "learning_priority_until_utc":market_open.astimezone(timezone.utc).isoformat() if self.learning_first() else None,
                 "active":self.active[1] if self.active else None,
                 "active_seconds":now-self.active[2] if self.active else 0,
                 "waiting":[{"role":role,"wait_seconds":now-requested}

@@ -809,7 +809,8 @@ class Supervisor:
                 (not metrics_state_path.exists() or
                  observer_state_path.stat().st_mtime_ns>metrics_state_path.stat().st_mtime_ns))
             if observer_runtime_is_newer and candidate_observer_state.get("learning_live_priority_enabled"):
-                metrics["learning_priority"]="live_inference_first_then_complete_replay_coverage"
+                metrics["learning_priority"]=candidate_observer_state.get("gpu_scheduler",{}).get(
+                    "policy","live_inference_first_then_complete_replay_coverage")
                 for field in ("learning_wait_reason","candidate_training","champion_training","gpu_scheduler"):
                     if field in candidate_observer_state:
                         metrics[field]=candidate_observer_state[field]

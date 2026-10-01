@@ -616,7 +616,8 @@ function renderOperationsOverview(d){
  text("opCandidateLag",!d.agent_process_running?"정지":lag(candidate.lag_seconds));
  text("opCandidateQueue","처리 대기 "+whole(candidate.pending??m.shared_observation?.pending)+"개 · 완료 "+timeOf(candidate.cursor_timestamp_utc));
  text("opGpuWork",!d.agent_process_running?"정지":schedule.policy?roleName(schedule.active):"새 계측 적용 대기");
- text("opGpuQueue",schedule.policy?"실시간 판단 우선 · 대기 "+((schedule.waiting||[]).map(x=>roleName(x.role)).join(" → ")||"없음"):"현재 실행 프로세스의 순서 계측 없음");
+ const learningFirst=schedule.policy==="preopen_replay_learning_first";
+ text("opGpuQueue",schedule.policy?(learningFirst?"본장 전 학습 우선 · "+timeOf(schedule.learning_priority_until_utc)+"까지":"실시간 판단 우선")+" · 대기 "+((schedule.waiting||[]).map(x=>roleName(x.role)).join(" → ")||"없음"):"현재 실행 프로세스의 순서 계측 없음");
  text("opLearningQueue",whole(m.replay_eligible_backlog)+"개");
  text("opLastLearning","마지막 학습·저장 "+timeOf(m.last_update_utc));
  if(m.learning_wait_reason){
@@ -624,6 +625,11 @@ function renderOperationsOverview(d){
   text("learningFlowHealth","시장 판단을 먼저 따라잡는 중입니다. 학습 회차는 현재 step 이후 대기하며 replay 경험은 보존합니다.");
   badge("learningState","판단 우선 · 학습 대기","warn");
   for(const role of ["Champion","Candidate"])text("dual"+role+"State","판단 우선 · 학습 대기");
+ }
+ if(learningFirst){
+  text("dualLearningStatus","본장 전 replay 학습 우선 · 시세·미처리 관찰 보존");
+  text("learningFlowHealth","20시 이후에는 두 모델의 미학습 경험을 우선 처리합니다. 판단·승급전은 남는 GPU 시간을 사용하며 본장 시작부터 판단 우선으로 복귀합니다.");
+  badge("learningState","본장 전 학습 우선","blue");
  }
  const warnings=[];
  if(candidate.status==="error")warnings.push("Candidate 판단 오류: "+candidate.reason);

@@ -22,6 +22,43 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_after_twenty_learning_priority_returns_at_us_regular_open(self):
+        from datetime import datetime,timezone
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        now=[datetime(2026,10,1,11,0,tzinfo=timezone.utc)]
+        scheduler=FairGpuScheduler(preopen_learning=True,clock=lambda:now[0])
+        self.assertTrue(scheduler.learning_first())
+        self.assertLess(scheduler.priority("champion_learning_step"),scheduler.priority("champion_live"))
+        self.assertEqual(scheduler.snapshot()["learning_priority_until_utc"],"2026-10-01T13:30:00+00:00")
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.live_priority_enabled=True;agent.candidate_live_inference_lock=scheduler
+        with scheduler.work("candidate_live"):
+            self.assertIsNone(agent._live_learning_wait_reason())
+        now[0]=datetime(2026,10,1,13,30,tzinfo=timezone.utc)
+        self.assertFalse(scheduler.learning_first())
+        self.assertLess(scheduler.priority("champion_live"),scheduler.priority("champion_learning_step"))
+        now[0]=datetime(2026,12,1,14,29,tzinfo=timezone.utc)
+        self.assertTrue(scheduler.learning_first())
+        now[0]=datetime(2026,12,1,14,30,tzinfo=timezone.utc)
+        self.assertFalse(scheduler.learning_first())
+
+    def test_preopen_learning_overtakes_waiting_inference_without_removing_it(self):
+        from datetime import datetime,timezone
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        scheduler=FairGpuScheduler(preopen_learning=True,
+            clock=lambda:datetime(2026,10,1,11,0,tzinfo=timezone.utc))
+        order=[];threads=[]
+        def work(role):
+            with scheduler.work(role): order.append(role)
+        with scheduler.work("running_work"):
+            for count,role in enumerate(("candidate_live","validation_candidate","champion_learning_step"),1):
+                worker=threading.Thread(target=work,args=(role,));worker.start();threads.append(worker)
+                with scheduler.condition:
+                    self.assertTrue(scheduler.condition.wait_for(lambda:len(scheduler.queue)==count,2))
+        for worker in threads:
+            worker.join(2);self.assertFalse(worker.is_alive())
+        self.assertEqual(order,["champion_learning_step","candidate_live","validation_candidate"])
+
     def test_replay_learning_waits_only_for_actual_gpu_inference(self):
         from stockrl.gpu_scheduler import FairGpuScheduler
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)

@@ -375,7 +375,8 @@ class OnlineGlobalAgent:
         self.candidate=None; self.validation_candidate=None; self.optimizer=None; self.steps=0; self.updates=0
         self.candidate_model_lock=threading.RLock()
         from .gpu_scheduler import FairGpuScheduler
-        self.candidate_live_inference_lock=FairGpuScheduler()
+        self.candidate_live_inference_lock=FairGpuScheduler(
+            preopen_learning=operating_rules().get("preopen_learning_priority",False))
         self.candidate_live_model_lock=threading.Lock()
         self.candidate_live_model=None
         self.candidate_live_model_version=None
@@ -1842,6 +1843,8 @@ class OnlineGlobalAgent:
         if scheduler is None or not hasattr(scheduler,"snapshot"):
             return None
         state=scheduler.snapshot()
+        if state.get("policy")=="preopen_replay_learning_first":
+            return None
         roles=[state.get("active")]+[item["role"] for item in state.get("waiting",[])]
         live=[role for role in roles if role in ("champion_live","candidate_live")]
         if live:
@@ -2782,7 +2785,7 @@ class OnlineGlobalAgent:
               "live_accounts_preserved":not self.operating_rules.get("daily_reset_live_accounts",False),
               "goal_reward_in_competition_score":False,"shared_replay":True},
           "replay_persistence":"durable_fifo_shared_frames_sqlite",
-          "learning_priority":"live_inference_first_then_complete_replay_coverage",
+          "learning_priority":metrics.get("gpu_scheduler",{}).get("policy","live_inference_first_then_complete_replay_coverage"),
           "replay_untrained_count":replay_stats["untrained"],
           "replay_pending_count":replay_stats.get("pending",0),
           "replay_database_path":str(self.replay.journal_path),
