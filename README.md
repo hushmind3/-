@@ -196,3 +196,12 @@ ITCH, FI-2010, FinRL, TradeMaster, MacroHFT 등 공개 시장 데이터와 연�
 ## Feedback
 
 Dear teachers, please send your feedback to [**hushmind@gmail.com**](mailto:hushmind@gmail.com)
+
+## 실행 중 수정과 GPU 학습 최적화
+
+- HTML/CSS/JS 수정은 브라우저 새로고침으로 적용합니다.
+- 웹서버 재시작은 기존 feed/agent PID와 모델 메모리를 유지합니다. 전체 정지는 별도 동작입니다.
+- `configs/online_learning.json`의 batch, optimizer 횟수, GPU 우선순위, 새 경험의 보상 연결 길이는 학습·저장 완료 후 다음 회차부터 재적용됩니다. 기존 replay 보상과 진행 중 승급전 조건은 유지합니다.
+- `online/learning.py`의 학습 계산과 `online/losses.py`는 완료된 학습 회차 사이에서 재적용됩니다. 잘못된 설정이나 Python 문법은 거부하고 마지막 정상 상태를 유지합니다. 모델 구조·활성 계좌 목표 변경은 별도 마이그레이션 대상입니다.
+- `/api/runtime`은 실행 모드, 설정·코드 적용 상태와 GPU 작업을 가볍게 조회합니다. 대시보드의 입력·계측 상세에서도 적용값·보류·오류를 확인할 수 있습니다.
+- GPU 학습은 공유 입력의 경험 손실을 벡터 연산으로 계산하고 fused AdamW를 사용합니다. 각 모델의 경험당 학습 횟수, 보상, rolling 입력, 저장 후 삭제 규칙은 유지합니다.

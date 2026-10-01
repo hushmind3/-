@@ -113,3 +113,27 @@ render=function(d){
   if(observer.status==="context_only")badge("candidateLiveBadge","문맥 갱신 · 풀 추론 없음","");
  }
 };
+
+const renderBeforeRuntimeUpdates=render;
+render=function(d){
+ renderBeforeRuntimeUpdates(d);
+ let panel=document.getElementById("runtimeUpdatesPanel");
+ if(!panel){
+  panel=document.createElement("details");panel.id="runtimeUpdatesPanel";panel.className="details";
+  const title=document.createElement("summary");title.textContent="설정·학습 코드 적용 상태 · 재시작 없이 갱신";panel.appendChild(title);
+  const body=document.createElement("p");body.id="runtimeUpdatesBody";body.style.whiteSpace="pre-wrap";panel.appendChild(body);
+  document.getElementById("runtimeDetails").appendChild(panel);
+ }
+ const m=d.metrics||{},u=m.runtime_updates,r=u&&u.applied_rules;
+ const lines=["UI 수정: 새로고침으로 적용 · 웹서버 재시작: 시세 수집·모델 프로세스 유지",
+  "학습 설정·계산 코드 수정: 현재 학습·저장을 끝낸 뒤 다음 회차부터 적용"];
+ if(r){
+  lines.push(`현재 적용: batch ${r.training_batch_size} × optimizer ${r.training_optimizer_steps} · 결과 연결 ${r.reward_credit_seconds}초`);
+  lines.push(`GPU 학습: ${m.champion_optimizer_backend||"확인 중"} / ${m.candidate_optimizer_backend||"확인 중"} · 손실 계산 ${m.candidate_loss_backend||m.champion_loss_backend||"확인 중"}`);
+  if(u.applied_utc)lines.push("최근 적용: "+new Date(u.applied_utc).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"}));
+  const pending=Object.keys(u.deferred_rules||{});
+  if(pending.length)lines.push("보류: "+pending.join(", ")+" · 진행 중 승급전 조건과 활성 계좌 목표·입력 구조는 별도 적용 필요");
+  if(u.error)lines.push("적용 실패 · 기존 정상 값 유지: "+u.error);
+ }else lines.push("실행 중 agent의 적용 상태를 확인 중입니다.");
+ document.getElementById("runtimeUpdatesBody").textContent=lines.join("\n");
+};

@@ -335,6 +335,8 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
         _atomic_json({"reward_version":REWARD_VERSION,"horizon":str(self.horizon)},self.validation_meta_path)
         self.metrics["replay_completed_on_policy_change"]=self.replay.finalize_completed(self.candidate_replay_passes)
         self.thread=threading.Thread(target=self._learner,name="global-learner",daemon=True)
+        from .online.runtime_updates import RuntimeUpdates
+        self.runtime_updates=RuntimeUpdates(self)
 
     def start(self):
         if self.validation_queue_thread.ident is None: self.validation_queue_thread.start()

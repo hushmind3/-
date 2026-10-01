@@ -57,6 +57,8 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         self.autonomy_enabled = bool(settings.get("paper_enabled", settings.get("autonomy_enabled", True)))
         self.observe_enabled = bool(settings.get("observe_enabled", True))
         self.learning_enabled = bool(settings.get("learning_enabled", True))
+        from .workers import adopt
+        adopt(self)
         self.worker = threading.Thread(target=self._monitor, daemon=True, name="web-supervisor")
         self.worker.start()
 

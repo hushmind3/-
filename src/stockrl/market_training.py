@@ -272,15 +272,13 @@ class ContextConditionedTransformer(nn.Module):
             if i % 2 == 0:
                 z = x.permute(0, 2, 1, 3).reshape(b*n, t, -1)
                 mask = (~valid.permute(0, 2, 1)).reshape(b*n, t)
-                all_pad = mask.all(-1)
-                if all_pad.any(): mask[all_pad, 0] = False
+                mask[:, 0] &= ~mask.all(-1)
                 z = checkpoint(block, z, mask, use_reentrant=False)
                 x = z.reshape(b, n, t, -1).permute(0, 2, 1, 3)
             else:
                 z = x.reshape(b*t, n, -1)
                 mask = (~valid).reshape(b*t, n)
-                all_pad = mask.all(-1)
-                if all_pad.any(): mask[all_pad, 0] = False
+                mask[:, 0] &= ~mask.all(-1)
                 z = checkpoint(block, z, mask, use_reentrant=False)
                 x = z.reshape(b, t, n, -1)
             x = x * valid[..., None]

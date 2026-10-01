@@ -117,14 +117,19 @@ class GlobalMarketTransformer(nn.Module):
             x = x + self.time_scale_embedding(scale_ids)[:, None, None, :]
         valid = valid_mask.bool()
         x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        prefix_cache=getattr(self,"_online_prefix_cache",None)
+        prefix_key=getattr(self,"_online_prefix_key",None)
+        prefix_layers=getattr(self,"_online_prefix_layers",0) or 0
+        cached=prefix_cache.get(prefix_key) if prefix_cache is not None and prefix_key is not None else None
+        if cached is not None: x=cached
         for i, block in enumerate(self.blocks):
+            if cached is not None and i<prefix_layers: continue
             if i % 2 == 0:  # within-asset temporal attention
                 z = x.permute(0, 2, 1, 3).reshape(b*n, t, -1)
                 mask = (~valid.permute(0, 2, 1)).reshape(b*n, t)
                 # MHA returns NaNs for fully masked rows. Give them one safe key.
-                all_pad = mask.all(-1)
-                if all_pad.any(): mask[all_pad, 0] = False
-                if self.training and torch.is_grad_enabled():
+                mask[:, 0] &= ~mask.all(-1)
+                if self.training and torch.is_grad_enabled() and (z.requires_grad or any(p.requires_grad for p in block.parameters())):
                     z = checkpoint(lambda value, layer=block, pad_mask=mask: layer(value, pad_mask),
                                    z, use_reentrant=False)
                 else:
@@ -133,15 +138,16 @@ class GlobalMarketTransformer(nn.Module):
             else:  # cross-asset/cross-market attention at each timestamp
                 z = x.reshape(b*t, n, -1)
                 mask = (~valid).reshape(b*t, n)
-                all_pad = mask.all(-1)
-                if all_pad.any(): mask[all_pad, 0] = False
-                if self.training and torch.is_grad_enabled():
+                mask[:, 0] &= ~mask.all(-1)
+                if self.training and torch.is_grad_enabled() and (z.requires_grad or any(p.requires_grad for p in block.parameters())):
                     z = checkpoint(lambda value, layer=block, pad_mask=mask: layer(value, pad_mask),
                                    z, use_reentrant=False)
                 else:
                     z = block(z, mask)
                 x = z.reshape(b, t, n, -1)
             x = x * valid[..., None]
+            if cached is None and prefix_cache is not None and i+1==prefix_layers:
+                prefix_cache.put(prefix_key,x)
         x = self.final_norm(self.last_observed_state(x, valid))
         return self.policy_head(x), self.value_head(x).squeeze(-1)
 

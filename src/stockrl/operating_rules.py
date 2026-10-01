@@ -6,10 +6,11 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 SEOUL = ZoneInfo("Asia/Seoul")
+RULES_PATH = Path(__file__).resolve().parents[2]/"configs"/"online_learning.json"
 
 
-def operating_rules():
-    path=Path(__file__).resolve().parents[2]/"configs"/"online_learning.json"
+def operating_rules(path=None):
+    path=Path(path) if path is not None else RULES_PATH
     rules=json.loads(path.read_text(encoding="utf-8"))
     if not 0 <= int(rules["account_reset_hour_kst"]) <= 23:
         raise ValueError("account_reset_hour_kst must be 0..23")

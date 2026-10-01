@@ -1,6 +1,7 @@
 """HTTP routes and web-server entrypoint."""
 from __future__ import annotations
 import json
+import gzip
 import os
 import sys
 import threading
@@ -12,6 +13,7 @@ from urllib.parse import urlparse
 from ..paths import default_runtime_dir
 from .resources import DASHBOARD_PATH, PAGE, ROOT, dashboard_asset
 from .runtime import Supervisor
+from .workers import handoff
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
           device: str = "auto", candidate_every: int = 16, fee: float = .001,
@@ -21,6 +23,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     runtime_path = Path(runtime) if runtime is not None else default_runtime_dir()
     if not runtime_path.is_absolute():
         runtime_path = ROOT / runtime_path
+    resume_workers=(runtime_path/"web_workers.json").exists()
     supervisor = Supervisor(runtime_path, device, candidate_every, fee, horizon, config, initial_champion,
                             model_dir, settings_dir)
     restart_server_requested = threading.Event()
@@ -33,8 +36,13 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             return
 
         def _send(self, payload, code=200, content_type="application/json; charset=utf-8"):
-            data = payload.encode("utf-8") if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            data = payload.encode("utf-8") if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False,separators=(",",":")).encode("utf-8")
+            compressed="gzip" in self.headers.get("Accept-Encoding","") and len(data)>1024
+            if compressed: data=gzip.compress(data,compresslevel=1)
             self.send_response(code); self.send_header("Content-Type", content_type)
+            if compressed:
+                self.send_header("Content-Encoding","gzip")
+                self.send_header("Vary","Accept-Encoding")
             self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(data)))
             self.end_headers(); self.wfile.write(data)
 
@@ -52,7 +60,18 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                     return self._send({"error": "asset not found"}, 404)
                 return self._send(asset[0], content_type=asset[1])
             if route == "/api/health":
-                return self._send({"ok": True, "service": "stockrl", "port": port})
+                return self._send({"ok": True, "service": "stockrl", "port": port,
+                    "web_pid":os.getpid(),"worker_pids":{name:p.pid for name,p in supervisor.children.items() if p.poll() is None}})
+            if route == "/api/runtime":
+                state=(supervisor.profile or supervisor.runtime/supervisor.mode)/"agent"
+                from .health import _json
+                metrics=_json(state/"metrics.json")
+                return self._send({"modes":_json(state/"autonomy.json"),
+                    "runtime_updates":metrics.get("runtime_updates"),
+                    "gpu_scheduler":metrics.get("gpu_scheduler"),
+                    "learning_active_role":metrics.get("learning_active_role"),
+                    "champion_training":metrics.get("champion_training"),
+                    "candidate_training":metrics.get("candidate_training")})
             if route == "/api/status":
                 return self._send(supervisor.status())
             if route == "/api/provider":
@@ -79,7 +98,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             if route == "/api/server/restart":
                 if restart_server_requested.is_set():
                     return self._send({"error": "Server restart is already in progress."}, 409)
-                self._send({"ok": True, "message": "Server restart accepted; saving and stopping live workers."})
+                self._send({"ok": True, "message": "Web server restart accepted; feed and models keep running."})
                 threading.Timer(0.5, restart_server_requested.set).start()
                 return
             if route == "/api/start":
@@ -159,7 +178,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     server.daemon_threads = True
     address = server.server_address
     url = f"http://127.0.0.1:{address[1]}/" if host in ("0.0.0.0", "") else f"http://{host}:{address[1]}/"
-    if auto_start:
+    if auto_start and not resume_workers:
         supervisor.start(supervisor.mode)
     thread = threading.Thread(target=server.serve_forever, daemon=True, name="stockrl-web")
     thread.start()
@@ -172,13 +191,14 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     except KeyboardInterrupt:
         pass
     finally:
-        supervisor.stop()
+        if restart_server_requested.is_set():
+            handoff(supervisor)
+        else:
+            supervisor.stop()
         server.shutdown(); server.server_close()
         if restart_server_requested.is_set():
-            # Wait for the existing worker processes to save and exit before
-            # relaunching the server, avoiding duplicate feed/agent processes.
-            while supervisor.stopping:
-                time.sleep(0.25)
+            # Only replace the HTTP/controller process. Reattach existing
+            # worker identities after exec instead of loading model weights.
             original_argv = getattr(sys, "orig_argv", None)
             if original_argv and len(original_argv) > 1:
                 os.execv(sys.executable, [sys.executable, *original_argv[1:]])

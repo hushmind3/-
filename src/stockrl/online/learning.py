@@ -12,8 +12,30 @@ from ..global_transformer import GlobalMarketTransformer
 from ..multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES
 from .checkpoint import load_model, save_model
 from .data import Experience, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, TrainingMetrics
+from .losses import shared_experience_losses
+from .prefix_cache import FrozenPrefixCache, prefix_input, install_prefix_forward
 
 class _LearningMixin:
+    def _refresh_runtime_update_driver(self):
+        """Update the small boundary controller without replacing its state."""
+        updater=getattr(self,"runtime_updates",None)
+        if updater is None: return
+        from pathlib import Path
+        import types
+        from . import runtime_updates
+        path=Path(runtime_updates.__file__)
+        stamp=path.stat().st_mtime_ns
+        if getattr(updater,"_driver_stamp",None)==stamp: return
+        try:
+            module=types.ModuleType(runtime_updates.__name__)
+            module.__dict__.update(__package__=runtime_updates.__package__,__file__=str(path))
+            exec(compile(path.read_text(encoding="utf-8"),str(path),"exec"),module.__dict__)
+            updater.__class__=module.RuntimeUpdates
+            updater._driver_stamp=stamp
+            updater.accepted_signature=updater.signature()
+        except Exception as exc:
+            self.metrics["runtime_updates"].update(status="rejected",error=f"runtime controller: {exc}"[:800])
+
     def _new_model_like(self, source, device):
         contextual=bool(getattr(source,"_stockrl_uses_market_context",False))
         source_dtype=next(source.parameters()).dtype
@@ -149,6 +171,12 @@ class _LearningMixin:
     def _wait_for_live_inference(self):
         last_report=0.0
         while not self.stop.is_set():
+            updater=getattr(self,"runtime_updates",None)
+            if updater is not None and updater.pending_change() and (
+                self.metrics.get("candidate_training") or self.metrics.get("champion_training")):
+                self.metrics["runtime_updates"]["status"]="pending_batch_save"
+                self.metrics["learning_wait_reason"]="설정·학습 코드 변경: 현재 배치를 저장한 뒤 재적용"
+                return False
             if not self._run_modes()["learning_enabled"]:
                 self.metrics["learning_wait_reason"]="사용자가 replay 학습을 껐습니다."
                 return False
@@ -163,6 +191,9 @@ class _LearningMixin:
 
     def _learner(self):
         while not self.stop.wait(.1):
+            updater=getattr(self,"runtime_updates",None)
+            if updater is not None:
+                if updater.poll(self): self._write_metrics()
             if not self._run_modes()["learning_enabled"]:
                 self.metrics["learning_wait_reason"]="사용자가 replay 학습을 껐습니다."
                 self.stop.wait(.5)
@@ -334,7 +365,7 @@ class _LearningMixin:
             was_training=model.training
             try:
                 model.eval()
-                with torch.no_grad():
+                with torch.no_grad(), prefix_input(model,successor,getattr(self,"_frozen_prefix_cache",None)):
                     if getattr(model,"_stockrl_uses_market_context",False):
                         output=model(*args,portfolio_state=pstate,account_state=astate,
                             return_allocation=True,multiscale_state=mstate,
@@ -350,6 +381,10 @@ class _LearningMixin:
         return cache[key]
 
     def _train_model(self,learner):
+        self._refresh_runtime_update_driver()
+        install_prefix_forward()
+        if not hasattr(self,"_frozen_prefix_cache"):
+            self._frozen_prefix_cache=FrozenPrefixCache()
         metrics=TrainingMetrics(self.metrics,learner)
         from datetime import datetime, timezone
         training_started=time.perf_counter()
@@ -384,7 +419,10 @@ class _LearningMixin:
         trainable_parameters=self._configure_candidate_trainables(candidate,learner)
         opt=torch.optim.AdamW(
             trainable_parameters,lr=self.lr,weight_decay=.01,
-            eps=1e-4 if self.device.type=="cuda" else 1e-8,foreach=False)
+            eps=1e-4 if self.device.type=="cuda" else 1e-8,
+            **({"fused":True} if self.device.type=="cuda" else {"foreach":False}))
+        metrics["candidate_optimizer_backend"]="fused_adamw" if self.device.type=="cuda" else "adamw"
+        metrics["candidate_loss_backend"]="shared_window_vectorized"
         if self.device.type=="cuda":
             torch.cuda.synchronize(self.device)
             torch.cuda.reset_peak_memory_stats(self.device)
@@ -439,7 +477,7 @@ class _LearningMixin:
                 key=getattr(experience,"_replay_window_key",None) or self.replay._window_key(experience)
                 groups.setdefault(key,[]).append(experience)
             for group in groups.values():
-                with self._learning_gpu_segment(learner+"_learning_step",step_segments):
+                with self._learning_gpu_segment(learner+"_learning_step",step_segments), prefix_input(candidate,group[0],self._frozen_prefix_cache):
                     args,pstate,astate,mstate=self._pack([group[0]])
                     if use_portfolio:
                         logits,values,allocations=candidate(*args,portfolio_state=pstate,
@@ -449,26 +487,26 @@ class _LearningMixin:
                                if getattr(group[0],"daily_history",None) is not None else {}))
                     else:
                         logits,values=candidate(*args); allocations=None
-                    losses=[]
+                    successors=[]
                     for experience in group:
                         successor_values=None
                         if experience.bootstrap_discount:
                             successor_values=self._credit_successor_values(candidate,experience,successor_cache)
-                        loss=self._experience_loss(logits,values,allocations,experience,successor_values)
-                        if loss is None:
-                            continue
-                        losses.append(loss)
-                        successful_batch.append(experience)
-                    if losses:
-                        (torch.stack(losses).sum()/len(batch)).backward()
-                        valid_samples+=len(losses)
-                        loss_values.extend(torch.stack([loss.detach() for loss in losses]).cpu().tolist())
+                        successors.append(successor_values)
+                    losses,accepted,rejected=shared_experience_losses(
+                        logits,values,allocations,group,successors)
+                    self.metrics["nonfinite_updates"]+=rejected
+                    successful_batch.extend(accepted)
+                    if accepted:
+                        (losses.sum()/len(batch)).backward()
+                        valid_samples+=len(accepted)
+                        loss_values.extend(losses.detach().cpu().tolist())
                     metrics["candidate_window_forwards_current"]+=1
                     del args,pstate,astate,mstate,logits,values,allocations,losses
             if not valid_samples:
                 continue
             with self._learning_gpu_segment(learner+"_learning_step",step_segments):
-                nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
+                nn.utils.clip_grad_norm_(trainable_parameters,1.0,foreach=True)
                 with self.candidate_model_lock:
                     opt.step()
                     if self.device.type=="cuda": torch.cuda.synchronize(self.device)
@@ -535,7 +573,7 @@ class _LearningMixin:
             del candidate,opt
             self._release_cuda_cache()
             return
-        if not all(torch.isfinite(p).all() for p in candidate.parameters()):
+        if not torch.stack([torch.isfinite(p).all() for p in candidate.parameters()]).all().item():
             metrics["nonfinite_updates"]+=1
             metrics["rejections"]+=1
             self._schedule_candidate_retry()
@@ -551,8 +589,11 @@ class _LearningMixin:
             del candidate,opt
             self._release_cuda_cache()
             return
-        delta=sum((candidate.state_dict()[k].float()-v.detach().float()).abs().sum().item()
-                  for k,v in original.state_dict().items())
+        with torch.no_grad():
+            delta_tensor=torch.zeros((),device=self.device,dtype=torch.float32)
+            for k,v in original.state_dict().items():
+                delta_tensor.add_((candidate.state_dict()[k].float()-v.detach().float()).abs().sum())
+            delta=delta_tensor.item()
         metrics["weight_delta_l1"].append(delta)
         metrics["weight_delta_l1"]=metrics["weight_delta_l1"][-2000:]
         metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
@@ -627,6 +668,11 @@ class _LearningMixin:
             "legacy_short_reward_samples":sum(not e.credit_observations and not e.source.startswith("teacher") for e in used_experiences),
             "total_seconds":metrics["last_candidate_total_seconds"],
             "compute_seconds":metrics["last_candidate_compute_seconds"],
+            "samples_per_compute_second":candidate_samples/max(metrics["last_candidate_compute_seconds"],1e-9),
+            "samples_per_total_second":candidate_samples/max(metrics["last_candidate_total_seconds"],1e-9),
+            "optimizer_backend":metrics.get("candidate_optimizer_backend"),
+            "loss_backend":metrics.get("candidate_loss_backend"),
+            "frozen_prefix_cache":self._frozen_prefix_cache.snapshot(),
             "step_compute_seconds":metrics["last_candidate_step_compute_seconds"],
             "peak_allocated_bytes":metrics["last_candidate_peak_allocated_bytes"],
             "completed_utc":metrics["last_update_utc"],

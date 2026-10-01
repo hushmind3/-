@@ -125,6 +125,8 @@ class _StatusMixin:
             profile = self.profile or (self.runtime / self.mode)
             state, data = profile / "agent", profile / "market.csv"
             metrics = _json(state / "metrics.json")
+            applied_rules=metrics.get("runtime_updates",{}).get("applied_rules")
+            if applied_rules: self.operating_rules=dict(applied_rules)
             feed_metrics = _json(profile / ("live_feed_metrics.json" if self.mode == "live" else "mock_feed_metrics.json"))
             instrument_settings=_json(self.config)
             instruments=instrument_settings.get("instruments",[])
