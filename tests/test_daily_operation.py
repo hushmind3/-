@@ -22,6 +22,153 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_score_changes_are_once_per_timestamp_and_reset_is_not_profit(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(journal_path=path)
+            account=PaperAccount.in_memory(.001,.0001)
+            episode=account.state["episode_id"]
+            replay.record_account_score("champion","T0",episode,account.reward_points())
+            for stamp,points,change in [("T1",1,1),("T2",1,0),("T3",2,1),("T4",.5,-1.5)]:
+                account.state["books"]["KRW"]["cash"]=10_000_000*(1+points/100)
+                actual=replay.record_account_score("champion",stamp,episode,account.reward_points())
+                self.assertAlmostEqual(actual["points"]["KRW"],points)
+                self.assertAlmostEqual(actual["change"]["KRW"],change)
+                self.assertEqual(replay.record_account_score("champion",stamp,episode,account.reward_points()),actual)
+            replay=GlobalReplayBuffer(journal_path=path)
+            actual=replay.record_account_score("champion","T5",episode,account.reward_points())
+            self.assertAlmostEqual(actual["change"]["KRW"],0)
+            account.reset()
+            actual=replay.record_account_score("champion","T6",account.state["episode_id"],account.reward_points())
+            self.assertIsNone(actual["change"])
+            self.assertAlmostEqual(actual["points"]["KRW"],0)
+
+    def test_future_gain_can_outweigh_immediate_cost_without_reward_duplication(self):
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.device=torch.device("cpu");agent.metrics={"nonfinite_updates":0}
+        exp=Experience(panel.features,panel.symbol_ids,panel.market_ids,panel.asset_ids,
+            panel.observed,0,2,-.001,str(panel.dates[0]),
+            behavior_log_prob=float(np.log(1/3)),bootstrap_discount=1.0,bootstrap_symbol_index=0)
+        logits=torch.zeros(1,2,3,requires_grad=True);values=torch.zeros(1,2,requires_grad=True)
+        successor=torch.tensor([[.5,0.0]],requires_grad=True)
+        agent._experience_loss(logits,values,None,exp,successor).backward()
+        self.assertLess(float(logits.grad[0,0,2]),0)
+        self.assertIsNone(successor.grad)
+        with self.assertRaises(ValueError):agent._experience_loss(logits,values,None,exp)
+
+    def test_real_optimizer_uses_successor_and_shares_its_forward(self):
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.device=torch.device("cpu");agent.window=4;agent.metrics={"nonfinite_updates":0}
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+            n_markets=4,n_asset_types=4,max_seq_len=4)
+        model=ContextConditionedTransformer(GlobalMarketTransformer(cfg))
+        model._stockrl_uses_market_context=True;agent.champion=model
+        args=panel.window(0,4,include_context=True)
+        pstate,astate=PaperAccount.in_memory(0,0).model_inputs(panel,0)
+        exp=Experience(args[0][0].numpy(),panel.symbol_ids,panel.market_ids,panel.asset_ids,
+            args[4][0].numpy(),0,2,.01,str(panel.dates[0]),market_context=args[5][0].numpy(),
+            portfolio_state=pstate,account_state=astate,bootstrap_discount=1,
+            bootstrap_symbol_index=0,bootstrap_window_key="shared-next",behavior_log_prob=float(np.log(1/3)))
+        exp._bootstrap_inputs={name:getattr(exp,name,None) for name in (
+            "features","symbol_ids","market_ids","asset_ids","valid_mask","market_context",
+            "portfolio_state","account_state","multiscale_state","daily_history")}
+        optimizer=torch.optim.AdamW(model.parameters(),lr=1e-3)
+        before={k:v.detach().clone() for k,v in model.state_dict().items()}
+        cache={}
+        with patch.object(model,"forward",wraps=model.forward) as forward:
+            future=agent._credit_successor_values(model,exp,cache)
+            self.assertIs(agent._credit_successor_values(model,exp,cache),future)
+            self.assertEqual(forward.call_count,1)
+        self.assertTrue(model.training);self.assertFalse(future.requires_grad)
+        a,p,s,m=agent._pack([exp])
+        logits,values,allocation=model(*a,portfolio_state=p,account_state=s,
+            return_allocation=True,multiscale_state=m)
+        loss=agent._experience_loss(logits,values,allocation,exp,future)
+        loss.backward();optimizer.step()
+        self.assertTrue(torch.isfinite(loss))
+        self.assertTrue(any(not torch.equal(before[k],v) for k,v in model.state_dict().items()))
+
+    def test_account_reset_ends_old_credit_without_new_seed_bootstrap(self):
+        from test_online_pipeline import PipelineTests
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.replay=GlobalReplayBuffer();agent.metrics={"paper_experiences_seen":0}
+        agent.paper_account=PaperAccount.in_memory(0,0)
+        agent.horizon_kind="bars";agent.horizon_amount=1
+        exp=PipelineTests.experience()
+        decision={**vars(exp),"symbol":"TEST.KS","action":1,"timestamp":str(panel.dates[0]),
+            "entry_price":100,"equity_before":2,"symbol_pnl_before":0,
+            "credit_observations_target":60,"reset_terminal":True,
+            "reset_equity":1.98,"reset_symbol_net_pnl":-.02}
+        self.assertEqual(agent._mature_portfolio([decision],panel,1),[])
+        rows=agent.replay.pending_batch(8)
+        self.assertTrue(all(e.bootstrap_discount==0 and e.reward<0 for e in rows))
+        self.assertAlmostEqual(next(e.portfolio_reward for e in rows if e.portfolio_transition),-.02)
+
+    def test_fifteen_second_observations_keep_same_credit_duration(self):
+        from test_online_pipeline import PipelineTests
+        panel=Panel();panel.dates=(panel.dates[0]+np.arange(8)*np.timedelta64(15,"s"))
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.replay=GlobalReplayBuffer();agent.metrics={"paper_experiences_seen":0}
+        agent.window=4;agent.champion=FixedPolicy();agent.paper_account=PaperAccount.in_memory(0,0)
+        agent.horizon_kind="bars";agent.horizon_amount=1
+        exp=PipelineTests.experience()
+        pending=[{**vars(exp),"symbol":"TEST.KS","action":1,"timestamp":str(panel.dates[0]),
+            "entry_price":100,"equity_before":2,"symbol_pnl_before":0,
+            "credit_observations_target":1,"credit_seconds":60}]
+        for i in (1,2,3):
+            pending=agent._mature_portfolio(pending,panel,i)
+            self.assertEqual(len(pending),1)
+            self.assertEqual(len(agent.replay),0)
+        self.assertEqual(agent._mature_portfolio(pending,panel,4),[])
+        self.assertTrue(all(e.credit_observations==4 for e in agent.replay.pending_batch(8)))
+
+    def test_long_credit_pending_and_successor_survive_restart_and_dual_ack(self):
+        panel=Panel();panel.closes[:,0]=[100,99,98,106,107,108,109,110]
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.window=4;agent.champion=FixedPolicy()
+            agent.replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            agent.metrics={"paper_experiences_seen":0};agent.horizon_kind="bars";agent.horizon_amount=1
+            account=PaperAccount.in_memory(0,0);agent.paper_account=account
+            book=account.state["books"]["KRW"]
+            book["cash"]-=10_000;book["positions"]["TEST.KS"]={"quantity":100,"average_cost":100}
+            book["marks"]["TEST.KS"]=100
+            args=agent._window(panel,0);pstate,astate=account.model_inputs(panel,0)
+            decision={"features":args[0][0].numpy(),"symbol_ids":panel.symbol_ids,
+                "market_ids":panel.market_ids,"asset_ids":panel.asset_ids,"valid_mask":args[4][0].numpy(),
+                "portfolio_state":pstate,"account_state":astate,"market_context":args[5][0].numpy(),
+                "symbol":"TEST.KS","symbol_index":0,"action":1,"timestamp":str(panel.dates[0]),
+                "reward_version":REWARD_VERSION,"equity_before":account.normalized_equity(),
+                "symbol_pnl_before":account.symbol_net_pnl("TEST.KS"),"credit_observations_target":3,
+                "entry_price":100,"behavior_log_prob":float(np.log(1/3))}
+            pending=[decision]
+            for i in (1,1,2):
+                account.process_bar(panel,i,True)
+                pending=agent._mature_portfolio(pending,panel,i)
+                self.assertEqual(len(pending),1)
+            self.assertEqual(pending[0]["credit_observations_elapsed"],2)
+            # Credit duration does not become shorter with finer observations.
+            pending[0]["credit_seconds"]=180
+            agent.replay.save_pending([],pending)
+            self.assertEqual(agent.replay.load_pending("portfolio")[0]["credit_seconds"],180)
+            agent.replay.save_pending([],pending)
+            agent.replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            pending=agent.replay.load_pending("portfolio")
+            account.process_bar(panel,3,True)
+            self.assertEqual(agent._mature_portfolio(pending,panel,3),[])
+            agent.replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            rows=agent.replay.pending_batch(8)
+            self.assertEqual(len(rows),2)
+            self.assertTrue(all(e.reward>0 and e.credit_observations==3 for e in rows))
+            self.assertTrue(all(e.bootstrap_discount==1 and e._bootstrap_inputs for e in rows))
+            self.assertEqual(len({e.bootstrap_window_key for e in rows}),1)
+            ids=agent.replay.row_ids_for(rows)
+            agent.replay.acknowledge_training(dict.fromkeys(ids,1),learner="champion")
+            self.assertEqual(len(agent.replay),2)
+            agent.replay.acknowledge_training(dict.fromkeys(ids,1),learner="candidate")
+            with closing(agent.replay._connect()) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM windows").fetchone()[0],0)
+
     def test_profit_reward_increases_action_and_loss_reward_decreases_it(self):
         panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
         agent.device=torch.device("cpu");agent.metrics={"nonfinite_updates":0}

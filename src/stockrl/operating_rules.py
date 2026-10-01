@@ -17,6 +17,12 @@ def operating_rules():
     for key in ("training_batch_size","training_optimizer_steps"):
         if int(rules[key]) < 1:
             raise ValueError(f"{key} must be positive")
+    if int(rules.get("reward_credit_observations",60)) < 1:
+        raise ValueError("reward_credit_observations must be positive")
+    if int(rules.get("reward_credit_seconds",3600)) < 1:
+        raise ValueError("reward_credit_seconds must be positive")
+    if float(rules.get("reward_credit_discount",1.0)) != 1.0:
+        raise ValueError("net-equity reward uses undiscounted credit (1.0)")
     return rules
 
 

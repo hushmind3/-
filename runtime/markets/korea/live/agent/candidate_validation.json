@@ -1,10 +1,10 @@
 {
   "status": "collecting",
-  "start_after": "2026-10-01T04:52:00.000000000",
-  "bars": 9,
-  "source_champion_sha256": "e73f8ecb88b6f38ab78caeb49fa99d5724183a7982380b392d51cae9b1fe35e3",
-  "source_candidate_version": 5921,
-  "source_champion_version": 5025,
+  "start_after": "2026-10-01T05:55:00.000000000",
+  "bars": 11,
+  "source_champion_sha256": "cd21f702146a9e5add3ee3fd19e113034b2d5f67b23d00e23efa696c04a42851",
+  "source_candidate_version": 6001,
+  "source_champion_version": 5113,
   "source_promotion_epoch": 3,
   "both_models_frozen": true,
   "trained_replay_row_ids": [],
@@ -35,6 +35,10 @@
         "action": "HOLD"
       },
       {
+        "symbol": "0010S0.KQ",
+        "action": "HOLD"
+      },
+      {
         "symbol": "001440.KS",
         "action": "HOLD"
       },
@@ -60,7 +64,7 @@
       },
       {
         "symbol": "005380.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "005490.KS",
@@ -72,7 +76,7 @@
       },
       {
         "symbol": "005930.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "005935.KS",
@@ -100,7 +104,7 @@
       },
       {
         "symbol": "009830.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "010060.KS",
@@ -108,7 +112,7 @@
       },
       {
         "symbol": "010120.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "010140.KS",
@@ -124,11 +128,7 @@
       },
       {
         "symbol": "011070.KS",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "011170.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "011200.KS",
@@ -159,12 +159,8 @@
         "action": "HOLD"
       },
       {
-        "symbol": "018260.KS",
-        "action": "HOLD"
-      },
-      {
         "symbol": "021240.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "024110.KS",
@@ -176,7 +172,7 @@
       },
       {
         "symbol": "028260.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "030200.KS",
@@ -184,11 +180,11 @@
       },
       {
         "symbol": "030530.KQ",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "032830.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "033780.KS",
@@ -200,7 +196,7 @@
       },
       {
         "symbol": "034730.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "035420.KS",
@@ -208,11 +204,7 @@
       },
       {
         "symbol": "035720.KS",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "035760.KQ",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "036540.KQ",
@@ -228,7 +220,7 @@
       },
       {
         "symbol": "042700.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "043260.KQ",
@@ -268,7 +260,7 @@
       },
       {
         "symbol": "067310.KQ",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "068270.KS",
@@ -288,7 +280,7 @@
       },
       {
         "symbol": "089970.KQ",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "093370.KS",
@@ -300,10 +292,6 @@
       },
       {
         "symbol": "096770.KS",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "103590.KS",
         "action": "HOLD"
       },
       {
@@ -323,12 +311,8 @@
         "action": "HOLD"
       },
       {
-        "symbol": "180640.KS",
-        "action": "HOLD"
-      },
-      {
         "symbol": "201490.KQ",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "207940.KS",
@@ -343,16 +327,12 @@
         "action": "HOLD"
       },
       {
-        "symbol": "251270.KS",
-        "action": "HOLD"
-      },
-      {
         "symbol": "267250.KS",
         "action": "HOLD"
       },
       {
         "symbol": "272210.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "278470.KS",
@@ -364,7 +344,7 @@
       },
       {
         "symbol": "316140.KS",
-        "action": "HOLD"
+        "action": "BUY"
       },
       {
         "symbol": "319660.KQ",
@@ -399,10 +379,6 @@
         "action": "HOLD"
       },
       {
-        "symbol": "393210.KQ",
-        "action": "HOLD"
-      },
-      {
         "symbol": "396300.KQ",
         "action": "HOLD"
       },
@@ -416,10 +392,6 @@
       },
       {
         "symbol": "419050.KQ",
-        "action": "HOLD"
-      },
-      {
-        "symbol": "440110.KQ",
         "action": "HOLD"
       },
       {
@@ -438,7 +410,7 @@
       },
       {
         "symbol": "000270.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "000660.KS",
@@ -450,11 +422,15 @@
       },
       {
         "symbol": "000810.KS",
-        "action": "BUY"
+        "action": "HOLD"
+      },
+      {
+        "symbol": "0010S0.KQ",
+        "action": "HOLD"
       },
       {
         "symbol": "001440.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "001820.KS",
@@ -466,11 +442,11 @@
       },
       {
         "symbol": "003490.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "003550.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "003670.KS",
@@ -478,11 +454,11 @@
       },
       {
         "symbol": "005380.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "005490.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "005830.KS",
@@ -494,15 +470,15 @@
       },
       {
         "symbol": "005935.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "006360.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "006400.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "007660.KS",
@@ -514,19 +490,19 @@
       },
       {
         "symbol": "009540.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "009830.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "010060.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "010120.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "010140.KS",
@@ -542,15 +518,11 @@
       },
       {
         "symbol": "011070.KS",
-        "action": "BUY"
-      },
-      {
-        "symbol": "011170.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "011200.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "011780.KS",
@@ -558,11 +530,11 @@
       },
       {
         "symbol": "012330.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "012450.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "015760.KS",
@@ -570,31 +542,27 @@
       },
       {
         "symbol": "0161M0.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "017670.KS",
-        "action": "BUY"
-      },
-      {
-        "symbol": "018260.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "021240.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "024110.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "028050.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "028260.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "030200.KS",
@@ -602,11 +570,11 @@
       },
       {
         "symbol": "030530.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "032830.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "033780.KS",
@@ -614,11 +582,11 @@
       },
       {
         "symbol": "034020.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "034730.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "035420.KS",
@@ -626,35 +594,31 @@
       },
       {
         "symbol": "035720.KS",
-        "action": "BUY"
-      },
-      {
-        "symbol": "035760.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "036540.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "036930.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "042660.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "042700.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "043260.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "046970.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "047040.KS",
@@ -666,7 +630,7 @@
       },
       {
         "symbol": "051910.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "052690.KS",
@@ -674,19 +638,19 @@
       },
       {
         "symbol": "055550.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "058470.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "066570.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "067310.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "068270.KS",
@@ -698,7 +662,7 @@
       },
       {
         "symbol": "080220.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "086790.KS",
@@ -706,7 +670,7 @@
       },
       {
         "symbol": "089970.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "093370.KS",
@@ -721,16 +685,12 @@
         "action": "HOLD"
       },
       {
-        "symbol": "103590.KS",
-        "action": "BUY"
-      },
-      {
         "symbol": "105560.KS",
         "action": "HOLD"
       },
       {
         "symbol": "108490.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "115440.KQ",
@@ -738,15 +698,11 @@
       },
       {
         "symbol": "128940.KS",
-        "action": "BUY"
-      },
-      {
-        "symbol": "180640.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "201490.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "207940.KS",
@@ -761,16 +717,12 @@
         "action": "HOLD"
       },
       {
-        "symbol": "251270.KS",
-        "action": "BUY"
-      },
-      {
         "symbol": "267250.KS",
         "action": "HOLD"
       },
       {
         "symbol": "272210.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "278470.KS",
@@ -782,7 +734,7 @@
       },
       {
         "symbol": "316140.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "319660.KQ",
@@ -790,7 +742,7 @@
       },
       {
         "symbol": "326030.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "329180.KS",
@@ -806,7 +758,7 @@
       },
       {
         "symbol": "373220.KS",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "386380.KQ",
@@ -817,12 +769,8 @@
         "action": "HOLD"
       },
       {
-        "symbol": "393210.KQ",
-        "action": "BUY"
-      },
-      {
         "symbol": "396300.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "402340.KS",
@@ -830,28 +778,24 @@
       },
       {
         "symbol": "403870.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "419050.KQ",
-        "action": "BUY"
-      },
-      {
-        "symbol": "440110.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "478340.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       },
       {
         "symbol": "950260.KQ",
-        "action": "BUY"
+        "action": "HOLD"
       }
     ]
   },
   "replay_rows_finalized": false,
   "generation": 1,
-  "started_utc": "2026-10-01T04:52:28Z",
-  "last_timestamp": "2026-10-01T05:01:00.000000000"
+  "started_utc": "2026-10-01T05:57:14Z",
+  "last_timestamp": "2026-10-01T06:06:00.000000000"
 }

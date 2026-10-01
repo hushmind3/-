@@ -230,3 +230,32 @@ Traceback (most recent call last):
     ~~~~~~~~~~~~~~~~~~^^^
 ConnectionAbortedError: [WinError 10053] ÇöÀç ¿¬°áÀº »ç¿ëÀÚÀÇ È£½ºÆ® ½Ã½ºÅÛÀÇ ¼ÒÇÁÆ®¿ş¾îÀÇ ÀÇÇØ Áß´ÜµÇ¾ú½À´Ï´Ù
 ----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 6873)
+Traceback (most recent call last):
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\http\server.py", line 424, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "C:\Users\hushm\OneDrive\ë¬¸ì„œ\ChatGPT\ê¸ˆìœµë§¤ë§¤ëª¨ë¸\src\stockrl\web_app.py", line 1130, in do_GET
+    return self._send(supervisor.status())
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\ë¬¸ì„œ\ChatGPT\ê¸ˆìœµë§¤ë§¤ëª¨ë¸\src\stockrl\web_app.py", line 1117, in _send
+    self.end_headers(); self.wfile.write(data)
+                        ~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+ConnectionAbortedError: [WinError 10053] í˜„ì¬ ì—°ê²°ì€ ì‚¬ìš©ìì˜ í˜¸ìŠ¤íŠ¸ ì‹œìŠ¤í…œì˜ ì†Œí”„íŠ¸ì›¨ì–´ì˜ ì˜í•´ ì¤‘ë‹¨ë˜ì—ˆìŠµë‹ˆë‹¤
+----------------------------------------

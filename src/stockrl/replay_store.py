@@ -47,6 +47,7 @@ class GlobalReplayBuffer:
         self._memory_uses = {}
         self._champion_memory_uses = {}
         self.dual_learning=bool(dual_learning)
+        self._account_scores={}
         if self.journal_path:
             self._load_journal()
 
@@ -89,7 +90,8 @@ class GlobalReplayBuffer:
         names = ("symbol_index", "action", "reward", "timestamp", "source", "regime",
                  "reward_version", "portfolio_reward", "portfolio_transition",
                  "portfolio_value_transition", "forward_return", "behavior_log_prob",
-                 "trade_executed", "origin_model")
+                 "trade_executed", "origin_model", "credit_observations",
+                 "bootstrap_window_key", "bootstrap_symbol_index", "bootstrap_discount")
         return pickle.dumps({name: getattr(exp, name) for name in names
                              if hasattr(exp, name)}, protocol=5)
 
@@ -194,7 +196,8 @@ class GlobalReplayBuffer:
             columns = {row[1] for row in db.execute("PRAGMA table_info(experiences)")}
             additions = {"timestamp": "TEXT", "day": "TEXT", "eligible": "INTEGER DEFAULT 0",
                          "training_uses": "INTEGER NOT NULL DEFAULT 0", "error": "TEXT",
-                         "experience_key": "TEXT", "champion_training_uses":"INTEGER NOT NULL DEFAULT 0"}
+                         "experience_key": "TEXT", "champion_training_uses":"INTEGER NOT NULL DEFAULT 0",
+                         "bootstrap_window_key":"TEXT"}
             with db:
                 for name, declaration in additions.items():
                     if name not in columns:
@@ -232,6 +235,8 @@ class GlobalReplayBuffer:
         if metadata.get("portfolio_transition") and "portfolio_value_transition" not in metadata:
             metadata["portfolio_value_transition"] = False
         exp = Experience(**self._read_window(db, key), **metadata)
+        if exp.bootstrap_window_key:
+            exp._bootstrap_inputs=self._read_window(db,exp.bootstrap_window_key)
         exp._replay_row_id = int(row_id)
         exp._replay_window_key = key
         exp._replay_training_uses = int(uses)
@@ -256,7 +261,7 @@ class GlobalReplayBuffer:
             if key:
                 pending_keys.add(key)
         pending_keys.update(row[0] for row in db.execute("SELECT window_key FROM market_observations"))
-        unused = db.execute("SELECT key,payload FROM windows WHERE key NOT IN (SELECT window_key FROM experiences)").fetchall()
+        unused = db.execute("SELECT key,payload FROM windows WHERE key NOT IN (SELECT window_key FROM experiences) AND key NOT IN (SELECT bootstrap_window_key FROM experiences WHERE bootstrap_window_key IS NOT NULL)").fetchall()
         for key, blob in unused:
             if key in pending_keys:
                 continue
@@ -278,6 +283,11 @@ class GlobalReplayBuffer:
     def add_many(self, experiences, pending_ack=None):
         with self.lock:
             if not self.journal_path:
+                for exp in experiences:
+                    successor=getattr(exp,"_bootstrap_experience",None)
+                    if successor is not None:
+                        exp.bootstrap_window_key=self._window_key(successor)
+                        exp._bootstrap_inputs={name:getattr(successor,name,None) for name in ARRAY_NAMES}
                 self.items.extend(experiences)
                 return
             saved=[]
@@ -285,14 +295,18 @@ class GlobalReplayBuffer:
                 with closing(self._connect()) as db, db:
                     for exp in experiences:
                         key=self._store_window(db,exp)
+                        successor=getattr(exp,"_bootstrap_experience",None)
+                        if successor is not None:
+                            exp.bootstrap_window_key=self._store_window(db,successor)
+                            exp._bootstrap_inputs={name:getattr(successor,name,None) for name in ARRAY_NAMES}
                         symbol_id=int(exp.symbol_ids[exp.symbol_index])
                         identity_fields=(exp.source,exp.timestamp,symbol_id,exp.action)
                         if getattr(exp,"origin_model","champion")!="champion":
                             identity_fields=(*identity_fields,exp.origin_model)
                         identity=hashlib.sha256(repr(identity_fields).encode()).hexdigest()
-                        cursor=db.execute("INSERT OR IGNORE INTO experiences(window_key,metadata,timestamp,day,eligible,experience_key) VALUES(?,?,?,?,?,?)",
+                        cursor=db.execute("INSERT OR IGNORE INTO experiences(window_key,metadata,timestamp,day,eligible,experience_key,bootstrap_window_key) VALUES(?,?,?,?,?,?,?)",
                             (key,self._metadata(exp),exp.timestamp,self._day(exp.timestamp),
-                             int(self._training_eligible(vars(exp))),identity))
+                             int(self._training_eligible(vars(exp))),identity,exp.bootstrap_window_key))
                         if cursor.rowcount:
                             saved.append((exp,int(cursor.lastrowid),key))
                             origin=getattr(exp,"origin_model","champion")
@@ -376,6 +390,27 @@ class GlobalReplayBuffer:
     def save_pending_kind(self,kind,pending):
         with self.lock, closing(self._connect()) as db, db:
             self._save_pending_rows(db,kind,pending)
+
+    def record_account_score(self,role,stamp,episode,points):
+        """Persist one score delta per actual timestamp; restart is not reward."""
+        def record(previous):
+            if previous and previous["episode"]==episode and previous["timestamp"]>=stamp:
+                return previous
+            same=bool(previous and previous["episode"]==episode)
+            return {"timestamp":stamp,"episode":episode,"points":dict(points),
+                "change":({c:float(points[c])-float(previous["points"][c]) for c in points}
+                          if same else None)}
+        with self.lock:
+            if not self.journal_path:
+                value=record(self._account_scores.get(role));self._account_scores[role]=value
+                return value
+            with closing(self._connect()) as db,db:
+                key="reward_score:"+role
+                row=db.execute("SELECT payload FROM observer_state WHERE name=?",(key,)).fetchone()
+                value=record(pickle.loads(row[0]) if row else None)
+                db.execute("INSERT OR REPLACE INTO observer_state VALUES(?,?)",
+                    (key,pickle.dumps(value,protocol=5)))
+                return value
 
     def set_observer_account(self,account_state):
         with self.lock, closing(self._connect()) as db, db:

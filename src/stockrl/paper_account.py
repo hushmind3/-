@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from .state_io import atomic_json
@@ -38,11 +39,13 @@ class PaperAccount:
             if saved.get("version") != 1 or set(saved.get("books", {})) != set(SEED_CASH):
                 raise ValueError("paper account state schema does not match the live ledger")
             self.state = saved
+            self.state.setdefault("episode_id",uuid.uuid4().hex)
 
     @staticmethod
     def _empty_state() -> dict:
         return {
             "version": 1,
+            "episode_id": uuid.uuid4().hex,
             "last_timestamp": None,
             "pending": {},
             "fills": [],
@@ -78,7 +81,12 @@ class PaperAccount:
 
     def normalized_equity(self) -> float:
         return float(sum(self._equity(c) / max(float(self.state["books"][c]["initial_cash"]), 1e-9)
-                         for c in SEED_CASH))
+                          for c in SEED_CASH))
+
+    def reward_points(self) -> dict:
+        """One net-return percentage point equals one point, per currency."""
+        return {c:100.0*(self._equity(c)/float(self.state["books"][c]["initial_cash"])-1.0)
+                for c in SEED_CASH}
 
     def symbol_net_pnl(self, symbol: str) -> float:
         """Realized plus open-position PnL for one symbol, normalized by seed cash."""

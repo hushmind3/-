@@ -12984,3 +12984,4 @@ Traceback (most recent call last):
            ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 FileNotFoundError: [WinError 2] 지정된 파일을 찾을 수 없습니다: 'C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\runtime\\markets\\korea\\live\\agent\\replay.sqlite3-wal'
 following=C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+following=C:\Users\hushm\OneDrive\臾몄꽌\ChatGPT\湲덉쑖留ㅻℓ紐⑤뜽\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C

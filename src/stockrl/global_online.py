@@ -50,9 +50,10 @@ class TrainingMetrics:
     def __setitem__(self,key,value): self.store[self.key(key)]=value
     def get(self,key,default=None): return self.store.get(self.key(key),default)
     def setdefault(self,key,default=None): return self.store.setdefault(self.key(key),default)
-REWARD_DEFINITION=("symbol_and_portfolio_v5: online RL uses executed cash-only paper-account outcomes; "
-                   "trade reward horizon starts after the linked next-bar fill; "
-                   "per-symbol net PnL and normalized whole-account net equity change are kept separate")
+REWARD_DEFINITION=("symbol_and_portfolio_v5: net-return percentage points; new paper decisions "
+                   "use cumulative executed outcomes across the configured credit observations plus "
+                   "a detached successor value, ending at account reset; legacy short outcomes remain "
+                   "learnable; per-symbol contribution and whole-account result stay separate")
 
 
 class IncrementalMarketCSV:
@@ -151,6 +152,10 @@ class Experience:
     trade_executed: bool = True
     origin_model: str = "champion"
     daily_history: np.ndarray | None = None
+    credit_observations: int = 0
+    bootstrap_window_key: str | None = None
+    bootstrap_symbol_index: int | None = None
+    bootstrap_discount: float = 0.0
 
 
 from .replay_store import GlobalReplayBuffer, ReplayStorageFull
@@ -388,6 +393,8 @@ class OnlineGlobalAgent:
         self.candidate_live_thread=threading.Thread(
             target=self._candidate_live_worker,name="candidate-live-observer",daemon=True)
         self.operating_rules=operating_rules()
+        self.reward_credit_observations=int(self.operating_rules.get("reward_credit_observations",60))
+        self.reward_credit_seconds=int(self.operating_rules.get("reward_credit_seconds",3600))
         self.validation_window_bars=int(self.operating_rules["validation_min_market_minutes"])
         self.daily_promotion=self.operating_rules["promotion_schedule"]=="daily"
         self.validation_queue=queue.Queue(maxsize=32)
@@ -779,6 +786,8 @@ class OnlineGlobalAgent:
                         self.candidate_portfolio_pending.append({**inputs,"index":index,"symbol_index":j,
                             "symbol":symbol,"action":action,"timestamp":stamp,"decision_id":decision_id,
                             "reward_version":REWARD_VERSION,"origin_model":"candidate",
+                            "credit_observations_target":getattr(self,"reward_credit_observations",60),
+                            "credit_seconds":getattr(self,"reward_credit_seconds",3600),
                             "behavior_log_prob":float(np.log(max(float(probabilities[j,action]),1e-12))),
                             "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
                             "regime":abs(float(panel.features[index,j,6])),"is_validation":False,
@@ -1002,6 +1011,9 @@ class OnlineGlobalAgent:
         """
         account=account or self.paper_account
         pending_kind="portfolio" if origin_model=="champion" else "candidate_portfolio"
+        score=self.replay.record_account_score(origin_model,str(panel.dates[end_index]),
+            account.state.get("episode_id","legacy"),account.reward_points())
+        self.metrics[origin_model+"_reward_score"]=score
         if not pending:
             return pending
         now = float(account.normalized_equity())
@@ -1009,7 +1021,7 @@ class OnlineGlobalAgent:
                      if fill.get("decision_id")}
         fills_by_order={(str(fill.get("order_date")),str(fill.get("symbol"))):fill
                         for fill in filled_orders if fill.get("order_date")}
-        keep=[]; account_transition_added=set()
+        keep=[]; account_transition_added=set(); credit_successor=None
         for dec in pending:
             if dec.get("blocked_reason"):
                 keep.append(dec); continue
@@ -1043,8 +1055,9 @@ class OnlineGlobalAgent:
                     dec["fill_seen"]=True
                     dec["fill_timestamp"]=str(fill["date"])
                     dec["fill_price"]=float(fill["price"])
-                    dec["symbol_pnl_before"]=float(
-                        fill.get("symbol_pnl_before_fill",dec.get("symbol_pnl_before",0.0)))
+                    if not dec.get("credit_observations_target"):
+                        dec["symbol_pnl_before"]=float(
+                            fill.get("symbol_pnl_before_fill",dec.get("symbol_pnl_before",0.0)))
                     dec["bars_elapsed"]=0
                     keep.append(dec)
                     continue
@@ -1064,7 +1077,15 @@ class OnlineGlobalAgent:
             reward_start=np.datetime64(dec.get("fill_timestamp",dec["timestamp"]))
             if current<=reward_start and not terminal:
                 keep.append(dec); continue
-            if self.horizon_kind=="bars":
+            if dec.get("credit_observations_target"):
+                if str(current)<=dec.get("credit_last_timestamp",str(stamp)) and not terminal:
+                    keep.append(dec); continue
+                dec["credit_last_timestamp"]=str(current)
+                dec["credit_observations_elapsed"]=int(dec.get("credit_observations_elapsed",0))+1
+                matured=(current>=reward_start+np.timedelta64(int(dec["credit_seconds"]),"s")
+                         if dec.get("credit_seconds") else
+                         dec["credit_observations_elapsed"]>=int(dec["credit_observations_target"]))
+            elif self.horizon_kind=="bars":
                 dec["bars_elapsed"]=int(dec.get("bars_elapsed",0))+1
                 matured=dec["bars_elapsed"]>=self.horizon_amount
             else:
@@ -1122,12 +1143,34 @@ class OnlineGlobalAgent:
                     behavior_log_prob=dec.get("behavior_log_prob"),
                     trade_executed=dec.get("trade_executed",True))
                 exp.origin_model=origin_model;account_exp.origin_model=origin_model
+                if dec.get("credit_observations_target"):
+                    for experience in (exp,account_exp):
+                        experience.credit_observations=int(dec.get("credit_observations_elapsed",0))
+                        if not terminal:
+                            experience.bootstrap_discount=1.0
+                            experience.bootstrap_symbol_index=symbol_ix
+                    if not terminal:
+                        # One shared successor input for all matured decisions at
+                        # this market/account state. It is persisted in the same DB.
+                        if credit_successor is None:
+                            args=self._window(panel,end_index)
+                            pstate,astate=account.model_inputs(panel,end_index)
+                            credit_successor=Experience(args[0][0].numpy(),args[1][0].numpy(),
+                                args[2][0].numpy(),args[3][0].numpy(),args[4][0].numpy(),0,1,0.0,
+                                str(current),market_context=(args[5][0].numpy() if len(args)>5 else None),
+                                portfolio_state=np.asarray(pstate,dtype=np.float16),
+                                account_state=np.asarray(astate,dtype=np.float16),
+                                multiscale_state=panel.multiscale_at(end_index).astype(np.float16),
+                                daily_history=(panel.daily_history_at(end_index) if hasattr(panel,"daily_history_at") else None))
+                        exp._bootstrap_experience=credit_successor
+                        account_exp._bootstrap_experience=credit_successor
                 self.replay.add_many([exp,account_exp],pending_ack=(pending_kind,
                     f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
                 if first_account_transition:
                     account_transition_added.add(timestamp)
-                    self.metrics["paper_account_reward"] = float(
-                        self.metrics.get("paper_account_reward",0.0))+account_reward
+                    if not dec.get("credit_observations_target"):
+                        self.metrics["paper_account_reward"] = float(
+                            self.metrics.get("paper_account_reward",0.0))+account_reward
                     self.metrics["portfolio_experiences"] = int(
                         self.metrics.get("portfolio_experiences",0))+1
                 self.metrics["paper_experiences_seen"]=int(
@@ -1410,7 +1453,9 @@ class OnlineGlobalAgent:
                             decision_id=f"{stamp}|{symbol}"
                             portfolio_pending.append({**portfolio_inputs,"index":ti,"symbol_index":j,"symbol":symbol,
                               "action":action,"timestamp":stamp,"decision_id":decision_id,
-                              "reward_version":REWARD_VERSION,
+                               "reward_version":REWARD_VERSION,
+                               "credit_observations_target":getattr(self,"reward_credit_observations",60),
+                               "credit_seconds":getattr(self,"reward_credit_seconds",3600),
                               "behavior_log_prob":behavior_log_prob,
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
@@ -1788,7 +1833,7 @@ class OnlineGlobalAgent:
             parameter.numel() for parameter in candidate.parameters())
         return trainable
 
-    def _experience_loss(self,logits,values,allocations,experience):
+    def _experience_loss(self,logits,values,allocations,experience,successor_values=None):
         chosen=logits[0,int(experience.symbol_index)].float()
         predicted=values[0,int(experience.symbol_index)].float()
         if not torch.isfinite(chosen).all() or not torch.isfinite(predicted).all():
@@ -1799,23 +1844,31 @@ class OnlineGlobalAgent:
         probabilities=(1.0-epsilon)*torch.softmax(chosen,dim=-1)+epsilon/3.0
         dist=Categorical(probs=probabilities[None])
         reward=torch.as_tensor(float(experience.reward)*100.0,device=self.device,dtype=torch.float32)
+        target=reward
+        if experience.bootstrap_discount:
+            if successor_values is None:
+                raise ValueError("future-credit successor value is missing; replay must be retained")
+            target=reward+float(experience.bootstrap_discount)*successor_values[
+                0,int(experience.bootstrap_symbol_index)].float().detach()
         loss=chosen.sum()*0
         if not experience.portfolio_transition:
-            advantage=(reward-predicted.detach()).clamp(-1,1)
+            advantage=target-predicted.detach()
             if experience.behavior_log_prob is not None and experience.trade_executed:
                 old=torch.as_tensor(float(experience.behavior_log_prob),device=self.device,dtype=torch.float32)
                 ratio=torch.exp((dist.log_prob(action)[0]-old).clamp(-20,20))
                 loss=-torch.minimum(ratio*advantage,ratio.clamp(.8,1.2)*advantage)
-            loss=loss+.5*nn.functional.smooth_l1_loss(predicted[None],reward[None])
+            loss=loss+.5*nn.functional.smooth_l1_loss(predicted[None],target[None])
             loss=loss-.0005*dist.entropy().mean()
         else:
             if experience.portfolio_value_transition:
                 account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0),
                                                device=self.device,dtype=torch.float32)
+                if experience.bootstrap_discount:
+                    account_reward=account_reward+float(experience.bootstrap_discount)*successor_values[0].float().mean().detach()
                 loss=loss+.25*nn.functional.smooth_l1_loss(values[0].float().mean(),account_reward)
             if allocations is not None and experience.trade_executed:
                 selected=allocations[0,int(experience.symbol_index)].clamp_min(1e-7)
-                loss=loss-.10*reward.detach().clamp(-1,1)*torch.log(selected)
+                loss=loss-.10*target.detach()*torch.log(selected)
         if experience.source.startswith("teacher"):
             loss=loss+nn.functional.cross_entropy(chosen[None],action)
         if not torch.isfinite(loss):
@@ -1828,6 +1881,35 @@ class OnlineGlobalAgent:
 
     def _train_champion(self):
         return self._train_model("champion")
+
+    def _credit_successor_values(self,model,experience,cache):
+        """One gradient-free successor forward per shared input and update."""
+        if not experience.bootstrap_discount:
+            return None
+        key=experience.bootstrap_window_key
+        if key not in cache:
+            inputs=getattr(experience,"_bootstrap_inputs",None)
+            if inputs is None:
+                raise ValueError("future-credit input is missing; replay retained")
+            successor=Experience(**inputs,symbol_index=0,action=1,reward=0.0,
+                                 timestamp=experience.timestamp)
+            args,pstate,astate,mstate=self._pack([successor])
+            was_training=model.training
+            try:
+                model.eval()
+                with torch.no_grad():
+                    if getattr(model,"_stockrl_uses_market_context",False):
+                        output=model(*args,portfolio_state=pstate,account_state=astate,
+                            return_allocation=True,multiscale_state=mstate,
+                            **({"daily_history":torch.as_tensor(successor.daily_history[None],
+                                   device=self.device,dtype=torch.float32)}
+                               if successor.daily_history is not None else {}))
+                    else:
+                        output=model(*args)
+                    cache[key]=output[1].detach()
+            finally:
+                model.train(was_training)
+        return cache[key]
 
     def _train_model(self,learner):
         metrics=TrainingMetrics(self.metrics,learner)
@@ -1916,6 +1998,7 @@ class OnlineGlobalAgent:
                 # every selected symbol. This retains the same minibatch gradient
                 # without recomputing the 0.5B backbone for each symbol outcome.
                 successful_batch=[]
+                successor_cache={}
                 groups=OrderedDict()
                 for experience in batch:
                     key=getattr(experience,"_replay_window_key",None) or self.replay._window_key(experience)
@@ -1931,7 +2014,10 @@ class OnlineGlobalAgent:
                         logits,values=candidate(*args); allocations=None
                     losses=[]
                     for experience in group:
-                        loss=self._experience_loss(logits,values,allocations,experience)
+                        successor_values=None
+                        if experience.bootstrap_discount:
+                            successor_values=self._credit_successor_values(candidate,experience,successor_cache)
+                        loss=self._experience_loss(logits,values,allocations,experience,successor_values)
                         if loss is None:
                             continue
                         losses.append(loss)
@@ -2100,6 +2186,9 @@ class OnlineGlobalAgent:
         metrics["candidate_last_completed_round"]={
             "samples":candidate_samples,"unique_samples":len(candidate_sample_keys),
             "optimizer_steps":len(elapsed),
+            "future_credit_samples":sum(e.credit_observations>0 for e in used_experiences),
+            "successor_value_samples":sum(e.bootstrap_discount>0 for e in used_experiences),
+            "legacy_short_reward_samples":sum(not e.credit_observations and not e.source.startswith("teacher") for e in used_experiences),
             "total_seconds":metrics["last_candidate_total_seconds"],
             "compute_seconds":metrics["last_candidate_compute_seconds"],
             "step_compute_seconds":metrics["last_candidate_step_compute_seconds"],
@@ -2554,6 +2643,11 @@ class OnlineGlobalAgent:
           "replay_eviction_enabled":False,
           "candidate_replay_passes":self.candidate_replay_passes,
           "learning_policy":"one_checkpoint_confirmed_pass_per_model",
+          "reward_credit":{"mode":"n_step_net_equity_with_successor_value",
+              "observations":getattr(self,"reward_credit_observations",60),"discount":1.0,
+              "duration_seconds":getattr(self,"reward_credit_seconds",3600),
+              "score_unit":"one_point_per_one_percent_net_return",
+          "legacy_short_reward_backlog_retained":True},
           "promotion_score_mode":"sequential_paper_account_net_return",
           "promotion_uses_sequential_paper_account":True,
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),

@@ -983,6 +983,8 @@ class Supervisor:
                 "live_policy_mode":"probability_sampling",
                 "validation_policy_mode":"highest_probability_no_exploration",
                 "reward_horizon":self.horizon,
+                "reward_credit":metrics.get("reward_credit"),
+                "reward_horizon_scope":"legacy_short_outcomes_only_when_future_credit_enabled",
                 "real_orders_enabled":False}
             feed_metrics["broker_provider"]=provider_status["provider"]
             feed_metrics["provider_environment"]=provider_status["environment"]
@@ -1020,6 +1022,7 @@ class Supervisor:
                         "eligible_backlog":metrics.get("replay_eligible_backlog",learning_replay),
                         "replay_pending_count":metrics.get("replay_pending_count",0),
                         "replay_passes_per_model":metrics.get("candidate_replay_passes"),
+                        "reward_credit":metrics.get("reward_credit"),
                         "multiscale_input_status":metrics.get("multiscale_input_status",{}),
                         "blocked_replay":int(metrics.get("replay_quarantined_count",0))+int(metrics.get("replay_unsupported_count",0)),
                         "candidate_stage": metrics.get("candidate_stage",
