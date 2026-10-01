@@ -7,7 +7,7 @@ a future paper-account score improvement against the frozen champion baseline.
 from __future__ import annotations
 
 from collections import deque, OrderedDict
-from contextlib import closing, nullcontext
+from contextlib import closing, nullcontext, contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc, math
@@ -374,7 +374,8 @@ class OnlineGlobalAgent:
             save_model(self.champion_path,self.champion,self.cfg,temp_dir=self.state_dir)
         self.candidate=None; self.validation_candidate=None; self.optimizer=None; self.steps=0; self.updates=0
         self.candidate_model_lock=threading.RLock()
-        self.candidate_live_inference_lock=threading.Lock()
+        from .gpu_scheduler import FairGpuScheduler
+        self.candidate_live_inference_lock=FairGpuScheduler()
         self.candidate_live_model_lock=threading.Lock()
         self.candidate_live_model=None
         self.candidate_live_model_version=None
@@ -654,7 +655,8 @@ class OnlineGlobalAgent:
             reused=observer is not None
             if observer is None:
                 observer=self._new_model_like(source,torch.device("cpu"))
-            observer.load_state_dict(source.state_dict())
+            with self._gpu_work("candidate_publish"):
+                observer.load_state_dict(source.state_dict())
             observer.eval(); observer.requires_grad_(False)
             encoder=getattr(observer,"daily_history_encoder",None)
             if encoder is not None: encoder.cache=None
@@ -705,10 +707,19 @@ class OnlineGlobalAgent:
         self.replay.enqueue_market_observation(snapshot,bool(paper_enabled),tuple(float(x) for x in uniforms))
         return snapshot
 
+    def _gpu_work(self,role):
+        from contextlib import nullcontext
+        scheduler=getattr(self,"candidate_live_inference_lock",None)
+        if scheduler is None:
+            return nullcontext()
+        return scheduler.work(role) if hasattr(scheduler,"work") else scheduler
+
     def _candidate_live_worker(self):
         """Run an independent observational paper account for current candidate weights."""
         while not self.stop.is_set() or self.replay.market_observation_stats()["pending"]:
+            observation_started=time.perf_counter()
             item=self.replay.next_market_observation()
+            observation_profile={"read_seconds":time.perf_counter()-observation_started}
             if item is None:
                 self.stop.wait(.25)
                 continue
@@ -725,10 +736,12 @@ class OnlineGlobalAgent:
             saved_account=pickle.loads(pickle.dumps(self.candidate_live_account.state,protocol=5))
             committed=False
             try:
+                phase_started=time.perf_counter()
                 account=self.candidate_live_account
                 filled_orders=account.process_bar(panel,index,paper_enabled)
                 self.candidate_portfolio_pending=self._mature_portfolio(
                     self.candidate_portfolio_pending,panel,index,filled_orders,account=account,origin_model="candidate")
+                observation_profile["fills_and_rewards_seconds"]=time.perf_counter()-phase_started
                 if self.candidate_live_model is None:
                     self.metrics["candidate_live_status"]="waiting_for_candidate_update"
                     account.save()
@@ -737,8 +750,10 @@ class OnlineGlobalAgent:
                         "last_decisions":[]},self.candidate_live_state_path)
                     self.metrics["candidate_live_last_timestamp"]=stamp
                     continue
+                phase_started=time.perf_counter()
                 pstate,astate=account.model_inputs(panel,index)
                 window=self._window(panel,index)
+                observation_profile["input_seconds"]=time.perf_counter()-phase_started
                 started=time.perf_counter()
                 profile={}
                 with self.candidate_live_model_lock:
@@ -747,7 +762,7 @@ class OnlineGlobalAgent:
                     observer_version=self.candidate_live_model_version
                     originally_offloaded=(self.device.type=="cuda" and
                         next(model.parameters()).device.type=="cpu")
-                    with self.candidate_live_inference_lock:
+                    with self._gpu_work("candidate_live"):
                         profile["wait_seconds"]=time.perf_counter()-started
                         phase_started=time.perf_counter()
                         if originally_offloaded: model.to(self.device)
@@ -785,6 +800,8 @@ class OnlineGlobalAgent:
                 elapsed=time.perf_counter()-started
                 profile["total_seconds"]=elapsed
                 self.metrics["candidate_live_inference_profile"]=profile
+                observation_profile["inference_seconds"]=elapsed
+                phase_started=time.perf_counter()
                 submitted=account.queue_decisions(panel,index,probabilities,paper_enabled,
                     allocation=allocation,actions=actions)
                 x,sid,mid,aid,mask=window[:5]
@@ -819,13 +836,18 @@ class OnlineGlobalAgent:
                             "goal_weight_before":max(float(pstate[j][1]),float(allocation[j]) if action==2 and allocation is not None else 0.0),
                             "symbol_pnl_before":account.symbol_net_pnl(symbol),
                             "fill_expected":decision_id in (submitted or set())})
+                observation_profile["orders_and_pending_seconds"]=time.perf_counter()-phase_started
+                phase_started=time.perf_counter()
                 self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
+                observation_profile["database_commit_seconds"]=time.perf_counter()-phase_started
                 committed=True
                 policy_diagnostics=summarize_policy(panel,index,probabilities,actions,
                     allocation,account,submitted or set(),stamp)
                 if policy_diagnostics["observed_tradable_symbols"]:
                     self.metrics["candidate_last_tradable_policy_diagnostics"]=policy_diagnostics
+                phase_started=time.perf_counter()
                 account.save()
+                observation_profile["account_save_seconds"]=time.perf_counter()-phase_started
                 decisions=[]
                 for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions)):
                     if not panel.observed[index,symbol_index]: continue
@@ -840,11 +862,19 @@ class OnlineGlobalAgent:
                     if self.metrics.get("candidate_training") else "observing")
                 self.metrics["candidate_live_error"]=None
                 self.metrics["candidate_live_last_timestamp"]=stamp
+                observation_profile["total_seconds"]=time.perf_counter()-observation_started
+                self.metrics["candidate_live_observation_profile"]=observation_profile
                 self._atomic_json({"status":self.metrics["candidate_live_status"],
                     "last_timestamp":stamp,"candidate_version":observer_version,
                     "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
                     "candidate_training":bool(self.metrics.get("candidate_training")),
-                    "last_inference_seconds":elapsed,"inference_profile":profile,"inference_count":self.metrics[
+                    "champion_training":bool(self.metrics.get("champion_training")),
+                    "learning_wait_reason":self.metrics.get("learning_wait_reason"),
+                    "learning_live_priority_enabled":bool(getattr(self,"live_priority_enabled",False)),
+                    "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
+                        if hasattr(self.candidate_live_inference_lock,"snapshot") else {}),
+                    "last_inference_seconds":elapsed,"inference_profile":profile,
+                    "observation_profile":observation_profile,"inference_count":self.metrics[
                         "candidate_live_inference_count"],"last_decisions":decisions,
                     "policy_diagnostics":policy_diagnostics,
                     "last_tradable_policy_diagnostics":self.metrics.get(
@@ -866,26 +896,32 @@ class OnlineGlobalAgent:
                 self.stop.wait(1.0)
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
-        args=[x.to(self.device) for x in self._window(panel,index)]
+        requested=time.perf_counter()
+        window=self._window(panel,index)
         with self.lock:
             model=self.champion
-        args[0]=args[0].to(dtype=next(model.parameters()).dtype)
-        with torch.inference_mode():
-            if self.device.type=="cuda": torch.cuda.synchronize(self.device)
-            t=time.perf_counter()
-            if getattr(model,"_stockrl_uses_market_context",False) and portfolio_state is not None:
-                pstate=torch.as_tensor(np.asarray(portfolio_state,dtype=np.float32)[None],device=self.device)
-                astate=torch.as_tensor(np.asarray(account_state,dtype=np.float32)[None],device=self.device)
-                mstate=torch.as_tensor(panel.multiscale_at(index)[None],device=self.device)
-                logits,values,allocation=model(*args,portfolio_state=pstate,
-                                                account_state=astate,return_allocation=True,
-                                                 multiscale_state=mstate,**self._daily_history_kwargs(panel,index,self.device),
-                                                 **self._goal_kwargs(self.paper_account,self.device))
-            else:
-                logits,values=model(*args); allocation=None
-            elapsed=time.perf_counter()-t
-            if self.device.type=="cuda":
-                torch.cuda.synchronize(self.device); elapsed=time.perf_counter()-t
+        with self._gpu_work("champion_live"):
+            acquired=time.perf_counter()
+            args=[x.to(self.device) for x in window]
+            args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+            with torch.inference_mode():
+                if self.device.type=="cuda": torch.cuda.synchronize(self.device)
+                t=time.perf_counter()
+                if getattr(model,"_stockrl_uses_market_context",False) and portfolio_state is not None:
+                    pstate=torch.as_tensor(np.asarray(portfolio_state,dtype=np.float32)[None],device=self.device)
+                    astate=torch.as_tensor(np.asarray(account_state,dtype=np.float32)[None],device=self.device)
+                    mstate=torch.as_tensor(panel.multiscale_at(index)[None],device=self.device)
+                    logits,values,allocation=model(*args,portfolio_state=pstate,
+                                                    account_state=astate,return_allocation=True,
+                                                     multiscale_state=mstate,**self._daily_history_kwargs(panel,index,self.device),
+                                                     **self._goal_kwargs(self.paper_account,self.device))
+                else:
+                    logits,values=model(*args); allocation=None
+                elapsed=time.perf_counter()-t
+                if self.device.type=="cuda":
+                    torch.cuda.synchronize(self.device); elapsed=time.perf_counter()-t
+            result=(logits[0].cpu().numpy(),values[0].cpu().numpy(),
+                    allocation[0].cpu().float().numpy() if allocation is not None else None)
         self.metrics["inference_seconds"].append(elapsed)
         self.metrics["champion_live_inference_count"]=(
             int(self.metrics.get("champion_live_inference_count",0))+1)
@@ -895,8 +931,9 @@ class OnlineGlobalAgent:
         if self.metrics.get("candidate_training"):
             self.metrics["inference_during_candidate"]=int(self.metrics.get("inference_during_candidate",0))+1
         if len(self.metrics["inference_seconds"])>2000: self.metrics["inference_seconds"]=self.metrics["inference_seconds"][-2000:]
-        return (logits[0].cpu().numpy(),values[0].cpu().numpy(),
-                allocation[0].cpu().float().numpy() if allocation is not None else None)
+        self.metrics["champion_live_inference_profile"]={"wait_seconds":acquired-requested,
+            "forward_seconds":elapsed,"total_seconds":time.perf_counter()-requested}
+        return result
 
     @staticmethod
     def _sample_actions(probabilities,uniforms):
@@ -1050,6 +1087,7 @@ class OnlineGlobalAgent:
         fills_by_order={(str(fill.get("order_date")),str(fill.get("symbol"))):fill
                         for fill in filled_orders if fill.get("order_date")}
         keep=[]; account_transition_added=set(); credit_successor=None
+        matured_experiences=[]; matured_acks=[]
         for dec in pending:
             if dec.get("blocked_reason"):
                 keep.append(dec); continue
@@ -1209,7 +1247,8 @@ class OnlineGlobalAgent:
                                 daily_history=(panel.daily_history_at(end_index) if hasattr(panel,"daily_history_at") else None))
                         exp._bootstrap_experience=credit_successor
                         account_exp._bootstrap_experience=credit_successor
-                self.replay.add_many([exp,account_exp],pending_ack=(pending_kind,
+                matured_experiences.extend((exp,account_exp))
+                matured_acks.append((pending_kind,
                     f"{dec.get('timestamp','')}|{dec.get('symbol',dec.get('symbol_index',''))}"))
                 if first_account_transition:
                     account_transition_added.add(timestamp)
@@ -1223,6 +1262,10 @@ class OnlineGlobalAgent:
                 self.metrics["paper_experiences_since_candidate"]=int(
                     self.metrics.get("paper_experiences_since_candidate",0))+1
                 self.replay.note_paper_outcome()
+        if matured_experiences:
+            # One atomic durable commit per observation. Neither an experience
+            # nor its pending acknowledgement can be lost independently.
+            self.replay.add_many(matured_experiences,pending_acks=matured_acks)
         return keep
 
     def follow_csv(self, data_path:str|Path, poll_seconds:float=5.0, initial_lookback_bars:int=0):
@@ -1232,6 +1275,7 @@ class OnlineGlobalAgent:
         New bars can be minute/hourly; all instruments for a timestamp should
         be appended as a batch. Candidate training runs on the learner thread.
         """
+        self.live_priority_enabled=True
         data_path=Path(data_path); cursor_path=self.state_dir/"live_cursor.json"
         decisions_path=self.state_dir/"decisions.csv"
         cursor=None
@@ -1791,6 +1835,59 @@ class OnlineGlobalAgent:
                 torch.as_tensor(np.stack(a_rows),device=self.device,dtype=torch.float32),
                 torch.as_tensor(np.stack(m_rows),device=self.device,dtype=torch.float32))
 
+    def _live_learning_wait_reason(self):
+        if not getattr(self,"live_priority_enabled",False):
+            return None
+        scheduler=getattr(self,"candidate_live_inference_lock",None)
+        if scheduler is None or not hasattr(scheduler,"snapshot"):
+            return None
+        state=scheduler.snapshot()
+        roles=[state.get("active")]+[item["role"] for item in state.get("waiting",[])]
+        live=[role for role in roles if role in ("champion_live","candidate_live")]
+        if live:
+            return "실시간 GPU 추론 요청에 양보: "+", ".join(live)
+        return None
+
+    @contextmanager
+    def _learning_gpu_segment(self,role,durations):
+        """Release CUDA after one shared-window backward or optimizer operation."""
+        self.metrics["learning_wait_reason"]=self._live_learning_wait_reason()
+        with self._gpu_work(role):
+            self.metrics["learning_wait_reason"]=None
+            started=time.perf_counter()
+            if self.device.type=="cuda":
+                start_event=torch.cuda.Event(enable_timing=True)
+                end_event=torch.cuda.Event(enable_timing=True)
+                start_event.record()
+            try:
+                yield
+            finally:
+                if self.device.type=="cuda":
+                    end_event.record()
+                    # Kernels must finish before another model uses the GPU.
+                    end_event.synchronize()
+                    durations.append(start_event.elapsed_time(end_event)/1000.0)
+                else:
+                    durations.append(time.perf_counter()-started)
+                learner=role.split("_",1)[0]
+                self.metrics[learner+"_learning_gpu_segments"]=int(
+                    self.metrics.get(learner+"_learning_gpu_segments",0))+1
+                self.metrics[learner+"_learning_gpu_segment_seconds_last"]=durations[-1]
+                self.metrics[learner+"_learning_gpu_segment_seconds_max"]=max(
+                    float(self.metrics.get(learner+"_learning_gpu_segment_seconds_max",0)),durations[-1])
+
+    def _wait_for_live_inference(self):
+        last_report=0.0
+        while not self.stop.is_set():
+            reason=self._live_learning_wait_reason()
+            self.metrics["learning_wait_reason"]=reason
+            if not reason:
+                return True
+            if time.monotonic()-last_report>=5:
+                self._write_metrics();last_report=time.monotonic()
+            self.stop.wait(.25)
+        return False
+
     def _learner(self):
         while not self.stop.wait(.1):
             self.metrics["learner_last_heartbeat_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
@@ -1802,6 +1899,15 @@ class OnlineGlobalAgent:
                 self.stop.wait(1.0)
                 continue
             self.metrics["learner_statistics_error"]=None
+            previous_reason=self.metrics.get("learning_wait_reason")
+            reason=self._live_learning_wait_reason()
+            self.metrics["learning_wait_reason"]=reason
+            if reason:
+                self.metrics["candidate_skip_reason"]=reason
+                if reason!=previous_reason:
+                    self._write_metrics()
+                self.stop.wait(.25)
+                continue
             dual=getattr(self,"dual_learning_enabled",False)
             remaining=stats.get("model_remaining",{"candidate":stats["eligible"],"champion":0})
             self.metrics["candidate_untrained_replay_count"]=stats.get("model_untrained",{}).get("candidate",stats["untrained"])
@@ -1978,22 +2084,25 @@ class OnlineGlobalAgent:
         metrics["last_candidate_total_seconds"]=0.0
         metrics["last_candidate_peak_allocated_bytes"]=None
         metrics["last_candidate_peak_reserved_bytes"]=None
+        self.metrics[learner+"_learning_gpu_segments"]=0
+        self.metrics[learner+"_learning_gpu_segment_seconds_max"]=0.0
         with self.lock:
             source_champion=self.champion
-        if learner=="candidate":
-            if self.candidate is None:
-                self._restore_candidate_checkpoint()
-            with self.candidate_model_lock:
-                self.candidate=self.candidate.to(self.device)
-                candidate=self.candidate.train()
-            model_version=self.candidate_version
-        else:
-            # Inference holds the immutable published model while its learner
-            # works on an independent copy. Publish only a completed checkpoint.
-            candidate=self._new_model_like(source_champion,self.device)
-            candidate.load_state_dict(source_champion.state_dict())
-            candidate.train()
-            model_version=self.champion_training_version
+        with self._gpu_work(learner+"_learning_setup"):
+            if learner=="candidate":
+                if self.candidate is None:
+                    self._restore_candidate_checkpoint()
+                with self.candidate_model_lock:
+                    self.candidate=self.candidate.to(self.device)
+                    candidate=self.candidate.train()
+                model_version=self.candidate_version
+            else:
+                # Inference holds the immutable published model while its learner
+                # works on an independent copy. Publish only a completed checkpoint.
+                candidate=self._new_model_like(source_champion,self.device)
+                candidate.load_state_dict(source_champion.state_dict())
+                candidate.train()
+                model_version=self.champion_training_version
         original=source_champion
         trainable_parameters=self._configure_candidate_trainables(candidate,learner)
         opt=torch.optim.AdamW(
@@ -2021,7 +2130,7 @@ class OnlineGlobalAgent:
         metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
-            if self.stop.is_set():
+            if self.stop.is_set() or not self._wait_for_live_inference():
                 break
             batch=self.replay.pending_batch(self.batch_size,self.candidate_replay_passes,
                 exclude_row_ids=sampled_ids,learner=learner)
@@ -2042,24 +2151,18 @@ class OnlineGlobalAgent:
             candidate_sample_keys.update((e.origin_model,e.source,e.timestamp,e.symbol_index,e.action,e.portfolio_transition)
                                          for e in batch)
             ti=time.perf_counter(); opt.zero_grad(set_to_none=True); valid_samples=0; loss_values=[]
-            with self.candidate_live_inference_lock:
-                if self.device.type=="cuda":
-                    compute_start=torch.cuda.Event(enable_timing=True)
-                    compute_end=torch.cuda.Event(enable_timing=True)
-                    compute_start.record()
-                else:
-                    compute_ti=time.perf_counter()
-                use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
-                # One forward per shared market/account window, with losses for
-                # every selected symbol. This retains the same minibatch gradient
-                # without recomputing the 0.5B backbone for each symbol outcome.
-                successful_batch=[]
-                successor_cache={}
-                groups=OrderedDict()
-                for experience in batch:
-                    key=getattr(experience,"_replay_window_key",None) or self.replay._window_key(experience)
-                    groups.setdefault(key,[]).append(experience)
-                for group in groups.values():
+            step_segments=[]
+            use_portfolio=getattr(candidate,"_stockrl_uses_market_context",False)
+            # Preserve one optimizer step and the full minibatch gradient while
+            # giving queued live inference priority between independent windows.
+            successful_batch=[]
+            successor_cache={}
+            groups=OrderedDict()
+            for experience in batch:
+                key=getattr(experience,"_replay_window_key",None) or self.replay._window_key(experience)
+                groups.setdefault(key,[]).append(experience)
+            for group in groups.values():
+                with self._learning_gpu_segment(learner+"_learning_step",step_segments):
                     args,pstate,astate,mstate=self._pack([group[0]])
                     if use_portfolio:
                         logits,values,allocations=candidate(*args,portfolio_state=pstate,
@@ -2079,22 +2182,20 @@ class OnlineGlobalAgent:
                             continue
                         losses.append(loss)
                         successful_batch.append(experience)
-                        loss_values.append(float(loss.detach().cpu()))
                     if losses:
                         (torch.stack(losses).sum()/len(batch)).backward()
                         valid_samples+=len(losses)
+                        loss_values.extend(torch.stack([loss.detach() for loss in losses]).cpu().tolist())
                     metrics["candidate_window_forwards_current"]+=1
                     del args,pstate,astate,mstate,logits,values,allocations,losses
-                if not valid_samples:
-                    continue
+            if not valid_samples:
+                continue
+            with self._learning_gpu_segment(learner+"_learning_step",step_segments):
                 nn.utils.clip_grad_norm_(candidate.parameters(),1.0)
                 with self.candidate_model_lock:
                     opt.step()
                     if self.device.type=="cuda": torch.cuda.synchronize(self.device)
-                if self.device.type=="cuda":
-                    compute_end.record()
-                else:
-                    compute_elapsed.append(time.perf_counter()-compute_ti)
+            compute_elapsed.append(sum(step_segments))
             candidate_samples+=valid_samples
             metrics["teacher_examples_trained"]+=sum(e.source.startswith("teacher") for e in successful_batch)
             metrics["paper_examples_trained"]+=sum(not e.source.startswith("teacher") for e in successful_batch)
@@ -2117,7 +2218,6 @@ class OnlineGlobalAgent:
             metrics["update_losses"]=metrics["update_losses"][-2000:]
             if self.device.type=="cuda":
                 torch.cuda.synchronize(self.device)
-                compute_elapsed.append(compute_start.elapsed_time(compute_end)/1000.0)
                 metrics["last_candidate_peak_allocated_bytes"]=int(
                     torch.cuda.max_memory_allocated(self.device))
                 metrics["last_candidate_peak_reserved_bytes"]=int(
@@ -2458,7 +2558,7 @@ class OnlineGlobalAgent:
                 # Candidate observation and frozen candidate validation share
                 # one GPU inference slot so they cannot duplicate the 0.5B
                 # model allocation at the same time.
-                inference_lock=self.candidate_live_inference_lock
+                inference_lock=self._gpu_work("validation_"+model_name)
                 with inference_lock:
                     snapshot_offloaded=(self.device.type=="cuda"
                                         and next(model.parameters()).device.type=="cpu")
@@ -2669,6 +2769,9 @@ class OnlineGlobalAgent:
 
     def _write_metrics(self):
         proc=psutil.Process(); metrics=dict(self.metrics)
+        scheduler=getattr(self,"candidate_live_inference_lock",None)
+        if hasattr(scheduler,"snapshot"):
+            metrics["gpu_scheduler"]=scheduler.snapshot()
         replay_stats=self.replay.stats(self.candidate_replay_passes)
         validation_snapshot_bytes=(sum(p.numel()*p.element_size()
             for p in self.validation_candidate.parameters()) if self.validation_candidate is not None else 0)
@@ -2679,7 +2782,7 @@ class OnlineGlobalAgent:
               "live_accounts_preserved":not self.operating_rules.get("daily_reset_live_accounts",False),
               "goal_reward_in_competition_score":False,"shared_replay":True},
           "replay_persistence":"durable_fifo_shared_frames_sqlite",
-          "learning_priority":"complete_daily_experience_coverage",
+          "learning_priority":"live_inference_first_then_complete_replay_coverage",
           "replay_untrained_count":replay_stats["untrained"],
           "replay_pending_count":replay_stats.get("pending",0),
           "replay_database_path":str(self.replay.journal_path),
@@ -2699,6 +2802,8 @@ class OnlineGlobalAgent:
           "champion_optimizer_steps_target":self.updates_per_candidate,
           "champion_samples_target":self.updates_per_candidate*self.batch_size,
           "replay_quarantined_count":replay_stats["quarantined"],
+          "replay_blocked_reasons":replay_stats.get("blocked_reasons",{}),
+          "replay_completed_retained":replay_stats.get("completed_retained",0),
           "replay_unsupported_count":replay_stats["unsupported"],
           "replay_oldest_unfinished_timestamp":replay_stats.get("oldest"),
           "replay_storage_pressure":replay_stats.get("storage_pressure",False),

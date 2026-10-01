@@ -27,6 +27,8 @@
 .universe-table{max-height:min(72vh,900px);min-height:320px}.universe-table table{min-width:1040px}.universe-table td{white-space:normal;vertical-align:middle}.universe-table .asset-name{font-size:13px;font-weight:850}.universe-table .asset-code,.universe-table .cell-sub{display:block;font-size:10px;color:var(--muted);line-height:1.4;margin-top:3px}.universe-table .price{font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}.universe-table .action{font-size:13px;padding:5px 10px}.universe-table tr.stale td{background:#fbfcff}.universe-table tr:hover td{background:#f2f6fd}.table-note{font-size:11px;color:var(--muted);margin:9px 2px}.table-tools .search{width:240px}.filter-toggle{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 10px;font-size:11px;color:var(--muted)}.filter-toggle.active{border-color:#91b5ff;background:var(--blue-soft);color:var(--blue);font-weight:850}.table-count{font-size:12px;color:var(--muted);font-weight:800}.gate-story{padding:12px 14px;border-radius:9px;background:#f5f8fe;color:var(--ink);font-size:12px;margin-top:12px}.gate-story strong{display:block;margin-bottom:4px}.gate-details{margin-top:12px}.gate-details summary{font-weight:800}.gate-details .history{padding:0 18px 16px;font-size:12px}.gate-details .history>div{padding:8px 0;border-bottom:1px solid var(--line)}
 @media(max-width:750px){.venue-grid{grid-template-columns:1fr}.action-overview{gap:6px}.action-summary{padding:10px}.action-summary span{font-size:12px}.action-summary strong{font-size:26px}.action-summary small{font-size:10px}.table-tools .search{width:100%}}
 .account-grid{align-items:start}.account-card h3{font-size:20px}.account-overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}.account-currency{padding:16px;border:1px solid #dce5f2;border-radius:14px;background:#f8faff}.account-currency strong{display:block;font-size:25px;margin:8px 0 4px;font-variant-numeric:tabular-nums}.account-currency small{display:block;color:#63789d;line-height:1.7}.account-currency .currency-title{font-weight:750;color:#334763}.account-currency .net-value{font-size:14px;font-weight:650}.account-main.detail-list{grid-template-columns:1fr}.account-main.detail-list>div{gap:12px}.account-main b{font-variant-numeric:tabular-nums}.account-reading{background:#fff8eb;border:1px solid #f1dfbe;border-radius:10px;padding:12px;font-size:13px;line-height:1.8}.account-meta{font-size:12px;color:#64799b;line-height:1.8;margin:12px 0}.account-details{border-top:1px solid #e6edf6;padding:14px 0}.account-details summary{cursor:pointer;font-weight:650;color:#31466a}.account-details[open] summary{margin-bottom:12px}.account-scroll{max-height:360px;overflow:auto;font-size:12px}.account-scroll table{width:100%;border-collapse:collapse;white-space:nowrap}.account-scroll th,.account-scroll td{text-align:right;padding:10px 8px;border-bottom:1px solid #e8eef7;font-variant-numeric:tabular-nums}.account-scroll th:first-child,.account-scroll td:first-child{text-align:left}.account-scroll th{background:#f5f8fc;position:sticky;top:0}.account-scope{margin-top:16px}.account-scope .help{line-height:1.9}.account-positive{color:#16835f}.account-negative{color:#d43d54}@media(max-width:640px){.account-currency{padding:12px}.account-currency strong{font-size:21px}.account-card h3{font-size:18px}.account-main b{font-size:13px}}
+
+[hidden]{display:none!important}.ops-jump{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}.ops-jump a{padding:7px 12px;border:1px solid var(--line);border-radius:8px;color:var(--blue);font-size:12px;font-weight:800;text-decoration:none}.ops-status{margin-bottom:12px}.ops-status strong{font-size:20px}.ops-alert{border:1px solid #e9b55c;background:#fff7e7;color:#815820;margin-bottom:14px}.account-meta{padding:10px 12px;background:#f4f7fc;border-radius:8px;margin:8px 0 12px;line-height:1.6}.account-meta.delayed{background:#fff7e7;color:#815820;border:1px solid #ebc78b}#liveAccounts,#experienceLearning,#promotionTrial,#runtimeDetails{scroll-margin-top:15px}
 </style>
 </head>
 <body>
@@ -70,15 +72,78 @@
 
   <section id="learning">
   <div class="section-head"><div><h2>시장 경험 학습 · 두 모델 대결</h2><p>Champion과 Candidate가 여러 시간봉을 함께 입력받아 계좌 순손익 경험을 각각 학습합니다. 승급은 고정 시험본끼리 동일한 미래 구간에서 비교합니다.</p></div><span class="pill" id="candidateBadge">상태 확인 중</span></div>
-   <div class="notice learning-rule"><strong>동작 설명</strong> 관찰은 시장 입력·모델 판단·결과 평가를 수행합니다. 가상매매를 켜면 paper 계좌에만 체결합니다. 관찰만으로 바꾸면 대기 주문은 다음 시장 봉에서 취소되고 기존 paper 보유는 유지됩니다. 실제 주문은 OFF입니다.</div>
-  <div class="mini" style="margin-top:12px">
+<div id="operationsOverview">
+  <nav class="ops-jump" aria-label="운영실 구역"><a href="#liveAccounts">① 두 계좌</a><a href="#experienceLearning">② 경험 학습</a><a href="#promotionTrial">③ 승급전</a><a href="#runtimeDetails">④ 입력·계측 상세</a></nav>
+  <div class="mini ops-status">
+    <div class="card mini-card"><span>Champion · 시세 대비 판단 지연</span><strong id="opChampionLag">—</strong><small id="opChampionTime">완료 판단 기준</small></div>
+    <div class="card mini-card"><span>Candidate · 시세 대비 판단 지연</span><strong id="opCandidateLag">—</strong><small id="opCandidateQueue">미처리 시장 관찰 확인 중</small></div>
+    <div class="card mini-card"><span>지금 GPU를 사용하는 작업</span><strong id="opGpuWork">—</strong><small id="opGpuQueue">학습·판단·승급전 순서</small></div>
+    <div class="card mini-card"><span>학습 가능한 남은 경험</span><strong id="opLearningQueue">—</strong><small id="opLastLearning">모델 저장 완료 기준</small></div>
+  </div>
+  <div class="notice ops-alert" id="runtimeAlert" role="alert" hidden></div>
+</div>
+<div id="liveAccounts"><div class="notice" id="liveAccountObservationNotice" role="status">운영 계좌와 학습 Candidate 계좌는 각 모델의 행동을 보는 누적 관찰용입니다. 가중치 버전·관찰 봉 수·시작 시각이 달라 두 계좌의 누적 손익은 승패 점수가 아닙니다. 승급 판정은 위 정식 대결만 사용합니다.</div>
+  <div class="grid-2 account-grid" style="margin-top:16px">
+    <article class="card pad account-card">
+      <div class="section-head"><h3>Champion · 판단·가상매매</h3><span class="pill" id="championLiveBadge">상태 확인 중</span></div>
+      <p class="help">저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된 계좌 시각 기준입니다.</p>
+      <div class="account-meta" id="championAccountMeta">—</div>
+<div id="championAccountOverview" class="account-overview">계좌를 불러오는 중…</div>
+      <div class="detail-list account-main">
+        <div><span>시드머니 · KRW / USD</span><b id="championLiveSeed">—</b></div>
+        <div><span>현재 현금 · KRW / USD</span><b id="championLiveCash">—</b></div>
+        <div><span>누적 거래비용 · KRW / USD</span><b id="paperCosts">—</b></div>
+        <div><span>누적 체결 · KRW / USD</span><b id="paperTradeCount">—</b></div>
+        <div><span>보유 종목 수 · KRW / USD</span><b id="championLivePositionCount">—</b></div>
+      </div>
+      
+      
+      <details class="account-details"><summary>보유 종목 · 비중 · 평가손익</summary><div id="positions" class="account-scroll">—</div></details>
+      <details class="account-details"><summary>지금 판단 · 행동 확률 · 목표 비중</summary><p class="help" id="championPolicySummary">새 관측 대기</p><div id="modelDirections" class="account-scroll">—</div></details>
+      <details class="account-details"><summary>손익과 비용 상세 · 최근 체결</summary><p class="account-reading" id="championAccountReading">분석 대기</p>
+        <div id="championTradingStatistics" class="account-scroll">—</div>
+        <div id="championCostDetails" class="account-scroll">—</div>
+        <p class="help">실현 / 평가 손익 · KRW <b id="krwPnlSplit">—</b> · USD <b id="usdPnlSplit">—</b></p>
+        <p class="help">최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.</p><div id="championLiveFills" class="account-scroll">—</div>
+      </details>
+      <span id="krwNetPnl" hidden></span><span id="usdNetPnl" hidden></span>
+    </article>
+    <article class="card pad account-card">
+      <div class="section-head"><h3>Candidate · 판단·가상매매</h3><span class="pill" id="candidateLiveBadge">상태 확인 중</span></div>
+      <p class="help">저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된 계좌 시각 기준입니다.</p>
+      <div class="account-meta" id="candidateAccountMeta">—</div>
+<div id="candidateAccountOverview" class="account-overview">계좌를 불러오는 중…</div>
+      <div class="detail-list account-main">
+        <div><span>시드머니 · KRW / USD</span><b id="candidateLiveSeed">—</b></div>
+        <div><span>현재 현금 · KRW / USD</span><b id="candidateLiveCash">—</b></div>
+        <div><span>누적 거래비용 · KRW / USD</span><b id="candidateLiveCosts">—</b></div>
+        <div><span>누적 체결 · KRW / USD</span><b id="candidateLiveTrades">—</b></div>
+        <div><span>보유 종목 수 · KRW / USD</span><b id="candidateLivePositionCount">—</b></div>
+      </div>
+      
+      
+      <details class="account-details"><summary>보유 종목 · 비중 · 평가손익</summary><div id="candidateLiveHoldings" class="account-scroll">—</div></details>
+      <details class="account-details"><summary>지금 판단 · 행동 확률 · 목표 비중</summary><p class="help" id="candidatePolicySummary">새 관측 대기</p><div id="candidateLiveDirections" class="account-scroll">—</div></details>
+      <details class="account-details"><summary>손익과 비용 상세 · 최근 체결</summary><p class="account-reading" id="candidateAccountReading">분석 대기</p>
+        <div id="candidateTradingStatistics" class="account-scroll">—</div>
+        <div id="candidateCostDetails" class="account-scroll">—</div>
+        <p class="help">실현 / 평가 손익 · KRW <b id="candidateLiveKrwSplit">—</b> · USD <b id="candidateLiveUsdSplit">—</b></p>
+        <p class="help">최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.</p><div id="candidateLiveFills" class="account-scroll">—</div>
+      </details>
+      <span id="candidateLiveStatus" hidden></span><span id="candidateLiveLastInference" hidden></span><span id="candidateLiveKrwNet" hidden></span><span id="candidateLiveUsdNet" hidden></span>
+    </article>
+  </div>
+  </div>
+<details class="account-details"><summary>보상 점수와 결과 연결 방식</summary><div class="notice learning-rule"><strong>동작 설명</strong> 관찰은 시장 입력·모델 판단·결과 평가를 수행합니다. 가상매매를 켜면 paper 계좌에만 체결합니다. 관찰만으로 바꾸면 대기 주문은 다음 시장 봉에서 취소되고 기존 paper 보유는 유지됩니다. 실제 주문은 OFF입니다.</div></details>
+  <details class="account-details"><summary>누적 처리·승급 기록</summary><div class="mini" style="margin-top:12px">
     <div class="card mini-card"><span>결과 확인 완료</span><strong id="maturedCount">—</strong><small>평가 기간 경과</small></div>
     <div class="card mini-card"><span>현재 DB에 남은 경험</span><strong id="replayCount">—</strong><small id="replayDetail">학습 완료 누계와 다릅니다 · 보류 포함</small></div>
     <div class="card mini-card"><span>두 모델 optimizer 누계</span><strong id="updateCount">—</strong><small id="lastUpdate">마지막 업데이트 확인 중</small></div>
     <div class="card mini-card"><span>Candidate 승급 / 탈락</span><strong id="gateCount" style="font-size:17px">—</strong><small>Champion 자체 학습 갱신과 별도</small></div>
   </div>
-  <div class="card pad"><div class="section-head"><h3>전체 경험 학습 현황 · 모델 교체 기준</h3><span class="pill" id="learningState">대기</span></div>
-      <p class="help learning-copy" id="learningThreshold">실제 실행 설정과 현재 대기 이유를 불러오는 중입니다.</p><div class="notice" id="learningFlowHealth" role="status">학습·검증 흐름을 확인 중입니다.</div><p class="help"><strong>Champion과 Candidate의 고정 시험본을 같은 새 가상계좌 조건에서 비교합니다.</strong> 시험본이 보지 못한 미래 최소 390개 시장 분 구간에서 Candidate 시험본이 이익을 내고 Champion을 이겼을 때만 오전 7시에 승급합니다. 원래 두 모델은 그동안 계속 학습하며, 다음 시험은 최신 두 모델을 다시 고정한 이후 구간에서 시작합니다.</p>
+  </details>
+<div class="card pad" id="experienceLearning"><div class="section-head"><h3>전체 경험 학습 현황 · 모델 교체 기준</h3><span class="pill" id="learningState">대기</span></div>
+      <p class="help learning-copy" id="learningThreshold" hidden>실제 실행 설정과 현재 대기 이유를 불러오는 중입니다.</p><div class="notice" id="learningFlowHealth" role="status" hidden>학습·검증 흐름을 확인 중입니다.</div><p class="help"><strong>Champion과 Candidate의 고정 시험본을 같은 새 가상계좌 조건에서 비교합니다.</strong> 시험본이 보지 못한 미래 최소 390개 시장 분 구간에서 Candidate 시험본이 이익을 내고 Champion을 이겼을 때만 오전 7시에 승급합니다. 원래 두 모델은 그동안 계속 학습하며, 다음 시험은 최신 두 모델을 다시 고정한 이후 구간에서 시작합니다.</p>
       <h4>수집된 경험의 학습 진행 · 한국시간</h4>
       <p class="help">128칸은 한 번에 보는 입력 길이입니다. 하루 학습량 제한이 아닙니다. 남은 경험은 장 마감·주말·재시작 뒤에도 순서대로 학습하며, Champion과 Candidate 모두 학습과 저장을 완료한 항목만 삭제합니다.</p>
       <div class="mini" style="margin-top:12px">
@@ -87,9 +152,9 @@
         <div class="card mini-card"><span>오늘 남은 미학습</span><strong id="todayLearningRemaining">—</strong><small>부분 학습 경험 포함</small></div>
         <div class="card mini-card"><span>전체 학습 가능 미학습</span><strong id="allLearningRemaining">—</strong><small>두 모델이 모두 끝낼 때까지 보존</small></div>
       </div>
-      <p class="help">학습 불가·보류: <strong id="blockedLearningCount">—</strong>건. 보류 경험은 전체 학습 가능 미학습 수에 포함하지 않고 그대로 보존합니다. 이전 단일 모델 학습 완료 기록은 당시 기준을 유지합니다.</p>
-      <div class="notice" id="learningCompletionSummary" role="status">생성 경험과 완료량을 확인 중입니다.</div>
-      <div class="notice" id="rewardCreditDescription">보상 연결 방식과 비용 차감 계좌 점수를 확인 중입니다.</div>
+      <p class="help">학습 불가: <strong id="blockedLearningCount">—</strong>건 · <span id="blockedLearningReason">원인 확인 중</span>. 양쪽 학습·저장 완료 후 아직 DB에 남은 정상 경험: <strong id="completedReplayRetained">—</strong>건.</p>
+      <div class="notice" id="learningCompletionSummary" role="status" hidden>생성 경험과 완료량을 확인 중입니다.</div>
+      <details class="account-details"><summary>보상 점수와 결과 연결 방식</summary><div class="notice" id="rewardCreditDescription">보상 연결 방식과 비용 차감 계좌 점수를 확인 중입니다.</div></details>
       <div class="notice" id="sharedGoalSummary">두 모델의 공통 장기 목표와 실제 진행 상태를 확인 중입니다.</div>
       <div class="detail-list"><div><span>결과 평가 대기 · 아직 replay 학습 대상 아님</span><b id="pendingLearningCount">—</b></div><div><span>마지막 시장 판단 / 시세와 cursor 지연</span><b id="learningObservationTime">—</b></div><div><span>학습 DB 경로 / 현재 용량</span><b id="learningDatabaseLocation">—</b></div></div>
       <p class="help">경험 1건은 종목·판단 시점·보상 종류로 구분합니다. 하루 봉 수나 저장된 시세 행 수와 같은 단위가 아닙니다. DB가 작아진 것은 완료 경험을 지웠기 때문일 수 있으며, 아래 생성·완료 누계로 확인합니다. 과거 반복 학습 기록은 유지합니다.</p>
@@ -107,14 +172,14 @@
         <tr><th>최근 완료 학습 중 프로세스 peak VRAM</th><td id="dualChampionVram">—</td><td id="dualCandidateVram">—</td></tr>
         <tr><th>각 모델에 남은 경험</th><td id="dualChampionRemaining">—</td><td id="dualCandidateRemaining">—</td></tr>
       </tbody></table></div>
-      <p class="help" id="singlePassPolicy">현재 반복 횟수를 불러오는 중입니다. 같은 GPU에서 학습 회차를 번갈아 실행하고, 둘 다 가중치 저장이 끝난 경험만 지웁니다. 서로 다른 시각의 경험과 모든 시간봉 입력은 유지합니다.</p>
+      <p class="help" id="singlePassPolicy" hidden>현재 반복 횟수를 불러오는 중입니다. 같은 GPU에서 학습 회차를 번갈아 실행하고, 둘 다 가중치 저장이 끝난 경험만 지웁니다. 서로 다른 시각의 경험과 모든 시간봉 입력은 유지합니다.</p>
       <div class="notice" id="dailyLearningSummary" role="status">날짜별 남은 학습량을 확인 중입니다.</div>
-      <div style="overflow-x:auto"><table class="model-comparison" aria-label="날짜별 경험 학습 현황"><thead><tr><th>날짜</th><th>생성 경험</th><th>양쪽 1회 이상 학습</th><th>학습·저장 완료 · 당시 기준</th><th>학습 가능 잔여</th></tr></thead><tbody id="dailyLearningRows"></tbody></table></div>
-      <h4>모든 시간봉 입력 · 실제 확보와 학습 사용</h4>
+      <details class="account-details"><summary>날짜별 경험 생성·학습 완료 내역</summary><div style="overflow-x:auto"><table class="model-comparison" aria-label="날짜별 경험 학습 현황"><thead><tr><th>날짜</th><th>생성 경험</th><th>양쪽 1회 이상 학습</th><th>학습·저장 완료 · 당시 기준</th><th>학습 가능 잔여</th></tr></thead><tbody id="dailyLearningRows"></tbody></table></div></details>
+      <details class="account-details"><summary>실제 입력 확보율·시간봉별 학습 사용량</summary><h4>모든 시간봉 입력 · 실제 확보와 학습 사용</h4>
       <div class="notice" id="modelUniverseSummary" role="status">등록·수신·실제 모델 입력 종목 수를 확인 중입니다.</div>
       <p class="help">본체는 최근 128개 수집 시점, 보조층은 1·3·5·15·60분봉 및 일·주·월봉 요약을 함께 학습합니다. 아래 확보율은 필요한 입력 기록의 평균 충족률이며 전체 시장 수집률이 아닙니다. 우측은 각 모델의 최근 완료 회차에서 해당 시간봉 데이터가 포함된 경험 수입니다. 시간봉마다 replay를 따로 복제하지 않습니다.</p>
       <div style="overflow-x:auto"><table class="model-comparison" aria-label="시간봉 실제 입력과 학습"><thead><tr><th>시간봉</th><th>입력 기록 확보율</th><th>입력 있음 / 관측 종목</th><th>기록 충족 종목</th><th>Champion 사용 경험</th><th>Candidate 사용 경험</th></tr></thead><tbody id="timeframeLearningRows"></tbody></table></div>
-      <h4>Champion · Candidate 현재 비교</h4>
+      </details><details class="account-details"><summary>모델 구조·계산량·자원 상세</summary><h4>Champion · Candidate 현재 비교</h4>
       <div style="overflow-x:auto"><table class="model-comparison" aria-label="Champion과 Candidate 비교"><thead><tr><th>비교 항목</th><th>Champion</th><th>Candidate</th></tr></thead><tbody>
         <tr><th>평소 역할 · 양쪽 동일</th><td>실시간 시장 판단 + 독립 가상매매 + 공통 replay 학습</td><td>실시간 시장 판단 + 독립 가상매매 + 공통 replay 학습</td></tr>
         <tr><th>승급전 역할</th><td>시험 시작 순간의 고정본이 기준 성과를 냅니다</td><td>시험 시작 순간의 고정본이 기준을 이겨야 승급합니다</td></tr>
@@ -144,10 +209,10 @@
         <div><span>검증 중 candidate 계산량</span><b id="candidateValidationUsage">—</b></div>
       </div>
       <div class="gate-story" id="gateStory" hidden></div><div class="detail-list"><div hidden><span>최근 검증 결과</span><b id="lastGateResult">아직 검증 전</b></div><div hidden><span>직전 candidate 순손익률</span><b id="candidateScore">—</b></div><div hidden><span>직전 champion 순손익률</span><b id="championScore">—</b></div><div><span>마지막 학습 업데이트</span><b id="lastUpdateFull">—</b></div><div><span>마지막 채택 시각</span><b id="lastPromotion">—</b></div><div><span>마지막 기존 유지 시각</span><b id="lastRejection">—</b></div><div><span>추론 중앙 시간</span><b id="inferenceTime">—</b></div></div>
-      <details class="log-panel gate-details"><summary>모델 교체 기준과 최근 기록 자세히 보기</summary><div class="history" id="gateHistory">기록을 불러오고 있습니다.</div></details>
+      </details><details class="log-panel gate-details"><summary>모델 교체 기준과 최근 기록 자세히 보기</summary><div class="history" id="gateHistory">기록을 불러오고 있습니다.</div></details>
       <details class="log-panel model-config-details" id="modelSettingsDetails" style="margin-top:10px"><summary>모델 설정값 자세히 보기 (Model Configuration)</summary><div class="detail-list" style="padding:0 18px 14px"><div><span>실행 중 파라미터 수 (Runtime Parameter Count)<small style="display:block">현재 로드된 checkpoint의 실제 파라미터 수 (API 실행 지표)</small></span><b id="modelRuntimeParameterCount">모델 대기 중</b></div><div><span>초기 설계 기준 (Initial Design Baseline)<small style="display:block">초기 모델 구성에서 제시한 파라미터 수</small></span><b>511,848,836개</b></div><div><span>숨은층 크기 (Hidden Size)<small style="display:block">각 시점의 정보를 모델 안에서 표현하는 폭</small></span><b>1,408</b></div><div><span>Attention head 수와 크기 (Attention Heads / Head Dimension)<small style="display:block">정보를 나눠 동시에 살피는 관점 수와 각 관점의 폭</small></span><b>16개 · 88차원</b></div><div><span>FFN 크기 (Feed-Forward Network Size)<small style="display:block">각 Transformer 블록 안에서 특징을 추가로 조합하는 폭</small></span><b>5,632</b></div><div><span>Transformer 블록 (Transformer Blocks)<small style="display:block">시간의 흐름을 보는 층과 종목 관계를 보는 층</small></span><b>21개 (시간축 11개 · 종목 간 10개)</b></div><div><span>시간축 길이 (Sequence Length)<small style="display:block">각 종목의 최근 거래 흐름을 보는 시점 수</small></span><b>128개 시점</b></div><div><span>종목별 입력 특징 (Per-Symbol Features)<small style="display:block">가격·거래량 등 각 종목의 상태 입력</small></span><b>17개</b></div><div><span>시장 전체 맥락 특징 (Market Context Features)<small style="display:block">지수·환율 등 시장 전체 흐름 입력</small></span><b>16개</b></div><div><span>모델 행동 출력 (Policy Output)<small style="display:block">각 종목의 매도·관망·매수 점수와 가치 예측</small></span><b>SELL / HOLD / BUY 점수(logits) + value(가치 예측)</b></div><div><span>포트폴리오 출력 (Portfolio Allocation Output)<small style="display:block">계좌 상태를 반영한 종목별 자금 배분</small></span><b>자금 배분</b></div><div><span>연산 정밀도 (Compute Precision)<small style="display:block">GPU 메모리 사용을 줄이는 16비트 연산</small></span><b>FP16</b></div><div><span>모델 파일 크기 (Checkpoint File Size)<small style="display:block">가중치를 저장한 checkpoint 파일 기준</small></span><b>약 1.02GB</b></div></div><p class="help" style="padding:0 18px 15px">128은 종목 수가 아니라 각 종목에서 보는 과거 시점 수입니다. 종목 수는 정해진 128개로 제한하지 않고 입력합니다.</p></details>
     </div>
-  <div class="card pad" style="margin-top:12px">
+  <div class="card pad" id="promotionTrial" style="margin-top:12px">
     <div class="section-head"><h3>하루 승급전 · Champion vs Candidate</h3><span class="pill" id="validationTrialBadge">대결 대기</span></div>
     <p class="help">Champion과 Candidate 가중치를 시험 시작 순간에 함께 고정하고 별도 가상계좌로 대결합니다. 두 모델은 같은 시작 시각 이후의 서로 다른 미래 시장 분 시각 최소 390개를 받으며, 매 시각 1·3·5·15·60분봉과 일·주·월봉 입력도 동일합니다. 시드머니와 체결·수수료·세금·스프레드·슬리피지 규칙도 같습니다. 둘 다 무작위 탐험 없이 각자 가장 높은 확률의 행동을 선택합니다. 비용을 뺀 계좌 순자산에서 Candidate 시험본이 이익을 내고 Champion을 이긴 경우에만 오전 7시에 승급합니다. 원래 두 모델은 계속 학습하며 이 점수는 고정한 두 버전의 결과입니다.</p>
     <div class="notice" id="validationFairnessChecks" role="status">공정한 대결 조건을 확인하고 있습니다.</div>
@@ -169,56 +234,7 @@
       <tr><th>USD 보유 종목 · 수량</th><td id="trialChampionUsdHoldings">—</td><td id="trialCandidateUsdHoldings">—</td></tr>
     </tbody></table></div>
   </div>
-  <div class="notice" id="liveAccountObservationNotice" role="status">운영 계좌와 학습 Candidate 계좌는 각 모델의 행동을 보는 누적 관찰용입니다. 가중치 버전·관찰 봉 수·시작 시각이 달라 두 계좌의 누적 손익은 승패 점수가 아닙니다. 승급 판정은 위 정식 대결만 사용합니다.</div>
-  <div class="grid-2 account-grid" style="margin-top:16px">
-    <article class="card pad account-card">
-      <div class="section-head"><h3>Champion · 실시간 판단·가상매매</h3><span class="pill" id="championLiveBadge">상태 확인 중</span></div>
-      <p class="help">저장이 완료된 최신 Champion이 직접 판단하고 독립 계좌로 가상매매합니다. 자체 행동·손익 경험을 공통 replay에 넣으며 학습은 별도 작업본에서 진행합니다.</p>
-      <div id="championAccountOverview" class="account-overview">계좌를 불러오는 중…</div>
-      <div class="detail-list account-main">
-        <div><span>시드머니 · KRW / USD</span><b id="championLiveSeed">—</b></div>
-        <div><span>현재 현금 · KRW / USD</span><b id="championLiveCash">—</b></div>
-        <div><span>누적 거래비용 · KRW / USD</span><b id="paperCosts">—</b></div>
-        <div><span>누적 체결 · KRW / USD</span><b id="paperTradeCount">—</b></div>
-        <div><span>보유 종목 수 · KRW / USD</span><b id="championLivePositionCount">—</b></div>
-      </div>
-      <p class="account-reading" id="championAccountReading">분석 대기</p>
-      <div class="account-meta" id="championAccountMeta">—</div>
-      <details class="account-details"><summary>보유 종목 · 비중 · 평가손익</summary><div id="positions" class="account-scroll">—</div></details>
-      <details class="account-details"><summary>지금 판단 · 행동 확률 · 목표 비중</summary><p class="help" id="championPolicySummary">새 관측 대기</p><div id="modelDirections" class="account-scroll">—</div></details>
-      <details class="account-details"><summary>손익과 비용 상세 · 최근 체결</summary>
-        <div id="championTradingStatistics" class="account-scroll">—</div>
-        <div id="championCostDetails" class="account-scroll">—</div>
-        <p class="help">실현 / 평가 손익 · KRW <b id="krwPnlSplit">—</b> · USD <b id="usdPnlSplit">—</b></p>
-        <p class="help">최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.</p><div id="championLiveFills" class="account-scroll">—</div>
-      </details>
-      <span id="krwNetPnl" hidden></span><span id="usdNetPnl" hidden></span>
-    </article>
-    <article class="card pad account-card">
-      <div class="section-head"><h3>Candidate · 실시간 판단·가상매매</h3><span class="pill" id="candidateLiveBadge">상태 확인 중</span></div>
-      <p class="help">저장이 완료된 최신 Candidate가 직접 판단하고 독립 계좌로 가상매매합니다. 자체 행동·손익 경험을 같은 replay에 넣으며 두 모델 모두 양쪽 경험을 학습합니다. 승급은 별도 고정본 대결로 판정합니다.</p>
-      <div id="candidateAccountOverview" class="account-overview">계좌를 불러오는 중…</div>
-      <div class="detail-list account-main">
-        <div><span>시드머니 · KRW / USD</span><b id="candidateLiveSeed">—</b></div>
-        <div><span>현재 현금 · KRW / USD</span><b id="candidateLiveCash">—</b></div>
-        <div><span>누적 거래비용 · KRW / USD</span><b id="candidateLiveCosts">—</b></div>
-        <div><span>누적 체결 · KRW / USD</span><b id="candidateLiveTrades">—</b></div>
-        <div><span>보유 종목 수 · KRW / USD</span><b id="candidateLivePositionCount">—</b></div>
-      </div>
-      <p class="account-reading" id="candidateAccountReading">분석 대기</p>
-      <div class="account-meta" id="candidateAccountMeta">—</div>
-      <details class="account-details"><summary>보유 종목 · 비중 · 평가손익</summary><div id="candidateLiveHoldings" class="account-scroll">—</div></details>
-      <details class="account-details"><summary>지금 판단 · 행동 확률 · 목표 비중</summary><p class="help" id="candidatePolicySummary">새 관측 대기</p><div id="candidateLiveDirections" class="account-scroll">—</div></details>
-      <details class="account-details"><summary>손익과 비용 상세 · 최근 체결</summary>
-        <div id="candidateTradingStatistics" class="account-scroll">—</div>
-        <div id="candidateCostDetails" class="account-scroll">—</div>
-        <p class="help">실현 / 평가 손익 · KRW <b id="candidateLiveKrwSplit">—</b> · USD <b id="candidateLiveUsdSplit">—</b></p>
-        <p class="help">최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.</p><div id="candidateLiveFills" class="account-scroll">—</div>
-      </details>
-      <span id="candidateLiveStatus" hidden></span><span id="candidateLiveLastInference" hidden></span><span id="candidateLiveKrwNet" hidden></span><span id="candidateLiveUsdNet" hidden></span>
-    </article>
-  </div>
-  <div class="card pad account-scope">
+  <div class="card pad account-scope" id="runtimeDetails">
     <h3>현재 환경에서 무엇을 보고 배우는가</h3>
     <p class="help" id="inferenceWorkSummary">두 모델의 별도 판단·학습 상태를 확인하는 중…</p>
     <details class="account-details"><summary>추론·학습 시간 상세 · 대기와 계산 구분</summary><div id="inferenceWorkDetails" class="account-scroll">—</div><p class="help">아래는 실제 경과 시간입니다. 같은 GPU에서 다른 작업과 경쟁할 수 있어 모델별 독점 GPU 사용률이 아닙니다. Candidate의 합계에는 잠금 대기·모델 이동·입력 준비·계산이 포함되고 Champion 판단 시간은 입력 준비 이후의 계산 구간입니다. 측정 범위가 달라 두 합계를 속도 대결 점수로 사용하지 않습니다.</p></details>
@@ -399,7 +415,7 @@ function renderDailyLearning(d){
     return Object.entries(goal.books||{}).map(([currency,b])=>[
      role==="champion"?"Champion":"Candidate",currency,
      num(b.multiple).toFixed(4)+"배",accountMoney(b.target_equity,currency),
-     accountPercent(b.progress),b.win?"WIN · "+timeOf(b.win.timestamp):"진행 중"]);
+     accountPercent(b.target_asset_ratio??(num(b.multiple)/num(goal.target_multiple||10))),accountPercent(b.net_return_rate??(num(b.multiple)-1)),b.win?"WIN · "+timeOf(b.win.timestamp):"진행 중"]);
    });
    const goalTraining=["champion","candidate"].map(role=>{
     const round=m[role+"_last_completed_round"],label=role==="champion"?"Champion":"Candidate";
@@ -407,7 +423,8 @@ function renderDailyLearning(d){
      "최근 완료 회차 "+whole(round.goal_conditioned_samples)+" / "+whole(round.samples)+"개 목표 입력 학습 · 성공 보너스 경험 "+whole(round.goal_bonus_samples)+"개");
    }).join(" | ");
    $("sharedGoalSummary").innerHTML="<strong>공통 임무: 비용 차감 순자산 "+esc(num(objective.target_multiple).toFixed(0))+"배 · 두 모델 모두 순손익 + 목표 달성 경험으로 학습</strong><br>장기 계좌는 매일 유지합니다. 각 통화의 목표 달성은 episode당 한 번 기록하고 "+esc(whole(objective.win_bonus_points))+"점의 학습용 성공 보상을 연결합니다. 승부 점수는 실제 계좌 성과이며 성공 보너스는 포함하지 않습니다."+
-    (goals.length?accountTable(["모델","통화","현재 자산 배율","목표 순자산","성장 진행률","목표 상태"],goals):"<br>새 목표 방식 관측 대기")+"<br>"+esc(goalTraining);
+    "<br>목표 자산 대비 달성률 = 현재 순자산 ÷ 목표 순자산입니다. 학습률과 다릅니다. 10배 목표에서는 시작 자금이 10%이며 손실은 원금 대비 수익률에 표시합니다."+
+    (goals.length?accountTable(["모델","통화","현재 자산 배율","목표 순자산","목표 자산 대비 달성률","원금 대비 수익률","목표 상태"],goals):"<br>새 목표 방식 관측 대기")+"<br>"+esc(goalTraining);
   }
  const credit=m.reward_credit;
  if(credit){
@@ -422,6 +439,9 @@ function renderDailyLearning(d){
  const rate=Number(today.enqueued)>0?100*Number(today.completed||0)/Number(today.enqueued):null;
  text("learningCompletionSummary",rate==null?"오늘 아직 보상 평가가 끝나 새로 저장된 경험이 없습니다.":"오늘 생성 "+whole(today.enqueued)+"건 → 학습·저장 완료 "+whole(today.completed)+"건 ("+rate.toFixed(2)+"%) · 학습 가능 잔여 "+whole(today.remaining)+"건 · 보류 "+whole(today.blocked)+"건. 완료 경험은 DB에서 삭제되어 현재 파일 건수와 누계가 다릅니다.");
  text("pendingLearningCount",whole(m.replay_pending_count??m.pending_experiences)+"건");
+ const blockedReasonNames={"saved portfolio input shape is incompatible":"과거 계좌 입력과 시장 입력의 종목 배열 불일치","unsupported reward schema":"지원하지 않는 과거 보상 형식"};
+ text("blockedLearningReason",Object.entries(m.replay_blocked_reasons||{}).map(([reason,count])=>(blockedReasonNames[reason]||reason)+" "+whole(count)+"건").join(" · ")||"새 원인 계측 대기");
+ text("completedReplayRetained",whole(m.replay_completed_retained));
  text("learningObservationTime",timeOf(m.last_market_timestamp)+" · "+(d.agent_health?.lag_seconds==null?"지연 미확인":num(d.agent_health.lag_seconds).toFixed(0)+"초"));
  text("learningDatabaseLocation",(m.replay_database_path||"경로 확인 중")+" · "+(Number(m.replay_file_bytes||0)/1048576).toFixed(2)+" MiB");
  host.replaceChildren();
@@ -484,8 +504,8 @@ function renderAccountDiagnostics(d){
   const active=Boolean(d.agent_process_running),enabled=Boolean(d.paper_enabled);
   const badge=isChampion?"championLiveBadge":"candidateLiveBadge";
   const error=account.observer_error||health?.status==="error";
-  text(badge,error?"판단 오류":!active?"정지 · 마지막 기록":health?.status==="stale"?"판단 지연":enabled?"가상매매":"관찰만");
-  $(badge).className="pill "+(error?"danger":active&&health?.status==="healthy"?"good":"");
+  text(badge,error?"판단 오류":!active?"정지 · 마지막 기록":health?.status==="stale"?"시세보다 "+Math.ceil(num(health.lag_seconds)/60)+"분 지연":enabled?"판단·가상매매":"관찰만");
+  $(badge).className="pill "+(error?"danger":health?.status==="stale"?"warn":active&&health?.status==="healthy"?"good":"");
   const currentHasTrades=num(currentPolicy.observed_tradable_symbols)>0;
   const policy=currentHasTrades?currentPolicy:account.last_tradable_policy||{};
   $(role+"AccountOverview").innerHTML=["KRW","USD"].map(currency=>{
@@ -507,7 +527,10 @@ function renderAccountDiagnostics(d){
   }
   text(role+"AccountReading",readings.join(" ")+" 비용을 더한 값은 무비용 재실험 결과가 아닙니다.");
   const status=account.observer_error?"관찰 오류: "+account.observer_error:account.training?"학습 중 · 저장된 최신 가중치로 관찰":"저장된 가중치로 관찰";
-  text(role+"AccountMeta",status+" · "+(isChampion?"자체 학습 버전 ":"관찰 버전 ")+whole(account.version)+" · 마지막 계좌 시각 "+timeOf(account.last_timestamp)+" · "+ageOf(account.last_timestamp)+" · 누적 추론 "+whole(account.inference_count)+"회 · 최근 추론 "+decimal(account.last_inference_seconds,2)+"초 · 과거 관찰 건너뜀(옛 방식) "+whole(account.skipped_observations)+"회 · 대기 주문 "+whole(account.pending_orders)+"건");
+  const profile=account.inference_profile||mInferenceProfile(d,role),queue=isChampion?0:num(d.metrics?.shared_observation?.pending);
+  const part=v=>v==null?"미측정":decimal(v,2)+"초";
+  $(role+"AccountMeta").className="account-meta"+(health?.status==="stale"?" delayed":"");
+  text(role+"AccountMeta","계좌·완료 판단 기준 "+timeOf(account.last_timestamp)+" · 시세 대비 "+(health?.lag_seconds==null?"지연 미측정":whole(health.lag_seconds)+"초 지연")+" · 관측 가중치 v"+whole(account.version)+". 최근 GPU 대기 "+part(profile.wait_seconds)+" / 입력·계산 "+part(profile.forward_seconds)+(isChampion?"":" · 미처리 관찰 "+whole(queue)+"개"));
   const positions=["KRW","USD"].flatMap(c=>(books[c]?.positions||[]).map(p=>[instrumentLabel(p.symbol,d),c,whole(p.quantity)+"주",accountMoney(p.average_cost,c),accountMoney(p.mark,c)+(p.mark_available?"":" (평단 대체)"),accountPercent(p.weight),accountMoney(p.unrealized_pnl,c)]));
   $(isChampion?"positions":"candidateLiveHoldings").innerHTML=positions.length?accountTable(["종목","통화","수량","평단","평가가격","계좌 비중","평가손익"],positions):"보유 종목 없음";
   const costs=["KRW","USD"].filter(c=>books[c]).map(c=>{const b=books[c];return [c,accountMoney(b.fees,c),accountMoney(b.sell_tax,c),accountMoney(b.spread,c),accountMoney(b.slippage,c),accountPercent(b.cost_return_rate),b.reconciliation_ok?"일치":"불일치"]});
@@ -525,8 +548,9 @@ function renderAccountDiagnostics(d){
   $(isChampion?"championLiveFills":"candidateLiveFills").innerHTML=fills.length?accountTable(["시각","종목","체결","수량","체결가","수수료","매도세"],fills.map(f=>[timeOf(f.date),instrumentLabel(f.symbol,d),f.action==="BUY"?"매수":"매도",whole(f.quantity)+"주",accountMoney(f.price,f.currency),accountMoney(f.fee,f.currency),accountMoney(f.sell_tax,f.currency)])):"체결 없음";
  }
  text("accountInputScope","1·3·5·15·60분봉 + 일·주·월봉 요약을 함께 입력합니다. 저장된 마지막 시세 중 최우선 매수·매도 호가가 있는 종목 "+whole(view.quoted_bid_ask_symbols)+"개 (현재 수신 여부는 시장 수신 상태 참조). 전체 호가 단계는 미수집입니다. USD 비용 가정: 편도 수수료 "+accountPercent(view.fee_rate)+", 슬리피지 "+decimal(view.slippage_bps,1)+"bp. 왕복 비용은 약 "+accountPercent(view.usd_round_trip_cost_rate_before_spread)+"부터이며 스프레드는 별도입니다. 한국 매도세는 "+accountPercent(view.krw_sell_tax_assumption)+"의 모의 가정입니다. 실제 주문 OFF.");
- text("accountRewardHorizon","현재 결과 평가 간격은 "+view.reward_horizon+"입니다. 시간봉 입력 길이와 별개이며, 체결 후 짧은 구간의 피드백만으로 장기 보유의 최종 성과를 모두 설명할 수는 없습니다. 미보유 매도·관망·미체결 판단은 체결 건수와 다릅니다.");
+  text("accountRewardHorizon","현재 새 학습 경험은 "+num(d.metrics?.reward_credit?.duration_seconds/60).toFixed(0)+"분 동안 결과를 연결하고 다음 상태의 예상 가치도 사용합니다. 시간봉 입력 길이와 별개입니다. 기존 짧은 경험은 이전 방식 그대로 학습하며, 미보유 매도·미체결 판단을 체결로 세지 않습니다.");
 }
+function mInferenceProfile(d,role){return d.metrics?.[role+"_live_inference_profile"]||{}}
 const renderBeforeAccountDiagnostics=render;
 function renderDailyOperation(d){
  const input=d.input_availability||{},stored=input.stored||{},fresh=input.fresh_quotes||{},cycle=d.daily_cycle||{},v=d.validation_comparison||{},m=d.metrics||{};
@@ -565,21 +589,54 @@ function renderDailyOperation(d){
  $("dailyAccountHistory").innerHTML=daily.length?accountTable(["기록일","모델","통화","계좌 누적 수익률","누적 순손익","누적 비용","누적 체결"],daily):"첫 일일 판정 기록 대기 중입니다. 장기 계좌 누적 기록과 고정 시험 승부 점수는 구분합니다.";
 }
 function renderInferenceWork(d){
- const m=d.metrics||{},obs=d.account_observability||{},p=obs.candidate?.inference_profile||{},seconds=x=>x==null?"미측정":decimal(x,3)+"초";
+ const m=d.metrics||{},obs=d.account_observability||{},p=obs.candidate?.inference_profile||{},o=m.candidate_live_observation_profile||{},seconds=x=>x==null?"미측정":decimal(x,3)+"초";
  text("inferenceWorkSummary","Champion과 Candidate가 각자 추론·가상매매하고 양쪽 경험으로 각각 학습합니다. Champion "+whole(obs.champion?.inference_count)+"회 / Candidate "+whole(obs.candidate?.inference_count)+"회 · Candidate 미처리 관찰 "+whole(m.shared_observation?.pending)+"개. 학습 작업본과 승급전 고정본은 운영 계좌의 추론 모델과 구분합니다.");
  const rows=[
  ["Champion 실시간 판단",seconds(obs.champion?.last_inference_seconds),"입력 준비 후 forward · GPU 완료 대기 포함"],
- ["Candidate 실시간 판단 합계",seconds(p.total_seconds),"잠금 대기부터 모델 반환·행동 계산까지"],
- ["Candidate 잠금 대기",seconds(p.wait_seconds),"가중치 갱신 / 다른 추론 작업 대기"],
+ ["Candidate 관찰 처리 전체",seconds(o.total_seconds),"DB 읽기 → 체결·보상 → 추론 → 경험 저장 → 계좌 저장"],
+ ["Candidate DB 관찰 읽기",seconds(o.read_seconds),"저장소 잠금 대기 포함"],
+ ["Candidate 체결·보상 처리",seconds(o.fills_and_rewards_seconds),"성숙 경험을 한 transaction으로 기록"],
+ ["Candidate 경험·계좌 DB 기록",seconds(o.database_commit_seconds),"관찰 완료와 pending 경험을 함께 저장"],
+ ["Candidate 추론 경로 합계",seconds(p.total_seconds),"모델 잠금·GPU 대기 → forward → RAM 반환"],
+ ["Candidate 추론 대기",seconds(p.wait_seconds),"GPU 우선순위 대기 + 가중치 잠금 대기"],
  ["Candidate 모델 GPU 이동",seconds(p.upload_seconds),"RAM → GPU"],
  ["Candidate 입력·forward",seconds(p.forward_seconds),"입력 준비 + forward + GPU 완료 대기"],
  ["Candidate 모델 RAM 반환",seconds(p.download_seconds),"GPU → RAM · VRAM 확보"],
  ["Candidate 관찰 가중치 갱신",seconds(m.candidate_observer_publish_seconds),m.candidate_observer_storage_reused?"기존 모델 저장공간 재사용":"최초 생성 / 측정 대기"]
  ];
  for(const role of ["champion","candidate"]){const r=m[role+"_last_completed_round"]||{};rows.push([role==="champion"?"Champion 최근 학습":"Candidate 최근 학습",seconds(r.compute_seconds)+" / 총 "+seconds(r.total_seconds),whole(r.unique_samples)+"개 경험 · optimizer "+whole(r.optimizer_steps)+"회"])}
- $("inferenceWorkDetails").innerHTML=accountTable(["작업","최근 경과 시간","측정 범위 / 처리량"],rows);
+  $("inferenceWorkDetails").innerHTML=accountTable(["작업","최근 경과 시간","측정 범위 / 처리량"],rows);
 }
-render=function(d){renderBeforeAccountDiagnostics(d);renderAccountDiagnostics(d);renderDailyOperation(d);renderInferenceWork(d)};
+function renderOperationsOverview(d){
+ const m=d.metrics||{},health=d.agent_health||{},candidate=health.candidate||{},schedule=m.gpu_scheduler||{};
+ const names={champion_live:"Champion 판단",candidate_live:"Candidate 판단",champion_learning_step:"Champion 학습",candidate_learning_step:"Candidate 학습",champion_learning_setup:"Champion 학습 준비",candidate_learning_setup:"Candidate 학습 준비",candidate_publish:"Candidate 완료 가중치 반영",validation_champion:"Champion 승급전",validation_candidate:"Candidate 승급전"};
+ const roleName=role=>names[role]||role||"작업 대기",lag=v=>v==null?"미측정":whole(v)+"초";
+ text("opChampionLag",!d.agent_process_running?"정지":lag(health.lag_seconds));
+ text("opChampionTime","완료 판단 "+timeOf(health.agent_cursor_timestamp_utc));
+ text("opCandidateLag",!d.agent_process_running?"정지":lag(candidate.lag_seconds));
+ text("opCandidateQueue","처리 대기 "+whole(candidate.pending??m.shared_observation?.pending)+"개 · 완료 "+timeOf(candidate.cursor_timestamp_utc));
+ text("opGpuWork",!d.agent_process_running?"정지":schedule.policy?roleName(schedule.active):"새 계측 적용 대기");
+ text("opGpuQueue",schedule.policy?"실시간 판단 우선 · 대기 "+((schedule.waiting||[]).map(x=>roleName(x.role)).join(" → ")||"없음"):"현재 실행 프로세스의 순서 계측 없음");
+ text("opLearningQueue",whole(m.replay_eligible_backlog)+"개");
+ text("opLastLearning","마지막 학습·저장 "+timeOf(m.last_update_utc));
+ if(m.learning_wait_reason){
+  text("dualLearningStatus","실시간 판단 먼저 처리 · replay 학습 대기 · 미학습 경험 보존");
+  text("learningFlowHealth","시장 판단을 먼저 따라잡는 중입니다. 학습 회차는 현재 step 이후 대기하며 replay 경험은 보존합니다.");
+  badge("learningState","판단 우선 · 학습 대기","warn");
+  for(const role of ["Champion","Candidate"])text("dual"+role+"State","판단 우선 · 학습 대기");
+ }
+ const warnings=[];
+ if(candidate.status==="error")warnings.push("Candidate 판단 오류: "+candidate.reason);
+ else if(candidate.status==="stale")warnings.push("Candidate가 시세보다 "+lag(candidate.lag_seconds)+" 뒤처져 있습니다. 미처리 관찰 "+whole(candidate.pending)+"개는 DB에 남아 있으며 아래 Candidate 손익도 마지막 처리 시각 기준입니다.");
+ if(health.status==="stale")warnings.push("Champion이 시세보다 "+lag(health.lag_seconds)+" 뒤처져 있습니다.");
+ if(m.last_candidate_error)warnings.push("최근 Candidate 학습 오류: "+m.last_candidate_error);
+ if(m.last_champion_error)warnings.push("최근 Champion 학습 오류: "+m.last_champion_error);
+ $("runtimeAlert").hidden=!warnings.length;text("runtimeAlert",warnings.join(" "));
+ // Use the same backend health and timestamps everywhere, rather than a
+ // second client threshold based on feed-process wall-clock activity.
+ if(d.agent_process_running){badge("agentBadge",health.status==="stale"?"Champion 판단 지연":health.status==="healthy"?"Champion 판단 정상":"판단 상태 확인",health.status==="stale"?"warn":"good");text("agentDetail","시세 "+timeOf(health.latest_feed_timestamp_utc)+" / 완료 판단 "+timeOf(health.agent_cursor_timestamp_utc)+" · "+lag(health.lag_seconds)+" 지연")}
+}
+render=function(d){renderBeforeAccountDiagnostics(d);renderAccountDiagnostics(d);renderDailyOperation(d);renderInferenceWork(d);renderOperationsOverview(d)};
 setClock();setInterval(setClock,1000);refresh();setInterval(refresh,5000);
 </script>
 </body>

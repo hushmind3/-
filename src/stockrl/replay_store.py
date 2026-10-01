@@ -283,7 +283,7 @@ class GlobalReplayBuffer:
     def add(self, exp, pending_ack=None):
         self.add_many([exp], pending_ack)
 
-    def add_many(self, experiences, pending_ack=None):
+    def add_many(self, experiences, pending_ack=None, pending_acks=()):
         with self.lock:
             if not self.journal_path:
                 for exp in experiences:
@@ -294,13 +294,22 @@ class GlobalReplayBuffer:
                 self.items.extend(experiences)
                 return
             saved=[]
+            # All symbol outcomes from one market state share immutable inputs.
+            # Hash/store each input once within this transaction, including its
+            # successor, instead of re-hashing five years of history per symbol.
+            stored_inputs={}
+            def store_input(db, exp):
+                identity=tuple(id(getattr(exp,name,None)) for name in ARRAY_NAMES)
+                if identity not in stored_inputs:
+                    stored_inputs[identity]=self._store_window(db,exp)
+                return stored_inputs[identity]
             try:
                 with closing(self._connect()) as db, db:
                     for exp in experiences:
-                        key=self._store_window(db,exp)
+                        key=store_input(db,exp)
                         successor=getattr(exp,"_bootstrap_experience",None)
                         if successor is not None:
-                            exp.bootstrap_window_key=self._store_window(db,successor)
+                            exp.bootstrap_window_key=store_input(db,successor)
                             exp._bootstrap_inputs={name:getattr(successor,name,None) for name in ARRAY_NAMES}
                         symbol_id=int(exp.symbol_ids[exp.symbol_index])
                         identity_fields=(exp.source,exp.timestamp,symbol_id,exp.action)
@@ -321,6 +330,7 @@ class GlobalReplayBuffer:
                                 db.execute("INSERT OR IGNORE INTO portfolio_value_stamps VALUES(?)",(value_stamp,))
                     if pending_ack:
                         db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_ack)
+                    db.executemany("DELETE FROM pending_records WHERE kind=? AND record_key=?",pending_acks)
                 for exp,row_id,key in saved:
                     exp._replay_row_id=row_id
                     exp._replay_window_key=key
@@ -610,6 +620,8 @@ class GlobalReplayBuffer:
                 model_remaining[name],model_untrained[name]=db.execute(
                     f"SELECT COALESCE(SUM(eligible=1 AND error IS NULL AND {column}<?),0),COALESCE(SUM(eligible=1 AND error IS NULL AND {column}=0),0) FROM experiences",(passes,)).fetchone()
             blocked_by_day=dict(db.execute("SELECT day,COUNT(*) FROM experiences WHERE error IS NOT NULL OR eligible=0 GROUP BY day"))
+            blocked_reasons=dict(db.execute("SELECT COALESCE(error,'unsupported reward schema'),COUNT(*) FROM experiences WHERE error IS NOT NULL OR eligible=0 GROUP BY COALESCE(error,'unsupported reward schema')"))
+            completed_retained=db.execute(f"SELECT COUNT(*) FROM experiences WHERE eligible=1 AND error IS NULL AND {count_expr}>=?",(passes,)).fetchone()[0]
             daily = [{"day": day, "enqueued": queued, "first_trained": first,
                       "completed":done,"exposures":exposures,"remaining":max(0,queued-done-blocked_by_day.get(day,0)),
                       "blocked":blocked_by_day.get(day,0),"remaining_total":queued-done}
@@ -619,6 +631,7 @@ class GlobalReplayBuffer:
             pending = db.execute("SELECT COUNT(*) FROM pending_records").fetchone()[0]
         return {"total": total, "eligible": eligible, "untrained": untrained,
                 "quarantined": quarantine, "unsupported": unsupported, "daily": daily,
+                "blocked_reasons":blocked_reasons,"completed_retained":completed_retained,
                 "oldest": oldest, "pending": pending, "bytes": self.disk_bytes(),
                 "model_remaining":model_remaining,"model_untrained":model_untrained,
                 "storage_pressure": self.disk_bytes() >= self.storage_warning_bytes}

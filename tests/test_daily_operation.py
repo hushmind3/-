@@ -22,6 +22,118 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_replay_learning_waits_only_for_actual_gpu_inference(self):
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.live_priority_enabled=True;agent.metrics={"observation_caught_up":False}
+        agent.replay=MagicMock();agent.replay.market_observation_stats.return_value={"pending":3}
+        agent.candidate_live_inference_lock=FairGpuScheduler()
+        # CPU/DB backlog must not leave the GPU idle while replay is ready.
+        self.assertIsNone(agent._live_learning_wait_reason())
+        agent.replay.market_observation_stats.assert_not_called()
+        with agent.candidate_live_inference_lock.work("candidate_live"):
+            self.assertIn("candidate_live",agent._live_learning_wait_reason())
+        with agent.candidate_live_inference_lock.work("validation_candidate"):
+            self.assertIsNone(agent._live_learning_wait_reason())
+        agent.stop=threading.Event()
+        self.assertTrue(agent._wait_for_live_inference())
+        agent.stop.set();self.assertFalse(agent._wait_for_live_inference())
+
+    def test_learning_segments_yield_to_inference_without_losing_accumulated_gradient(self):
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.live_priority_enabled=True;agent.metrics={};agent.device=torch.device("cpu")
+        agent.candidate_live_inference_lock=FairGpuScheduler()
+        parameter=torch.nn.Parameter(torch.tensor(1.0));durations=[];order=[]
+        def infer():
+            with agent._gpu_work("candidate_live"): order.append("inference")
+        with agent._learning_gpu_segment("candidate_learning_window",durations):
+            (parameter*2).backward();order.append("first_window")
+            worker=threading.Thread(target=infer);worker.start()
+            scheduler=agent.candidate_live_inference_lock
+            with scheduler.condition:
+                self.assertTrue(scheduler.condition.wait_for(lambda:len(scheduler.queue)==1,2))
+        with agent._learning_gpu_segment("candidate_learning_window",durations):
+            (parameter*3).backward();order.append("second_window")
+        worker.join(2);self.assertFalse(worker.is_alive())
+        self.assertEqual(order,["first_window","inference","second_window"])
+        self.assertEqual(float(parameter.grad),5.0)
+        self.assertEqual(len(durations),2)
+        self.assertTrue(all(duration>=0 for duration in durations))
+
+    def test_candidate_health_uses_its_committed_cursor_instead_of_old_champion_metrics(self):
+        from stockrl.web_app import _candidate_progress_health
+        health={"latest_feed_timestamp_utc":"2026-10-01T10:40:00+00:00"}
+        metrics={"candidate_live_last_timestamp":"2026-10-01T10:20:00+00:00",
+                 "candidate_live_error":"old error","shared_observation":{"pending":0}}
+        observer={"last_timestamp":"2026-10-01T10:39:50+00:00","status":"observing"}
+        current=_candidate_progress_health(health,metrics,True,observer)
+        self.assertEqual(current["lag_seconds"],10)
+        self.assertEqual(current["status"],"healthy")
+
+    def test_live_gpu_priority_overtakes_queued_learning_and_retains_live_fifo(self):
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        scheduler=FairGpuScheduler();order=[];threads=[]
+        def work(role):
+            with scheduler.work(role): order.append(role)
+        with scheduler.work("active_learning_step"):
+            for count,role in enumerate(("candidate_learning_step","candidate_live","champion_live"),1):
+                thread=threading.Thread(target=work,args=(role,));thread.start();threads.append(thread)
+                with scheduler.condition:
+                    self.assertTrue(scheduler.condition.wait_for(lambda:len(scheduler.queue)==count,2))
+        for thread in threads:
+            thread.join(2);self.assertFalse(thread.is_alive())
+        self.assertEqual(order,["candidate_live","champion_live","candidate_learning_step"])
+
+    def test_gpu_fifo_waiting_observation_precedes_next_learning_step(self):
+        from stockrl.gpu_scheduler import FairGpuScheduler
+        scheduler=FairGpuScheduler();order=[]
+        entered=threading.Event()
+        def observe():
+            entered.set()
+            with scheduler.work("candidate_live"):
+                order.append("candidate_live")
+        with scheduler.work("first_learning_step"):
+            worker=threading.Thread(target=observe);worker.start()
+            self.assertTrue(entered.wait(2))
+            with scheduler.condition:
+                self.assertTrue(scheduler.condition.wait_for(lambda:len(scheduler.queue)==1,2))
+        with scheduler.work("second_learning_step"):
+            order.append("second_learning_step")
+        worker.join(2)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(order,["candidate_live","second_learning_step"])
+        with self.assertRaises(RuntimeError):
+            with scheduler.work("failed_work"):
+                raise RuntimeError("test exception")
+        with scheduler.work("recovered"):
+            self.assertEqual(scheduler.snapshot()["active"],"recovered")
+        self.assertIsNone(scheduler.snapshot()["active"])
+
+    def test_git_split_sqlite_restores_complete_pending_work_without_overwriting_live_db(self):
+        from stockrl.runtime_backup import restore_sqlite_backup
+        import sqlite3,gzip,json,hashlib
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            with closing(sqlite3.connect(":memory:")) as db:
+                db.execute("CREATE TABLE pending_records (value TEXT)")
+                db.execute("INSERT INTO pending_records VALUES ('unlearned')");db.commit()
+                content=db.serialize()
+            parts=[]
+            for index,start in enumerate(range(0,len(content),2048)):
+                name=path.name+".part%03d.gz"%index
+                (path.parent/name).write_bytes(gzip.compress(content[start:start+2048]))
+                parts.append({"name":name})
+            path.with_name(path.name+".restore.json").write_text(json.dumps({
+                "parts":parts,"bytes":len(content),"sha256":hashlib.sha256(content).hexdigest()}))
+            self.assertTrue(restore_sqlite_backup(path))
+            with closing(sqlite3.connect(path)) as db:
+                self.assertEqual(db.execute("SELECT value FROM pending_records").fetchone()[0],"unlearned")
+            before=path.read_bytes()
+            self.assertFalse(restore_sqlite_backup(path))
+            self.assertEqual(path.read_bytes(),before)
+            self.assertFalse(path.with_name(path.name+".restore.tmp").exists())
+
     def test_joint_goal_win_ends_pending_credit_without_future_bootstrap(self):
         from test_online_pipeline import PipelineTests
         panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
@@ -500,6 +612,39 @@ class DailyOperationChecks(unittest.TestCase):
             self.assertEqual(replay.observer_account()["last_timestamp"],first)
             self.assertEqual(replay.next_market_observation()[0],str(panel.dates[2]))
             self.assertEqual(replay.market_observation_stats()["candidate_completed"],1)
+
+    def test_matured_batch_stores_shared_inputs_once_and_acknowledges_atomically(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            replay=GlobalReplayBuffer(journal_path=Path(directory)/"replay.sqlite3",dual_learning=True)
+            panel=Panel()
+            base=dict(features=panel.features[:2],symbol_ids=panel.symbol_ids,
+                market_ids=panel.market_ids,asset_ids=panel.asset_ids,valid_mask=panel.observed[:2],
+                symbol_index=0,action=2,reward=.1,timestamp=str(panel.dates[1]),
+                source="paper_account_symbol",reward_version=REWARD_VERSION)
+            successor=Experience(**{**base,"timestamp":str(panel.dates[2]),"features":panel.features[:3],
+                                    "valid_mask":panel.observed[:3]})
+            rows=[];acks=[]
+            with closing(replay._connect()) as db,db:
+                for i in range(64):
+                    row=Experience(**{**base,"timestamp":str(i)})
+                    row._bootstrap_experience=successor
+                    rows.append(row);acks.append(("portfolio",str(i)))
+                    db.execute("INSERT INTO pending_records VALUES(?,?,?)",("portfolio",str(i),b"test"))
+            with patch.object(replay,"_store_window",wraps=replay._store_window) as store:
+                replay.add_many(rows,pending_acks=acks)
+                self.assertEqual(store.call_count,2)
+            with closing(replay._connect()) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM experiences").fetchone()[0],64)
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM pending_records").fetchone()[0],0)
+                self.assertEqual(db.execute("PRAGMA quick_check").fetchone()[0],"ok")
+            with closing(replay._connect()) as db,db:
+                db.execute("INSERT INTO pending_records VALUES('portfolio','retry',?)",(b"test",))
+            with patch.object(replay,"_metadata",side_effect=RuntimeError("interrupted")):
+                with self.assertRaises(RuntimeError):
+                    replay.add_many([Experience(**base)],pending_acks=[("portfolio","retry")])
+            with closing(replay._connect()) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM experiences").fetchone()[0],64)
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM pending_records").fetchone()[0],1)
 
     def test_two_accounts_same_action_are_distinct_experiences(self):
         with TemporaryDirectory(dir=ROOT) as directory:

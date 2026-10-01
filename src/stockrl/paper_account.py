@@ -119,6 +119,8 @@ class PaperAccount:
             "books":{c:{"initial_cash":float(b["initial_cash"]),"equity":self._equity(c),
                 "multiple":self._equity(c)/float(b["initial_cash"]),
                 "target_equity":float(b["initial_cash"])*target,
+                "target_asset_ratio":self._equity(c)/(float(b["initial_cash"])*target),
+                "net_return_rate":self._equity(c)/float(b["initial_cash"])-1,
                 "progress":min(1.0,max(0.0,(self._equity(c)/float(b["initial_cash"])-1)/(target-1))),
                 "win":goal["wins"].get(c)} for c,b in self.state["books"].items()}}
 

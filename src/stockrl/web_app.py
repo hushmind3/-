@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 from collections import deque
+from contextlib import closing
 import json
 import os
 import sqlite3
@@ -101,13 +102,14 @@ def _agent_progress_health(data_path: Path, state_dir: Path,
 
 
 def _candidate_progress_health(champion_health: dict, metrics: dict,
-                               process_running: bool) -> dict:
+                               process_running: bool, observer_state=None) -> dict:
     """Report compulsory Candidate observation separately from process survival."""
     latest=_utc_datetime(champion_health.get("latest_feed_timestamp_utc"))
-    cursor=_utc_datetime(metrics.get("candidate_live_last_timestamp"))
+    observer_state=observer_state or {}
+    cursor=_utc_datetime(observer_state.get("last_timestamp") or metrics.get("candidate_live_last_timestamp"))
     queue=metrics.get("shared_observation") or {}
     lag=max(0,int((latest-cursor).total_seconds())) if latest and cursor else None
-    error=metrics.get("candidate_live_error")
+    error=(observer_state.get("error") if observer_state else metrics.get("candidate_live_error"))
     if not process_running:
         status,reason="stopped","agent process is stopped"
     elif error:
@@ -784,6 +786,33 @@ class Supervisor:
             paper_account = _json(state / "paper_account.json")
             candidate_observer_account = _json(state / "candidate_observer_account.json")
             candidate_observer_state = _json(state / "candidate_observer_state.json")
+            # The Candidate worker publishes independently of Champion's
+            # metrics writer. Read its committed cursor and the durable queue
+            # directly so catch-up is visible while the main worker is busy.
+            replay_path=state/"replay.sqlite3"
+            if replay_path.exists():
+                try:
+                    with closing(sqlite3.connect(replay_path.resolve().as_uri()+"?mode=ro",uri=True,timeout=.2)) as db:
+                        pending,oldest=db.execute("SELECT COUNT(*),MIN(stamp) FROM market_observations").fetchone()
+                        totals=dict(db.execute("SELECT name,total FROM observation_counts"))
+                        origins=dict(db.execute("SELECT role,created FROM origin_counts"))
+                    metrics["shared_observation"]={"pending":pending,"oldest":oldest,
+                        "common":totals.get("common",0),"candidate_completed":totals.get("candidate",0),
+                        "experience_origins":origins}
+                except sqlite3.Error:
+                    pass  # Startup or schema migration: retain last known values.
+            if candidate_observer_state.get("observation_profile"):
+                metrics["candidate_live_observation_profile"]=candidate_observer_state["observation_profile"]
+            observer_state_path=state/"candidate_observer_state.json"
+            metrics_state_path=state/"metrics.json"
+            observer_runtime_is_newer=(observer_state_path.exists() and
+                (not metrics_state_path.exists() or
+                 observer_state_path.stat().st_mtime_ns>metrics_state_path.stat().st_mtime_ns))
+            if observer_runtime_is_newer and candidate_observer_state.get("learning_live_priority_enabled"):
+                metrics["learning_priority"]="live_inference_first_then_complete_replay_coverage"
+                for field in ("learning_wait_reason","candidate_training","champion_training","gpu_scheduler"):
+                    if field in candidate_observer_state:
+                        metrics[field]=candidate_observer_state[field]
             candidate_observer_books = summarize_account(candidate_observer_account)["books"]
             candidate_live_account = {
                 "available": (bool(candidate_observer_books) and
@@ -979,7 +1008,7 @@ class Supervisor:
                               "reason":"mock agent process status" if agent_process_running else "agent process is stopped",
                               "latest_feed_timestamp_utc":None,"agent_cursor_timestamp_utc":None,
                               "lag_seconds":None,"lag_bars":None,"threshold_seconds":300}
-            agent_health["candidate"]=_candidate_progress_health(agent_health,metrics,agent_process_running)
+            agent_health["candidate"]=_candidate_progress_health(agent_health,metrics,agent_process_running,candidate_observer_state)
             agent_running=(agent_process_running and agent_health["status"]=="healthy")
             candidate_summary=summarize_account(candidate_observer_account)
             # Compatibility fields and the new view share exactly one ledger formula.
