@@ -22,6 +22,19 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_split_web_assets_and_public_supervisor(self):
+        from stockrl.web.resources import ASSET_NAMES, dashboard_asset, ROOT as WEB_ROOT
+        from stockrl.web_app import Supervisor
+        self.assertEqual(WEB_ROOT, ROOT)
+        self.assertEqual(Supervisor.status.__module__,"stockrl.web.status")
+        self.assertEqual(Supervisor.set_modes.__module__,"stockrl.web.runtime")
+        for name in ASSET_NAMES:
+            body,mime=dashboard_asset("/assets/"+name)
+            self.assertTrue(body)
+            self.assertEqual(mime,"text/css; charset=utf-8" if name.endswith(".css") else "text/javascript; charset=utf-8")
+        self.assertIsNone(dashboard_asset("/assets/../web_dashboard.html"))
+        self.assertIsNone(dashboard_asset("/assets/missing.js"))
+
     def test_extracted_contextual_benchmark_preserves_public_entrypoint(self):
         from stockrl.global_online import benchmark_model
         panel=Panel()
