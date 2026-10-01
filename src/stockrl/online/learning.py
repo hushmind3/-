@@ -387,8 +387,16 @@ class _LearningMixin:
         return cache[key]
 
     def _train_model(self,learner):
+        global prefix_input
         self._refresh_runtime_update_driver()
-        install_prefix_forward()
+        from . import prefix_cache as prefix_module
+        prefix_stamp=os.stat(prefix_module.__file__).st_mtime_ns
+        if getattr(prefix_module,"_hot_source_stamp",None)!=prefix_stamp:
+            import importlib
+            importlib.reload(prefix_module)
+            prefix_module._hot_source_stamp=prefix_stamp
+        with self._gpu_work(learner+"_learning_setup"):
+            prefix_input=prefix_module.install_prefix_forward()
         install_replay_updates(self.replay)
         if not hasattr(self,"_frozen_prefix_cache"):
             self._frozen_prefix_cache=FrozenPrefixCache()
@@ -711,6 +719,7 @@ class _LearningMixin:
             "samples_per_compute_second":candidate_samples/max(metrics["last_candidate_compute_seconds"],1e-9),
             "samples_per_total_second":candidate_samples/max(metrics["last_candidate_total_seconds"],1e-9),
             "optimizer_backend":metrics.get("candidate_optimizer_backend"),
+            "attention_backend":"sdpa" if getattr(candidate,"backbone",candidate).blocks[0]._stockrl_sdpa_enabled else "mha",
             "loss_backend":metrics.get("candidate_loss_backend"),
             "frozen_prefix_cache":self._frozen_prefix_cache.snapshot(),
             "step_compute_seconds":metrics["last_candidate_step_compute_seconds"],

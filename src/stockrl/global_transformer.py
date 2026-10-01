@@ -55,6 +55,7 @@ def small_config() -> TransformerConfig:
 
 
 class TransformerBlock(nn.Module):
+    _stockrl_sdpa_enabled = True
     def __init__(self, cfg: TransformerConfig):
         super().__init__()
         d, h, f = cfg.d_model, cfg.n_heads, cfg.d_model * cfg.ff_mult
@@ -66,7 +67,22 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x: torch.Tensor, pad_mask: torch.Tensor | None = None) -> torch.Tensor:
         y = self.norm1(x)
-        x = x + self.residual_scale * self.attn(y, y, y, key_padding_mask=pad_mask, need_weights=False)[0]
+        if self._stockrl_sdpa_enabled:
+            # Same MHA weights and mask, directly through fused scaled attention.
+            # Avoid MHA's different training/evaluation dispatch paths.
+            batch, length, width = y.shape
+            heads = self.attn.num_heads
+            qkv = torch.nn.functional.linear(y, self.attn.in_proj_weight, self.attn.in_proj_bias)
+            q, k, v = qkv.reshape(batch, length, 3, heads, width//heads).unbind(2)
+            mask = None if pad_mask is None else (~pad_mask.bool())[:, None, None, :]
+            attended = torch.nn.functional.scaled_dot_product_attention(
+                q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2), attn_mask=mask,
+                dropout_p=self.attn.dropout if self.training else 0.0)
+            attended = attended.transpose(1, 2).reshape(batch, length, width)
+            attended = torch.nn.functional.linear(attended, self.attn.out_proj.weight, self.attn.out_proj.bias)
+        else:
+            attended = self.attn(y, y, y, key_padding_mask=pad_mask, need_weights=False)[0]
+        x = x + self.residual_scale * attended
         return x + self.residual_scale * self.ff(self.norm2(x))
 
 

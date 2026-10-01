@@ -70,7 +70,10 @@ def prefix_input(model, experience, cache):
                        ("market_ids",np.int64),("asset_ids",np.int64),("valid_mask",np.bool_)):
         value=np.ascontiguousarray(getattr(experience,name),dtype=dtype)
         digest.update(str(value.shape).encode());digest.update(memoryview(value).cast("B"))
-    key=(fingerprint,digest.hexdigest(),bool(base.training),str(base.input_proj.weight.device))
+    # Zero-dropout frozen SDPA uses the identical calculation in both modes.
+    # Policy/value/portfolio heads and trainable blocks still run independently.
+    mode = None if getattr(type(base.blocks[0]),"_stockrl_sdpa_enabled",False) else bool(base.training)
+    key=(fingerprint,digest.hexdigest(),mode,str(base.input_proj.weight.device))
     previous=(getattr(base,"_online_prefix_key",None),getattr(base,"_online_prefix_cache",None),getattr(base,"_online_prefix_layers",None))
     base._online_prefix_key=key;base._online_prefix_cache=cache;base._online_prefix_layers=layers
     try:
@@ -86,14 +89,25 @@ def install_prefix_forward():
     from pathlib import Path
     from .. import global_transformer
     path=Path(global_transformer.__file__);stamp=path.stat().st_mtime_ns
-    if getattr(global_transformer,"_online_forward_stamp",None)==stamp: return
+    prefix_path=Path(__file__)
+    stamp=(stamp,prefix_path.stat().st_mtime_ns)
+    if getattr(global_transformer,"_online_forward_stamp",None)==stamp:
+        return globals().get("_live_prefix_input",prefix_input)
     tree=ast.parse(path.read_text(encoding="utf-8"))
-    cls=next(node for node in tree.body if isinstance(node,ast.ClassDef) and node.name=="GlobalMarketTransformer")
-    method=next(node for node in cls.body if isinstance(node,ast.FunctionDef) and node.name=="forward")
     namespace=dict(vars(global_transformer))
-    exec(compile(ast.Module(body=[method],type_ignores=[]),str(path),"exec"),namespace)
-    updated=namespace["forward"];old=global_transformer.GlobalMarketTransformer.forward
-    if list(inspect.signature(updated).parameters)!=list(inspect.signature(old).parameters):
-        raise ValueError("backbone input schema changed; explicit migration required")
-    global_transformer.GlobalMarketTransformer.forward=updated
+    for name in ("TransformerBlock","GlobalMarketTransformer"):
+        cls=next(node for node in tree.body if isinstance(node,ast.ClassDef) and node.name==name)
+        method=next(node for node in cls.body if isinstance(node,ast.FunctionDef) and node.name=="forward")
+        exec(compile(ast.Module(body=[method],type_ignores=[]),str(path),"exec"),namespace)
+        updated=namespace["forward"];old=getattr(global_transformer,name).forward
+        if list(inspect.signature(updated).parameters)!=list(inspect.signature(old).parameters):
+            raise ValueError("backbone input schema changed; explicit migration required")
+        getattr(global_transformer,name).forward=updated
+    global_transformer.TransformerBlock._stockrl_sdpa_enabled=True
+    prefix_tree=ast.parse(prefix_path.read_text(encoding="utf-8"))
+    method=next(node for node in prefix_tree.body if isinstance(node,ast.FunctionDef) and node.name=="prefix_input")
+    prefix_namespace=dict(globals())
+    exec(compile(ast.Module(body=[method],type_ignores=[]),str(prefix_path),"exec"),prefix_namespace)
+    globals()["_live_prefix_input"]=prefix_namespace["prefix_input"]
     global_transformer._online_forward_stamp=stamp
+    return globals()["_live_prefix_input"]

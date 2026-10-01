@@ -12,6 +12,21 @@ from stockrl.online.losses import shared_experience_losses
 
 
 class SharedLossChecks(unittest.TestCase):
+    def test_direct_sdpa_matches_mha_outputs_and_gradients(self):
+        from stockrl.global_transformer import TransformerBlock,TransformerConfig
+        torch.manual_seed(81)
+        block=TransformerBlock(TransformerConfig(d_model=32,n_heads=4,n_layers=6))
+        x=torch.randn(3,12,32,requires_grad=True)
+        mask=torch.zeros(3,12,dtype=torch.bool);mask[:,-2:]=True
+        params=(x,)+tuple(block.parameters())
+        block._stockrl_sdpa_enabled=False
+        old=block(x,mask); grads=torch.autograd.grad(old.square().mean(),params)
+        block._stockrl_sdpa_enabled=True
+        new=block(x,mask); newer=torch.autograd.grad(new.square().mean(),params)
+        torch.testing.assert_close(new,old,rtol=2e-5,atol=2e-6)
+        for actual,expected in zip(newer,grads):
+            torch.testing.assert_close(actual,expected,rtol=2e-5,atol=2e-6)
+
     def test_frozen_prefix_reuse_preserves_outputs_gradients_and_invalidates(self):
         from stockrl.global_transformer import GlobalMarketTransformer,TransformerConfig
         from stockrl.online.prefix_cache import FrozenPrefixCache,prefix_input
