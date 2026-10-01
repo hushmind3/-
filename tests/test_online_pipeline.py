@@ -50,7 +50,7 @@ class FixedPolicy(torch.nn.Module):
         super().__init__()
         self.weight=torch.nn.Parameter(torch.tensor(0.0))
 
-    def forward(self,features,*args,portfolio_state=None,account_state=None,multiscale_state=None,
+    def forward(self,features,*args,portfolio_state=None,account_state=None,multiscale_state=None,goal_state=None,
                 return_allocation=False):
         b,_,n,_=features.shape
         action=0 if portfolio_state[0,0,0]>0.5 else 2

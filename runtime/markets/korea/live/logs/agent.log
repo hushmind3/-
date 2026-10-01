@@ -12985,3 +12985,5 @@ Traceback (most recent call last):
 FileNotFoundError: [WinError 2] ÁöÁ¤µÈ ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: 'C:\\Users\\hushm\\OneDrive\\¹®¼­\\ChatGPT\\±İÀ¶¸Å¸Å¸ğµ¨\\runtime\\markets\\korea\\live\\agent\\replay.sqlite3-wal'
 following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±İÀ¶¸Å¸Å¸ğµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
 following=C:\Users\hushm\OneDrive\ë¬¸ì„œ\ChatGPT\ê¸ˆìœµë§¤ë§¤ëª¨ë¸\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+following=C:\Users\hushm\OneDrive\ë¬¸ì„œ\ChatGPT\ê¸ˆìœµë§¤ë§¤ëª¨ë¸\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+following=C:\Users\hushm\OneDrive\ë¬¸ì„œ\ChatGPT\ê¸ˆìœµë§¤ë§¤ëª¨ë¸\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C

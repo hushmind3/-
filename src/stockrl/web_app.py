@@ -506,7 +506,7 @@ class Supervisor:
             return self._reset_paper_accounts(daily,session_key)
 
     def _reset_paper_accounts(self, daily=False, session_key=None) -> dict:
-        """Reset the live Champion and Candidate observer paper ledgers safely."""
+        """Finish a daily competition or explicitly reset both live ledgers."""
         with self.lock:
             if self.stopping:
                 return {"error": "System is stopping; wait before resetting accounts."}
@@ -537,6 +537,32 @@ class Supervisor:
         state.mkdir(parents=True, exist_ok=True)
         from .paper_account import PaperAccount
 
+        if daily and not self.operating_rules.get("daily_reset_live_accounts",False):
+            # The frozen competition ended above. Preserve live capital,
+            # positions, goal progress and pending experiences across days.
+            cycle=self._daily_cycle_status()
+            completed_utc=datetime.now(timezone.utc).isoformat()
+            accounts={role:_json(state/filename) for role,filename in (
+                ("champion","paper_account.json"),("candidate","candidate_observer_account.json"))}
+            record={"session":cycle["session_key"],"ended_utc":completed_utc,
+                "reason":"scheduled_daily","live_accounts_preserved":True,
+                "validation":{key:value for key,value in _json(state/"candidate_validation.json").items()
+                    if key in ("status","reason","bars","candidate_score","champion_score","source_candidate_version","source_champion_version")},
+                "accounts":{role:{currency:{key:book.get(key) for key in (
+                    "initial_cash","equity","net_pnl","net_return_rate","costs","trade_count","position_count")}
+                    for currency,book in summarize_account(account)["books"].items()}
+                    for role,account in accounts.items()}}
+            history=(cycle.get("history",[])+[record])[-int(self.operating_rules["daily_history_limit"]):]
+            atomic_json({"session_key":session_key or cycle["current_session_key"],
+                "last_reset_utc":cycle.get("last_reset_utc"),"last_competition_utc":completed_utc,
+                "history":history,"live_accounts_preserved":True},state/"daily_account_summary.json")
+            if was_running:
+                result=self.start(mode,horizon)
+                if not result.get("ok"):
+                    return {"error":"Daily competition ended; live accounts preserved; restart failed: "+str(result.get("error"))}
+            return {"ok":True,"reset":[],"live_accounts_preserved":True,"system_restarted":was_running,
+                "message":"Daily frozen competition finished; long-term live accounts and experiences preserved."}
+
         old_accounts={role:_json(state/filename) for role,filename in (
             ("champion","paper_account.json"),("candidate","candidate_observer_account.json"))}
         if (state/"replay.sqlite3").is_file():
@@ -555,6 +581,7 @@ class Supervisor:
                     continue
                 experience["reset_terminal"]=True
                 experience["reset_equity"]=old_ledger.normalized_equity()
+                experience["reset_goal_points"]=old_ledger.goal_points()
                 experience["reset_symbol_net_pnl"]=old_ledger.symbol_net_pnl(experience.get("symbol",""))
                 if not experience.get("fill_seen"):
                     experience["fill_expected"]=False; experience["trade_executed"]=False
@@ -566,6 +593,7 @@ class Supervisor:
                     continue
                 experience["reset_terminal"]=True
                 experience["reset_equity"]=old_observer.normalized_equity()
+                experience["reset_goal_points"]=old_observer.goal_points()
                 experience["reset_symbol_net_pnl"]=old_observer.symbol_net_pnl(experience.get("symbol",""))
                 if not experience.get("fill_seen"):
                     experience["fill_expected"]=False;experience["trade_executed"]=False
@@ -612,6 +640,14 @@ class Supervisor:
 
         metrics_path = state / "metrics.json"
         metrics = _json(metrics_path)
+        for role, filename in (("champion", "paper_account.json"),
+                               ("candidate", "candidate_observer_account.json")):
+            fresh_account = PaperAccount(state / filename, self.fee, 0.0)
+            metrics[role + "_goal"] = fresh_account.goal_summary()
+            metrics[role + "_reward_score"] = {
+                "points": fresh_account.reward_points(), "change": None,
+                "episode_id": fresh_account.state.get("episode_id"),
+            }
         metrics.update({"paper_net_reward": 0.0, "paper_account_reward": 0.0,
                         "fee_total": 0.0, "slippage_total": 0.0,
                         "paper_account_reset_utc": datetime.now(timezone.utc).isoformat(),
@@ -671,7 +707,7 @@ class Supervisor:
                     def run_cycle(key=cycle["current_session_key"],daily=not cycle.get("pending_record") or cycle["pending_record"].get("reason")=="scheduled_daily"):
                         try:
                             result=self.reset_paper_accounts(daily=daily,session_key=key)
-                            self._log("Daily competition and account reset: "+str(result))
+                            self._log("Daily competition completed: "+str(result))
                         finally:
                             self.daily_cycle_pending=False
                     threading.Thread(target=run_cycle,daemon=True,name="daily-competition").start()
@@ -707,7 +743,8 @@ class Supervisor:
         return {**saved,"current_session_key":key,"next_reset_utc":next_reset,
             "hour_kst":int(self.operating_rules["account_reset_hour_kst"]),
             "in_progress":self.daily_cycle_pending,
-            "order":"finish frozen daily competition, then reset observation ledgers"}
+            "live_accounts_preserved":not self.operating_rules.get("daily_reset_live_accounts",False),
+            "order":"finish frozen daily competition; preserve long-term live accounts"}
 
     def status(self) -> dict:
         with self.lock:

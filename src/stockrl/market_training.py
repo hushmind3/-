@@ -160,6 +160,11 @@ class ContextConditionedTransformer(nn.Module):
             nn.Linear(20, 64), nn.GELU(), nn.Linear(64, 1))
         self.portfolio_cash = nn.Sequential(
             nn.Linear(8, 32), nn.GELU(), nn.Linear(32, 1))
+        self.goal_policy=nn.Linear(6,3,bias=False)
+        self.goal_value=nn.Linear(6,1,bias=False)
+        self.goal_cash=nn.Linear(6,1,bias=False)
+        for layer in (self.goal_policy,self.goal_value,self.goal_cash):
+            nn.init.zeros_(layer.weight)
         nn.init.zeros_(self.context_policy.weight)
         nn.init.zeros_(self.context_value.weight)
         nn.init.zeros_(self.multiscale_policy[-1].weight)
@@ -181,7 +186,8 @@ class ContextConditionedTransformer(nn.Module):
                 account_state: torch.Tensor | None = None,
                 return_allocation: bool = False,
                 multiscale_state: torch.Tensor | None = None,
-                daily_history: torch.Tensor | None = None):
+                daily_history: torch.Tensor | None = None,
+                goal_state: torch.Tensor | None = None):
         if self.activation_checkpointing and self.training:
             logits, values = self._checkpointed_backbone(
                 features, symbol_ids, market_ids, asset_ids, valid_mask, time_scale_ids)
@@ -199,6 +205,11 @@ class ContextConditionedTransformer(nn.Module):
         value_delta = (value_context[:, -1] + value_context.mean(dim=1)).to(dtype=values.dtype)
         logits = logits + policy_delta[:, None, :]
         values = values + value_delta[:, None, 0]
+        if goal_state is not None:
+            if goal_state.shape!=(logits.shape[0],6):
+                raise ValueError("goal_state must have shape [batch,6]")
+            logits=logits+self.goal_policy(goal_state.float())[:,None,:].to(logits.dtype)
+            values=values+self.goal_value(goal_state.float()).to(values.dtype)
         if multiscale_state is not None:
             expected = (*logits.shape[:2], MULTISCALE_FEATURE_COUNT)
             if multiscale_state.shape != expected:
@@ -232,6 +243,8 @@ class ContextConditionedTransformer(nn.Module):
         alloc_input = torch.cat((logits.float(), values.float()[..., None], per_symbol_state), dim=-1)
         asset_scores = self.portfolio_allocation(alloc_input).squeeze(-1)
         cash_score = self.portfolio_cash(account_state.float()).squeeze(-1)
+        if goal_state is not None:
+            cash_score=cash_score+self.goal_cash(goal_state.float()).squeeze(-1)
         allocation = torch.softmax(torch.cat((asset_scores, cash_score[:, None]), dim=-1), dim=-1)
         if return_allocation:
             return logits, values, allocation

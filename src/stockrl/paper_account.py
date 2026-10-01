@@ -67,8 +67,60 @@ class PaperAccount:
 
     def reset(self) -> None:
         """Reset a dedicated simulation ledger to the shared starting cash."""
+        goal=self.state.get("goal")
         self.state = self._empty_state()
+        if goal:
+            self.configure_goal(goal["target_multiple"],goal["win_bonus_points"])
         self.save()
+
+    def configure_goal(self, target_multiple=10.0, win_bonus_points=100.0):
+        """Attach a shared task without changing cash, positions or past returns."""
+        target_multiple=float(target_multiple);win_bonus_points=float(win_bonus_points)
+        if not math.isfinite(target_multiple) or target_multiple<=1 or not math.isfinite(win_bonus_points) or win_bonus_points<=0:
+            raise ValueError("goal target must exceed one; WIN points must be positive")
+        self.state.setdefault("episode_id",uuid.uuid4().hex)
+        goal=self.state.setdefault("goal",{"target_multiple":target_multiple,
+            "win_bonus_points":win_bonus_points,"wins":{}})
+        if goal["target_multiple"]!=target_multiple or goal["win_bonus_points"]!=win_bonus_points:
+            raise ValueError("changing an active account goal requires an explicit new episode")
+
+    def observe_goal(self, timestamp):
+        goal=self.state.get("goal")
+        if not goal:
+            return
+        for currency,book in self.state["books"].items():
+            multiple=self._equity(currency)/float(book["initial_cash"])
+            if currency not in goal["wins"] and multiple>=goal["target_multiple"]:
+                goal["wins"][currency]={"timestamp":str(timestamp),"multiple":multiple,
+                    "bonus_points":goal["win_bonus_points"]}
+
+    def goal_points(self):
+        return {c:float(self.state.get("goal",{}).get("wins",{}).get(c,{}).get("bonus_points",0.0))
+                for c in SEED_CASH}
+
+    def goal_inputs(self):
+        goal=self.state.get("goal")
+        if not goal:
+            return None
+        ratios=[self._equity(c)/float(self.state["books"][c]["initial_cash"]) for c in SEED_CASH]
+        target=float(goal["target_multiple"])
+        return [*ratios,target,*[max(0.0,1.0-r/target) for r in ratios],
+                float(len(goal["wins"])<len(SEED_CASH))]
+
+    def goal_summary(self):
+        goal=self.state.get("goal")
+        if not goal:
+            return {"enabled":False}
+        target=float(goal["target_multiple"])
+        return {"enabled":True,"episode_id":self.state["episode_id"],
+            "target_multiple":target,"win_bonus_points":goal["win_bonus_points"],
+            "status":"WIN" if len(goal["wins"])==len(SEED_CASH) else "IN_PROGRESS",
+            "win_condition":"each_currency_reaches_target_once_in_this_episode",
+            "books":{c:{"initial_cash":float(b["initial_cash"]),"equity":self._equity(c),
+                "multiple":self._equity(c)/float(b["initial_cash"]),
+                "target_equity":float(b["initial_cash"])*target,
+                "progress":min(1.0,max(0.0,(self._equity(c)/float(b["initial_cash"])-1)/(target-1))),
+                "win":goal["wins"].get(c)} for c,b in self.state["books"].items()}}
 
     def _equity(self, currency: str) -> float:
         book = self.state["books"][currency]

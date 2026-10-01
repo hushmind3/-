@@ -1,5 +1,6 @@
 """Shared, explicit operating settings and the KST daily boundary."""
 import json
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -23,6 +24,10 @@ def operating_rules():
         raise ValueError("reward_credit_seconds must be positive")
     if float(rules.get("reward_credit_discount",1.0)) != 1.0:
         raise ValueError("net-equity reward uses undiscounted credit (1.0)")
+    for key,default in (("goal_target_multiple",10.0),("goal_win_bonus_points",100.0)):
+        value=float(rules.get(key,default))
+        if not math.isfinite(value) or value <= (1.0 if key=="goal_target_multiple" else 0.0):
+            raise ValueError(f"{key} must be finite and positive (target > 1)")
     return rules
 
 

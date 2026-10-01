@@ -177,6 +177,8 @@ def load_compatible_state_dict(model: nn.Module, state: dict, strict: bool = Tru
             continue
         if key.endswith("time_scale_embedding.weight"):
             migrated[key] = torch.zeros_like(target[key])
+        elif key.startswith("goal_"):
+            migrated[key] = torch.zeros_like(target[key])
         elif (key.startswith("portfolio_action.") or
               key.startswith("portfolio_allocation.") or
               key.startswith("portfolio_cash.") or

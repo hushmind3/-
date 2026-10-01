@@ -22,6 +22,136 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_joint_goal_win_ends_pending_credit_without_future_bootstrap(self):
+        from test_online_pipeline import PipelineTests
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.replay=GlobalReplayBuffer();agent.metrics={}
+        agent.paper_account=PaperAccount.in_memory(0,0)
+        agent.paper_account.configure_goal()
+        before=agent.paper_account.goal_inputs()
+        exp=PipelineTests.experience()
+        decision={**vars(exp),"symbol":"TEST.KS","action":1,"timestamp":str(panel.dates[0]),
+            "entry_price":100,"equity_before":2,"symbol_pnl_before":0,
+            "credit_observations_target":60,"credit_seconds":3600,
+            "goal_state":np.asarray(before,np.float32),"goal_points_before":{"KRW":0,"USD":0},
+            "goal_weight_before":.25,"goal_complete_before":False,
+            "goal_episode_id":agent.paper_account.state["episode_id"]}
+        for book in agent.paper_account.state["books"].values():
+            book["cash"]=book["initial_cash"]*10
+        self.assertEqual(agent._mature_portfolio([decision],panel,1),[])
+        rows=agent.replay.pending_batch(8)
+        self.assertEqual(len(rows),2)
+        self.assertTrue(all(e.goal_terminal and e.bootstrap_discount==0 for e in rows))
+        self.assertTrue(all(e.goal_reward_points==25 for e in rows))
+        self.assertEqual(next(e.portfolio_goal_reward_points for e in rows if e.portfolio_transition),200)
+        np.testing.assert_array_equal(rows[0].goal_state,np.asarray(before,np.float32))
+
+    def test_both_origins_train_goal_heads_through_actual_optimizer(self):
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.device=torch.device("cpu");agent.window=4;agent.metrics={"nonfinite_updates":0}
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+            n_markets=4,n_asset_types=4,max_seq_len=4)
+        for origin in ("champion","candidate"):
+            model=ContextConditionedTransformer(GlobalMarketTransformer(cfg))
+            model._stockrl_uses_market_context=True;agent.champion=model
+            args=panel.window(0,4,include_context=True)
+            exp=Experience(args[0][0].numpy(),panel.symbol_ids,panel.market_ids,panel.asset_ids,
+                args[4][0].numpy(),0,2,-.001,str(panel.dates[0]),market_context=args[5][0].numpy(),
+                goal_state=np.asarray([1,1,10,.9,.9,1],np.float32),goal_reward_points=1,
+                behavior_log_prob=float(np.log(1/3)),origin_model=origin)
+            opt=torch.optim.AdamW(model.parameters(),lr=1e-3)
+            before=model.goal_policy.weight.detach().clone()
+            a,p,s,m=agent._pack([exp])
+            logits,values,allocation=model(*a,portfolio_state=p,account_state=s,
+                return_allocation=True,multiscale_state=m,**agent._saved_goal_kwargs(exp,agent.device))
+            loss=agent._experience_loss(logits,values,allocation,exp)
+            loss.backward();opt.step()
+            self.assertTrue(torch.isfinite(loss))
+            self.assertFalse(torch.equal(before,model.goal_policy.weight))
+            self.assertGreater(float(model.goal_value.weight.grad.abs().sum()),0)
+
+    def test_goal_win_is_once_per_currency_persistent_and_reset_is_explicit(self):
+        with TemporaryDirectory(dir=ROOT) as directory:
+            account=PaperAccount(Path(directory)/"account.json",0,0)
+            initial=account.state["books"]["KRW"]["cash"]
+            episode=account.state["episode_id"]
+            account.configure_goal()
+            self.assertEqual(account.state["books"]["KRW"]["cash"],initial)
+            self.assertEqual(account.goal_inputs(),[1,1,10,.9,.9,1])
+            account.state["books"]["KRW"]["cash"]=initial*10
+            account.observe_goal("T1");account.save()
+            loaded=PaperAccount(account.path,0,0);loaded.configure_goal();loaded.observe_goal("T2")
+            self.assertEqual(loaded.goal_points(),{"KRW":100,"USD":0})
+            self.assertEqual(loaded.goal_summary()["books"]["KRW"]["win"]["timestamp"],"T1")
+            self.assertEqual(loaded.reward_points()["KRW"],900)
+            loaded.state["books"]["USD"]["cash"]=100_000
+            loaded.observe_goal("T3")
+            self.assertEqual(loaded.goal_summary()["status"],"WIN")
+            loaded.reset()
+            self.assertNotEqual(loaded.state["episode_id"],episode)
+            self.assertEqual(loaded.goal_points(),{"KRW":0,"USD":0})
+            self.assertEqual(loaded.goal_summary()["target_multiple"],10)
+
+    def test_zero_goal_heads_preserve_legacy_output_and_receive_gradients(self):
+        from stockrl.global_transformer import load_compatible_state_dict
+        cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
+            n_markets=4,n_asset_types=4,max_seq_len=4)
+        model=ContextConditionedTransformer(GlobalMarketTransformer(cfg)).eval()
+        legacy={k:v for k,v in model.state_dict().items() if not k.startswith("goal_")}
+        load_compatible_state_dict(model,legacy)
+        args=Panel().window(0,4,include_context=True)
+        baseline=model(*args)
+        goal=torch.tensor([[1.,1.,10.,.9,.9,1.]])
+        result=model(*args,goal_state=goal)
+        for a,b in zip(baseline,result):torch.testing.assert_close(a,b,atol=0,rtol=0)
+        (result[0].sum()+result[1].sum()).backward()
+        self.assertGreater(float(model.goal_policy.weight.grad.abs().sum()),0)
+        self.assertGreater(float(model.goal_value.weight.grad.abs().sum()),0)
+
+    def test_goal_credit_survives_replay_restart_and_both_model_ack(self):
+        panel=Panel()
+        with TemporaryDirectory(dir=ROOT) as directory:
+            path=Path(directory)/"replay.sqlite3"
+            replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            exp=Experience(panel.features,panel.symbol_ids,panel.market_ids,panel.asset_ids,
+                panel.observed,0,2,.001,str(panel.dates[0]),reward_version=REWARD_VERSION,
+                source="paper_account_symbol",goal_state=np.asarray([1,1,10,.9,.9,1],np.float32),
+                goal_reward_points=2,portfolio_goal_reward_points=100,goal_terminal=True,
+                goal_episode_id="episode",origin_model="candidate")
+            replay.add_many([exp]);replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
+            row=replay.pending_batch(8)[0]
+            np.testing.assert_array_equal(row.goal_state,exp.goal_state)
+            self.assertEqual((row.goal_reward_points,row.portfolio_goal_reward_points,row.goal_terminal),
+                (2,100,True))
+            self.assertEqual(row.goal_episode_id,"episode")
+            ids=replay.row_ids_for([row])
+            replay.acknowledge_training(dict.fromkeys(ids,1),learner="champion")
+            self.assertEqual(len(replay),1)
+            replay.acknowledge_training(dict.fromkeys(ids,1),learner="candidate")
+            self.assertEqual(len(replay),0)
+
+    def test_daily_competition_keeps_long_term_accounts_and_pending(self):
+        from stockrl.web_app import Supervisor
+        with TemporaryDirectory(dir=ROOT) as directory:
+            profile=Path(directory);state=profile/"agent";state.mkdir()
+            before={}
+            for name in ("paper_account.json","candidate_observer_account.json"):
+                account=PaperAccount(state/name,0,0);account.configure_goal()
+                account.state["books"]["KRW"]["cash"]=9_000_000
+                account.save();before[name]=(state/name).read_bytes()
+            replay=GlobalReplayBuffer(journal_path=state/"replay.sqlite3",dual_learning=True)
+            replay.enqueue_market_observation(MarketObservation(Panel(),1,8),True,(.2,.7))
+            supervisor=Supervisor.__new__(Supervisor)
+            supervisor.lock=threading.RLock();supervisor.account_reset_lock=threading.Lock()
+            supervisor.stopping=False;supervisor.run_requested=False
+            supervisor.profile=profile;supervisor.runtime=profile;supervisor.mode="live"
+            supervisor.horizon="1m";supervisor.operating_rules={"daily_reset_live_accounts":False,"daily_history_limit":31}
+            supervisor._daily_cycle_status=lambda:{"session_key":"day","current_session_key":"day","history":[]}
+            result=supervisor.reset_paper_accounts(daily=True,session_key="day")
+            self.assertEqual(result["reset"],[])
+            for name in before:self.assertEqual((state/name).read_bytes(),before[name])
+            self.assertEqual(replay.market_observation_stats()["pending"],1)
+
     def test_score_changes_are_once_per_timestamp_and_reset_is_not_profit(self):
         with TemporaryDirectory(dir=ROOT) as directory:
             path=Path(directory)/"replay.sqlite3"

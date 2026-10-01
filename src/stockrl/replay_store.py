@@ -21,7 +21,7 @@ import numpy as np
 
 CURRENT_REWARD_VERSION = "symbol_and_portfolio_v5"
 ARRAY_NAMES = ("features", "symbol_ids", "market_ids", "asset_ids", "valid_mask",
-               "market_context", "multiscale_state", "portfolio_state", "account_state","daily_history")
+               "market_context", "multiscale_state", "portfolio_state", "account_state","daily_history","goal_state")
 TRAINING_SOURCES = ("paper_account_symbol", "paper_account_portfolio")
 
 
@@ -49,6 +49,8 @@ class GlobalReplayBuffer:
         self.dual_learning=bool(dual_learning)
         self._account_scores={}
         if self.journal_path:
+            from .runtime_backup import restore_sqlite_backup
+            restore_sqlite_backup(self.journal_path.resolve())
             self._load_journal()
 
     def _connect(self):
@@ -91,7 +93,8 @@ class GlobalReplayBuffer:
                  "reward_version", "portfolio_reward", "portfolio_transition",
                  "portfolio_value_transition", "forward_return", "behavior_log_prob",
                  "trade_executed", "origin_model", "credit_observations",
-                 "bootstrap_window_key", "bootstrap_symbol_index", "bootstrap_discount")
+                 "bootstrap_window_key", "bootstrap_symbol_index", "bootstrap_discount",
+                 "goal_reward_points", "portfolio_goal_reward_points", "goal_terminal", "goal_episode_id")
         return pickle.dumps({name: getattr(exp, name) for name in names
                              if hasattr(exp, name)}, protocol=5)
 

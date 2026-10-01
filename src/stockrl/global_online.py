@@ -156,6 +156,11 @@ class Experience:
     bootstrap_window_key: str | None = None
     bootstrap_symbol_index: int | None = None
     bootstrap_discount: float = 0.0
+    goal_state: np.ndarray | None = None
+    goal_reward_points: float = 0.0
+    portfolio_goal_reward_points: float = 0.0
+    goal_terminal: bool = False
+    goal_episode_id: str | None = None
 
 
 from .replay_store import GlobalReplayBuffer, ReplayStorageFull
@@ -300,6 +305,16 @@ class MarketObservation:
 
 class OnlineGlobalAgent:
     @staticmethod
+    def _goal_kwargs(account,device):
+        goal=account.goal_inputs()
+        return {"goal_state":torch.as_tensor(np.asarray(goal)[None],device=device,dtype=torch.float32)} if goal is not None else {}
+
+    @staticmethod
+    def _saved_goal_kwargs(experience,device):
+        goal=getattr(experience,"goal_state",None)
+        return {"goal_state":torch.as_tensor(goal[None],device=device,dtype=torch.float32)} if goal is not None else {}
+
+    @staticmethod
     def _daily_history_kwargs(panel,index,device):
         history=panel.daily_history_at(index) if hasattr(panel,"daily_history_at") else None
         return {"daily_history":torch.as_tensor(history[None],device=device,dtype=torch.float32)} if history is not None else {}
@@ -393,6 +408,8 @@ class OnlineGlobalAgent:
         self.candidate_live_thread=threading.Thread(
             target=self._candidate_live_worker,name="candidate-live-observer",daemon=True)
         self.operating_rules=operating_rules()
+        for account in (self.paper_account,self.candidate_live_account):
+            account.configure_goal(self.operating_rules["goal_target_multiple"],self.operating_rules["goal_win_bonus_points"])
         self.reward_credit_observations=int(self.operating_rules.get("reward_credit_observations",60))
         self.reward_credit_seconds=int(self.operating_rules.get("reward_credit_seconds",3600))
         self.validation_window_bars=int(self.operating_rules["validation_min_market_minutes"])
@@ -409,6 +426,8 @@ class OnlineGlobalAgent:
             self.state_dir/"candidate_validation_champion.json",self.fee,self.slippage)
         self.validation_candidate_account=PaperAccount(
             self.state_dir/"candidate_validation_candidate.json",self.fee,self.slippage)
+        for account in (self.validation_champion_account,self.validation_candidate_account):
+            account.configure_goal(self.operating_rules["goal_target_multiple"],self.operating_rules["goal_win_bonus_points"])
         self.validation_start_after=None
         self.validation_source_sha256=None
         self.validation_bars=0
@@ -747,7 +766,8 @@ class OnlineGlobalAgent:
                                     mt=torch.as_tensor(panel.multiscale_at(index)[None],device=device)
                                     logits,_,allocation=model(*args,portfolio_state=pt,
                                         account_state=at,return_allocation=True,
-                                        multiscale_state=mt,**self._daily_history_kwargs(panel,index,device))
+                                        multiscale_state=mt,**self._daily_history_kwargs(panel,index,device),
+                                        **self._goal_kwargs(account,device))
                                     allocation=allocation[0].float().cpu().numpy()
                                 else:
                                     logits,_=model(*args); allocation=None
@@ -769,12 +789,14 @@ class OnlineGlobalAgent:
                     allocation=allocation,actions=actions)
                 x,sid,mid,aid,mask=window[:5]
                 inputs={"features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
+                    "goal_state":(np.asarray(account.goal_inputs(),dtype=np.float32) if account.goal_inputs() is not None else None),
                     "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
                     "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
                     "multiscale_state":panel.multiscale_at(index).astype(np.float16),
                     "daily_history":getattr(panel,"daily_history",None),
                     "input_symbols":list(panel.symbols),"portfolio_state":np.asarray(pstate,dtype=np.float16),
                     "account_state":np.asarray(astate,dtype=np.float32)}
+                goal_before=account.goal_points();goal_complete=account.goal_summary().get("status")=="WIN"
                 for j,symbol in enumerate(panel.symbols):
                     # Padding has a model ID but no traded instrument metadata.
                     # Check the observation mask before looking up its group.
@@ -792,6 +814,9 @@ class OnlineGlobalAgent:
                             "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
                             "regime":abs(float(panel.features[index,j,6])),"is_validation":False,
                             "equity_before":account.normalized_equity(),
+                            "goal_points_before":goal_before,"goal_episode_id":account.state["episode_id"],
+                            "goal_complete_before":goal_complete,
+                            "goal_weight_before":max(float(pstate[j][1]),float(allocation[j]) if action==2 and allocation is not None else 0.0),
                             "symbol_pnl_before":account.symbol_net_pnl(symbol),
                             "fill_expected":decision_id in (submitted or set())})
                 self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
@@ -854,7 +879,8 @@ class OnlineGlobalAgent:
                 mstate=torch.as_tensor(panel.multiscale_at(index)[None],device=self.device)
                 logits,values,allocation=model(*args,portfolio_state=pstate,
                                                 account_state=astate,return_allocation=True,
-                                                multiscale_state=mstate,**self._daily_history_kwargs(panel,index,self.device))
+                                                 multiscale_state=mstate,**self._daily_history_kwargs(panel,index,self.device),
+                                                 **self._goal_kwargs(self.paper_account,self.device))
             else:
                 logits,values=model(*args); allocation=None
             elapsed=time.perf_counter()-t
@@ -1010,6 +1036,8 @@ class OnlineGlobalAgent:
         observations use their decision time because they create no order.
         """
         account=account or self.paper_account
+        account.observe_goal(str(panel.dates[end_index]))
+        self.metrics[origin_model+"_goal"]=account.goal_summary()
         pending_kind="portfolio" if origin_model=="champion" else "candidate_portfolio"
         score=self.replay.record_account_score(origin_model,str(panel.dates[end_index]),
             account.state.get("episode_id","legacy"),account.reward_points())
@@ -1034,7 +1062,13 @@ class OnlineGlobalAgent:
             if symbol not in panel.symbols:
                 keep.append(dec); continue
             symbol_ix=panel.symbols.index(symbol)
-            terminal=bool(dec.get("reset_terminal"))
+            reset_terminal=bool(dec.get("reset_terminal"))
+            goal_points=dec.get("reset_goal_points",account.goal_points()) if reset_terminal else account.goal_points()
+            goal_before=dec.get("goal_points_before",{})
+            same_goal_episode=reset_terminal or dec.get("goal_episode_id")==account.state.get("episode_id")
+            goal_terminal=bool(goal_before and same_goal_episode and not dec.get("goal_complete_before")
+                and all(goal_points.get(c,0)>0 for c in goal_points))
+            terminal=reset_terminal or goal_terminal
             if not terminal and (current<=stamp or not panel.observed[end_index,symbol_ix]):
                 keep.append(dec); continue
             input_symbols=dec.get("input_symbols")
@@ -1094,7 +1128,7 @@ class OnlineGlobalAgent:
                 keep.append(dec); continue
             final_equity=float(dec.get("reset_equity",now)) if terminal else now
             account_reward = final_equity - float(dec.get("equity_before", final_equity))
-            symbol_reward = ((float(dec["reset_symbol_net_pnl"]) if terminal else account.symbol_net_pnl(symbol))
+            symbol_reward = ((float(dec["reset_symbol_net_pnl"]) if reset_terminal else account.symbol_net_pnl(symbol))
                              - float(dec.get("symbol_pnl_before", 0.0)))
             if dec.get("trade_executed") is False:
                 symbol_reward=0.0
@@ -1143,6 +1177,16 @@ class OnlineGlobalAgent:
                     behavior_log_prob=dec.get("behavior_log_prob"),
                     trade_executed=dec.get("trade_executed",True))
                 exp.origin_model=origin_model;account_exp.origin_model=origin_model
+                if goal_before and same_goal_episode:
+                    currency=_currency(*panel.groups[symbol])
+                    deltas={c:max(0.0,float(goal_points.get(c,0))-float(goal_before.get(c,0))) for c in goal_points}
+                    contribution=deltas.get(currency,0.0)*min(1.0,max(0.0,float(dec.get("goal_weight_before",0.0))))
+                    for experience in (exp,account_exp):
+                        experience.goal_state=dec.get("goal_state")
+                        experience.goal_reward_points=contribution if experience.trade_executed else 0.0
+                        experience.goal_episode_id=dec.get("goal_episode_id")
+                        experience.goal_terminal=goal_terminal
+                    account_exp.portfolio_goal_reward_points=sum(deltas.values())
                 if dec.get("credit_observations_target"):
                     for experience in (exp,account_exp):
                         experience.credit_observations=int(dec.get("credit_observations_elapsed",0))
@@ -1159,7 +1203,8 @@ class OnlineGlobalAgent:
                                 args[2][0].numpy(),args[3][0].numpy(),args[4][0].numpy(),0,1,0.0,
                                 str(current),market_context=(args[5][0].numpy() if len(args)>5 else None),
                                 portfolio_state=np.asarray(pstate,dtype=np.float16),
-                                account_state=np.asarray(astate,dtype=np.float16),
+                                 account_state=np.asarray(astate,dtype=np.float16),
+                                 goal_state=(np.asarray(account.goal_inputs(),dtype=np.float32) if account.goal_inputs() is not None else None),
                                 multiscale_state=panel.multiscale_at(end_index).astype(np.float16),
                                 daily_history=(panel.daily_history_at(end_index) if hasattr(panel,"daily_history_at") else None))
                         exp._bootstrap_experience=credit_successor
@@ -1435,9 +1480,11 @@ class OnlineGlobalAgent:
                         "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
                         "multiscale_state":multiscale_state}
                     portfolio_inputs={**pending_inputs,
+                        "goal_state":np.asarray(self.paper_account.goal_inputs(),dtype=np.float32),
                         "input_symbols":list(panel.symbols),
                         "portfolio_state":np.asarray(pstate,dtype=np.float16),
                         "account_state":np.asarray(astate,dtype=np.float32)}
+                    goal_before=self.paper_account.goal_points();goal_complete=self.paper_account.goal_summary().get("status")=="WIN"
                     for j,symbol in enumerate(panel.symbols):
                         # A closed venue may not print a bar at the current
                         # global timestamp. Use its forward-filled last quote
@@ -1460,7 +1507,10 @@ class OnlineGlobalAgent:
                               "entry_price":float(panel.closes[ti,j]),"bars_elapsed":0,
                               "regime":abs(float(panel.features[ti,j,6])),
                                "is_validation":False,"promotion_holdout":validation,
-                              "equity_before":self.paper_account.normalized_equity(),
+                               "equity_before":self.paper_account.normalized_equity(),
+                               "goal_points_before":goal_before,"goal_episode_id":self.paper_account.state["episode_id"],
+                               "goal_complete_before":goal_complete,
+                               "goal_weight_before":max(float(pstate[j][1]),float(allocation[j]) if action==2 and allocation is not None else 0.0),
                               "symbol_pnl_before":self.paper_account.symbol_net_pnl(symbol),
                               })
                         rows.append({"date":stamp,"symbol":symbol,"action":ACTION_NAMES[action],"value":float(values[j]),
@@ -1599,6 +1649,8 @@ class OnlineGlobalAgent:
         if stride<1:
             raise ValueError("stride must be positive")
         account=PaperAccount.in_memory(self.fee,self.slippage)
+        rules=getattr(self,"operating_rules",{})
+        account.configure_goal(rules.get("goal_target_multiple",10.0),rules.get("goal_win_bonus_points",100.0))
         initial=account.normalized_equity()
         peak=initial; max_dd=0.0; daily={}; action_counts={name:0 for name in ACTION_NAMES}
         decisions=0; observed_bars=0; previous_equity=initial
@@ -1608,6 +1660,7 @@ class OnlineGlobalAgent:
             with torch.inference_mode():
                 for ti in range(start,end):
                     fills=account.process_bar(panel,ti,True)
+                    account.observe_goal(str(panel.dates[ti]))
                     if (ti-start)%stride==0:
                         contextual=getattr(model,"_stockrl_uses_market_context",False)
                         args=[x.to(model_device) for x in panel.window(ti,self.window,include_context=contextual)]
@@ -1619,6 +1672,7 @@ class OnlineGlobalAgent:
                                 account_state=torch.as_tensor(np.asarray(astate)[None],device=model_device,dtype=torch.float32),
                                 multiscale_state=torch.as_tensor(panel.multiscale_at(ti)[None],device=model_device),
                                 **self._daily_history_kwargs(panel,ti,model_device),
+                                **self._goal_kwargs(account,model_device),
                                 return_allocation=True)
                             allocation=allocation[0].float().cpu().numpy()
                         else:
@@ -1818,7 +1872,7 @@ class OnlineGlobalAgent:
                        ("context_policy","context_value","portfolio_action",
                         "portfolio_allocation","portfolio_cash",
                         "multiscale_policy","multiscale_value","daily_history_encoder",
-                        "daily_history_policy","daily_history_value"))
+                        "daily_history_policy","daily_history_value","goal_policy","goal_value","goal_cash"))
         for module in modules:
             if module is not None:
                 for parameter in module.parameters():
@@ -1843,7 +1897,7 @@ class OnlineGlobalAgent:
         epsilon=min(PAPER_EXPLORATION_EPSILON,1.0/max(1,int(experience.features.shape[1])))
         probabilities=(1.0-epsilon)*torch.softmax(chosen,dim=-1)+epsilon/3.0
         dist=Categorical(probs=probabilities[None])
-        reward=torch.as_tensor(float(experience.reward)*100.0,device=self.device,dtype=torch.float32)
+        reward=torch.as_tensor(float(experience.reward)*100.0+float(experience.goal_reward_points),device=self.device,dtype=torch.float32)
         target=reward
         if experience.bootstrap_discount:
             if successor_values is None:
@@ -1861,7 +1915,7 @@ class OnlineGlobalAgent:
             loss=loss-.0005*dist.entropy().mean()
         else:
             if experience.portfolio_value_transition:
-                account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0),
+                account_reward=torch.as_tensor(100.0*float(experience.portfolio_reward or 0.0)+float(experience.portfolio_goal_reward_points),
                                                device=self.device,dtype=torch.float32)
                 if experience.bootstrap_discount:
                     account_reward=account_reward+float(experience.bootstrap_discount)*successor_values[0].float().mean().detach()
@@ -1901,6 +1955,7 @@ class OnlineGlobalAgent:
                     if getattr(model,"_stockrl_uses_market_context",False):
                         output=model(*args,portfolio_state=pstate,account_state=astate,
                             return_allocation=True,multiscale_state=mstate,
+                            **self._saved_goal_kwargs(successor,self.device),
                             **({"daily_history":torch.as_tensor(successor.daily_history[None],
                                    device=self.device,dtype=torch.float32)}
                                if successor.daily_history is not None else {}))
@@ -1973,6 +2028,7 @@ class OnlineGlobalAgent:
             if not batch: break
             sampled_ids.update(self.replay.row_ids_for(batch))
             malformed=[e for e in batch if (
+                (e.goal_state is not None and np.shape(e.goal_state)!=(6,)) or
                 (e.portfolio_state is not None and np.shape(e.portfolio_state)!=(e.features.shape[1],8)) or
                 (e.account_state is not None and np.shape(e.account_state)!=(8,)) or
                 (e.multiscale_state is not None and np.shape(e.multiscale_state) not in (
@@ -2008,6 +2064,7 @@ class OnlineGlobalAgent:
                     if use_portfolio:
                         logits,values,allocations=candidate(*args,portfolio_state=pstate,
                             account_state=astate,return_allocation=True,multiscale_state=mstate,
+                            **self._saved_goal_kwargs(group[0],self.device),
                             **({"daily_history":torch.as_tensor(group[0].daily_history[None],device=self.device,dtype=torch.float32)}
                                if getattr(group[0],"daily_history",None) is not None else {}))
                     else:
@@ -2188,6 +2245,8 @@ class OnlineGlobalAgent:
             "optimizer_steps":len(elapsed),
             "future_credit_samples":sum(e.credit_observations>0 for e in used_experiences),
             "successor_value_samples":sum(e.bootstrap_discount>0 for e in used_experiences),
+            "goal_conditioned_samples":sum(e.goal_state is not None for e in used_experiences),
+            "goal_bonus_samples":sum(bool(e.goal_reward_points or e.portfolio_goal_reward_points) for e in used_experiences),
             "legacy_short_reward_samples":sum(not e.credit_observations and not e.source.startswith("teacher") for e in used_experiences),
             "total_seconds":metrics["last_candidate_total_seconds"],
             "compute_seconds":metrics["last_candidate_compute_seconds"],
@@ -2387,6 +2446,8 @@ class OnlineGlobalAgent:
             # never used by this isolated comparison.
             champ_account.process_bar(panel,index,True)
             cand_account.process_bar(panel,index,True)
+            champ_account.observe_goal(stamp)
+            cand_account.observe_goal(stamp)
             window=self._window(panel,index)
             args=window
             champion=self.validation_champion
@@ -2417,7 +2478,8 @@ class OnlineGlobalAgent:
                                 mt=torch.as_tensor(panel.multiscale_at(index)[None],device=model_device)
                                 logits,_,allocation=model(*model_args,portfolio_state=pt,
                                                           account_state=at,return_allocation=True,
-                                                          multiscale_state=mt,**self._daily_history_kwargs(panel,index,model_device))
+                                                          multiscale_state=mt,**self._daily_history_kwargs(panel,index,model_device),
+                                                          **self._goal_kwargs(account,model_device))
                                 allocation=allocation[0].float().cpu().numpy()
                             else:
                                 logits,_=model(*model_args); allocation=None
@@ -2611,6 +2673,11 @@ class OnlineGlobalAgent:
         validation_snapshot_bytes=(sum(p.numel()*p.element_size()
             for p in self.validation_candidate.parameters()) if self.validation_candidate is not None else 0)
         metrics.update({"parameters":parameter_count(self.champion),"device":str(self.device),
+          "shared_objective":{"mode":"net_equity_and_tenfold_goal_for_both_models",
+              "target_multiple":self.operating_rules.get("goal_target_multiple",10.0),
+              "win_bonus_points":self.operating_rules.get("goal_win_bonus_points",100.0),
+              "live_accounts_preserved":not self.operating_rules.get("daily_reset_live_accounts",False),
+              "goal_reward_in_competition_score":False,"shared_replay":True},
           "replay_persistence":"durable_fifo_shared_frames_sqlite",
           "learning_priority":"complete_daily_experience_coverage",
           "replay_untrained_count":replay_stats["untrained"],
