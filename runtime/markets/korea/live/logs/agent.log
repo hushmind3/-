@@ -12935,3 +12935,52 @@ following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\kore
 following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
 following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
 following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Exception in thread global-learner:
+Traceback (most recent call last):
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1041, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1693, in _learner
+    stats=self.replay.stats(self.candidate_replay_passes)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 586, in stats
+    "storage_pressure": self.disk_bytes() >= self.storage_warning_bytes}
+                        ~~~~~~~~~~~~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 600, in disk_bytes
+    return sum(path.stat().st_size for path in (self.journal_path,
+        Path(str(self.journal_path)+"-wal"), Path(str(self.journal_path)+"-shm")) if path.exists())
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 600, in <genexpr>
+    return sum(path.stat().st_size for path in (self.journal_path,
+               ~~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\pathlib\_local.py", line 515, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] ÁöÁ¤µÈ ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: 'C:\\Users\\hushm\\OneDrive\\¹®¼­\\ChatGPT\\±ÝÀ¶¸Å¸Å¸ðµ¨\\runtime\\markets\\korea\\live\\agent\\replay.sqlite3-shm'
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C
+Exception in thread global-learner:
+Traceback (most recent call last):
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1041, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 992, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\global_online.py", line 1697, in _learner
+    stats=self.replay.stats(self.candidate_replay_passes)
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 586, in stats
+    "storage_pressure": self.disk_bytes() >= self.storage_warning_bytes}
+                        ~~~~~~~~~~~~~~~^^
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 600, in disk_bytes
+    return sum(path.stat().st_size for path in (self.journal_path,
+        Path(str(self.journal_path)+"-wal"), Path(str(self.journal_path)+"-shm")) if path.exists())
+  File "C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\src\stockrl\replay_store.py", line 600, in <genexpr>
+    return sum(path.stat().st_size for path in (self.journal_path,
+               ~~~~~~~~~^^
+  File "C:\Users\hushm\AppData\Local\Programs\Python\Python313\Lib\pathlib\_local.py", line 515, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] ÁöÁ¤µÈ ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: 'C:\\Users\\hushm\\OneDrive\\¹®¼­\\ChatGPT\\±ÝÀ¶¸Å¸Å¸ðµ¨\\runtime\\markets\\korea\\live\\agent\\replay.sqlite3-wal'
+following=C:\Users\hushm\OneDrive\¹®¼­\ChatGPT\±ÝÀ¶¸Å¸Å¸ðµ¨\runtime\markets\korea\live\market.csv poll_seconds=1.0; stop with Ctrl+C

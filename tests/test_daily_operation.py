@@ -14,7 +14,7 @@ from stockrl.market_training import ContextConditionedTransformer
 from stockrl.paper_account import PaperAccount
 from test_online_pipeline import Panel, FixedPolicy
 from stockrl.daily_encoder import DailyHistoryEncoder
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import queue
 import threading
 
@@ -22,6 +22,48 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class DailyOperationChecks(unittest.TestCase):
+    def test_profit_reward_increases_action_and_loss_reward_decreases_it(self):
+        panel=Panel();agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.device=torch.device("cpu");agent.metrics={"nonfinite_updates":0}
+        for reward in (-.0001,.0001):
+            with self.subTest(reward=reward):
+                experience=Experience(panel.features,panel.symbol_ids,panel.market_ids,
+                    panel.asset_ids,panel.observed,0,2,reward,str(panel.dates[0]),
+                    behavior_log_prob=float(np.log(1/3)),trade_executed=True)
+                logits=torch.zeros(1,2,3,requires_grad=True)
+                values=torch.zeros(1,2,requires_grad=True)
+                loss=agent._experience_loss(logits,values,None,experience)
+                loss.backward()
+                # Gradient descent subtracts this gradient: negative profit
+                # must lower the chosen BUY logit, positive profit raise it.
+                self.assertLess(float(logits.grad[0,0,2])*reward,0)
+
+    def test_replay_size_tolerates_vanishing_sqlite_sidecar(self):
+        from types import SimpleNamespace
+        replay=GlobalReplayBuffer.__new__(GlobalReplayBuffer)
+        replay.journal_path=ROOT/"size-check.sqlite3"
+        def size(path,*args,**kwargs):
+            if str(path).endswith("-wal"):
+                raise FileNotFoundError("SQLite removed the WAL")
+            return SimpleNamespace(st_size=100 if path==replay.journal_path else 50)
+        with patch.object(Path,"stat",autospec=True,side_effect=size):
+            self.assertEqual(replay.disk_bytes(),150)
+
+    def test_learner_retries_statistics_error_and_resumes_training(self):
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent.stop=threading.Event();agent.metrics={};agent.replay=MagicMock()
+        agent.candidate_replay_passes=1;agent.dual_learning_enabled=False
+        agent.candidate_retry_after=0
+        agent.replay.stats.side_effect=[FileNotFoundError("WAL disappeared"),
+            {"eligible":1,"untrained":1,"model_remaining":{"candidate":1,"champion":0}}]
+        agent._train_candidate=MagicMock(side_effect=agent.stop.set)
+        with patch.object(agent.stop,"wait",side_effect=lambda timeout:agent.stop.is_set()):
+            agent._learner()
+        self.assertEqual(agent.replay.stats.call_count,2)
+        agent._train_candidate.assert_called_once()
+        self.assertEqual(agent.metrics["learner_statistics_errors"],1)
+        self.assertIsNone(agent.metrics["learner_statistics_error"])
+
     def test_candidate_commits_padded_observations_without_trading_padding(self):
         panel=Panel();panel.symbols[1]="__PAD__0__NASDAQ|EQUITY|A"
         panel.groups.pop("CONTEXT");panel.observed[:,1]=False;panel.closes[:,1]=np.nan

@@ -1694,7 +1694,15 @@ class OnlineGlobalAgent:
 
     def _learner(self):
         while not self.stop.wait(.1):
-            stats=self.replay.stats(self.candidate_replay_passes)
+            self.metrics["learner_last_heartbeat_utc"]=time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime())
+            try:
+                stats=self.replay.stats(self.candidate_replay_passes)
+            except Exception as exc:
+                self.metrics["learner_statistics_errors"]=int(self.metrics.get("learner_statistics_errors",0))+1
+                self.metrics["learner_statistics_error"]=f"{type(exc).__name__}: {exc}"[:1200]
+                self.stop.wait(1.0)
+                continue
+            self.metrics["learner_statistics_error"]=None
             dual=getattr(self,"dual_learning_enabled",False)
             remaining=stats.get("model_remaining",{"candidate":stats["eligible"],"champion":0})
             self.metrics["candidate_untrained_replay_count"]=stats.get("model_untrained",{}).get("candidate",stats["untrained"])
@@ -2528,7 +2536,8 @@ class OnlineGlobalAgent:
           "dual_learning_enabled":True,
           "shared_observation":self.replay.market_observation_stats(),
           "learning_experience_origins":"champion_and_candidate_own_account_outcomes",
-          "champion_learning_enabled":not self.stop.is_set(),
+          "learner_thread_alive":bool(getattr(self,"thread",None) and self.thread.is_alive()),
+          "champion_learning_enabled":bool(not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
           "champion_training_version":self.champion_training_version,
           "champion_batch_size":self.batch_size,
           "champion_optimizer_steps_target":self.updates_per_candidate,
@@ -2550,7 +2559,7 @@ class OnlineGlobalAgent:
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
           "promotion_baseline_sha256":self.promotion_baseline_sha256,
-          "candidate_learning_enabled":not self.stop.is_set(),
+          "candidate_learning_enabled":bool(not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
           "candidate_start_ready":bool(replay_stats["model_remaining"]["candidate"]),
           "champion_start_ready":bool(replay_stats["model_remaining"]["champion"]),
           "candidate_every":self.candidate_interval,

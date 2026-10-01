@@ -597,8 +597,16 @@ class GlobalReplayBuffer:
     def disk_bytes(self):
         if not self.journal_path:
             return 0
-        return sum(path.stat().st_size for path in (self.journal_path,
-            Path(str(self.journal_path)+"-wal"), Path(str(self.journal_path)+"-shm")) if path.exists())
+        total=0
+        for path in (self.journal_path,Path(str(self.journal_path)+"-wal"),
+                     Path(str(self.journal_path)+"-shm")):
+            try:
+                total+=path.stat().st_size
+            except FileNotFoundError:
+                # SQLite may remove WAL/SHM between existence and size checks.
+                # Their absence is normal; no replay data is discarded here.
+                continue
+        return total
 
     def row_ids_for(self, experiences):
         return sorted({getattr(row, "_replay_row_id", self.row_ids.get(id(row), id(row))) for row in experiences})
