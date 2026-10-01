@@ -67,13 +67,20 @@ function renderOperationsOverview(d){
  text("opGpuQueue",schedule.policy?(learningFirst?"본장 전 학습 우선 · "+timeOf(schedule.learning_priority_until_utc)+"까지":"실시간 판단 우선")+" · 대기 "+((schedule.waiting||[]).map(x=>roleName(x.role)).join(" → ")||"없음"):"현재 실행 프로세스의 순서 계측 없음");
  text("opLearningQueue",whole(m.replay_eligible_backlog)+"개");
  text("opLastLearning","마지막 학습·저장 "+timeOf(m.last_update_utc));
- if(m.learning_wait_reason){
-  text("dualLearningStatus","실시간 판단 먼저 처리 · replay 학습 대기 · 미학습 경험 보존");
-  text("learningFlowHealth","시장 판단을 먼저 따라잡는 중입니다. 학습 회차는 현재 step 이후 대기하며 replay 경험은 보존합니다.");
-  badge("learningState","판단 우선 · 학습 대기","warn");
-  for(const role of ["Champion","Candidate"])text("dual"+role+"State","판단 우선 · 학습 대기");
+ const learningOff=d.learning_enabled===false,waitReason=String(m.learning_wait_reason||"");
+ if(learningOff){
+  const remaining=whole(m.replay_eligible_backlog||0);
+  text("dualLearningStatus","replay 학습 중지 · 미학습 "+remaining+"건 보존");
+  text("learningFlowHealth","사용자가 replay 학습을 중지했습니다. 관찰과 가상계좌는 각 설정대로 동작하고 미학습 경험은 DB에 남습니다.");
+  badge("learningState","학습 OFF · 경험 보존","");
+ }else if(waitReason){
+  const schedulerWait=waitReason.includes("실시간 GPU 추론 요청");
+  const label=schedulerWait?"GPU가 실시간 판단 처리 중":waitReason;
+  text("dualLearningStatus",label+" · replay 경험 보존");
+  text("learningFlowHealth",waitReason+" · 학습 데이터는 삭제하지 않고 다음 학습 회차에 처리합니다.");
+  badge("learningState",schedulerWait?"GPU 추론 처리 중":"학습 적용 대기","warn");
  }
- if(learningFirst){
+ if(learningFirst&&!learningOff){
   text("dualLearningStatus","본장 전 replay 학습 우선 · 시세·미처리 관찰 보존");
   text("learningFlowHealth","20시 이후에는 두 모델의 미학습 경험을 우선 처리합니다. 판단·승급전은 남는 GPU 시간을 사용하며 본장 시작부터 판단 우선으로 복귀합니다.");
   badge("learningState","본장 전 학습 우선","blue");
