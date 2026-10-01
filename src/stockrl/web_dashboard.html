@@ -26,27 +26,109 @@
           ><span class="clock" id="clock">--:-- KST</span>
         </div>
       </header>
-      <nav class="workflow-strip" aria-label="현재 실행 상태">
-        <a href="#markets"
-          ><span>시세 수집</span><strong id="workflowFeed">확인 중</strong></a
+      <section class="workflow-strip" aria-label="실시간 핵심 수치">
+        <a class="live-metric" href="#markets"
+          ><div class="metric-heading">
+            <span>시세 수신</span
+            ><span class="pill" id="workflowFeedState">확인 중</span>
+          </div>
+          <strong class="metric-number" id="workflowFeed">—</strong
+          ><progress
+            id="workflowFeedMeter"
+            max="100"
+            value="0"
+            aria-label="시세 수신"
+            aria-valuetext="미측정"
+          ></progress
+          ><small class="metric-caption" id="workflowFeedDetail"
+            >확인 중</small
+          ></a
         >
-        <a href="#control"
-          ><span>모델 판단</span
-          ><strong id="workflowInference">확인 중</strong></a
+        <a class="live-metric" href="#control"
+          ><div class="metric-heading">
+            <span>두 모델의 시세 처리 지연</span
+            ><span class="pill" id="workflowInferenceState">확인 중</span>
+          </div>
+          <strong class="metric-number" id="workflowInference">—</strong
+          ><progress
+            id="workflowInferenceMeter"
+            max="100"
+            value="0"
+            aria-label="두 모델의 시세 처리 지연"
+            aria-valuetext="미측정"
+          ></progress
+          ><small class="metric-caption" id="workflowInferenceDetail"
+            >확인 중</small
+          ></a
         >
-        <a href="#control"
-          ><span>가상매매</span><strong id="workflowPaper">확인 중</strong></a
+        <a class="live-metric" href="#control"
+          ><div class="metric-heading">
+            <span>가상계좌 누적 체결</span
+            ><span class="pill" id="workflowPaperState">확인 중</span>
+          </div>
+          <strong class="metric-number" id="workflowPaper">—</strong>
+          <div class="metric-spacer"></div>
+          <small class="metric-caption" id="workflowPaperDetail"
+            >확인 중</small
+          ></a
         >
-        <a
-          href="#learning"
-          id="learningAtGlance"
-          aria-label="현재 학습 상태 보기"
-          >학습 상태 확인 중</a
+        <a class="live-metric" href="#learning"
+          ><div class="metric-heading">
+            <span>오늘 학습·저장 완료</span
+            ><span class="pill" id="workflowLearningState">확인 중</span>
+          </div>
+          <strong class="metric-number" id="workflowLearning">—</strong
+          ><progress
+            id="workflowLearningMeter"
+            max="100"
+            value="0"
+            aria-label="오늘 학습·저장 완료"
+            aria-valuetext="미측정"
+          ></progress
+          ><small class="metric-caption" id="learningAtGlance"
+            >확인 중</small
+          ></a
         >
-        <a href="#promotionTrial"
-          ><span>승급전</span><strong id="workflowTrial">확인 중</strong></a
+        <a class="live-metric" href="#promotionTrial"
+          ><div class="metric-heading">
+            <span>승급전 진행</span
+            ><span class="pill" id="workflowTrialState">확인 중</span>
+          </div>
+          <strong class="metric-number" id="workflowTrial">—</strong
+          ><progress
+            id="workflowTrialMeter"
+            max="100"
+            value="0"
+            aria-label="승급전 진행"
+            aria-valuetext="미측정"
+          ></progress
+          ><small class="metric-caption" id="workflowTrialDetail"
+            >확인 중</small
+          ></a
         >
-      </nav>
+        <div class="card status-card live-metric gpu-summary">
+          <div class="topline">
+            <span>GPU · 모델 메모리</span
+            ><span class="pill" id="gpuBadge">확인 중</span>
+          </div>
+          <strong class="big" id="gpuMemory">—</strong>
+          <div
+            class="meter"
+            role="progressbar"
+            aria-label="모델 GPU 메모리 사용 비율"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="gpuMeter"
+          >
+            <div id="gpuFill"></div>
+          </div>
+          <div class="metric-sub">
+            <span id="gpuDevice">GPU 확인 중</span
+            ><span id="gpuPercent">—</span>
+          </div>
+        </div>
+      </section>
       <nav class="sidebar" aria-label="작업 화면">
         <div class="nav-label">운용 에이전트</div>
         <a href="#control" data-page="overview">운영 · 계좌</a
@@ -231,28 +313,6 @@
                   <strong class="big" id="brokerState">—</strong>
                   <div class="detail" id="brokerDetail">
                     인증·소켓·실제 체결 수신을 구분합니다.
-                  </div>
-                </div>
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>GPU · 모델 메모리</span
-                    ><span class="pill" id="gpuBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="gpuMemory">—</strong>
-                  <div
-                    class="meter"
-                    role="progressbar"
-                    aria-label="모델 GPU 메모리 사용 비율"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow="0"
-                    id="gpuMeter"
-                  >
-                    <div id="gpuFill"></div>
-                  </div>
-                  <div class="metric-sub">
-                    <span id="gpuDevice">GPU 확인 중</span
-                    ><span id="gpuPercent">—</span>
                   </div>
                 </div>
               </div>
@@ -1688,4 +1748,3 @@
     ></script>
   </body>
 </html>
-

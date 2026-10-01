@@ -139,7 +139,7 @@ for (const [name, data, title, reason, next] of cases) {
   context.renderLearningSituation(data);
   assert.equal(values.get("learningState"), state.title, name);
   assert.equal(values.get("learningSituationTitle"), state.title, name);
-  assert.match(values.get("learningAtGlance"), /학습 상태 보기/, name);
+
   assert.equal(values.get("learningSituationReason"), state.reason, name);
 }
 console.log(
@@ -260,3 +260,61 @@ for (const [name, n] of modelLookbacks)
 console.log(
   JSON.stringify({ timeframeRequirementChecks: modelLookbacks.length }),
 );
+
+const metricDay = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date());
+const liveCards = context.operatorMetrics({
+  agent_process_running: true,
+  learning_enabled: true,
+  observe_enabled: true,
+  paper_enabled: true,
+  feed_running: true,
+  configured_instruments: 200,
+  feed_metrics: { fresh_symbols_5m: ["A", "B"] },
+  agent_health: {
+    lag_seconds: 0,
+    threshold_seconds: 300,
+    candidate: { lag_seconds: 60 },
+  },
+  metrics: {
+    model_input_symbol_count: 100,
+    replay_eligible_backlog: 25,
+    replay_pending_count: 90,
+    daily_learning: [{ day: metricDay, completed: 75, enqueued: 100 }],
+  },
+  paper_financials: { KRW: { trade_count: 10 }, USD: { trade_count: 20 } },
+  candidate_live_account: {
+    books: { KRW: { trade_count: 30 }, USD: { trade_count: 40 } },
+  },
+  validation_comparison: { active: true, bars_current: 10, bars_required: 100 },
+});
+assert.equal(liveCards.Feed.number, "2 / 200종목");
+assert.equal(liveCards.Feed.ratio, 1);
+assert.equal(liveCards.Inference.number, "60초");
+assert.equal(liveCards.Inference.ratio, 20);
+assert.equal(liveCards.Paper.number, "100건");
+assert.match(liveCards.Paper.detail, /Champion 30건.*Candidate 70건/);
+assert.equal(liveCards.Learning.number, "75 / 100건");
+assert.equal(liveCards.Learning.ratio, 75);
+assert.match(liveCards.Learning.detail, /남은 학습 25건.*손익 확인 90건/);
+assert.equal(liveCards.Trial.ratio, 10);
+for (const card of Object.values(
+  context.operatorMetrics({ status_unavailable: true }),
+)) {
+  assert.equal(card.number, "—");
+  assert.equal(card.status, "연결 끊김");
+  assert.equal(card.ratio, null);
+}
+assert.equal(context.operatorMetrics({}).Learning.status, "미확인");
+assert.equal(
+  context.operatorMetrics({
+    agent_process_running: true,
+    learning_enabled: false,
+  }).Learning.status,
+  "OFF",
+);
+console.log(JSON.stringify({ metricCardChecks: 12 }));

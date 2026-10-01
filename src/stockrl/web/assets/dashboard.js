@@ -1488,6 +1488,7 @@ function renderExperienceFlow(d) {
   const pendingState = pendingOutcomeState(d);
   text("flowPendingWindow", pendingState.window);
   text("flowPendingWaitReason", pendingState.reason);
+  attribute("flowPendingWaitReason", "title", pendingState.reason);
   const labels = {
     missing_market_input: "시세 입력 복구 필요",
     next_quote: "해당 종목의 후속 시세 대기",
@@ -1653,7 +1654,7 @@ function renderLearningSituation(d) {
   const m = d.metrics || {},
     state = learningSituation(d);
   badge("learningState", state.title, state.tone);
-  text("learningAtGlance", state.title + " · 학습 상태 보기");
+
   text("learningSituationTitle", state.title);
   text("learningSituationReason", state.reason);
   text("learningSituationNext", state.next);
@@ -1912,63 +1913,193 @@ function trialNextAction(d) {
     return "판정 완료 · 다음 시험은 새 고정 모델과 별도 시험계좌로 시작합니다. 장기 가상계좌는 유지됩니다.";
   return "새 시험본 준비 대기 · 같은 시장·시작 자금·비용으로 두 모델을 비교합니다.";
 }
-function renderWorkflowStatus(d) {
+
+// Same metric definitions on every view; no timer-driven layout rebuilding.
+function operatorMetrics(d) {
   const m = d.metrics || {},
     h = d.agent_health || {},
-    c = h.candidate || {};
-  if (d.status_unavailable) {
-    for (const id of [
-      "workflowFeed",
-      "workflowInference",
-      "workflowPaper",
-      "workflowTrial",
-    ])
-      text(id, "연결 끊김 · 미확인");
-    return;
-  }
-  text(
-    "workflowFeed",
-    d.feed_running
-      ? "수집 중 · " +
-          whole((d.feed_metrics?.fresh_symbols_5m || []).length) +
-          "종목 수신"
-      : "정지",
-  );
-  text(
-    "workflowInference",
-    !d.agent_process_running
-      ? "프로세스 정지"
-      : d.observe_enabled === false
-        ? "OFF"
-        : h.status === "error" || c.status === "error"
-          ? "오류 · 확인 필요"
-          : h.lag_seconds == null || c.lag_seconds == null
-            ? "지연 미측정"
-            : "ON · 시세 처리 지연 " +
-              whole(Math.max(Number(h.lag_seconds), Number(c.lag_seconds))) +
-              "초",
-  );
-  text(
-    "workflowPaper",
-    d.paper_enabled == null
-      ? "상태 미확인"
-      : d.paper_enabled
-        ? "ON · 가상계좌 체결"
-        : "OFF",
-  );
-  const v = d.validation_comparison || {};
-  text(
-    "workflowTrial",
-    v.active
-      ? !d.agent_process_running
-        ? "프로세스 정지 · 중지"
+    c = h.candidate || {},
+    v = d.validation_comparison || {};
+  const known = (x) => x != null && Number.isFinite(Number(x));
+  const count = (x) => (known(x) ? whole(x) : "—");
+  const sumTrades = (books) =>
+    ["KRW", "USD"].every((k) => known(books?.[k]?.trade_count))
+      ? Number(books.KRW.trade_count) + Number(books.USD.trade_count)
+      : null;
+  const fresh = Array.isArray(d.feed_metrics?.fresh_symbols_5m)
+    ? d.feed_metrics.fresh_symbols_5m.length
+    : null;
+  const configured = known(d.configured_instruments)
+    ? Number(d.configured_instruments)
+    : null;
+  const todayKey = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const today = (m.daily_learning || []).find((row) => row.day === todayKey);
+  const champion = sumTrades(d.paper_financials),
+    candidate = sumTrades(d.candidate_live_account?.books);
+  const lag =
+    known(h.lag_seconds) && known(c.lag_seconds)
+      ? Math.max(Number(h.lag_seconds), Number(c.lag_seconds))
+      : null;
+  const threshold =
+    known(h.threshold_seconds) && Number(h.threshold_seconds) > 0
+      ? Number(h.threshold_seconds)
+      : null;
+  const ratio = (n, total) =>
+    known(n) && known(total) && Number(total) > 0
+      ? Math.max(0, Math.min(100, (100 * Number(n)) / Number(total)))
+      : null;
+  const state = learningSituation(d);
+  const cards = {
+    Feed: {
+      number: count(fresh) + " / " + count(configured) + "종목",
+      status:
+        d.feed_running == null ? "미확인" : d.feed_running ? "수집 중" : "정지",
+      detail:
+        "최근 5분 수신 · 판단 입력 " +
+        count(m.model_input_symbol_count) +
+        "종목",
+      ratio: ratio(fresh, configured),
+      tone: d.feed_running ? "good" : "",
+    },
+    Inference: {
+      number: count(lag) + "초",
+      status: !d.agent_process_running
+        ? "정지"
         : d.observe_enabled === false
-          ? "판단 OFF · 중지"
-          : whole(v.bars_current) + " / " + whole(v.bars_required) + "시점"
-      : v.status === "promoted" && v.comparison_valid
-        ? "Candidate 승급 완료"
-        : v.status === "rejected" && v.comparison_valid
-          ? "Champion 유지"
-          : "시험 대기",
-  );
+          ? "OFF"
+          : h.status === "error" || c.status === "error"
+            ? "오류"
+            : lag == null
+              ? "미측정"
+              : "ON",
+      detail:
+        "Champion " +
+        count(h.lag_seconds) +
+        "초 · Candidate " +
+        count(c.lag_seconds) +
+        "초" +
+        (threshold == null ? "" : " · 경고 기준 " + count(threshold) + "초"),
+      ratio: ratio(lag, threshold),
+      tone: lag != null && threshold != null && lag >= threshold ? "warn" : "",
+    },
+    Paper: {
+      number:
+        champion == null || candidate == null
+          ? "—"
+          : whole(champion + candidate) + "건",
+      status:
+        d.paper_enabled == null ? "미확인" : d.paper_enabled ? "ON" : "OFF",
+      detail:
+        "Champion " +
+        count(champion) +
+        "건 · Candidate " +
+        count(candidate) +
+        "건 · 계좌 시작부터 누적",
+      ratio: null,
+      tone: d.paper_enabled ? "good" : "",
+    },
+    Learning: {
+      number: count(today?.completed) + " / " + count(today?.enqueued) + "건",
+      status:
+        d.agent_process_running !== true
+          ? d.agent_process_running === false
+            ? "정지"
+            : "미확인"
+          : d.learning_enabled !== true
+            ? d.learning_enabled === false
+              ? "OFF"
+              : "미확인"
+            : state.error
+              ? "오류"
+              : m.champion_training || m.candidate_training
+                ? "학습 중"
+                : !known(m.replay_eligible_backlog)
+                  ? "미측정"
+                  : Number(m.replay_eligible_backlog) > 0
+                    ? "처리 대기"
+                    : "결과 대기",
+      detail:
+        "남은 학습 " +
+        count(m.replay_eligible_backlog) +
+        "건 · 손익 확인 " +
+        count(m.replay_pending_count ?? m.pending_experiences) +
+        "건",
+      ratio: ratio(today?.completed, today?.enqueued),
+      tone: state.error
+        ? "bad"
+        : m.champion_training || m.candidate_training
+          ? "blue"
+          : "",
+    },
+    Trial: {
+      number: count(v.bars_current) + " / " + count(v.bars_required) + "시점",
+      status: !d.agent_process_running
+        ? "정지"
+        : v.active
+          ? d.observe_enabled === false
+            ? "중지"
+            : "진행 중"
+          : v.comparison_valid
+            ? "판정 완료"
+            : "시험 대기",
+      detail: v.active
+        ? "새 시세로 평가 · 판정 " +
+          (d.daily_cycle?.next_reset_utc
+            ? timeOf(d.daily_cycle.next_reset_utc)
+            : "시각 미확인")
+        : v.comparison_valid
+          ? v.status === "promoted"
+            ? "Candidate 승급"
+            : "Champion 유지"
+          : "새 고정 시험본 대기",
+      ratio: ratio(v.bars_current, v.bars_required),
+      tone: v.active ? "blue" : "",
+    },
+  };
+  if (d.status_unavailable)
+    for (const card of Object.values(cards))
+      Object.assign(card, {
+        number: "—",
+        status: "연결 끊김",
+        detail: "최신 수치를 확인할 수 없습니다.",
+        ratio: null,
+        tone: "bad",
+      });
+  return cards;
+}
+function renderWorkflowStatus(d) {
+  const cards = operatorMetrics(d);
+  if (d.status_unavailable) {
+    badge("gpuBadge", "연결 끊김", "bad");
+    text("gpuMemory", "—");
+    text("gpuPercent", "측정값 미확인");
+    styleWidth("gpuFill", "0%");
+    attribute("gpuMeter", "aria-valuenow", "0");
+  }
+  for (const [key, card] of Object.entries(cards)) {
+    const id = "workflow" + key;
+    text(id, card.number);
+    badge(id + "State", card.status, card.tone);
+    const detail = key === "Learning" ? "learningAtGlance" : id + "Detail";
+    text(detail, card.detail);
+    attribute(detail, "title", card.detail);
+    if (key !== "Paper") {
+      property(id + "Meter", "value", card.ratio ?? 0);
+      attribute(
+        id + "Meter",
+        "aria-valuetext",
+        card.ratio == null ? "미측정" : decimal(card.ratio, 1) + "%",
+      );
+      property(
+        id + "Meter",
+        "className",
+        card.ratio == null ? "unmeasured" : "",
+      );
+    }
+  }
 }

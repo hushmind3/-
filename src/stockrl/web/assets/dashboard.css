@@ -1938,3 +1938,182 @@ body {
     font-size: 13px;
   }
 }
+
+/* Fixed live metric slots: data changes never add/remove cards or move controls. */
+.workflow-strip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: stretch;
+}
+.workflow-strip .live-metric {
+  height: 166px;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #d5deed;
+  border-radius: 15px;
+  color: #344c70;
+  overflow: hidden;
+}
+.workflow-strip .metric-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 29px;
+}
+.workflow-strip .metric-heading > span:first-child {
+  font-size: 13px;
+  font-weight: 650;
+}
+.workflow-strip .metric-heading .pill {
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+}
+.workflow-strip .metric-number,
+.workflow-strip .big {
+  font-size: 25px;
+  line-height: 1.3;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.workflow-strip progress {
+  appearance: none;
+  width: 100%;
+  height: 7px;
+  border: 0;
+  border-radius: 9px;
+  background: #e5ecf7;
+  flex-shrink: 0;
+}
+.workflow-strip progress::-webkit-progress-bar {
+  background: #e5ecf7;
+  border-radius: 9px;
+}
+.workflow-strip progress::-webkit-progress-value {
+  background: #2860df;
+  border-radius: 9px;
+}
+.workflow-strip progress.unmeasured {
+  opacity: 0.35;
+}
+.workflow-strip .metric-spacer {
+  height: 7px;
+  flex-shrink: 0;
+}
+.workflow-strip .metric-caption {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #526783;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-height: 38px;
+  margin: 0;
+  background: transparent;
+  font-weight: 500;
+}
+.workflow-strip .gpu-summary .topline {
+  min-height: 29px;
+  margin: 0;
+  font-size: 13px;
+}
+.workflow-strip .gpu-summary .topline .pill {
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.workflow-strip .gpu-summary .metric-sub {
+  font-size: 11px;
+  line-height: 1.6;
+  min-height: 38px;
+  display: block;
+}
+.workflow-strip .gpu-summary .metric-sub span {
+  display: block;
+  font-size: 11px;
+}
+.workflow-strip .gpu-summary .meter {
+  margin: 0;
+  height: 7px;
+}
+.learning-situation {
+  min-height: 220px;
+  box-sizing: border-box;
+}
+.learning-situation > strong {
+  min-height: 28px;
+}
+.learning-situation p {
+  min-height: 24px;
+}
+#timeframeInputWarning {
+  min-height: 62px;
+  box-sizing: border-box;
+}
+.learner-title > span {
+  min-height: 36px;
+  max-width: 50%;
+  line-height: 1.5;
+}
+.account-currency-card strong,
+.learning-lifecycle strong,
+.mini-card strong {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1500px) {
+  .workflow-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .workflow-strip .live-metric {
+    height: 156px;
+    padding: 11px 12px;
+    gap: 8px;
+  }
+  .workflow-strip .metric-number,
+  .workflow-strip .big {
+    font-size: 22px;
+  }
+  .workflow-strip .metric-heading {
+    align-items: flex-start;
+  }
+  .workflow-strip .metric-heading > span:first-child {
+    font-size: 12px;
+  }
+  .workflow-strip .metric-heading .pill {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+@media (max-width: 540px) {
+  .workflow-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workflow-strip .live-metric {
+    height: 164px;
+  }
+  .learning-situation {
+    min-height: 265px;
+  }
+}
+
+#flowPendingWaitReason {
+  height: 4.8em;
+  line-height: 1.6;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.workflow-strip .metric-number {
+  min-height: 29px;
+}
