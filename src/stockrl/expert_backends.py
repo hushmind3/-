@@ -48,6 +48,7 @@ def toto_native_module(directory):
 
 
 def run_native(expert, root, data, device="cpu", status_path=None, expert_id=None):
+    run_started = time.perf_counter()
     import numpy as np
     import psutil
     import torch
@@ -66,6 +67,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
     started = time.perf_counter()
     process = psutil.Process()
     rss_start = process.memory_info().rss
+    gpu_transfer_seconds = 0.0
 
     def publish(stage):
         if status_path:
@@ -82,10 +84,18 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
     publish("loading")
 
     def frozen(model):
+        nonlocal gpu_transfer_seconds
         model.requires_grad_(False).eval()
         models.append(model)
         publish("loading")
-        model.to(device)
+        if device.startswith("cuda"):
+            torch.cuda.synchronize(device)  # Context startup is part of cold-load.
+            transfer_started = time.perf_counter()
+            model.to(device)
+            torch.cuda.synchronize(device)
+            gpu_transfer_seconds += time.perf_counter() - transfer_started
+        else:
+            model.to(device)
         publish("loading")
         return model
 
@@ -278,18 +288,20 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         raise ValueError(f"no verified pretrained backend: {expert}")
 
     loaded_seconds = time.perf_counter() - started
+    cold_load_seconds = time.perf_counter() - run_started - gpu_transfer_seconds
     publish("loaded")
     rss_loaded = process.memory_info().rss
     if device.startswith("cuda"):
         torch.cuda.synchronize()
         torch.cuda.reset_peak_memory_stats()
     before = [(p, p._version) for model in models for p in model.parameters()]
-    forward_start = time.perf_counter()
     publish("inference")
+    forward_start = time.perf_counter()
     with torch.inference_mode():
         output = np.asarray(infer())
     if device.startswith("cuda"):
         torch.cuda.synchronize()
+    forward_seconds = time.perf_counter() - forward_start
     if not np.isfinite(output).all():
         raise ValueError("expert returned nonfinite values")
     if any(p.requires_grad or p._version != version for p, version in before):
@@ -302,6 +314,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         shapes["OHLCV_amount"] = [len(data["bars"]), len(data["bars"][0]), 6]
     return {"expert":expert, "native_output":output.tolist(), "layout":layout,
         "units":units, "symbols":data.get("symbols", []), "as_of":data.get("as_of"),
+        "input_authenticity":data.get("input_authenticity"), "amount_observed":data.get("amount_observed"),
         "horizon":horizon, "sampling_seconds":data.get("sampling_seconds"),
         "parameters":sum(p.numel() for model in models for p in model.parameters()),
         "native_modules":[{"type":type(model).__name__,
@@ -314,7 +327,9 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         "input_shapes":shapes, "rss_start_bytes":rss_start, "rss_loaded_bytes":rss_loaded,
         "rss_end_bytes":memory.rss, "peak_ram_bytes":getattr(memory,"peak_wset", max(rss_start,rss_loaded,memory.rss)),
         "ram_measurement":"Windows process peak working set" if hasattr(memory,"peak_wset") else "sampled RSS lower bound",
-        "forward_seconds":time.perf_counter()-forward_start,
+        "forward_seconds":forward_seconds,
+        "cold_load_seconds":cold_load_seconds, "gpu_transfer_seconds":gpu_transfer_seconds,
+        "worker_seconds":time.perf_counter()-run_started,
         "peak_allocated_bytes":int(torch.cuda.max_memory_allocated()) if device.startswith("cuda") else None,
         "peak_reserved_bytes":int(torch.cuda.max_memory_reserved()) if device.startswith("cuda") else None,
         **extra}

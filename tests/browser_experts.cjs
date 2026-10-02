@@ -23,6 +23,9 @@ const { chromium } = require("playwright");
   assert.equal(await page.locator(".expert-card").filter({hasText:"미적재 · unloaded"}).count(),14);
   const registryResponse = await page.request.get("http://127.0.0.1:8766/api/experts");
   const registry = await registryResponse.json();
+  assert.equal(registry.pipeline.stage,"complete");
+  assert.equal(registry.pipeline.completed_experts,14);
+  assert.equal(registry.pipeline.executable,false);
   for (const expert of registry.experts) {
     const response = await page.request.get("http://127.0.0.1:8766/api/experts/output?id=" + encodeURIComponent(expert.id));
     assert.equal(response.ok(),true);
@@ -30,7 +33,29 @@ const { chromium } = require("playwright");
     assert.deepEqual(raw.packet.output_shape, expert.output_shape);
     assert.equal(raw.packet.frozen,true);
     assert.equal(raw.packet.parameters,expert.parameters);
+    for (const [field,key] of [["coldLoad","cold_load_seconds"],["gpuTransfer","gpu_transfer_seconds"],
+      ["forward","forward_seconds"],["roundTrip","round_trip_seconds"]]) {
+      assert.ok(expert.last_timings[key] >= 0);
+      const shown = await page.locator('[data-expert-id="'+expert.id+'"] [data-field="'+field+'"]').textContent();
+      assert.equal(Number(shown.replace("초","").replaceAll(",","")),Number(expert.last_timings[key].toFixed(3)));
+    }
+    assert.ok(expert.last_timings.round_trip_seconds >= expert.last_timings.cold_load_seconds + expert.last_timings.gpu_transfer_seconds + expert.last_timings.forward_seconds);
   }
+  const fusionResponse = await page.request.get("http://127.0.0.1:8766/api/experts/fusion");
+  assert.equal(fusionResponse.ok(),true);
+  const fusion = await fusionResponse.json();
+  assert.equal(fusion.profiles.length,14);
+  assert.equal(fusion.adapter_status,"connected");
+  assert.equal(fusion.training_performed,false);
+  assert.equal(fusion.trading_output.executable,false);
+  assert.deepEqual(fusion.fusion_output.shapes.expert_attention,[1,3,14]);
+  await page.locator("#expertPipelineProgress").locator("..").locator("summary").first().click();
+  await page.locator("#expertFusionLoad").click();
+  await page.waitForFunction(() => document.querySelector("#expertFusionOutput").textContent.includes('"trading_output"'));
+  const visibleFusion = JSON.parse(await page.locator("#expertFusionOutput").textContent());
+  assert.equal(visibleFusion.run_id,fusion.run_id);
+  assert.deepEqual(visibleFusion.trading_output,fusion.trading_output);
+  await page.locator("#expertPipelineProgress").locator("..").locator("summary").first().click();
   await page.route("**/api/experts", async route => {
     const fixture = structuredClone(registry);
     fixture.experts[0].name = "Registry supplied name";
@@ -64,7 +89,8 @@ const { chromium } = require("playwright");
   assert.deepEqual(errors,[],JSON.stringify(failedRequests));
   assert.deepEqual(posts,[]);
   const result = {cards:14,frozen:14,unloaded:14,stable_card_nodes:true,raw_timesfm_shape:[2,1,10],
-    raw_outputs_verified:14,registry_names_dynamic:true,screens_checked:7,mobile_overflow:false,console_errors:errors,post_requests:posts};
+    raw_outputs_verified:14,timing_fields_verified:56,integrated_result_verified:true,
+    registry_names_dynamic:true,screens_checked:7,mobile_overflow:false,console_errors:errors,post_requests:posts};
   fs.writeFileSync(path.join(folder,"browser-result.json"),JSON.stringify(result,null,2));
   console.log(JSON.stringify(result));
   await browser.close();

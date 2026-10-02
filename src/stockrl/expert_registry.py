@@ -71,7 +71,8 @@ def read_registry(path):
         "active_parameters":sum(r["parameters"] for r in rows if r["active"])}
     return {"registered":True, "experts":rows, "totals":totals,
         "updated_at":document.get("updated_at"), "unavailable":document.get("unavailable", []),
-        "router_status":"deterministic_untrained", "fusion_head_status":"not_trained",
+        "router_status":"deterministic_untrained", "fusion_head_status":document.get("pipeline", {}).get("fusion_head_status", "not_trained"),
+        "pipeline":{k:v for k,v in document.get("pipeline", {}).items() if k != "result_path"},
         "training_performed":False, "live_integration":False,
         "recent_error":document.get("recent_error"), "error":None}
 
@@ -86,3 +87,11 @@ def read_raw_output(path, expert_id):
         raise ValueError("raw output outside artifact root")
     packet = json.loads(target.read_text(encoding="utf-8"))
     return {"expert_id":entry["id"], "origin":entry["raw_output_origin"], "packet":packet}
+
+
+def read_fusion_output(path):
+    document = json.loads(Path(path).read_text(encoding="utf-8"))
+    target = Path(document["pipeline"]["result_path"]).resolve()
+    if not target.is_relative_to(Path(document["artifact_root"]).resolve()):
+        raise ValueError("fusion output outside artifact root")
+    return json.loads(target.read_text(encoding="utf-8"))

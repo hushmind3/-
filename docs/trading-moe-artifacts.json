@@ -1138,11 +1138,35 @@
     }
   ],
   "router": {
-    "top_k": 2,
+    "top_k": 14,
     "weight_budget_bytes": 4294967296,
-    "status": "deterministic_untrained"
+    "status": "deterministic_untrained",
+    "diversify_modalities": false
   },
-  "fusion_head_status": "not_trained",
+  "fusion_head_status": "untrained_diagnostic",
+  "fusion_checkpoint": {
+    "path": "fusion\\4305598f929fe958.untrained.pt",
+    "sha256": "3b318babd21f29d2b303a45d60b1b54f28332e4b4c36155b4ab8cd638061e0f6",
+    "schema": {
+      "timesfm": 13,
+      "kronos": 9,
+      "toto": 12,
+      "macrophft_slope_1": 5,
+      "macrophft_slope_2": 5,
+      "macrophft_slope_3": 5,
+      "macrophft_vol_1": 5,
+      "macrophft_vol_2": 5,
+      "macrophft_vol_3": 5,
+      "marketgpt": 12163,
+      "exaone": 24,
+      "chronos": 11,
+      "timemoe": 4,
+      "fincast": 13
+    },
+    "trained": false,
+    "frozen": true,
+    "device": "cpu"
+  },
   "experts_frozen": true,
   "weights_merged": false,
   "originals_embedded": false,

@@ -74,12 +74,14 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                     "candidate_training":metrics.get("candidate_training")})
             if route == "/api/status":
                 return self._send(supervisor.status())
-            if route in ("/api/experts", "/api/experts/output"):
-                from ..expert_registry import read_registry, read_raw_output
+            if route in ("/api/experts", "/api/experts/output", "/api/experts/fusion"):
+                from ..expert_registry import read_registry, read_raw_output, read_fusion_output
                 registry = ROOT / "runtime/trading_moe/registry.json"
                 try:
                     if route == "/api/experts":
                         return self._send(read_registry(registry))
+                    if route == "/api/experts/fusion":
+                        return self._send(read_fusion_output(registry))
                     expert_id = parse_qs(urlparse(self.path).query).get("id", [""])[0]
                     return self._send(read_raw_output(registry, expert_id))
                 except (OSError, ValueError, KeyError, StopIteration) as exc:

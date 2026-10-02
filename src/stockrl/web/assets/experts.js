@@ -4,6 +4,11 @@
 // values live in the frontend. Stable cards update individual fields only.
 const expertCards = new Map();
 let expertRequest = null;
+let expertFusionPending = false;
+let expertPipeline = null;
+function expertSeconds(value) {
+  return value == null ? "미측정" : decimal(value, 3) + "초";
+}
 function expertBytes(value) {
   if (value == null) return "측정 불가";
   const bytes = Number(value);
@@ -29,7 +34,8 @@ function createExpertCard(entry) {
     <div class="expert-badges"><span data-field="dtype" class="pill"></span><span data-field="frozen" class="pill"></span>
       <span data-field="loaded" class="pill"></span><span data-field="router" class="pill"></span></div>
     <dl>${[["location", "현재 위치"], ["checkpoint", "원본 checkpoint"], ["weights", "실질 가중치"],
-      ["ram", "현재 worker RAM"], ["vram", "현재 tensor VRAM"], ["latency", "최근 추론 시간"],
+      ["ram", "현재 worker RAM"], ["vram", "현재 tensor VRAM"], ["coldLoad", "첫 적재 · CPU"],
+      ["gpuTransfer", "가중치 GPU 전송"], ["forward", "Forward · 원본 계산"], ["roundTrip", "전체 왕복"],
       ["lastUsed", "최근 사용 시각"], ["input", "입력 shape"], ["output", "출력 shape"]]
       .map(([key, label]) => `<div><dt>${label}</dt><dd data-field="${key}"></dd></div>`).join("")}</dl>
     <p data-field="error" role="alert" hidden></p>
@@ -69,6 +75,20 @@ async function loadExpertRaw(state) {
   }
 }
 function renderExperts(data) {
+  expertPipeline = data.pipeline || {};
+  const p = expertPipeline;
+  const stages = {input_adapter:"입력 변환 중", router:"전문가 선택 중", experts:"전문가 추론 중",
+    output_adapter:"원본 출력 변환 중", fusion:"공통 fusion 계산 중", complete:"통합 추론 완료", error:"통합 추론 오류"};
+  expertTone($("expertPipelineBadge"), stages[p.stage] || "실행 기록 없음", p.stage === "complete" ? "good" : p.stage === "error" ? "bad" : "");
+  expertSet($("expertPipelineProgress"), p.selected_experts?.length
+    ? whole(p.completed_experts || 0) + " / " + p.selected_experts.length + "개 완료" : "미실행");
+  expertSet($("expertPipelineSummary"), p.stage === "complete"
+    ? "전체 " + expertSeconds(p.timings?.total_seconds) + " · 출력 변환 " + expertSeconds(p.timings?.adapter_seconds) +
+      " · CPU fusion " + expertSeconds(p.timings?.fusion_seconds) + " · " + timeOf(p.completed_at) + " · 미학습 출력 / 계좌 실행 안 함" +
+      (p.as_of ? " · 입력 기준 " + p.as_of : "") +
+      (p.input_authenticity?.includes("synthetic") ? " · 일부 합성 입력으로 경로 검증" : "")
+    : p.error || "선택한 전문가를 순차 실행하고 원본 출력과 통합 출력을 각각 보관합니다.");
+  $("expertFusionLoad").disabled = expertFusionPending || p.stage !== "complete";
   const totals = data.totals || {};
   const summaries = [
     ["expert_count", "등록된 전문가", data.registered ? whole(totals.expert_count) + "개" : "등록 안 됨"],
@@ -113,9 +133,9 @@ function renderExperts(data) {
     expertSet(f.weights, expertBytes(entry.weight_bytes) + " · parameter × dtype");
     expertSet(f.ram, expertBytes(entry.ram_bytes));
     expertSet(f.vram, expertBytes(entry.vram_bytes));
-    expertSet(f.latency, entry.last_inference_seconds == null
-      ? "운영 추론 미사용 · 검증 " + decimal(entry.verified_forward_seconds, 3) + "초"
-      : decimal(entry.last_inference_seconds, 3) + "초 · forward만");
+    const timing = entry.last_timings || {};
+    for (const [field, key] of [["coldLoad", "cold_load_seconds"], ["gpuTransfer", "gpu_transfer_seconds"],
+      ["forward", "forward_seconds"], ["roundTrip", "round_trip_seconds"]]) expertSet(f[field], expertSeconds(timing[key]));
     expertSet(f.lastUsed, entry.last_used_at ? timeOf(entry.last_used_at) : "TradingMoE에서 아직 미사용");
     expertSet(f.input, Object.entries(entry.input_shapes).map(([key, shape]) => key + " " + shape.join(" × ")).join(" / "));
     expertSet(f.output, entry.output_shape.join(" × "));
@@ -130,6 +150,28 @@ function renderExperts(data) {
   $("expertRegistryError").hidden = !data.recent_error;
   expertSet($("expertRegistryError"), data.recent_error);
 }
+async function loadExpertFusion() {
+  if (expertFusionPending) return;
+  expertFusionPending = true;
+  const button = $("expertFusionLoad");
+  button.disabled = true;
+  expertSet(button, "불러오는 중");
+  try {
+    const result = await api("/api/experts/fusion");
+    expertSet($("expertFusionOutput"), JSON.stringify({run_id:result.run_id, as_of:result.as_of,
+      selected_experts:result.selected_experts, adapter_status:result.adapter_status,
+      fusion_status:result.fusion_output.status, fusion_shapes:result.fusion_output.shapes,
+      trading_output:result.trading_output, pipeline_timings:result.pipeline_timings}, null, 2));
+    expertSet(button, "통합 결과 다시 불러오기");
+  } catch (error) {
+    expertSet($("expertFusionOutput"), "불러오기 실패: " + error.message);
+    expertSet(button, "다시 시도");
+  } finally {
+    expertFusionPending = false;
+    button.disabled = expertPipeline?.stage !== "complete";
+  }
+}
+$("expertFusionLoad").addEventListener("click", loadExpertFusion);
 function refreshExperts() {
   if (expertRequest) return expertRequest;
   expertRequest = (async () => {

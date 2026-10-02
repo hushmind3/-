@@ -215,14 +215,16 @@ function checkStaticContract() {
       ),
     ].sort();
   assert(routes(oldCode).every(route => routes(newCode).includes(route)), "All existing API routes are preserved");
-  assert.equal(newDoc.querySelectorAll("button[id]").length, 13);
+  const buttonIds = doc => [...doc.querySelectorAll("button[id]")].map(node => node.id);
+  assert(buttonIds(oldDoc).every(id => buttonIds(newDoc).includes(id)), "All existing action buttons are preserved");
+  assert.equal(newDoc.querySelectorAll("#expertFusionLoad").length, 1);
   assert(newDoc.querySelectorAll("details").length >= 22);
   assert(
     !/\brender\w*\s*=\s*function/.test(newCode.join("\n")),
     "Render functions must not be redefined",
   );
   return {
-    buttons: 13,
+    buttons: buttonIds(newDoc).length,
     expandablePanels: newDoc.querySelectorAll("details").length + 1,
     apiRoutes: routes(newCode).length,
   };

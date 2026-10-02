@@ -1,0 +1,360 @@
+{
+  "run_id": "0fc0418b90b94deeb876395cd84e286a",
+  "as_of": "2025-10-31",
+  "verification": "inference_path_only_not_trading_quality",
+  "input_provenance": "real daily stock data; synthetic ITCH and ETH policy fixtures",
+  "experts": [
+    {
+      "id": "timesfm",
+      "name": "FinText TimesFM Global",
+      "parameters": 19809304,
+      "dtype": "FP32",
+      "input_authenticity": "official_example_real_daily_excess_returns_not_accuracy_backtest",
+      "raw_shape": [
+        2,
+        1,
+        10
+      ],
+      "adapter_shape": [
+        3,
+        10
+      ],
+      "raw_sha256": "5e40fa20df74c3c379f5b12de4e6461c4c98b057f5596913460a359fd7ad14c6",
+      "cold_load_seconds": 3.089163299995562,
+      "gpu_transfer_seconds": 0.017862300002889242,
+      "forward_seconds": 0.3245241000004171,
+      "round_trip_seconds": 4.035642099999677
+    },
+    {
+      "id": "kronos",
+      "name": "Kronos Base + Tokenizer",
+      "parameters": 106268634,
+      "dtype": "FP32",
+      "input_authenticity": "real_OHLCV_native_missing_amount_zero",
+      "raw_shape": [
+        1,
+        1,
+        6
+      ],
+      "adapter_shape": [
+        3,
+        6
+      ],
+      "raw_sha256": "1a31da468cc9754835810c24e34bdf77c074db3043efb02cf386a5f3cb7f79d4",
+      "cold_load_seconds": 5.212779100002081,
+      "gpu_transfer_seconds": 0.10032529999807593,
+      "forward_seconds": 0.34296570000151405,
+      "round_trip_seconds": 6.576385299998947
+    },
+    {
+      "id": "toto",
+      "name": "Toto 2.0",
+      "parameters": 312684608,
+      "dtype": "FP32",
+      "input_authenticity": "official_example_real_daily_excess_returns_not_accuracy_backtest",
+      "raw_shape": [
+        9,
+        1,
+        2,
+        1
+      ],
+      "adapter_shape": [
+        3,
+        9
+      ],
+      "raw_sha256": "d05e25df46ee36bdf61d29d2ee43dfcbcdde53e7987eab705cf10e1b0a55079e",
+      "cold_load_seconds": 6.337071399997512,
+      "gpu_transfer_seconds": 0.24055310000039754,
+      "forward_seconds": 0.3813843999996607,
+      "round_trip_seconds": 8.471773699999176
+    },
+    {
+      "id": "macrophft_slope_1",
+      "name": "MacroHFT slope/1",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "3aaf501d49f92101e40564a92e3ec7f99f36e1ce4ca9352dbe2460400112a181",
+      "cold_load_seconds": 3.7036047000001417,
+      "gpu_transfer_seconds": 0.0016045999982452486,
+      "forward_seconds": 0.11377659999925527,
+      "round_trip_seconds": 4.399230899998656
+    },
+    {
+      "id": "macrophft_slope_2",
+      "name": "MacroHFT slope/2",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "5b89f531e975d0c943716c5f2a5447ada60098cc1e94efce0c16766df11e5748",
+      "cold_load_seconds": 3.7481607999980042,
+      "gpu_transfer_seconds": 0.0018086000018229242,
+      "forward_seconds": 0.11161750000246684,
+      "round_trip_seconds": 4.447734200002742
+    },
+    {
+      "id": "macrophft_slope_3",
+      "name": "MacroHFT slope/3",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "bb4c6874ff63e677c3d596193c2ecd0765d491cee4ebaabedbd2521ed97f9582",
+      "cold_load_seconds": 3.7281376000028104,
+      "gpu_transfer_seconds": 0.0014990999989095144,
+      "forward_seconds": 0.10556580000047688,
+      "round_trip_seconds": 4.432218500001909
+    },
+    {
+      "id": "macrophft_vol_1",
+      "name": "MacroHFT vol/1",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "4877dc790e8251e6b32054e466a965f39f21c59c9875cbdde15f556f893a92a2",
+      "cold_load_seconds": 3.830060300002515,
+      "gpu_transfer_seconds": 0.0026569000001472887,
+      "forward_seconds": 0.12225709999984247,
+      "round_trip_seconds": 4.580266400000255
+    },
+    {
+      "id": "macrophft_vol_2",
+      "name": "MacroHFT vol/2",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "89b21782fdd3a0839021be31f82832e227270bdc445fbcd8e03c060738657249",
+      "cold_load_seconds": 3.876025800000207,
+      "gpu_transfer_seconds": 0.0013925999992352445,
+      "forward_seconds": 0.12328290000004927,
+      "round_trip_seconds": 4.576376499997423
+    },
+    {
+      "id": "macrophft_vol_3",
+      "name": "MacroHFT vol/3",
+      "parameters": 45507,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        2
+      ],
+      "adapter_shape": [
+        3,
+        2
+      ],
+      "raw_sha256": "f486e393588fd6e276780fb88de0af439f78b2e3977ae8bbf10d85a4787723ba",
+      "cold_load_seconds": 3.757983499999682,
+      "gpu_transfer_seconds": 0.0013103999990562443,
+      "forward_seconds": 0.12034900000071502,
+      "round_trip_seconds": 4.4343708000014885
+    },
+    {
+      "id": "marketgpt",
+      "name": "MarketGPT",
+      "parameters": 94292736,
+      "dtype": "FP32",
+      "input_authenticity": "synthetic_schema_probe_not_market_validation",
+      "raw_shape": [
+        1,
+        1,
+        12160
+      ],
+      "adapter_shape": [
+        3,
+        12160
+      ],
+      "raw_sha256": "3d83fa5317f5bbb36f8a6a9ea74a8732339612efadb0e4941437d734c08cc74f",
+      "cold_load_seconds": 4.351246400001401,
+      "gpu_transfer_seconds": 0.06269329999850015,
+      "forward_seconds": 0.15536599999904865,
+      "round_trip_seconds": 9.221337399998447
+    },
+    {
+      "id": "exaone",
+      "name": "EXAONE Finance",
+      "parameters": 202319520,
+      "dtype": "FP32",
+      "input_authenticity": "real_daily_price",
+      "raw_shape": [
+        1,
+        21,
+        1
+      ],
+      "adapter_shape": [
+        3,
+        21
+      ],
+      "raw_sha256": "dbef02990e396a8ef0ff6fcfb0375ce1827515a179a11aa25514d480af51f989",
+      "cold_load_seconds": 9.357485799999267,
+      "gpu_transfer_seconds": 0.1542829999998503,
+      "forward_seconds": 0.25848000000041793,
+      "round_trip_seconds": 11.149923999997554
+    },
+    {
+      "id": "chronos",
+      "name": "FinText Chronos Global",
+      "parameters": 46154240,
+      "dtype": "FP32",
+      "input_authenticity": "official_example_real_daily_excess_returns_not_accuracy_backtest",
+      "raw_shape": [
+        2,
+        8,
+        1
+      ],
+      "adapter_shape": [
+        3,
+        8
+      ],
+      "raw_sha256": "c9e04ce0e833a1b6bde7de7fc6b68f7b8bda3677e276bab07860c2582db09b10",
+      "cold_load_seconds": 9.236046399997576,
+      "gpu_transfer_seconds": 0.10556890000225394,
+      "forward_seconds": 0.3793157000000065,
+      "round_trip_seconds": 10.773645000001125
+    },
+    {
+      "id": "timemoe",
+      "name": "Time-MoE Large",
+      "parameters": 453196800,
+      "dtype": "BF16",
+      "input_authenticity": "real_daily_price",
+      "raw_shape": [
+        1,
+        1
+      ],
+      "adapter_shape": [
+        3,
+        1
+      ],
+      "raw_sha256": "12c0b78c9f3778fa2e16b004df57c3f783448bd73e1e28d07222a7a1d4295f79",
+      "cold_load_seconds": 12.607345700002043,
+      "gpu_transfer_seconds": 0.25031179999859887,
+      "forward_seconds": 0.38844930000050226,
+      "round_trip_seconds": 14.679069000001618
+    },
+    {
+      "id": "fincast",
+      "name": "FinCast 1.0B",
+      "parameters": 991436960,
+      "dtype": "FP32",
+      "input_authenticity": "real_daily_price",
+      "raw_shape": [
+        1,
+        1,
+        10
+      ],
+      "adapter_shape": [
+        3,
+        10
+      ],
+      "raw_sha256": "8fbd96ca4a6931718d91353da03a0596e27d60ffb459c7c22730b6ce503cdaa1",
+      "cold_load_seconds": 11.702960899998288,
+      "gpu_transfer_seconds": 0.8482853999994404,
+      "forward_seconds": 0.8818610000016633,
+      "round_trip_seconds": 17.014699700001074
+    }
+  ],
+  "pipeline_timings": {
+    "adapter_seconds": 0.0020084999996470287,
+    "fusion_seconds": 4.059838000001037,
+    "total_seconds": 112.94758939999883
+  },
+  "fusion_shapes": {
+    "policy_logits": [
+      1,
+      3,
+      3
+    ],
+    "value": [
+      1,
+      3
+    ],
+    "allocation_scores": [
+      1,
+      3
+    ],
+    "cash_scores": [
+      1,
+      1
+    ],
+    "shared_latent": [
+      1,
+      3,
+      64
+    ],
+    "expert_attention": [
+      1,
+      3,
+      14
+    ]
+  },
+  "fusion_status": "untrained_diagnostic",
+  "fusion_checkpoint": {
+    "path": "fusion\\4305598f929fe958.untrained.pt",
+    "sha256": "3b318babd21f29d2b303a45d60b1b54f28332e4b4c36155b4ab8cd638061e0f6",
+    "schema": {
+      "timesfm": 13,
+      "kronos": 9,
+      "toto": 12,
+      "macrophft_slope_1": 5,
+      "macrophft_slope_2": 5,
+      "macrophft_slope_3": 5,
+      "macrophft_vol_1": 5,
+      "macrophft_vol_2": 5,
+      "macrophft_vol_3": 5,
+      "marketgpt": 12163,
+      "exaone": 24,
+      "chronos": 11,
+      "timemoe": 4,
+      "fincast": 13
+    },
+    "trained": false,
+    "frozen": true,
+    "device": "cpu"
+  },
+  "max_concurrent_gpu_experts": 1,
+  "residency_samples": 871,
+  "all_unloaded_after_inference": true,
+  "raw_output_hashes_verified": 14,
+  "training_performed": false,
+  "account_execution": false
+}
