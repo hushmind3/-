@@ -13,6 +13,7 @@ Plain HTML/CSS/JavaScript; no frontend build or runtime dependency was added.
 | learning.js | Experience processing, learning state, model comparisons |
 | trial.js | Frozen promotion-trial accounts, progress and history |
 | details.js | GPU, input coverage, processing history and runtime diagnostics |
+| experts.js | Actual TradingMoE registry, residency, raw output (read-only) |
 | web_dashboard.html | Layout, labels, stable element IDs and expandable panels |
 | dashboard.css | Shared cards, badges, typography and responsive rules |
 

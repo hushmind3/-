@@ -2063,6 +2063,31 @@ body {
 }
 
 /* Previous documents may still be open while their stylesheet is updated. */
+.expert-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 18px;
+}
+.expert-card {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line, #dce4ef);
+  border-radius: 20px;
+  background: white;
+}
+.expert-card header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.expert-card h2 { margin: 0; font-size: 20px; }
+.expert-card p { overflow-wrap: anywhere; }
+.expert-parameters { font-size: 24px; font-variant-numeric: tabular-nums; }
+.expert-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+.expert-card dl > div { display: flex; gap: 14px; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf1f7; }
+.expert-card dt { flex: 0 0 38%; color: #526580; }
+.expert-card dd { margin: 0; overflow-wrap: anywhere; text-align: right; font-variant-numeric: tabular-nums; }
+.expert-raw { max-height: 320px; overflow: auto; font-size: 13px; background: #f4f7fc; padding: 12px; white-space: pre; }
+#expertCards [role="alert"], #expertRegistryError { color: #b42335; }
+.expert-card .compact-detail a { display: inline-block; margin: 12px 0; }
+
 .app > .workflow-strip,
 .app > .workflow-lifecycle {
   grid-column: 1 / -1;

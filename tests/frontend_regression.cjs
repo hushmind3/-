@@ -20,6 +20,7 @@ const newNames = [
   "accounts",
   "learning",
   "trial",
+  "experts",
   "controls",
 ];
 const gitRead = (file) =>
@@ -204,7 +205,7 @@ function checkStaticContract() {
     ids(oldDoc).every((id) => ids(newDoc).includes(id)),
     "All existing HTML IDs are preserved",
   );
-  assert.equal(newDoc.querySelectorAll("[data-view]").length, 6);
+  assert.equal(newDoc.querySelectorAll("[data-view]").length, 7);
   const routes = (code) =>
     [
       ...new Set(
@@ -213,11 +214,7 @@ function checkStaticContract() {
         ),
       ),
     ].sort();
-  assert.deepEqual(
-    routes(newCode),
-    routes(oldCode),
-    "All API routes are preserved",
-  );
+  assert(routes(oldCode).every(route => routes(newCode).includes(route)), "All existing API routes are preserved");
   assert.equal(newDoc.querySelectorAll("button[id]").length, 13);
   assert(newDoc.querySelectorAll("details").length >= 22);
   assert(

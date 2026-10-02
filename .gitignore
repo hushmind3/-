@@ -9,3 +9,6 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 /backups/dashboard/.validation-ui-preview/
+
+# TradingMoE generated residency, process samples and local artifact paths.
+/runtime/trading_moe/

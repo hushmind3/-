@@ -263,7 +263,8 @@ const pageNodes = new Map();
 function screenVisible(name) {
   if (!pageNodes.has(name))
     pageNodes.set(name, document.querySelector(`[data-view="${name}"]`));
-  return !pageNodes.get(name)?.hidden;
+  const node = pageNodes.get(name);
+  return Boolean(node && !node.hidden);
 }
 function beginView() {
   pendingText = new Map();
@@ -378,6 +379,7 @@ function refresh() {
   return statusRequest;
 }
 async function readStatus() {
+  if (screenVisible("experts")) return refreshExperts();
   try {
     render(await api("/api/status"));
     return true;
@@ -503,6 +505,7 @@ function selectDashboardPage() {
     else link.removeAttribute("aria-current");
   }
   if (current) render(current);
+  if (page === "experts") refreshExperts();
   requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
 }
 document.addEventListener("DOMContentLoaded", startDashboard, { once: true });

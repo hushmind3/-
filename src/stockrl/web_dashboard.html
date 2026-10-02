@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f3f6fb" />
     <title>Continual Trading Agent · 운영실</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23265de8'/%3E%3Ctext x='5' y='22' fill='white' font-size='18'%3ECT%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/assets/dashboard.css?v=cards-layout-2" />
   </head>
   <body>
@@ -39,12 +40,24 @@
         ><a href="#promotionTrial" data-page="trial">승급전</a
         ><a href="#connection" data-page="connection">연결 설정</a
         ><a href="#system" data-page="details">상세 · 기록</a>
+        <a href="#experts" data-page="experts">TradingMoE · 전문가</a>
         <div class="nav-foot">
           동일 시장 · 독립 계좌<br />공동 경험 · 두 모델 학습
         </div>
       </nav>
 
       <main class="workspace" id="workspace">
+        <div data-view="experts" class="page-view" hidden>
+          <section id="experts">
+            <div class="page-heading"><h1>TradingMoE · 전문가</h1><span class="pill" id="expertRegistryBadge">등록 확인 중</span></div>
+            <p class="notice">원본 가중치 고정 · 필요한 전문가만 순차 추론 · 학습 안 함 · 기존 Champion/Candidate와 별도입니다. 현재는 원본 출력 확인 단계이며 공통 매매 head는 실행하지 않습니다.</p>
+            <div class="metric-grid" id="expertTotals" aria-label="등록된 전문가 합계"></div>
+            <p id="expertRegistrySummary" role="status"></p>
+            <p id="expertRegistryError" role="alert" hidden></p>
+            <div class="expert-grid" id="expertCards"></div>
+            <details class="compact-detail"><summary>checkpoint 미확보 · 등록 제외</summary><div id="expertUnavailable"></div></details>
+          </section>
+        </div>
         <details class="compact-detail">
           <summary>시장 입력 현황 · 하루 운영 주기</summary>
           <div class="notice input-status" style="margin-bottom: 16px">
@@ -1874,6 +1887,7 @@
     <script defer="" src="/assets/accounts.js?v=cards-layout-2"></script>
     <script defer="" src="/assets/learning.js?v=cards-layout-2"></script>
     <script defer="" src="/assets/trial.js?v=cards-layout-2"></script>
+    <script defer="" src="/assets/experts.js?v=registry-1"></script>
     <script defer="" src="/assets/controls.js?v=cards-layout-2"></script>
   </body>
 </html>

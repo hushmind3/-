@@ -9,7 +9,7 @@ import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from ..paths import default_runtime_dir
 from .resources import DASHBOARD_PATH, PAGE, ROOT, dashboard_asset
 from .runtime import Supervisor
@@ -74,6 +74,16 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                     "candidate_training":metrics.get("candidate_training")})
             if route == "/api/status":
                 return self._send(supervisor.status())
+            if route in ("/api/experts", "/api/experts/output"):
+                from ..expert_registry import read_registry, read_raw_output
+                registry = ROOT / "runtime/trading_moe/registry.json"
+                try:
+                    if route == "/api/experts":
+                        return self._send(read_registry(registry))
+                    expert_id = parse_qs(urlparse(self.path).query).get("id", [""])[0]
+                    return self._send(read_raw_output(registry, expert_id))
+                except (OSError, ValueError, KeyError, StopIteration) as exc:
+                    return self._send({"error":f"Expert data unavailable: {type(exc).__name__}"}, 404)
             if route == "/api/provider":
                 from ..provider_credentials import public_status
                 return self._send(public_status(supervisor.runtime))
