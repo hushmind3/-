@@ -77,6 +77,23 @@ async function loadExpertRaw(state) {
 function renderExperts(data) {
   expertPipeline = data.pipeline || {};
   const p = expertPipeline;
+  const paper = p.paper_trading;
+  $("moePaperSection").hidden = !paper;
+  if (paper) {
+    const book = paper.books?.USD || {};
+    expertTone($("moePaperBadge"), (paper.status === "paper_complete" ? "구간 실행 완료" : "가상매매 실행 중") + " · 실제 주문 OFF", "good");
+    expertSet($("moePaperNav"), decimal(book.equity, 2) + " USD");
+    expertSet($("moePaperPnl"), "누적 손익 " + decimal(book.net_pnl, 2) + " USD · 수수료 " + decimal(book.fees, 2));
+    expertSet($("moePaperCash"), decimal(book.cash, 2) + " USD");
+    expertSet($("moePaperPositions"), Object.entries(book.positions || {}).map(([s,v]) => s + " " + (s === "ETHUSDT" ? decimal(v.quantity * .001, 3) + " ETH" : v.quantity + "개")).join(" · ") || "보유 없음");
+    expertSet($("moePaperFills"), whole(book.trade_count || 0) + "건");
+    expertSet($("moePaperReward"), "계좌 보상 점수 " + decimal(paper.reward_points?.USD, 4));
+    expertSet($("moePaperUpdates"), whole(paper.optimizer_updates || 0) + "회");
+    expertSet($("moePaperTime"), "최근 전체 사이클 " + expertSeconds(paper.cycle_seconds));
+    expertSet($("moePaperDecision"), Object.entries(paper.actions || {}).map(([s,a]) => s + " " + a + (paper.tradable_symbols && !paper.tradable_symbols.includes(s) ? " · 현재 체결 시세 없음 / 참고 의견" : " · 목표 " + decimal(100 * (paper.target_weights?.[s] || 0), 1) + "%")).join(" / "));
+    expertSet($("moePaperTimestamp"), "과거 시장 입력 " + paper.timestamp + " · 다음 실제 관측 봉에서 체결 · 1계약=0.001 ETH · USDT=USD 가상 평가");
+    expertSet($("moePaperOrders"), (paper.fills || []).map(f => f.date + " " + f.symbol + " " + f.action + " " + (f.symbol === "ETHUSDT" ? decimal(f.quantity * .001, 3) + " ETH @ " + decimal(f.price * 1000, 4) : f.quantity + "개 @ " + decimal(f.price, 4)) + " · 수수료 " + decimal(f.fee, 4)).join("\n") || "아직 체결 없음");
+  }
   const stages = {input_adapter:"입력 변환 중", router:"전문가 선택 중", experts:"전문가 추론 중",
     output_adapter:"원본 출력 변환 중", fusion:"공통 fusion 계산 중", complete:"통합 추론 완료", error:"통합 추론 오류"};
   expertTone($("expertPipelineBadge"), stages[p.stage] || "실행 기록 없음", p.stage === "complete" ? "good" : p.stage === "error" ? "bad" : "");
@@ -84,7 +101,7 @@ function renderExperts(data) {
     ? whole(p.completed_experts || 0) + " / " + p.selected_experts.length + "개 완료" : "미실행");
   expertSet($("expertPipelineSummary"), p.stage === "complete"
     ? "전체 " + expertSeconds(p.timings?.total_seconds) + " · 출력 변환 " + expertSeconds(p.timings?.adapter_seconds) +
-      " · CPU fusion " + expertSeconds(p.timings?.fusion_seconds) + " · " + timeOf(p.completed_at) + " · 미학습 출력 / 계좌 실행 안 함" +
+      " · CPU fusion " + expertSeconds(p.timings?.fusion_seconds) + " · " + timeOf(p.completed_at) + (paper ? " · 가상 체결 / 손익 학습 연결" : " · 단독 추론 기록") +
       (p.as_of ? " · 입력 기준 " + p.as_of : "") +
       (p.input_authenticity?.includes("synthetic") ? " · 일부 합성 입력으로 경로 검증" : "")
     : p.error || "선택한 전문가를 순차 실행하고 원본 출력과 통합 출력을 각각 보관합니다.");
@@ -103,7 +120,7 @@ function renderExperts(data) {
       `<article class="live-metric"><div class="metric-heading">${label}</div><strong id="expertTotal-${key}" class="metric-number">—</strong></article>`).join("");
   }
   for (const [key, , value] of summaries) expertSet($("expertTotal-" + key), value);
-  expertTone($("expertRegistryBadge"), data.registered ? "원본 고정 · 학습 안 함" : "TradingMoE 등록 안 됨", data.registered ? "good" : "warn");
+  expertTone($("expertRegistryBadge"), data.registered ? (paper ? "expert 고정 · controller 학습" : "원본 고정 · 학습 안 함") : "TradingMoE 등록 안 됨", data.registered ? "good" : "warn");
   expertSet($("expertRegistrySummary"), data.registered
     ? "현재 사용량은 이 TradingMoE worker만 집계합니다. Windows·다른 앱의 GPU 사용량과 검증 때의 peak는 포함하지 않습니다. 추론이 끝나면 worker 종료 → disk 보관으로 돌아갑니다."
     : "독립 추론 검증 후 등록된 전문가가 이 화면에 자동 표시됩니다.");

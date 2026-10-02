@@ -50,21 +50,32 @@
         <div data-view="experts" class="page-view" hidden>
           <section id="experts">
             <div class="page-heading"><h1>TradingMoE · 전문가</h1><span class="pill" id="expertRegistryBadge">등록 확인 중</span></div>
-            <p class="notice">원본 출력 보존 → adapter → router → fusion → 매매 출력. GPU에는 최대 1개 전문가만 적재합니다. 공통 fusion/head는 미학습 계산 검증용이며 계좌에는 실행하지 않습니다. 학습 안 함 · Champion/Candidate와 별도입니다.</p>
+            <p class="notice">8개 시장 전문가 → 시장 상태 → MacroHFT 6개 매매정책 → 최종 판단 → 가상 체결 → 손익으로 학습. 원본 전문가 가중치는 유지하며 GPU에는 최대 1개만 적재합니다. Champion/Candidate 계좌와 별도로 실행합니다.</p>
             <div class="metric-grid" id="expertTotals" aria-label="등록된 전문가 합계"></div>
             <p id="expertRegistrySummary" role="status"></p>
             <p id="expertRegistryError" role="alert" hidden></p>
+            <section id="moePaperSection" hidden aria-label="TradingMoE 가상매매 실행 결과">
+              <div class="page-heading"><h2>TradingMoE · 실제 가상매매 결과</h2><span id="moePaperBadge" class="pill">실제 주문 OFF</span></div>
+              <div class="metric-grid">
+                <article class="live-metric"><div class="metric-heading">USD 계좌 순자산</div><strong id="moePaperNav" class="metric-number">—</strong><p id="moePaperPnl"></p></article>
+                <article class="live-metric"><div class="metric-heading">현금 · 보유</div><strong id="moePaperCash" class="metric-number">—</strong><p id="moePaperPositions"></p></article>
+                <article class="live-metric"><div class="metric-heading">실제 가상 체결</div><strong id="moePaperFills" class="metric-number">—</strong><p id="moePaperReward"></p></article>
+                <article class="live-metric"><div class="metric-heading">가중치 업데이트</div><strong id="moePaperUpdates" class="metric-number">—</strong><p id="moePaperTime"></p></article>
+              </div>
+              <p id="moePaperDecision"></p><p id="moePaperTimestamp"></p>
+              <details class="compact-detail" open><summary>가상 주문 · 체결 내역</summary><pre id="moePaperOrders" class="expert-raw"></pre></details>
+            </section>
             <article class="live-metric">
               <div class="metric-heading"><span>통합 추론</span><span class="pill" id="expertPipelineBadge">확인 중</span></div>
               <strong class="metric-number" id="expertPipelineProgress">—</strong>
               <p id="expertPipelineSummary">아직 실행하지 않았습니다.</p>
-              <details class="compact-detail"><summary>통합 결과 · 미학습 / 계좌 실행 안 함</summary>
+              <details class="compact-detail"><summary>통합 판단 · 전문가 의견과 목표 비중</summary>
                 <button type="button" id="expertFusionLoad">통합 결과 불러오기</button>
                 <a href="/api/experts/fusion" download="TradingMoE.json">전체 통합 JSON 저장</a>
                 <pre class="expert-raw" id="expertFusionOutput" tabindex="0">버튼을 누르면 최근 통합 출력과 shape를 확인합니다.</pre>
               </details>
               <details class="compact-detail"><summary>시간 측정 범위</summary>
-                <p>첫 적재: Python 패키지 준비·CPU 모델 생성·checkpoint 읽기. GPU 전송: 모델 가중치의 CPU → GPU 이동과 완료 대기. Forward: expert의 원본 추론 API 호출과 결과 CPU 회수. 전체 왕복: 원본 파일 검사·worker 시작과 종료·입출력·원본 출력 보관까지 포함합니다. worker를 매번 새로 실행하므로 현재 측정은 모두 첫 적재 조건입니다. 공통 fusion/head는 CPU에서 별도로 계산합니다.</p>
+                <p>첫 적재: 패키지 준비·CPU 모델 생성·checkpoint 읽기. GPU 전송: 모델 가중치 이동. Forward: 원본 추론 계산과 출력 회수. 전체 왕복: 입력부터 출력까지의 시간입니다. 단독 probe는 첫 적재를 포함하며, TradingMoE 연속 실행은 적재된 모델과 저장된 시장 의견을 재사용합니다. 최종 controller는 CPU에서 계산합니다.</p>
               </details>
             </article>
             <div class="expert-grid" id="expertCards"></div>

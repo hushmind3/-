@@ -19,6 +19,10 @@ KR_SELL_TAX_ASSUMPTION = 0.001  # configurable simulation assumption, not a tax 
 
 
 def _currency(market: str, asset: str) -> str | None:
+    # Explicit cash-only USDT crypto simulation in the USD seed ledger.
+    # No margin/futures or implicit conversion of arbitrary crypto quotes.
+    if asset == "crypto" and market == "BINANCE_USDT":
+        return "USD"
     if asset not in ("equity", "etf"):
         return None
     if market in ("KRX", "KOSDAQ"):

@@ -1,0 +1,1141 @@
+{
+  "baseline": "1c497ef",
+  "decisions": 24,
+  "used_experts": [
+    "fincast",
+    "exaone",
+    "kronos",
+    "marketgpt",
+    "chronos",
+    "timesfm",
+    "timemoe",
+    "toto",
+    "macrophft_slope_1",
+    "macrophft_slope_2",
+    "macrophft_slope_3",
+    "macrophft_vol_1",
+    "macrophft_vol_2",
+    "macrophft_vol_3"
+  ],
+  "native_Q": [
+    {
+      "macrophft_slope_1": [
+        [
+          2.2317583560943604,
+          2.3957126140594482
+        ]
+      ],
+      "macrophft_slope_2": [
+        [
+          2.155325174331665,
+          2.3543827533721924
+        ]
+      ],
+      "macrophft_slope_3": [
+        [
+          0.24413597583770752,
+          0.3590576648712158
+        ]
+      ],
+      "macrophft_vol_1": [
+        [
+          2.8838367462158203,
+          3.1374104022979736
+        ]
+      ],
+      "macrophft_vol_2": [
+        [
+          1.5297354459762573,
+          1.7590452432632446
+        ]
+      ],
+      "macrophft_vol_3": [
+        [
+          1.7254176139831543,
+          1.8748631477355957
+        ]
+      ]
+    },
+    {
+      "macrophft_slope_1": [
+        [
+          2.2466962337493896,
+          2.053851366043091
+        ]
+      ],
+      "macrophft_slope_2": [
+        [
+          2.2593610286712646,
+          2.098956823348999
+        ]
+      ],
+      "macrophft_slope_3": [
+        [
+          0.289872944355011,
+          0.3110429644584656
+        ]
+      ],
+      "macrophft_vol_1": [
+        [
+          3.0363802909851074,
+          2.802913188934326
+        ]
+      ],
+      "macrophft_vol_2": [
+        [
+          1.6787471771240234,
+          1.507913589477539
+        ]
+      ],
+      "macrophft_vol_3": [
+        [
+          1.8892199993133545,
+          1.7802162170410156
+        ]
+      ]
+    },
+    {
+      "macrophft_slope_1": [
+        [
+          2.278254985809326,
+          2.091948986053467
+        ]
+      ],
+      "macrophft_slope_2": [
+        [
+          2.3556854724884033,
+          2.1517269611358643
+        ]
+      ],
+      "macrophft_slope_3": [
+        [
+          0.3164796233177185,
+          0.30023616552352905
+        ]
+      ],
+      "macrophft_vol_1": [
+        [
+          3.125178575515747,
+          2.9271538257598877
+        ]
+      ],
+      "macrophft_vol_2": [
+        [
+          1.6596946716308594,
+          1.4860930442810059
+        ]
+      ],
+      "macrophft_vol_3": [
+        [
+          1.8817064762115479,
+          1.7590134143829346
+        ]
+      ]
+    },
+    {
+      "macrophft_slope_1": [
+        [
+          2.2376320362091064,
+          2.059361457824707
+        ]
+      ],
+      "macrophft_slope_2": [
+        [
+          2.268509864807129,
+          2.106182813644409
+        ]
+      ],
+      "macrophft_slope_3": [
+        [
+          0.2842567563056946,
+          0.3039299249649048
+        ]
+      ],
+      "macrophft_vol_1": [
+        [
+          3.0424273014068604,
+          2.8210718631744385
+        ]
+      ],
+      "macrophft_vol_2": [
+        [
+          1.6623960733413696,
+          1.494066596031189
+        ]
+      ],
+      "macrophft_vol_3": [
+        [
+          1.8892145156860352,
+          1.7899703979492188
+        ]
+      ]
+    }
+  ],
+  "fills": [
+    {
+      "date": "2023-02-01T02:16:00.000000000",
+      "symbol": "ETHUSDT",
+      "currency": "USD",
+      "action": "BUY",
+      "quantity": 875,
+      "price": 1.585638548,
+      "fee": 1.3874337295,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0,
+      "decision_id": "2023-02-01T02:15:00.000000000|ETHUSDT",
+      "order_date": "2023-02-01T02:15:00.000000000",
+      "holding_seconds": null,
+      "symbol_pnl_before_fill": 0.0
+    },
+    {
+      "date": "2023-02-01T02:25:00.000000000",
+      "symbol": "ETHUSDT",
+      "currency": "USD",
+      "action": "SELL",
+      "quantity": 875,
+      "price": 1.58254173,
+      "fee": 1.38472401375,
+      "sell_tax": 0.0,
+      "realized_pnl": -5.48187349324985,
+      "decision_id": "2023-02-01T02:24:00.000000000|ETHUSDT",
+      "order_date": "2023-02-01T02:24:00.000000000",
+      "holding_seconds": 540.0,
+      "symbol_pnl_before_fill": -0.000395866322949992
+    },
+    {
+      "date": "2023-02-01T02:26:00.000000000",
+      "symbol": "ETHUSDT",
+      "currency": "USD",
+      "action": "BUY",
+      "quantity": 872,
+      "price": 1.5833183160000002,
+      "fee": 1.380653571552,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0,
+      "decision_id": "2023-02-01T02:25:00.000000000|ETHUSDT",
+      "order_date": "2023-02-01T02:25:00.000000000",
+      "holding_seconds": null,
+      "symbol_pnl_before_fill": -0.000548187349324985
+    },
+    {
+      "date": "2023-02-01T02:31:00.000000000",
+      "symbol": "ETHUSDT",
+      "currency": "USD",
+      "action": "SELL",
+      "quantity": 872,
+      "price": 1.584271557,
+      "fee": 1.3814847977040001,
+      "sell_tax": 0.0,
+      "realized_pnl": -1.9309122172560365,
+      "decision_id": "2023-02-01T02:30:00.000000000|ETHUSDT",
+      "order_date": "2023-02-01T02:30:00.000000000",
+      "holding_seconds": 300.0,
+      "symbol_pnl_before_fill": -0.0005893138616802094
+    }
+  ],
+  "initial": {
+    "KRW": {
+      "initial_cash": 10000000.0,
+      "cash": 10000000.0,
+      "positions": {},
+      "marks": {},
+      "fees": 0.0,
+      "slippage": 0.0,
+      "spread": 0.0,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0,
+      "symbol_realized_pnl": {},
+      "trade_count": 0,
+      "equity": 10000000.0,
+      "net_pnl": 0.0,
+      "holdings_value": 0.0
+    },
+    "USD": {
+      "initial_cash": 10000.0,
+      "cash": 10000.0,
+      "positions": {},
+      "marks": {},
+      "fees": 0.0,
+      "slippage": 0.0,
+      "spread": 0.0,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0,
+      "symbol_realized_pnl": {},
+      "trade_count": 0,
+      "equity": 10000.0,
+      "net_pnl": 0.0,
+      "holdings_value": 0.0
+    }
+  },
+  "final": {
+    "KRW": {
+      "initial_cash": 10000000.0,
+      "cash": 10000000.0,
+      "positions": {},
+      "marks": {},
+      "fees": 0.0,
+      "slippage": 0.0,
+      "spread": 0.0,
+      "sell_tax": 0.0,
+      "realized_pnl": 0.0,
+      "symbol_realized_pnl": {},
+      "trade_count": 0,
+      "equity": 10000000.0,
+      "net_pnl": 0.0,
+      "holdings_value": 0.0
+    },
+    "USD": {
+      "initial_cash": 10000.0,
+      "cash": 9992.587214289493,
+      "positions": {},
+      "marks": {
+        "ETHUSDT": 1.58477,
+        "AAPL": 145.42999267578125
+      },
+      "fees": 5.534296112506,
+      "slippage": 0.553429598,
+      "spread": 0.0,
+      "sell_tax": 0.0,
+      "realized_pnl": -7.4127857105058865,
+      "symbol_realized_pnl": {
+        "ETHUSDT": -7.4127857105058865
+      },
+      "trade_count": 4,
+      "trade_statistics": {
+        "first_timestamp": "2023-02-01T02:16:00.000000000",
+        "buy_count": 2,
+        "sell_count": 2,
+        "sell_wins": 0,
+        "sell_losses": 2,
+        "sell_flat": 0,
+        "sell_realized_sum": -7.4127857105058865,
+        "holding_count": 2,
+        "holding_seconds_sum": 840.0,
+        "holding_seconds_min": 300.0,
+        "holding_seconds_max": 540.0,
+        "last_timestamp": "2023-02-01T02:31:00.000000000"
+      },
+      "equity": 9992.587214289493,
+      "net_pnl": -7.412785710506796,
+      "holdings_value": 0.0
+    }
+  },
+  "reward_points": {
+    "KRW": 0.0,
+    "USD": -0.07412785710506631
+  },
+  "optimizer_updates_this_account": 24,
+  "optimizer_updates_total": 44,
+  "updated_parameter_groups": [
+    "adapter",
+    "controller_router_fusion"
+  ],
+  "controller_before": "578a7a180070f455f5730fc514c0a0e4fb01ebfbb1862701e3b875ef7061074f",
+  "controller_after": "a1fb108666c40a44e2263de74f6bdc2615601ea5175eb6c1e71efa2fdd0647bc",
+  "expert_parameters_frozen": true,
+  "replay": {
+    "total": 0,
+    "eligible": 0,
+    "untrained": 0,
+    "quarantined": 0,
+    "unsupported": 0,
+    "daily": [
+      {
+        "day": "2023-02-01",
+        "enqueued": 48,
+        "first_trained": 48,
+        "completed": 48,
+        "exposures": 48,
+        "remaining": 0,
+        "blocked": 0,
+        "remaining_total": 0,
+        "removed_without_completion": 0
+      }
+    ],
+    "blocked_reasons": {},
+    "completed_retained": 0,
+    "oldest": null,
+    "pending": 0,
+    "bytes": 315392,
+    "model_remaining": {
+      "candidate": 0,
+      "champion": 0
+    },
+    "model_untrained": {
+      "candidate": 0,
+      "champion": 0
+    },
+    "storage_pressure": false
+  },
+  "parameters": 2227295521,
+  "checkpoint_bytes": 8014038147,
+  "first_decision_seconds": 10.852483999999095,
+  "warm_decision_median_seconds": 0.25577255000098376,
+  "warm_decision_range_seconds": [
+    0.18172169999888865,
+    0.3942385000009381
+  ],
+  "single_checkpoint_reload": {
+    "checkpoint": "C:\\Users\\hushm\\Desktop\\\uf9cf\u2464\ub73d\\heterogeneous-experts\\TradingMoE.pt",
+    "bytes": 8014038019,
+    "seconds": 25.365915399997903,
+    "experts": {
+      "fincast": {
+        "parameters": 991436960,
+        "hash": null,
+        "frozen": true
+      },
+      "exaone": {
+        "parameters": 202319520,
+        "hash": null,
+        "frozen": true
+      },
+      "kronos": {
+        "parameters": 106268634,
+        "hash": null,
+        "frozen": true
+      },
+      "marketgpt": {
+        "parameters": 94292736,
+        "hash": null,
+        "frozen": true
+      },
+      "chronos": {
+        "parameters": 46154240,
+        "hash": null,
+        "frozen": true
+      },
+      "timesfm": {
+        "parameters": 19809304,
+        "hash": null,
+        "frozen": true
+      },
+      "timemoe": {
+        "parameters": 453196800,
+        "hash": null,
+        "frozen": true
+      },
+      "toto": {
+        "parameters": 312684608,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_slope_1": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_slope_2": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_slope_3": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_vol_1": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_vol_2": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      },
+      "macrophft_vol_3": {
+        "parameters": 45507,
+        "hash": null,
+        "frozen": true
+      }
+    },
+    "parameters": 2227295521,
+    "expert_count": 14,
+    "controller_parameters": 835119,
+    "max_gpu_experts": 1,
+    "expert_probes_rerun": 0,
+    "load_from_one_checkpoint": true,
+    "optimizer_updates": 40,
+    "controller_hash": "3bc85f70d7d7d46dfcc19980c386e39925a047decda00ca7ca1c13ca0eda8f3d",
+    "optimizer_restored": true
+  },
+  "steps": [
+    {
+      "timestamp": "2023-02-01 02:08:00",
+      "seconds": 10.852483999999095,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.4691914916038513,
+        "ETHUSDT": 0.062434107065200806
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:09:00",
+      "seconds": 0.2570183000025281,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.4691905975341797,
+        "ETHUSDT": 0.062434107065200806
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:10:00",
+      "seconds": 0.23075729999982286,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.46948444843292236,
+        "ETHUSDT": 0.06218442693352699
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:11:00",
+      "seconds": 0.23060120000081952,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.469576895236969,
+        "ETHUSDT": 0.06213496997952461
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:12:00",
+      "seconds": 0.22580519999974058,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.4695025682449341,
+        "ETHUSDT": 0.06222308799624443
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:13:00",
+      "seconds": 0.22579350000160048,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.4313521981239319,
+        "ETHUSDT": 0.13828669488430023
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:14:00",
+      "seconds": 0.2545267999994394,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.4691992700099945,
+        "ETHUSDT": 0.06252697855234146
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:15:00",
+      "seconds": 0.2369886000014958,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "BUY"
+      },
+      "target_weights": {
+        "AAPL": 0.43095770478248596,
+        "ETHUSDT": 0.13884767889976501
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:16:00",
+      "seconds": 0.18412809999790625,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10756678134202957,
+        "ETHUSDT": 0.7851015329360962
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:17:00",
+      "seconds": 0.28440889999910723,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10756710916757584,
+        "ETHUSDT": 0.7851012349128723
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:18:00",
+      "seconds": 0.3942385000009381,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10772498697042465,
+        "ETHUSDT": 0.7847518920898438
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:19:00",
+      "seconds": 0.2336539999996603,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10796676576137543,
+        "ETHUSDT": 0.7842054963111877
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:20:00",
+      "seconds": 0.26075069999933476,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10822412371635437,
+        "ETHUSDT": 0.7836223244667053
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:21:00",
+      "seconds": 0.2588108999989345,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10840309411287308,
+        "ETHUSDT": 0.7832148671150208
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:22:00",
+      "seconds": 0.27134509999814327,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.1084427461028099,
+        "ETHUSDT": 0.7831258773803711
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:23:00",
+      "seconds": 0.27850709999984247,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10837439447641373,
+        "ETHUSDT": 0.7832834720611572
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:24:00",
+      "seconds": 0.314276000000973,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "SELL"
+      },
+      "target_weights": {
+        "AAPL": 0.10826275497674942,
+        "ETHUSDT": 0.7835395932197571
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:25:00",
+      "seconds": 0.2102606000007654,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "BUY"
+      },
+      "target_weights": {
+        "AAPL": 0.4311262369155884,
+        "ETHUSDT": 0.1381663829088211
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:26:00",
+      "seconds": 0.2781832000000577,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10811319947242737,
+        "ETHUSDT": 0.7838824391365051
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:27:00",
+      "seconds": 0.31894309999916004,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.10808050632476807,
+        "ETHUSDT": 0.7839574217796326
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:28:00",
+      "seconds": 0.07703069999843137,
+      "actions": null,
+      "target_weights": null
+    },
+    {
+      "timestamp": "2023-02-01 02:29:00",
+      "seconds": 0.014131299998553004,
+      "actions": null,
+      "target_weights": null
+    },
+    {
+      "timestamp": "2023-02-01 02:30:00",
+      "seconds": 9.914064300002792,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "SELL"
+      },
+      "target_weights": {
+        "AAPL": 0.10837545990943909,
+        "ETHUSDT": 0.7833685278892517
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:31:00",
+      "seconds": 0.18172169999888865,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.43132877349853516,
+        "ETHUSDT": 0.1378074288368225
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:32:00",
+      "seconds": 0.3049423000011302,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.46918702125549316,
+        "ETHUSDT": 0.06213583052158356
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:33:00",
+      "seconds": 0.23410539999895263,
+      "actions": {
+        "AAPL": "BUY",
+        "ETHUSDT": "HOLD"
+      },
+      "target_weights": {
+        "AAPL": 0.43156909942626953,
+        "ETHUSDT": 0.13708703219890594
+      }
+    },
+    {
+      "timestamp": "2023-02-01 02:34:00",
+      "seconds": 0.0717439000000013,
+      "actions": null,
+      "target_weights": null
+    },
+    {
+      "timestamp": "2023-02-01 02:35:00",
+      "seconds": 0.014673400000901893,
+      "actions": null,
+      "target_weights": null
+    }
+  ],
+  "updates": [
+    {
+      "timestamp": "2023-02-01T02:08:00.000000000",
+      "loss": -0.03296423330903053,
+      "value_loss": 0.00029025503317825496,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.017618772539208294,
+      "router_gradient_norm": 0.05462762818888223,
+      "fusion_gradient_norm": 0.2199266688876378,
+      "controller_gradient_norm": 0.050708525348454714,
+      "controller_before": "578a7a180070f455f5730fc514c0a0e4fb01ebfbb1862701e3b875ef7061074f",
+      "controller_after": "3743346a6b4c864dfbe97dabdbc15a5518cd2737006d1a004b57ead95d901aab",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 21
+    },
+    {
+      "timestamp": "2023-02-01T02:09:00.000000000",
+      "loss": 0.053953561931848526,
+      "value_loss": 0.0011900521349161863,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.03426201687034336,
+      "router_gradient_norm": 0.10893357701206696,
+      "fusion_gradient_norm": 0.4398841717193136,
+      "controller_gradient_norm": 0.10300896409898996,
+      "controller_before": "3743346a6b4c864dfbe97dabdbc15a5518cd2737006d1a004b57ead95d901aab",
+      "controller_after": "b309dde001063b7e4909237d6c5fb398e595d532fac106db5667a8923aea8194",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 22
+    },
+    {
+      "timestamp": "2023-02-01T02:10:00.000000000",
+      "loss": 0.08049678057432175,
+      "value_loss": 0.002494543557986617,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.04945127016981132,
+      "router_gradient_norm": 0.1554275609414617,
+      "fusion_gradient_norm": 0.6318657798037748,
+      "controller_gradient_norm": 0.1496241744607687,
+      "controller_before": "b309dde001063b7e4909237d6c5fb398e595d532fac106db5667a8923aea8194",
+      "controller_after": "e22c66385b7c9d6a2f46e80ce485d135d99e9a0fbd62b53af1628ba3e8862ab5",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 23
+    },
+    {
+      "timestamp": "2023-02-01T02:11:00.000000000",
+      "loss": 0.059821419417858124,
+      "value_loss": 0.001441863365471363,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.03749775417963974,
+      "router_gradient_norm": 0.11707784543523303,
+      "fusion_gradient_norm": 0.47922139804722974,
+      "controller_gradient_norm": 0.1141499038785696,
+      "controller_before": "e22c66385b7c9d6a2f46e80ce485d135d99e9a0fbd62b53af1628ba3e8862ab5",
+      "controller_after": "f9a48a5b7f44463fb6f6b15d04cdf7e4ff60ce82dda39a62941e7386e24f0689",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 24
+    },
+    {
+      "timestamp": "2023-02-01T02:12:00.000000000",
+      "loss": 0.019157014787197113,
+      "value_loss": 0.00019871660333592445,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.014247483302824548,
+      "router_gradient_norm": 0.04533198840647401,
+      "fusion_gradient_norm": 0.1779770834473311,
+      "controller_gradient_norm": 0.042523204581812024,
+      "controller_before": "f9a48a5b7f44463fb6f6b15d04cdf7e4ff60ce82dda39a62941e7386e24f0689",
+      "controller_after": "e59c2804d1d87970ff675abb4672420ad93fa2850f1d94700115bfb27efe3084",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 25
+    },
+    {
+      "timestamp": "2023-02-01T02:13:00.000000000",
+      "loss": -0.02127176523208618,
+      "value_loss": 0.00015209769480861723,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.01298157403107325,
+      "router_gradient_norm": 0.04488328807610742,
+      "fusion_gradient_norm": 0.1558852906091488,
+      "controller_gradient_norm": 0.06522775092162192,
+      "controller_before": "e59c2804d1d87970ff675abb4672420ad93fa2850f1d94700115bfb27efe3084",
+      "controller_after": "c12158b8287ffb5697d82281011e1dca2e1aaf8462115fea8070e01a3c4c41ce",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 26
+    },
+    {
+      "timestamp": "2023-02-01T02:14:00.000000000",
+      "loss": -0.0542244017124176,
+      "value_loss": 0.000900429324246943,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.029445684664096916,
+      "router_gradient_norm": 0.08240114184138747,
+      "fusion_gradient_norm": 0.37915001181681873,
+      "controller_gradient_norm": 0.09104094794020057,
+      "controller_before": "c12158b8287ffb5697d82281011e1dca2e1aaf8462115fea8070e01a3c4c41ce",
+      "controller_after": "6be64044f5a5664aca5dcf01b0046a74d6ffca7d5fea19a3fd5279a21992bd5b",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 27
+    },
+    {
+      "timestamp": "2023-02-01T02:15:00.000000000",
+      "loss": -0.0006962290499359369,
+      "value_loss": 0.000389168388210237,
+      "reward_points": -0.02199913188815117,
+      "adapter_gradient_norm": 0.019876623822710826,
+      "router_gradient_norm": 0.05805829318353517,
+      "fusion_gradient_norm": 0.24938153184120893,
+      "controller_gradient_norm": 0.2781451353803277,
+      "controller_before": "6be64044f5a5664aca5dcf01b0046a74d6ffca7d5fea19a3fd5279a21992bd5b",
+      "controller_after": "9e468daf9408064c4492bf181cec8a0cf2ed843e3662824b9e5796b2ee9e8ef2",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 28
+    },
+    {
+      "timestamp": "2023-02-01T02:16:00.000000000",
+      "loss": 0.05361327528953552,
+      "value_loss": 0.0009791309712454677,
+      "reward_points": -0.006737499963492155,
+      "adapter_gradient_norm": 0.03507973925297847,
+      "router_gradient_norm": 0.11759909312797845,
+      "fusion_gradient_norm": 0.3962211130419746,
+      "controller_gradient_norm": 0.09538496192544699,
+      "controller_before": "9e468daf9408064c4492bf181cec8a0cf2ed843e3662824b9e5796b2ee9e8ef2",
+      "controller_after": "4ce6356e1585148b6ac6440eb11a14506e224dac96271ab88dc017c652c76a5d",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 29
+    },
+    {
+      "timestamp": "2023-02-01T02:17:00.000000000",
+      "loss": 0.02948158234357834,
+      "value_loss": 0.00033920336863957345,
+      "reward_points": -0.0010499999625608325,
+      "adapter_gradient_norm": 0.020881036836726707,
+      "router_gradient_norm": 0.07068721650824017,
+      "fusion_gradient_norm": 0.23292121821941691,
+      "controller_gradient_norm": 0.05630592769011855,
+      "controller_before": "4ce6356e1585148b6ac6440eb11a14506e224dac96271ab88dc017c652c76a5d",
+      "controller_after": "b7605f9eef987e7cb1f08964787596fddc7b5071d242031adc0fffc727aa5974",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 30
+    },
+    {
+      "timestamp": "2023-02-01T02:18:00.000000000",
+      "loss": 0.009960267692804337,
+      "value_loss": 6.254563049878925e-05,
+      "reward_points": -0.005862500052899122,
+      "adapter_gradient_norm": 0.009546920339744247,
+      "router_gradient_norm": 0.03348102304405387,
+      "fusion_gradient_norm": 0.10004052787644468,
+      "controller_gradient_norm": 0.024260881589725614,
+      "controller_before": "b7605f9eef987e7cb1f08964787596fddc7b5071d242031adc0fffc727aa5974",
+      "controller_after": "ffdb92996285feb44890d6cd0cbc6d4e68131e7e3cac8e79d61368ebf4c01448",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 31
+    },
+    {
+      "timestamp": "2023-02-01T02:19:00.000000000",
+      "loss": -0.021871592849493027,
+      "value_loss": 8.814949978841469e-05,
+      "reward_points": -0.0030624999199062586,
+      "adapter_gradient_norm": 0.011144488156787702,
+      "router_gradient_norm": 0.04267642883661438,
+      "fusion_gradient_norm": 0.11879124176812184,
+      "controller_gradient_norm": 0.028900604229420424,
+      "controller_before": "ffdb92996285feb44890d6cd0cbc6d4e68131e7e3cac8e79d61368ebf4c01448",
+      "controller_after": "e85bf9f812abb96b768333b7d4998b8d8a8814718b9988a270b095f2e4e4004f",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 32
+    },
+    {
+      "timestamp": "2023-02-01T02:20:00.000000000",
+      "loss": -0.046605564653873444,
+      "value_loss": 0.0005262150662019849,
+      "reward_points": 0.0012250000145286322,
+      "adapter_gradient_norm": 0.02525597265230317,
+      "router_gradient_norm": 0.07589170325070427,
+      "fusion_gradient_norm": 0.29012733362833387,
+      "controller_gradient_norm": 0.0707951495423913,
+      "controller_before": "e85bf9f812abb96b768333b7d4998b8d8a8814718b9988a270b095f2e4e4004f",
+      "controller_after": "74f7ebc8b5e7ea60342603e9703615a94c36238224916123fc57cf2eae504056",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 33
+    },
+    {
+      "timestamp": "2023-02-01T02:21:00.000000000",
+      "loss": -0.046415526419878006,
+      "value_loss": 0.0005205837660469115,
+      "reward_points": -0.0022750000935047865,
+      "adapter_gradient_norm": 0.025060795898752986,
+      "router_gradient_norm": 0.07520812137080668,
+      "fusion_gradient_norm": 0.2880148208423634,
+      "controller_gradient_norm": 0.07049693912267685,
+      "controller_before": "74f7ebc8b5e7ea60342603e9703615a94c36238224916123fc57cf2eae504056",
+      "controller_after": "00b0ec1ec6321f86db9b60401bf07e05c6bee1522e8496ddf921493ee2e74e04",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 34
+    },
+    {
+      "timestamp": "2023-02-01T02:22:00.000000000",
+      "loss": -0.025663597509264946,
+      "value_loss": 0.00013084396778140217,
+      "reward_points": -0.009449999779462814,
+      "adapter_gradient_norm": 0.013143787551598507,
+      "router_gradient_norm": 0.04704425744568397,
+      "fusion_gradient_norm": 0.14395838554992224,
+      "controller_gradient_norm": 0.035346226301044226,
+      "controller_before": "00b0ec1ec6321f86db9b60401bf07e05c6bee1522e8496ddf921493ee2e74e04",
+      "controller_after": "2238b2ff1fdbccf9b8ffece475be3a6fedb930782e1551de6533561b1b02edb8",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 35
+    },
+    {
+      "timestamp": "2023-02-01T02:23:00.000000000",
+      "loss": -0.02562021091580391,
+      "value_loss": 0.00013021774066146463,
+      "reward_points": 0.002712500048801303,
+      "adapter_gradient_norm": 0.013128573801623133,
+      "router_gradient_norm": 0.04709006729718723,
+      "fusion_gradient_norm": 0.1431060715658532,
+      "controller_gradient_norm": 0.03524878155440092,
+      "controller_before": "2238b2ff1fdbccf9b8ffece475be3a6fedb930782e1551de6533561b1b02edb8",
+      "controller_after": "2fdbe40ddd32aa291236743bfd75f833f922a1ed546972181116e3c264b55f4b",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 36
+    },
+    {
+      "timestamp": "2023-02-01T02:24:00.000000000",
+      "loss": -0.025752652436494827,
+      "value_loss": 0.0005337458569556475,
+      "reward_points": -0.03024415299296379,
+      "adapter_gradient_norm": 0.025675129745650338,
+      "router_gradient_norm": 0.08557497986863005,
+      "fusion_gradient_norm": 0.289368262172502,
+      "controller_gradient_norm": 0.3779742089100182,
+      "controller_before": "2fdbe40ddd32aa291236743bfd75f833f922a1ed546972181116e3c264b55f4b",
+      "controller_after": "f2f723fa762c119e334b83ef01e776e6f07ec1617a3752a5984f8d43bcef8cfe",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 37
+    },
+    {
+      "timestamp": "2023-02-01T02:25:00.000000000",
+      "loss": 0.0023594792000949383,
+      "value_loss": 0.0015439498238265514,
+      "reward_points": -0.01666945032775402,
+      "adapter_gradient_norm": 0.03737182155600749,
+      "router_gradient_norm": 0.10414751308644554,
+      "fusion_gradient_norm": 0.48709717053134227,
+      "controller_gradient_norm": 0.5504826186224818,
+      "controller_before": "f2f723fa762c119e334b83ef01e776e6f07ec1617a3752a5984f8d43bcef8cfe",
+      "controller_after": "4d4b0666488b532fae13638317180b4120c4e7ec17c7d531b506a97454a92145",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 38
+    },
+    {
+      "timestamp": "2023-02-01T02:26:00.000000000",
+      "loss": 0.029950931668281555,
+      "value_loss": 0.0003487055073492229,
+      "reward_points": -0.0014823999954387546,
+      "adapter_gradient_norm": 0.0208513338220655,
+      "router_gradient_norm": 0.07039490233440038,
+      "fusion_gradient_norm": 0.23179832397363498,
+      "controller_gradient_norm": 0.05742329126223922,
+      "controller_before": "4d4b0666488b532fae13638317180b4120c4e7ec17c7d531b506a97454a92145",
+      "controller_after": "8e8751849cc6714e97fb8b021d05b2645e2bd6176660fadbda63a58de4c46196",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 39
+    },
+    {
+      "timestamp": "2023-02-01T02:27:00.000000000",
+      "loss": 0.038684308528900146,
+      "value_loss": 0.0005462864646688104,
+      "reward_points": 8.720000187167898e-05,
+      "adapter_gradient_norm": 0.025818260151936556,
+      "router_gradient_norm": 0.08665002501898389,
+      "fusion_gradient_norm": 0.2891858126677107,
+      "controller_gradient_norm": 0.07180549716576934,
+      "controller_before": "8e8751849cc6714e97fb8b021d05b2645e2bd6176660fadbda63a58de4c46196",
+      "controller_after": "3bc85f70d7d7d46dfcc19980c386e39925a047decda00ca7ca1c13ca0eda8f3d",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 40
+    },
+    {
+      "timestamp": "2023-02-01T02:30:00.000000000",
+      "loss": -0.025989282876253128,
+      "value_loss": 0.0005306000239215791,
+      "reward_points": 0.00023792906722519547,
+      "adapter_gradient_norm": 0.025493624931186787,
+      "router_gradient_norm": 0.08546023037181882,
+      "fusion_gradient_norm": 0.28551292027987074,
+      "controller_gradient_norm": 0.37718651117756963,
+      "controller_before": "3bc85f70d7d7d46dfcc19980c386e39925a047decda00ca7ca1c13ca0eda8f3d",
+      "controller_after": "58238ab2ffcd3af20d70d1e808af989a589410fe86864a2cb53dfe090bc51f1a",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 41
+    },
+    {
+      "timestamp": "2023-02-01T02:31:00.000000000",
+      "loss": -0.05405588448047638,
+      "value_loss": 0.001381420181132853,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.034946618532558205,
+      "router_gradient_norm": 0.09826928616148045,
+      "fusion_gradient_norm": 0.45601252051710617,
+      "controller_gradient_norm": 0.2018822394311428,
+      "controller_before": "58238ab2ffcd3af20d70d1e808af989a589410fe86864a2cb53dfe090bc51f1a",
+      "controller_after": "61cd6a2c7b9d810e2e7fe7949ccb4e2cab8c5dd308ea8a4c7030c6f04e7ae31a",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 42
+    },
+    {
+      "timestamp": "2023-02-01T02:32:00.000000000",
+      "loss": -0.058154162019491196,
+      "value_loss": 0.0010509839048609138,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.03048433511867188,
+      "router_gradient_norm": 0.08461503667969428,
+      "fusion_gradient_norm": 0.39672388484177645,
+      "controller_gradient_norm": 0.10076695960015059,
+      "controller_before": "61cd6a2c7b9d810e2e7fe7949ccb4e2cab8c5dd308ea8a4c7030c6f04e7ae31a",
+      "controller_after": "822cd077152682d79182b47a78b58caef087d92ae10ea002ed1c4bc2da110e7c",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 43
+    },
+    {
+      "timestamp": "2023-02-01T02:33:00.000000000",
+      "loss": -0.032870806753635406,
+      "value_loss": 0.0004449893895071,
+      "reward_points": 0.0,
+      "adapter_gradient_norm": 0.020179753340926254,
+      "router_gradient_norm": 0.057302884389182296,
+      "fusion_gradient_norm": 0.25730790835950756,
+      "controller_gradient_norm": 0.11459821835160255,
+      "controller_before": "822cd077152682d79182b47a78b58caef087d92ae10ea002ed1c4bc2da110e7c",
+      "controller_after": "a1fb108666c40a44e2263de74f6bdc2615601ea5175eb6c1e71efa2fdd0647bc",
+      "expert_versions_unchanged": true,
+      "optimizer_updates": 44
+    }
+  ],
+  "contract_units": {
+    "ETHUSDT": {
+      "quantity_per_unit": 0.001,
+      "quote_currency": "USDT",
+      "USD_parity_assumption": true
+    }
+  },
+  "evidence_as_of": {
+    "fincast": "2023-02-01 02:30:00",
+    "exaone": "2023-02-01 02:30:00",
+    "kronos": "2023-02-01 02:30:00",
+    "marketgpt": "2019-12-30 04:00:20.845346951",
+    "chronos": "2023-01-31 00:00:00",
+    "timesfm": "2023-01-31 00:00:00",
+    "timemoe": "2023-02-01 02:30:00",
+    "toto": "2023-02-01 02:30:00",
+    "macrophft_slope_1": "2023-02-01 02:30:00",
+    "macrophft_slope_2": "2023-02-01 02:30:00",
+    "macrophft_slope_3": "2023-02-01 02:30:00",
+    "macrophft_vol_1": "2023-02-01 02:30:00",
+    "macrophft_vol_2": "2023-02-01 02:30:00",
+    "macrophft_vol_3": "2023-02-01 02:30:00"
+  },
+  "MarketGPT_context": "Real AAPL 2019 ITCH archival reference, not a contemporaneous 2023 ETH order book",
+  "live_executable": false
+}

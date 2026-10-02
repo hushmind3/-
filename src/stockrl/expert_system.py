@@ -531,11 +531,13 @@ def build_fusion_head(expert_feature_sizes, market_features=16, width=64):
             self.cash = nn.Linear(width,1)
             self.trained = False
 
-        def forward(self, expert_features, market_state, key_padding_mask=None, allow_untrained=False):
+        def forward(self, expert_features, market_state, key_padding_mask=None, allow_untrained=False, expert_gates=None):
             if not self.trained and not allow_untrained:
                 raise RuntimeError("fusion head has no trained checkpoint; execution is disabled")
             query = self.market_projection(market_state)
             tokens = torch.stack([self.projections[name](features) for name,features in expert_features.items()],dim=-2)
+            if expert_gates is not None:
+                tokens = tokens * expert_gates.unsqueeze(-1)
             batch,symbols,experts,dim = tokens.shape
             mask = key_padding_mask.reshape(batch*symbols,experts) if key_padding_mask is not None else None
             unavailable = mask.all(-1) if mask is not None else torch.zeros(batch*symbols,dtype=torch.bool)
