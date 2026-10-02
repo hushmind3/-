@@ -10,10 +10,11 @@ from ..expert_registry import atomic_json
 
 
 class TradingMoELifecycle:
-    def __init__(self):
+    def __init__(self,checkpoint=None,state=None):
         self.artifacts=Path.home()/"Desktop"/"모델"/"heterogeneous-experts"
-        self.state=ROOT/"runtime/trading_moe/native_vertical_run"
-        self.record=ROOT/"runtime/trading_moe/worker.json"
+        self.checkpoint=Path(checkpoint) if checkpoint else self.artifacts/"TradingMoE.pt"
+        self.state=Path(state) if state else ROOT/"runtime/trading_moe/native_vertical_run"
+        self.record=self.state/"worker.json" if state else ROOT/"runtime/trading_moe/worker.json"
         self.lock=threading.RLock()
 
     @staticmethod
@@ -46,10 +47,10 @@ class TradingMoELifecycle:
                     else:data["status"]="loading"
                 except (psutil.Error,ValueError,TypeError):data["status"]="loading"
             data.update(pid=process.pid if process else None,alive=process is not None,
-                checkpoint=str(self.artifacts/"TradingMoE.pt"),paper=True)
+                checkpoint=str(self.checkpoint),paper=True)
             try:data["worker_ram_bytes"]=process.memory_info().rss if process else 0
             except psutil.Error:data["worker_ram_bytes"]=0
-            checkpoint=self.artifacts/"TradingMoE.pt"
+            checkpoint=self.checkpoint
             data["checkpoint_bytes"]=checkpoint.stat().st_size if checkpoint.exists() else 0
             if not data.get("books"):
                 from ..paper_account import PaperAccount
@@ -68,7 +69,7 @@ class TradingMoELifecycle:
     def start(self):
         with self.lock:
             if self.process():return {"ok":True,"already_running":True,"state":self.status()}
-            checkpoint=self.artifacts/"TradingMoE.pt"
+            checkpoint=self.checkpoint
             python=self.artifacts/"venv/Scripts/python.exe"
             if not checkpoint.is_file() or not python.is_file():
                 return {"ok":False,"error":"TradingMoE.pt 또는 전용 Python 환경을 찾을 수 없습니다."}
@@ -77,7 +78,7 @@ class TradingMoELifecycle:
             previous=self.read(self.state/"worker_status.json")
             atomic_json(self.state/"worker_status.json",{**previous,"status":"loading","error":None,"stop_requested":False})
             command=[str(python),"-u",str(ROOT/"scripts/run_native_vertical_trading.py"),
-                "--root",str(self.artifacts),"--state",str(self.state),"--resume","--continuous","--interval","0.1"]
+                "--root",str(self.artifacts),"--checkpoint",str(checkpoint),"--state",str(self.state),"--resume","--continuous","--interval","0.1"]
             try:
                 with (self.state/"worker.log").open("ab") as log:
                     worker=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,

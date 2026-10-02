@@ -79,5 +79,6 @@ def load_model(path:Path,device:torch.device,instrument_config:Path|None=None):
         from ..instrument_ids import extend_live_symbols
         instruments=json.loads(Path(instrument_config).read_text(encoding="utf-8"))["instruments"]
         cfg=extend_live_symbols(model,cfg,instruments)
+    model._stockrl_cfg=cfg
     model.to(device).eval()
     return model,cfg

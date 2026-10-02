@@ -40,6 +40,14 @@ class _ValidationMixin:
             target.append(item)
 
     def _begin_candidate_validation(self,candidate,trained_replay_row_ids=None,start_after=None):
+        if not self._model_enabled("champion") or not self._model_enabled("candidate"):return False
+        if not self.role_locks["champion"].acquire(blocking=False):return False
+        try:
+            with self.role_locks["candidate"]:
+                return self._begin_loaded_validation(candidate,trained_replay_row_ids,start_after)
+        finally:self.role_locks["champion"].release()
+
+    def _begin_loaded_validation(self,candidate,trained_replay_row_ids=None,start_after=None):
         """Freeze the current candidate in RAM and start a future-only trial."""
         if self.validation_active:
             self.metrics["candidate_validation_deferred"]=True
@@ -194,7 +202,9 @@ class _ValidationMixin:
                     self.validation_queue_invalid_reason=None
                     self._finish_candidate_validation(None,None,invalid)
                     continue
-                self._process_candidate_validation(panel,index,generation,stamp)
+                with self.role_locks["champion"],self.role_locks["candidate"]:
+                    if self._model_enabled("champion") and self._model_enabled("candidate"):
+                        self._process_candidate_validation(panel,index,generation,stamp)
             except Exception as exc:
                 if generation==self.validation_generation and self.validation_active:
                     self._finish_candidate_validation(None,None,

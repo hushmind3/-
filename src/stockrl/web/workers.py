@@ -58,7 +58,7 @@ def adopt(supervisor):
         raise ValueError("worker profile is outside runtime")
     children={}
     for name,record in data["workers"].items():
-        if name not in {"feed","agent"}:
+        if name not in {"feed","agent","champion","candidate"}:
             raise ValueError("unknown worker role")
         try:
             worker=AttachedWorker(record)

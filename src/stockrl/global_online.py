@@ -29,9 +29,10 @@ from .online.rewards import _RewardMixin
 from .online.learning import _LearningMixin
 from .online.validation import _ValidationMixin
 from .online.evaluation import _EvaluationMixin
+from .online.model_lifecycle import _ModelLifecycleMixin
 
 
-class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _ValidationMixin, _EvaluationMixin):
+class OnlineGlobalAgent(_ModelLifecycleMixin, _ObservationMixin, _RewardMixin, _LearningMixin, _ValidationMixin, _EvaluationMixin):
     @staticmethod
     def _goal_kwargs(account,device):
         goal=account.goal_inputs()
@@ -52,7 +53,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
                  min_replay=8, batch_size=4, updates_per_candidate=8, lr=2e-6, seed=7,
                  candidate_interval=16, initial_champion: str|Path|None=None,
                  teacher_replay_path: str|Path|None=None,
-                 model_dir: str|Path|None=None,instrument_config:str|Path|None=None):
+                 model_dir: str|Path|None=None,instrument_config:str|Path|None=None,independent_models=False):
         from .core import device_for
         from .paths import ensure_project_path, validate_model_dir
         self.state_dir=ensure_project_path(state_dir, "runtime")
@@ -76,6 +77,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
         self.min_validation_dates=0
         self.lr=lr; self.seed=seed; self.lock=threading.RLock(); self.stop=threading.Event()
         self.dual_learning_enabled=True
+        self._init_model_lifecycle(independent_models)
         self.champion_training_version=0
         self.validation_champion=None
         self.validation_promotion_epoch=0
@@ -91,7 +93,18 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
             # Seed this isolated runtime from a prior verified champion without
             # writing to or replacing the source checkpoint.
             shutil.copy2(initial_champion,self.champion_path)
-        if self.champion_path.exists():
+        if independent_models:
+            # Read architecture metadata without constructing either model.
+            requests=self._model_requests()
+            role=next((role for role,wanted in requests.items() if wanted),"candidate")
+            path=self.model_dir/(role+".pt")
+            metadata=torch.load(path,map_location="cpu",weights_only=False,mmap=True)
+            self.cfg=TransformerConfig(**metadata["config"])
+            self._runtime_symbol_map=metadata.get("symbol_map")
+            self._runtime_contextual=bool(metadata.get("market_context_model"))
+            del metadata
+            self.champion=None
+        elif self.champion_path.exists():
             self.champion,self.cfg=load_model(self.champion_path,self.device,self.instrument_config)
         else:
             if model_dir is not None or initial_champion is not None:
@@ -232,7 +245,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
         for key in ("update_losses","update_seconds","weight_delta_l1"):
             self.metrics[key]=list(self.metrics.get(key,[]))[-2000:]
         self.promotion_baseline_path=self.state_dir/"promotion_baseline.json"
-        current_champion_sha=self._sha256_file(self.champion_path).upper()
+        current_champion_sha=None if independent_models else self._sha256_file(self.champion_path).upper()
         # SHA identifies the champion captured for a validation window; it is
         # not a fixed allowlist. Clear obsolete fixed-SHA hold messages.
         self.promotion_baseline_sha256=current_champion_sha
@@ -265,7 +278,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
             saved_validation_config=json.loads(self.validation_meta_path.read_text(encoding="utf-8"))
         except (OSError,json.JSONDecodeError):
             pass
-        if saved_validation_config.get("reward_version")!=REWARD_VERSION:
+        if not independent_models and saved_validation_config.get("reward_version")!=REWARD_VERSION:
             if validation_state.get("status")=="collecting":
                 validation_state={"status":"discarded","reason":"paper reward schema changed"}
                 _atomic_json(validation_state,self.validation_state_path)
@@ -286,7 +299,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
             finalized=set(int(row_id) for row_id in validation_state.get("trained_replay_row_ids",[]))
             self.candidate_trained_replay_row_ids.difference_update(finalized)
         candidate_path=self.model_dir/"candidate.pt"
-        if candidate_path.is_file():
+        if not independent_models and candidate_path.is_file():
             self.candidate,candidate_cfg=load_model(candidate_path,self.device,self.instrument_config)
             if asdict(candidate_cfg)!=asdict(self.cfg):
                 raise ValueError("candidate checkpoint architecture does not match champion")
@@ -357,7 +370,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
         replay_stats=self.replay.stats(self.candidate_replay_passes)
         validation_snapshot_bytes=(sum(p.numel()*p.element_size()
             for p in self.validation_candidate.parameters()) if self.validation_candidate is not None else 0)
-        metrics.update({"parameters":parameter_count(self.champion),"device":str(self.device),
+        metrics.update({"models":self._model_residency(),"runtime_pid":os.getpid(),"parameters":parameter_count(self._runtime_model()) if self._runtime_model() is not None else 0,"device":str(self.device),
           "shared_objective":{"mode":"net_equity_and_tenfold_goal_for_both_models",
               "target_multiple":self.operating_rules.get("goal_target_multiple",10.0),
               "win_bonus_points":self.operating_rules.get("goal_win_bonus_points",100.0),
@@ -378,7 +391,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
           "shared_observation":self.replay.market_observation_stats(),
           "learning_experience_origins":"champion_and_candidate_own_account_outcomes",
           "learner_thread_alive":bool(getattr(self,"thread",None) and self.thread.is_alive()),
-          "champion_learning_enabled":bool(not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
+          "champion_learning_enabled":bool(self._model_enabled("champion") and not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
           "champion_training_version":self.champion_training_version,
           "champion_batch_size":self.batch_size,
           "champion_optimizer_steps_target":self.updates_per_candidate,
@@ -407,7 +420,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
           "promotion_gate_ready":not bool(metrics.get("promotion_blocked_reason")),
           "promotion_blocked_reason":metrics.get("promotion_blocked_reason"),
           "promotion_baseline_sha256":self.promotion_baseline_sha256,
-          "candidate_learning_enabled":bool(not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
+          "candidate_learning_enabled":bool(self._model_enabled("candidate") and not self.stop.is_set() and getattr(self,"thread",None) and self.thread.is_alive()),
           "candidate_start_ready":bool(replay_stats["model_remaining"]["candidate"]),
           "champion_start_ready":bool(replay_stats["model_remaining"]["champion"]),
           "candidate_every":self.candidate_interval,
@@ -435,7 +448,7 @@ class OnlineGlobalAgent(_ObservationMixin, _RewardMixin, _LearningMixin, _Valida
           "candidate_validation_snapshot_parameter_bytes":validation_snapshot_bytes,
           "candidate_model_version":self.candidate_version,
           "candidate_has_learning":bool(self.metrics.get("candidate_has_learning",False)),
-          "champion_model_parameter_bytes":sum(p.numel()*p.element_size() for p in self.champion.parameters()),
+          "champion_model_parameter_bytes":sum(p.numel()*p.element_size() for p in self.champion.parameters()) if self.champion is not None else 0,
           "last_candidate_peak_extra_allocated_bytes":(
               max(0,int(self.metrics["last_candidate_peak_allocated_bytes"])-
                       int(self.metrics["last_candidate_baseline_allocated_bytes"]))

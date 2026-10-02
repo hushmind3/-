@@ -405,6 +405,36 @@ class _StatusMixin:
             provider_status=__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime)
             feed_running=bool(self.children.get("feed") and self.children["feed"].poll() is None)
             agent_process_running=bool(self.children.get("agent") and self.children["agent"].poll() is None)
+            model_runtime={}
+            states=metrics.get("models",{}) if agent_process_running else {}
+            agent=self.children.get("agent")
+            # An old snapshot must never report a newly spawned worker as loaded.
+            fresh=bool(agent and metrics.get("runtime_pid")==agent.pid)
+            if agent_process_running and not fresh:
+                import psutil
+                try:fresh=agent.pid in [p.pid for p in psutil.Process(metrics.get("runtime_pid",0)).parents()]
+                except (psutil.Error,ValueError):fresh=False
+            for role,requested in self.model_enabled.items():
+                item=dict(states.get(role,{})) if fresh else {}
+                item.setdefault("loaded",False)
+                item.setdefault("status","stopped")
+                item.update(requested=requested,checkpoint=str(self.model_dir/(role+".pt")))
+                if requested and item["status"]=="stopped":item["status"]="loading"
+                if not requested and item["loaded"]:item["status"]="saving"
+                if self.model_families.get(role)=="trading_moe":
+                    worker=self._moe_model_worker(role)
+                    native=worker.status()
+                    live=native.get("alive",False)
+                    loaded=live and native.get("load_count",0)>0
+                    item.update(status=native["status"],loaded=loaded,
+                        error=native.get("error"),device=native.get("compute",{}).get("learning_device") if loaded else None,
+                        ram_weight_bytes=native.get("worker_ram_bytes",0),
+                        gpu_weight_bytes=native.get("compute",{}).get("allocated_bytes",0) if live else 0,
+                        compute_device=native.get("compute",{}).get("inference_device"),
+                        last_decision=native.get("decision",{}).get("as_of"),
+                        memory_scope="worker",source="TradingMoE · 공식 ETHUSDT 과거 가상매매 · 기존 주식계좌 보존")
+                    if native.get("stop_requested"):item["status"]="saving"
+                model_runtime[role]=item
             if self.mode == "live":
                 agent_health=_agent_progress_health(data,state,agent_process_running)
             else:
@@ -413,6 +443,13 @@ class _StatusMixin:
                               "latest_feed_timestamp_utc":None,"agent_cursor_timestamp_utc":None,
                               "lag_seconds":None,"lag_bars":None,"threshold_seconds":300}
             agent_health["candidate"]=_candidate_progress_health(agent_health,metrics,agent_process_running,candidate_observer_state)
+            for role,item in model_runtime.items():
+                health=agent_health if role=="champion" else agent_health["candidate"]
+                if item["status"]!="running":
+                    health.update(status=item["status"],reason="Model lifecycle: "+item["status"],lag_seconds=None)
+                elif item.get("memory_scope")=="worker":
+                    health.update(status="healthy",reason=item["source"],lag_seconds=None,
+                                  agent_cursor_timestamp_utc=item.get("last_decision"))
             agent_running=(agent_process_running and agent_health["status"]=="healthy")
             candidate_summary=summarize_account(candidate_observer_account)
             # Compatibility fields and the new view share exactly one ledger formula.
@@ -459,6 +496,21 @@ class _StatusMixin:
                 "reward_horizon_scope":"legacy_short_outcomes_only_when_future_credit_enabled",
                 "real_orders_enabled":False}
             feed_metrics["broker_provider"]=provider_status["provider"]
+            for role in ("champion","candidate"):
+                if self.model_families.get(role)!="trading_moe":continue
+                worker=self._moe_model_worker(role)
+                ledger=_json(worker.state/"paper_account.json")
+                if not ledger:continue
+                summary=summarize_account(ledger)
+                for book in summary["books"].values():
+                    for position in book["positions"]:
+                        if position["symbol"]=="ETHUSDT":
+                            position.update(quantity=position["quantity"]*.001,quantity_unit="ETH",
+                                average_cost=position["average_cost"]*1000,mark=position["mark"]*1000)
+                native=worker.status();decision=native.get("decision",{})
+                account_observability[role]={**summary,"training":native.get("status")=="running",
+                    "version":native.get("optimizer_updates",0),"last_inference_seconds":decision.get("seconds"),
+                    "last_full_decision_timestamp":decision.get("as_of"),"policy":{},"last_tradable_policy":{}}
             feed_metrics["provider_environment"]=provider_status["environment"]
             if not feed_running:
                 feed_metrics["broker_connected"]=False
@@ -473,6 +525,7 @@ class _StatusMixin:
                     "feed_running": feed_running,
                     "agent_running": agent_running,
                     "agent_process_running": agent_process_running,
+                    "model_runtime":model_runtime,
                     "agent_health": agent_health,
                     "feed_rows": max(0, rows),
                     "configured_instruments": len(instruments),

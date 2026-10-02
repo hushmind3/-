@@ -102,7 +102,7 @@ def global_online(args: argparse.Namespace) -> None:
       batch_size=args.batch_size,updates_per_candidate=args.updates,lr=args.lr,seed=args.seed,
       candidate_interval=args.candidate_every,initial_champion=args.initial_champion,
       teacher_replay_path=args.teacher_replay,model_dir=args.model_dir,
-      instrument_config=args.instrument_config)
+      instrument_config=args.instrument_config,independent_models=args.independent_models)
     try:
         if args.follow and not args.teacher_decisions:
             print(f"following={args.data} poll_seconds={args.poll_seconds}; stop with Ctrl+C")
@@ -208,6 +208,7 @@ def main() -> None:
     gi.add_argument("--device",default="auto",choices=["auto","cpu","cuda","mps"]); gi.set_defaults(func=global_info)
     go=sub.add_parser("global-online",help="run global-market paper observation, delayed reward, replay and asynchronous continual RL")
     go.add_argument("--instrument-config",default=None,help="shared live universe used for appended deterministic symbol IDs")
+    go.add_argument("--independent-models",action="store_true",help="load each model only on explicit runtime request")
     go.add_argument("--data",required=True); go.add_argument("--state-dir",default=str(default_runtime_dir()/"global-online"))
     go.add_argument("--model-dir",default=os.environ.get("STOCKRL_MODEL_DIR",str(Path.home()/"Desktop"/"모델")),
                     help="directory containing only champion.pt and candidate.pt")

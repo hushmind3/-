@@ -14,6 +14,7 @@ from .data import IncrementalMarketCSV, MarketObservation, PAPER_EXPLORATION_EPS
 
 class _ObservationMixin:
     def _queue_candidate_live_observation(self,panel,index,paper_enabled,uniforms):
+        if not self._model_enabled("candidate"):return None
         snapshot=MarketObservation(panel,index,self.window)
         self.replay.enqueue_market_observation(snapshot,bool(paper_enabled),tuple(float(x) for x in uniforms))
         return snapshot
@@ -44,215 +45,219 @@ class _ObservationMixin:
 
     def _candidate_live_worker(self):
         """Run an independent observational paper account for current candidate weights."""
-        while not self.stop.is_set() or self.replay.market_observation_stats()["pending"]:
-            observation_started=time.perf_counter()
-            item=self.replay.next_market_observation()
-            observation_profile={"read_seconds":time.perf_counter()-observation_started}
-            if item is None:
+        while not self.stop.is_set():
+            if not self._model_enabled("candidate"):
                 self.stop.wait(.25)
                 continue
-            stamp,data=item
-            panel=MarketObservation.__new__(MarketObservation)
-            panel.__dict__.update(data)
-            index=len(panel.dates)-1
-            modes=self._run_modes()
-            paper_enabled=bool(data["paper_enabled"]) and modes["paper_enabled"]
-            uniforms=data["uniforms"]
-            full_inference=(modes["observe_enabled"] and bool(uniforms)
-                            and self._has_tradable_update(panel,index))
-            if full_inference and self.candidate_live_model is None:
-                if self.stop.is_set():
-                    break  # Required observations remain in SQLite for restart.
-                self.stop.wait(.25)
-                continue
-            saved_account=pickle.loads(pickle.dumps(self.candidate_live_account.state,protocol=5))
-            committed=False
-            try:
-                phase_started=time.perf_counter()
-                account=self.candidate_live_account
-                filled_orders=account.process_bar(panel,index,paper_enabled)
-                self.candidate_portfolio_pending=self._mature_portfolio(
-                    self.candidate_portfolio_pending,panel,index,filled_orders,account=account,origin_model="candidate")
-                observation_profile["fills_and_rewards_seconds"]=time.perf_counter()-phase_started
-                if not full_inference:
-                    self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
-                    committed=True
-                    account.save()
-                    reason="context_only" if modes["observe_enabled"] else "judgment_paused"
-                    key="candidate_"+reason+"_updates"
-                    self.metrics[key]=int(self.metrics.get(key,0))+1
-                    self.metrics["candidate_live_last_timestamp"]=stamp
-                    self.metrics["candidate_live_status"]=reason
-                    self.metrics["candidate_live_error"]=None
-                    try:
-                        state=json.loads(self.candidate_live_state_path.read_text(encoding="utf-8"))
-                    except (OSError,ValueError):
-                        state={}
-                    # Preserve the last genuine action and its own timestamp.
-                    state.setdefault("last_full_decision_timestamp",state.get("last_timestamp"))
-                    state.update({"status":reason,"last_timestamp":stamp,"error":None,
-                        "candidate_training":bool(self.metrics.get("candidate_training")),
-                        "inference_skipped_reason":reason,
-                        "context_only_updates":self.metrics.get("candidate_context_only_updates",0),
-                        "observation_profile":{**observation_profile,
-                            "inference_seconds":0.0,"total_seconds":time.perf_counter()-observation_started},
-                        "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
-                            if hasattr(self.candidate_live_inference_lock,"snapshot") else {})})
-                    self._atomic_json(state,self.candidate_live_state_path)
+            with self.role_locks["candidate"]:
+                observation_started=time.perf_counter()
+                item=self.replay.next_market_observation()
+                observation_profile={"read_seconds":time.perf_counter()-observation_started}
+                if item is None:
+                    self.stop.wait(.25)
                     continue
-                if self.candidate_live_model is None:
-                    self.metrics["candidate_live_status"]="waiting_for_candidate_update"
-                    account.save()
-                    self._atomic_json({"status":self.metrics["candidate_live_status"],
-                        "last_timestamp":stamp,"candidate_version":self.candidate_version,
-                        "last_decisions":[]},self.candidate_live_state_path)
-                    self.metrics["candidate_live_last_timestamp"]=stamp
+                stamp,data=item
+                panel=MarketObservation.__new__(MarketObservation)
+                panel.__dict__.update(data)
+                index=len(panel.dates)-1
+                modes=self._run_modes()
+                paper_enabled=bool(data["paper_enabled"]) and modes["paper_enabled"]
+                uniforms=data["uniforms"]
+                full_inference=(modes["observe_enabled"] and bool(uniforms)
+                                and self._has_tradable_update(panel,index))
+                if full_inference and self.candidate_live_model is None:
+                    if self.stop.is_set():
+                        break  # Required observations remain in SQLite for restart.
+                    self.stop.wait(.25)
                     continue
-                phase_started=time.perf_counter()
-                pstate,astate=account.model_inputs(panel,index)
-                window=self._window(panel,index)
-                observation_profile["input_seconds"]=time.perf_counter()-phase_started
-                started=time.perf_counter()
-                profile={}
-                with self.candidate_live_model_lock:
-                    model=self.candidate_live_model
-                    if model is None: raise RuntimeError("candidate observer snapshot is not loaded")
-                    observer_version=self.candidate_live_model_version
-                    originally_offloaded=(self.device.type=="cuda" and
-                        next(model.parameters()).device.type=="cpu")
-                    with self._gpu_work("candidate_live"):
-                        profile["wait_seconds"]=time.perf_counter()-started
-                        phase_started=time.perf_counter()
-                        if originally_offloaded: model.to(self.device)
-                        profile["upload_seconds"]=time.perf_counter()-phase_started
-                        device=next(model.parameters()).device
-                        was_training=model.training
-                        model.eval()
+                saved_account=pickle.loads(pickle.dumps(self.candidate_live_account.state,protocol=5))
+                committed=False
+                try:
+                    phase_started=time.perf_counter()
+                    account=self.candidate_live_account
+                    filled_orders=account.process_bar(panel,index,paper_enabled)
+                    self.candidate_portfolio_pending=self._mature_portfolio(
+                        self.candidate_portfolio_pending,panel,index,filled_orders,account=account,origin_model="candidate")
+                    observation_profile["fills_and_rewards_seconds"]=time.perf_counter()-phase_started
+                    if not full_inference:
+                        self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
+                        committed=True
+                        account.save()
+                        reason="context_only" if modes["observe_enabled"] else "judgment_paused"
+                        key="candidate_"+reason+"_updates"
+                        self.metrics[key]=int(self.metrics.get(key,0))+1
+                        self.metrics["candidate_live_last_timestamp"]=stamp
+                        self.metrics["candidate_live_status"]=reason
+                        self.metrics["candidate_live_error"]=None
                         try:
-                            phase_started=time.perf_counter()
-                            args=[value.to(device) for value in window]
-                            args[0]=args[0].to(dtype=next(model.parameters()).dtype)
-                            with torch.inference_mode():
-                                if getattr(model,"_stockrl_uses_market_context",False):
-                                    pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=device)
-                                    at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=device)
-                                    mt=torch.as_tensor(panel.multiscale_at(index)[None],device=device)
-                                    logits,_,allocation=model(*args,portfolio_state=pt,
-                                        account_state=at,return_allocation=True,
-                                        multiscale_state=mt,**self._daily_history_kwargs(panel,index,device),
-                                        **self._goal_kwargs(account,device))
-                                    allocation=allocation[0].float().cpu().numpy()
-                                else:
-                                    logits,_=model(*args); allocation=None
-                            if device.type=="cuda": torch.cuda.synchronize(device)
-                            # Wall time includes input preparation and waiting
-                            # for shared CUDA work; this is not exclusive GPU time.
-                            profile["forward_seconds"]=time.perf_counter()-phase_started
-                        finally:
-                            model.train(was_training)
-                            phase_started=time.perf_counter()
-                            if originally_offloaded: model.to("cpu")
-                            profile["download_seconds"]=time.perf_counter()-phase_started
-                probabilities,actions=self._paper_policy_actions(
-                    logits[0].float().cpu().numpy(),pstate,uniforms)
-                elapsed=time.perf_counter()-started
-                profile["total_seconds"]=elapsed
-                self.metrics["candidate_live_inference_profile"]=profile
-                observation_profile["inference_seconds"]=elapsed
-                phase_started=time.perf_counter()
-                submitted=account.queue_decisions(panel,index,probabilities,paper_enabled,
-                    allocation=allocation,actions=actions)
-                x,sid,mid,aid,mask=window[:5]
-                inputs={"features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
-                    "goal_state":(np.asarray(account.goal_inputs(),dtype=np.float32) if account.goal_inputs() is not None else None),
-                    "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
-                    "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
-                    "multiscale_state":panel.multiscale_at(index).astype(np.float16),
-                    "daily_history":getattr(panel,"daily_history",None),
-                    "input_symbols":list(panel.symbols),"portfolio_state":np.asarray(pstate,dtype=np.float16),
-                    "account_state":np.asarray(astate,dtype=np.float32)}
-                goal_before=account.goal_points();goal_complete=account.goal_summary().get("status")=="WIN"
-                for j,symbol in enumerate(panel.symbols):
-                    # Padding has a model ID but no traded instrument metadata.
-                    # Check the observation mask before looking up its group.
-                    if not paper_enabled or not panel.observed[index,j]:
+                            state=json.loads(self.candidate_live_state_path.read_text(encoding="utf-8"))
+                        except (OSError,ValueError):
+                            state={}
+                        # Preserve the last genuine action and its own timestamp.
+                        state.setdefault("last_full_decision_timestamp",state.get("last_timestamp"))
+                        state.update({"status":reason,"last_timestamp":stamp,"error":None,
+                            "candidate_training":bool(self.metrics.get("candidate_training")),
+                            "inference_skipped_reason":reason,
+                            "context_only_updates":self.metrics.get("candidate_context_only_updates",0),
+                            "observation_profile":{**observation_profile,
+                                "inference_seconds":0.0,"total_seconds":time.perf_counter()-observation_started},
+                            "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
+                                if hasattr(self.candidate_live_inference_lock,"snapshot") else {})})
+                        self._atomic_json(state,self.candidate_live_state_path)
                         continue
-                    market,asset=panel.groups[symbol]
-                    if _currency(market,asset) is not None:
-                        action=int(actions[j]);decision_id=f"{stamp}|{symbol}"
-                        self.candidate_portfolio_pending.append({**inputs,"index":index,"symbol_index":j,
-                            "symbol":symbol,"action":action,"timestamp":stamp,"decision_id":decision_id,
-                            "reward_version":REWARD_VERSION,"origin_model":"candidate",
-                            "credit_observations_target":getattr(self,"reward_credit_observations",60),
-                            "credit_seconds":getattr(self,"reward_credit_seconds",3600),
-                            "behavior_log_prob":float(np.log(max(float(probabilities[j,action]),1e-12))),
-                            "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
-                            "regime":abs(float(panel.features[index,j,6])),"is_validation":False,
-                            "equity_before":account.normalized_equity(),
-                            "goal_points_before":goal_before,"goal_episode_id":account.state["episode_id"],
-                            "goal_complete_before":goal_complete,
-                            "goal_weight_before":max(float(pstate[j][1]),float(allocation[j]) if action==2 and allocation is not None else 0.0),
-                            "symbol_pnl_before":account.symbol_net_pnl(symbol),
-                            "fill_expected":decision_id in (submitted or set())})
-                observation_profile["orders_and_pending_seconds"]=time.perf_counter()-phase_started
-                phase_started=time.perf_counter()
-                self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
-                observation_profile["database_commit_seconds"]=time.perf_counter()-phase_started
-                committed=True
-                policy_diagnostics=summarize_policy(panel,index,probabilities,actions,
-                    allocation,account,submitted or set(),stamp)
-                if policy_diagnostics["observed_tradable_symbols"]:
-                    self.metrics["candidate_last_tradable_policy_diagnostics"]=policy_diagnostics
-                phase_started=time.perf_counter()
-                account.save()
-                observation_profile["account_save_seconds"]=time.perf_counter()-phase_started
-                decisions=[]
-                for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions)):
-                    if not panel.observed[index,symbol_index]: continue
-                    market,asset=panel.groups[symbol]
-                    if asset in ("equity","etf"):
-                        decisions.append({"symbol":symbol,"action":ACTION_NAMES[action]})
-                self.metrics["candidate_live_inference_count"]=(
-                    int(self.metrics.get("candidate_live_inference_count",0))+1)
-                self.metrics["candidate_live_inference_seconds_total"]=(
-                    float(self.metrics.get("candidate_live_inference_seconds_total",0.0))+elapsed)
-                self.metrics["candidate_live_status"]=("training_and_observing"
-                    if self.metrics.get("candidate_training") else "observing")
-                self.metrics["candidate_live_error"]=None
-                self.metrics["candidate_live_last_timestamp"]=stamp
-                observation_profile["total_seconds"]=time.perf_counter()-observation_started
-                self.metrics["candidate_live_observation_profile"]=observation_profile
-                self._atomic_json({"status":self.metrics["candidate_live_status"],
-                    "last_timestamp":stamp,"last_full_decision_timestamp":stamp,
-                    "candidate_version":observer_version,
-                    "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
-                    "candidate_training":bool(self.metrics.get("candidate_training")),
-                    "champion_training":bool(self.metrics.get("champion_training")),
-                    "learning_wait_reason":self.metrics.get("learning_wait_reason"),
-                    "learning_live_priority_enabled":bool(getattr(self,"live_priority_enabled",False)),
-                    "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
-                        if hasattr(self.candidate_live_inference_lock,"snapshot") else {}),
-                    "last_inference_seconds":elapsed,"inference_profile":profile,
-                    "observation_profile":observation_profile,"inference_count":self.metrics[
-                        "candidate_live_inference_count"],"last_decisions":decisions,
-                    "policy_diagnostics":policy_diagnostics,
-                    "last_tradable_policy_diagnostics":self.metrics.get(
-                        "candidate_last_tradable_policy_diagnostics",{})},
-                    self.candidate_live_state_path)
-            except Exception as exc:
-                self.candidate_live_account.state=self.replay.observer_account() if committed else saved_account
-                self.candidate_portfolio_pending=self.replay.load_pending("candidate_portfolio")
-                self.metrics["candidate_live_errors"]=(
-                    int(self.metrics.get("candidate_live_errors",0))+1)
-                self.metrics["candidate_live_status"]="error"
-                self.metrics["candidate_live_error"]=f"{type(exc).__name__}: {exc}"[:500]
-                self._atomic_json({"status":"error","last_timestamp":stamp,
-                    "candidate_version":self.candidate_live_model_version,
-                    "error":self.metrics["candidate_live_error"],"last_decisions":[]},
-                    self.candidate_live_state_path)
-                if self.stop.is_set():
-                    break  # Preserve the failed observation instead of spinning during shutdown.
-                self.stop.wait(1.0)
+                    if self.candidate_live_model is None:
+                        self.metrics["candidate_live_status"]="waiting_for_candidate_update"
+                        account.save()
+                        self._atomic_json({"status":self.metrics["candidate_live_status"],
+                            "last_timestamp":stamp,"candidate_version":self.candidate_version,
+                            "last_decisions":[]},self.candidate_live_state_path)
+                        self.metrics["candidate_live_last_timestamp"]=stamp
+                        continue
+                    phase_started=time.perf_counter()
+                    pstate,astate=account.model_inputs(panel,index)
+                    window=self._window(panel,index,self.candidate_live_model)
+                    observation_profile["input_seconds"]=time.perf_counter()-phase_started
+                    started=time.perf_counter()
+                    profile={}
+                    with self.candidate_live_model_lock:
+                        model=self.candidate_live_model
+                        if model is None: raise RuntimeError("candidate observer snapshot is not loaded")
+                        observer_version=self.candidate_live_model_version
+                        originally_offloaded=(self.device.type=="cuda" and
+                            next(model.parameters()).device.type=="cpu")
+                        with self._gpu_work("candidate_live"):
+                            profile["wait_seconds"]=time.perf_counter()-started
+                            phase_started=time.perf_counter()
+                            if originally_offloaded: model.to(self.device)
+                            profile["upload_seconds"]=time.perf_counter()-phase_started
+                            device=next(model.parameters()).device
+                            was_training=model.training
+                            model.eval()
+                            try:
+                                phase_started=time.perf_counter()
+                                args=[value.to(device) for value in window]
+                                args[0]=args[0].to(dtype=next(model.parameters()).dtype)
+                                with torch.inference_mode():
+                                    if getattr(model,"_stockrl_uses_market_context",False):
+                                        pt=torch.as_tensor(np.asarray(pstate,dtype=np.float32)[None],device=device)
+                                        at=torch.as_tensor(np.asarray(astate,dtype=np.float32)[None],device=device)
+                                        mt=torch.as_tensor(panel.multiscale_at(index)[None],device=device)
+                                        logits,_,allocation=model(*args,portfolio_state=pt,
+                                            account_state=at,return_allocation=True,
+                                            multiscale_state=mt,**self._daily_history_kwargs(panel,index,device),
+                                            **self._goal_kwargs(account,device))
+                                        allocation=allocation[0].float().cpu().numpy()
+                                    else:
+                                        logits,_=model(*args); allocation=None
+                                if device.type=="cuda": torch.cuda.synchronize(device)
+                                # Wall time includes input preparation and waiting
+                                # for shared CUDA work; this is not exclusive GPU time.
+                                profile["forward_seconds"]=time.perf_counter()-phase_started
+                            finally:
+                                model.train(was_training)
+                                phase_started=time.perf_counter()
+                                if originally_offloaded: model.to("cpu")
+                                profile["download_seconds"]=time.perf_counter()-phase_started
+                    probabilities,actions=self._paper_policy_actions(
+                        logits[0].float().cpu().numpy(),pstate,uniforms)
+                    elapsed=time.perf_counter()-started
+                    profile["total_seconds"]=elapsed
+                    self.metrics["candidate_live_inference_profile"]=profile
+                    observation_profile["inference_seconds"]=elapsed
+                    phase_started=time.perf_counter()
+                    submitted=account.queue_decisions(panel,index,probabilities,paper_enabled,
+                        allocation=allocation,actions=actions)
+                    x,sid,mid,aid,mask=window[:5]
+                    inputs={"features":x[0].numpy().astype(np.float16),"symbol_ids":sid[0].numpy(),
+                        "goal_state":(np.asarray(account.goal_inputs(),dtype=np.float32) if account.goal_inputs() is not None else None),
+                        "market_ids":mid[0].numpy(),"asset_ids":aid[0].numpy(),"valid_mask":mask[0].numpy(),
+                        "market_context":window[5][0].numpy().astype(np.float16) if len(window)>5 else None,
+                        "multiscale_state":panel.multiscale_at(index).astype(np.float16),
+                        "daily_history":getattr(panel,"daily_history",None),
+                        "input_symbols":list(panel.symbols),"portfolio_state":np.asarray(pstate,dtype=np.float16),
+                        "account_state":np.asarray(astate,dtype=np.float32)}
+                    goal_before=account.goal_points();goal_complete=account.goal_summary().get("status")=="WIN"
+                    for j,symbol in enumerate(panel.symbols):
+                        # Padding has a model ID but no traded instrument metadata.
+                        # Check the observation mask before looking up its group.
+                        if not paper_enabled or not panel.observed[index,j]:
+                            continue
+                        market,asset=panel.groups[symbol]
+                        if _currency(market,asset) is not None:
+                            action=int(actions[j]);decision_id=f"{stamp}|{symbol}"
+                            self.candidate_portfolio_pending.append({**inputs,"index":index,"symbol_index":j,
+                                "symbol":symbol,"action":action,"timestamp":stamp,"decision_id":decision_id,
+                                "reward_version":REWARD_VERSION,"origin_model":"candidate",
+                                "credit_observations_target":getattr(self,"reward_credit_observations",60),
+                                "credit_seconds":getattr(self,"reward_credit_seconds",3600),
+                                "behavior_log_prob":float(np.log(max(float(probabilities[j,action]),1e-12))),
+                                "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
+                                "regime":abs(float(panel.features[index,j,6])),"is_validation":False,
+                                "equity_before":account.normalized_equity(),
+                                "goal_points_before":goal_before,"goal_episode_id":account.state["episode_id"],
+                                "goal_complete_before":goal_complete,
+                                "goal_weight_before":max(float(pstate[j][1]),float(allocation[j]) if action==2 and allocation is not None else 0.0),
+                                "symbol_pnl_before":account.symbol_net_pnl(symbol),
+                                "fill_expected":decision_id in (submitted or set())})
+                    observation_profile["orders_and_pending_seconds"]=time.perf_counter()-phase_started
+                    phase_started=time.perf_counter()
+                    self.replay.commit_observer(stamp,account.state,self.candidate_portfolio_pending)
+                    observation_profile["database_commit_seconds"]=time.perf_counter()-phase_started
+                    committed=True
+                    policy_diagnostics=summarize_policy(panel,index,probabilities,actions,
+                        allocation,account,submitted or set(),stamp)
+                    if policy_diagnostics["observed_tradable_symbols"]:
+                        self.metrics["candidate_last_tradable_policy_diagnostics"]=policy_diagnostics
+                    phase_started=time.perf_counter()
+                    account.save()
+                    observation_profile["account_save_seconds"]=time.perf_counter()-phase_started
+                    decisions=[]
+                    for symbol_index,(symbol,action) in enumerate(zip(panel.symbols,actions)):
+                        if not panel.observed[index,symbol_index]: continue
+                        market,asset=panel.groups[symbol]
+                        if asset in ("equity","etf"):
+                            decisions.append({"symbol":symbol,"action":ACTION_NAMES[action]})
+                    self.metrics["candidate_live_inference_count"]=(
+                        int(self.metrics.get("candidate_live_inference_count",0))+1)
+                    self.metrics["candidate_live_inference_seconds_total"]=(
+                        float(self.metrics.get("candidate_live_inference_seconds_total",0.0))+elapsed)
+                    self.metrics["candidate_live_status"]=("training_and_observing"
+                        if self.metrics.get("candidate_training") else "observing")
+                    self.metrics["candidate_live_error"]=None
+                    self.metrics["candidate_live_last_timestamp"]=stamp
+                    observation_profile["total_seconds"]=time.perf_counter()-observation_started
+                    self.metrics["candidate_live_observation_profile"]=observation_profile
+                    self._atomic_json({"status":self.metrics["candidate_live_status"],
+                        "last_timestamp":stamp,"last_full_decision_timestamp":stamp,
+                        "candidate_version":observer_version,
+                        "policy_mode":"same_epsilon_sampling_and_random_draws_as_champion",
+                        "candidate_training":bool(self.metrics.get("candidate_training")),
+                        "champion_training":bool(self.metrics.get("champion_training")),
+                        "learning_wait_reason":self.metrics.get("learning_wait_reason"),
+                        "learning_live_priority_enabled":bool(getattr(self,"live_priority_enabled",False)),
+                        "gpu_scheduler":(self.candidate_live_inference_lock.snapshot()
+                            if hasattr(self.candidate_live_inference_lock,"snapshot") else {}),
+                        "last_inference_seconds":elapsed,"inference_profile":profile,
+                        "observation_profile":observation_profile,"inference_count":self.metrics[
+                            "candidate_live_inference_count"],"last_decisions":decisions,
+                        "policy_diagnostics":policy_diagnostics,
+                        "last_tradable_policy_diagnostics":self.metrics.get(
+                            "candidate_last_tradable_policy_diagnostics",{})},
+                        self.candidate_live_state_path)
+                except Exception as exc:
+                    self.candidate_live_account.state=self.replay.observer_account() if committed else saved_account
+                    self.candidate_portfolio_pending=self.replay.load_pending("candidate_portfolio")
+                    self.metrics["candidate_live_errors"]=(
+                        int(self.metrics.get("candidate_live_errors",0))+1)
+                    self.metrics["candidate_live_status"]="error"
+                    self.metrics["candidate_live_error"]=f"{type(exc).__name__}: {exc}"[:500]
+                    self._atomic_json({"status":"error","last_timestamp":stamp,
+                        "candidate_version":self.candidate_live_model_version,
+                        "error":self.metrics["candidate_live_error"],"last_decisions":[]},
+                        self.candidate_live_state_path)
+                    if self.stop.is_set():
+                        break  # Preserve the failed observation instead of spinning during shutdown.
+                    self.stop.wait(1.0)
 
     def _infer(self,panel,index,portfolio_state=None,account_state=None):
         requested=time.perf_counter()
@@ -339,8 +344,8 @@ class _ObservationMixin:
         actions[ties]=1
         return actions.tolist()
 
-    def _window(self,panel,index):
-        contextual=getattr(self.champion,"_stockrl_uses_market_context",False)
+    def _window(self,panel,index,model=None):
+        contextual=getattr(model if model is not None else self._runtime_model(),"_stockrl_uses_market_context",getattr(self,"_runtime_contextual",False))
         return panel.window(index,self.window,include_context=contextual)
 
     def follow_csv(self, data_path:str|Path, poll_seconds:float=5.0, initial_lookback_bars:int=0):
@@ -368,6 +373,7 @@ class _ObservationMixin:
             while not self.stop.is_set():
                 if (self.state_dir/"stop.request").exists():
                     break
+                self._sync_models()
                 if not data_path.exists():
                     self.stop.wait(poll_seconds); continue
                 try:
@@ -388,7 +394,7 @@ class _ObservationMixin:
                     else:
                         self.metrics["quoted_bid_ask_symbols"]=0
                     panel=GlobalMarketPanel(data_path, max_symbols=self.cfg.max_symbols,
-                        symbol_map=getattr(self.champion,"_stockrl_symbol_map",None),
+                        symbol_map=getattr(self._runtime_model(),"_stockrl_symbol_map",getattr(self,"_runtime_symbol_map",None)),
                         # Keep closed-session indices, futures, yields, and other
                         # reference markets in the action set using their last
                         # known quote. The dashboard still marks their quote as
@@ -396,7 +402,7 @@ class _ObservationMixin:
                         # output entirely whenever their venue was closed.
                         recent_timestamps=None, active_stale_seconds=604800,
                         raw_frame=raw_frame)
-                    if (self.candidate is not None and not self.validation_active
+                    if (self._model_enabled("champion") and self._model_enabled("candidate") and not self.validation_active
                             and not self.metrics.get("candidate_training")
                             and self.metrics.get("candidate_has_learning")
                             and (self.validation_restart_needs_fresh_trial or
@@ -532,21 +538,23 @@ class _ObservationMixin:
                     cursor_dt=np.datetime64(cursor)
                     start=int(np.searchsorted(panel.dates,cursor_dt,side="right"))
                 for ti in range(start,len(panel.dates)):
-                    if self.stop.is_set(): break
+                    if self.stop.is_set() or (self.state_dir/"stop.request").exists(): break
+                    self._sync_models()
                     self.current_market_timestamp=str(panel.dates[ti])
                     # Autonomy is distinct from the model's HOLD action. When
                     # disabled, inference and counterfactual learning continue,
                     # but directional paper positions are left unchanged.
                     mode_state=self._run_modes()
-                    paper_enabled=mode_state["paper_enabled"]
-                    observe_enabled=mode_state["observe_enabled"]
+                    paper_enabled=mode_state["paper_enabled"] and self._model_enabled("champion")
+                    observe_enabled=mode_state["observe_enabled"] and self._model_enabled("champion")
                     self.metrics["autonomy_enabled"]=paper_enabled
                     self.metrics["paper_enabled"]=paper_enabled
                     self.metrics["observe_enabled"]=observe_enabled
-                    filled_orders=self.paper_account.process_bar(panel,ti,paper_enabled)
-                    portfolio_pending=self._mature_portfolio(
-                        portfolio_pending,panel,ti,filled_orders)
-                    pending=self._mature(pending,panel,ti)
+                    filled_orders=[]
+                    if self._model_enabled("champion"):
+                        filled_orders=self.paper_account.process_bar(panel,ti,paper_enabled)
+                        portfolio_pending=self._mature_portfolio(portfolio_pending,panel,ti,filled_orders)
+                        pending=self._mature(pending,panel,ti)
                     if not observe_enabled or not self._has_tradable_update(panel,ti):
                         reason="context_only" if observe_enabled else "judgment_paused"
                         key="champion_"+reason+"_updates"
@@ -554,7 +562,9 @@ class _ObservationMixin:
                         self.metrics["champion_inference_skipped_reason"]=reason
                         # Candidate must still mark its account and mature earlier
                         # actions at this timestamp; it uses the same CPU fast path.
-                        self._queue_candidate_live_observation(panel,ti,paper_enabled,())
+                        uniforms=([self.policy_rng.random() for _ in panel.symbols]
+                                  if mode_state["observe_enabled"] and self._has_tradable_update(panel,ti) else ())
+                        self._queue_candidate_live_observation(panel,ti,mode_state["paper_enabled"],uniforms)
                         cursor=str(panel.dates[ti]); self.metrics["observations"]+=1
                         self.metrics["last_market_timestamp"]=cursor
                         self.metrics["pending_experiences"] = len(pending)+len(portfolio_pending)

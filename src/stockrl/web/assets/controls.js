@@ -20,15 +20,15 @@ function renderSystemControls(d) {
   badge(
     "systemBadge",
     d.running
-      ? d.agent_running && d.feed_running
+      ? d.feed_running
         ? "시스템 실행 중"
         : "시스템 일부 대기"
       : "시스템 정지",
-    d.running ? (d.agent_running && d.feed_running ? "good" : "warn") : "bad",
+    d.running ? (d.feed_running ? "good" : "warn") : "bad",
   );
   badge(
     "appliedBadge",
-    changing ? "시스템 전환 중" : "여러 시간봉 통합 판단",
+    changing ? "시스템 전환 중" : "시장 feed · 모델은 각각 시작",
     changing ? "warn" : "good",
   );
 
@@ -170,10 +170,32 @@ $("environment").onchange = () => {
 
 $("applyBtn").onclick = () =>
   runCommand($("applyBtn"), async () => {
-    feedback("여러 시간봉을 통합하는 시장 관찰과 모델 판단을 시작합니다.");
+    feedback("시장 feed를 시작합니다. Champion과 Candidate는 각각 시작 버튼으로 실행합니다.");
     await api("/api/start", { mode: "live" });
     feedback("요청을 보냈습니다. 실행 상태를 확인하고 있습니다.");
   });
+
+const modelCommandPending = new Set();
+for (const role of ["champion", "candidate"]) {
+  for (const action of ["start", "stop"]) {
+    $(role + "Model" + (action === "start" ? "Start" : "Stop")).onclick = async () => {
+      if (modelCommandPending.has(role)) return;
+      modelCommandPending.add(role);
+      $(role + "ModelStart").disabled = $(role + "ModelStop").disabled = true;
+      text(role + "ModelMessage", action === "start" ? "적재 요청 중" : "저장·해제 요청 중");
+      try {
+        const result = await api("/api/models/" + role + "/" + action, {});
+        if (!result.ok) throw new Error(result.error || "요청 실패");
+        text(role + "ModelMessage", action === "start" ? "적재 요청됨 · 상태를 확인합니다" : "현재 작업 후 저장하고 이 모델만 해제합니다");
+      } catch (error) {
+        text(role + "ModelMessage", "요청 실패: " + error.message);
+      } finally {
+        modelCommandPending.delete(role);
+        await refresh();
+      }
+    };
+  }
+}
 
 $("serverRestartBtn").onclick = () =>
   runCommand($("serverRestartBtn"), async () => {

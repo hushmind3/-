@@ -41,21 +41,23 @@ class _LearningMixin:
     def _new_model_like(self, source, device):
         contextual=bool(getattr(source,"_stockrl_uses_market_context",False))
         source_dtype=next(source.parameters()).dtype
+        cfg=getattr(source,"_stockrl_cfg",self.cfg)
         # Every caller immediately loads an existing state_dict. Allocate its
         # final storage directly instead of initializing 0.5B random FP32
         # parameters and then converting/discarding them before that copy.
         with torch.device("meta"):
             if contextual:
                 from ..market_training import ContextConditionedTransformer
-                backbone=GlobalMarketTransformer(self.cfg)
+                backbone=GlobalMarketTransformer(cfg)
                 if device.type=="cuda" or source_dtype==torch.float16: backbone=backbone.half()
                 model=ContextConditionedTransformer(backbone)
                 model.context_policy.float(); model.context_value.float()
                 model._stockrl_uses_market_context=True
                 model._stockrl_symbol_map=dict(source._stockrl_symbol_map)
             else:
-                model=GlobalMarketTransformer(self.cfg)
+                model=GlobalMarketTransformer(cfg)
                 if device.type=="cuda" or source_dtype==torch.float16: model=model.half()
+        model._stockrl_cfg=cfg
         return model.to_empty(device=device)
 
     def _publish_candidate_observer(self, source, version):
@@ -85,8 +87,7 @@ class _LearningMixin:
                 self.candidate.load_state_dict(source.state_dict())
         else:
             candidate,cfg=load_model(path,self.device,self.instrument_config)
-            if asdict(cfg)!=asdict(self.cfg):
-                raise ValueError("candidate checkpoint architecture does not match champion")
+            candidate._stockrl_cfg=cfg
             self.candidate=candidate
             commit=getattr(candidate,"_stockrl_replay_commit",{})
             self.replay.acknowledge_training(commit.get("uses",{}),self.candidate_replay_passes)
@@ -101,7 +102,7 @@ class _LearningMixin:
         feature_dtype=torch.float16 if self.device.type=="cuda" else torch.float32
         args=(tensor("features",feature_dtype),tensor("symbol_ids",torch.long),tensor("market_ids",torch.long),
               tensor("asset_ids",torch.long),tensor("valid_mask",torch.bool))
-        if getattr(self.champion,"_stockrl_uses_market_context",False):
+        if getattr(self._runtime_model(),"_stockrl_uses_market_context",False):
             from ..market_training import CONTEXT_FEATURES
             rows=[]
             for experience in batch:
@@ -228,6 +229,7 @@ class _LearningMixin:
             self.metrics["candidate_eligible_replay_count"]=remaining["candidate"]
             self.metrics["champion_eligible_replay_count"]=remaining.get("champion",0) if dual else 0
             self.metrics["candidate_replay_passes"]=self.candidate_replay_passes
+            remaining={role:count if self._model_enabled(role) else 0 for role,count in remaining.items()}
             if not remaining["candidate"] and not (dual and remaining.get("champion",0)):
                 self.metrics["candidate_skip_reason"]="남은 학습 가능한 경험을 모두 처리했습니다. 새 경험 대기"
                 continue
@@ -243,8 +245,10 @@ class _LearningMixin:
             self.next_learning_role="candidate" if learner=="champion" else "champion"
             self.metrics["learning_active_role"]=learner
             try:
-                if learner=="champion": self._train_champion()
-                else: self._train_candidate()
+                with self.role_locks[learner]:
+                    if not self._model_enabled(learner):continue
+                    if learner=="champion": self._train_champion()
+                    else: self._train_candidate()
             except Exception as exc:
                 self.metrics[learner+"_training"]=False
                 self.metrics[learner+"_errors"]=int(self.metrics.get(learner+"_errors",0))+1
@@ -254,6 +258,7 @@ class _LearningMixin:
                 self._schedule_candidate_retry()
                 self._release_cuda_cache()
                 try:
+                    if not self._model_requests()[learner]:continue
                     if learner=="candidate": self._restore_candidate_checkpoint()
                     else:
                         restored,_=load_model(self.champion_path,self.device,self.instrument_config)
@@ -420,7 +425,7 @@ class _LearningMixin:
         self.metrics[learner+"_learning_gpu_wait_seconds_round"]=0.0
         setup_started=time.perf_counter()
         with self.lock:
-            source_champion=self.champion
+            source_champion=self.champion if learner=="champion" else self.candidate
         with self._gpu_work(learner+"_learning_setup"):
             if learner=="candidate":
                 if self.candidate is None:
@@ -436,8 +441,8 @@ class _LearningMixin:
                 candidate.load_state_dict(source_champion.state_dict())
                 candidate.train()
                 model_version=self.champion_training_version
-        original=source_champion
         trainable_parameters=self._configure_candidate_trainables(candidate,learner)
+        original_parameters={name:value.detach().to("cpu",copy=True) for name,value in candidate.named_parameters() if value.requires_grad}
         opt=torch.optim.AdamW(
             trainable_parameters,lr=self.lr,weight_decay=.01,
             eps=1e-4 if self.device.type=="cuda" else 1e-8,
@@ -469,7 +474,7 @@ class _LearningMixin:
         metrics["candidate_optimizer_steps_target"]=self.updates_per_candidate
         metrics["candidate_samples_target"]=self.updates_per_candidate*self.batch_size
         for update_ix in range(self.updates_per_candidate):
-            if self.stop.is_set() or not self._wait_for_live_inference():
+            if self.stop.is_set() or not self._model_requests()[learner] or not self._wait_for_live_inference():
                 break
             load_started=time.perf_counter()
             batch=self.replay.pending_batch(self.batch_size,self.candidate_replay_passes,
@@ -635,9 +640,11 @@ class _LearningMixin:
             return
         with torch.no_grad():
             delta_tensor=torch.zeros((),device=self.device,dtype=torch.float32)
-            for k,v in original.state_dict().items():
-                delta_tensor.add_((candidate.state_dict()[k].float()-v.detach().float()).abs().sum())
-            delta=delta_tensor.item()
+            current=dict(candidate.named_parameters())
+            for k,v in original_parameters.items():
+                delta_tensor.add_((current[k].float()-v.to(self.device).float()).abs().sum())
+        del original_parameters
+        delta=delta_tensor.item()
         metrics["weight_delta_l1"].append(delta)
         metrics["weight_delta_l1"]=metrics["weight_delta_l1"][-2000:]
         metrics["last_update_utc"]=datetime.now(timezone.utc).isoformat()
@@ -653,7 +660,7 @@ class _LearningMixin:
         if learner=="champion":
             staged=self.state_dir/"champion.learning.next"
             try:
-                save_model(staged,candidate,self.cfg,step=self.steps,
+                save_model(staged,candidate,getattr(candidate,"_stockrl_cfg",self.cfg),step=self.steps,
                            temp_dir=self.state_dir,replay_commit=replay_commit)
                 with self.lock:
                     if self.champion is not source_champion:
@@ -670,7 +677,7 @@ class _LearningMixin:
             finally:
                 staged.unlink(missing_ok=True)
         else:
-            save_model(self.model_dir/"candidate.pt",candidate,self.cfg,step=self.steps,
+            save_model(self.model_dir/"candidate.pt",candidate,getattr(candidate,"_stockrl_cfg",self.cfg),step=self.steps,
                        temp_dir=self.state_dir,replay_commit=replay_commit)
             candidate._stockrl_replay_commit=replay_commit
         checkpoint_seconds=time.perf_counter()-checkpoint_started
@@ -692,7 +699,7 @@ class _LearningMixin:
             metrics["candidate_live_status"]="candidate_updated"
             metrics["candidate_has_learning"]=True
         metrics["candidate_training"]=False
-        if learner=="candidate" and not self.validation_active and not self.stop.is_set():
+        if learner=="candidate" and self._model_enabled("champion") and self._model_enabled("candidate") and not self.validation_active and not self.stop.is_set():
             self._begin_candidate_validation(candidate)
         if learner=="candidate" and self.device.type=="cuda": candidate.to("cpu")
         metrics["candidate_replay_rows_held_for_validation"]=0

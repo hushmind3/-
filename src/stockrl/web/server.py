@@ -114,6 +114,11 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             if route in ("/api/trading-moe/start","/api/trading-moe/stop"):
                 result=trading_moe.start() if route.endswith("/start") else trading_moe.stop()
                 return self._send(result,200 if result.get("ok") else 400)
+            if route in ("/api/models/champion/start","/api/models/champion/stop",
+                         "/api/models/candidate/start","/api/models/candidate/stop"):
+                _,_,_,role,action=route.split("/")
+                result=supervisor.set_model(role,action=="start")
+                return self._send(result,200 if result.get("ok") else 400)
             if route == "/api/server/restart":
                 if restart_server_requested.is_set():
                     return self._send({"error": "Server restart is already in progress."}, 409)

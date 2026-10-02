@@ -58,6 +58,12 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         self.autonomy_enabled = bool(settings.get("paper_enabled", settings.get("autonomy_enabled", True)))
         self.observe_enabled = bool(settings.get("observe_enabled", True))
         self.learning_enabled = bool(settings.get("learning_enabled", True))
+        self.model_enabled={role:bool(settings.get(role+"_enabled",False)) for role in ("champion","candidate")}
+        self.model_request_versions=dict(settings.get("model_request_versions",{}))
+        self.model_families=dict(settings.get("model_families",{}))
+        self.moe_model_workers={}
+        self.idle_agent_shutdown=False
+        self.idle_agent_deadline=None
         from .workers import adopt
         adopt(self)
         self.worker = threading.Thread(target=self._monitor, daemon=True, name="web-supervisor")
@@ -79,6 +85,13 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
 
     def _launch(self, name: str):
         assert self.profile is not None
+        if name in ("champion","candidate"):
+            from .workers import AttachedWorker
+            worker=self._moe_model_worker(name)
+            result=worker.start()
+            if not result.get("ok"):raise RuntimeError(result.get("error"))
+            self.children[name]=AttachedWorker(worker.read(worker.record))
+            return
         data = self.profile / "market.csv"
         stop = self.profile / "feed.stop"
         state = self.profile / "agent"
@@ -94,6 +107,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             self._spawn(name, args, self.profile / "logs" / "feed.log")
             return
         args = [sys.executable, "-u", "-m", "stockrl", "global-online", "--data", str(data),
+                "--independent-models",
                 "--state-dir", str(state), "--model-dir", str(self.model_dir), "--follow", "--poll-seconds", "1", "--window", "128",
                 "--initial-lookback-bars", "8",
                 "--candidate-every", str(self.candidate_every),
@@ -144,9 +158,56 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             self.run_requested = True
             self.stopping = False
             self.children.clear()
+            self.model_enabled={role:False for role in self.model_enabled}
+            self._write_autonomy()
             self._launch("feed")
-            self._launch("agent")
-            return {"ok": True, "message": "paper system started."}
+            return {"ok": True, "message": "Market feed started; both models remain unloaded."}
+
+    def set_model(self,role,enabled):
+        if role not in ("champion","candidate"):return {"error":"Unknown model role"}
+        with self.lock:
+            if self.stopping:return {"error":"System is saving; wait for completion."}
+            if enabled and not self.run_requested:
+                result=self.start(self.mode,self.horizon)
+                if not result.get("ok"):return result
+            state=_json((self.profile or self.runtime/self.mode)/"agent"/"metrics.json").get("models",{}).get(role,{})
+            if self.model_families.get(role)=="trading_moe":state=self._moe_model_worker(role).status()
+            if self.model_enabled[role]==bool(enabled) and state.get("status") not in ("error",) and (not enabled or state.get("status")!="stopped"):
+                return {"ok":True,"already_requested":True}
+            self.model_enabled[role]=bool(enabled)
+            self.model_request_versions[role]=time.time_ns()
+            if enabled:
+                import torch
+                try:metadata=torch.load(self.model_dir/(role+".pt"),map_location="cpu",weights_only=False,mmap=True)
+                except Exception as exc:
+                    self.model_enabled[role]=False
+                    self._write_autonomy()
+                    return {"error":f"{role}.pt could not be read: {exc}"}
+                self.model_families[role]="trading_moe" if "feature_sizes" in metadata.get("config",{}) else "legacy"
+                del metadata
+            self._write_autonomy()
+            if enabled:
+                if self.model_families.get(role)=="trading_moe":
+                    self._launch(role)
+                    return {"ok":True,"role":role,"requested":True,"message":"Named TradingMoE model load requested"}
+                self.idle_agent_shutdown=False
+                agent=self.children.get("agent")
+                if agent is None or agent.poll() is not None:
+                    (self.profile/"agent"/"stop.request").unlink(missing_ok=True)
+                    self._launch("agent")
+            elif self.model_families.get(role)=="trading_moe":
+                self._moe_model_worker(role).stop()
+            return {"ok":True,"role":role,"requested":bool(enabled),
+                    "message":"Load requested" if enabled else "Save and unload requested"}
+
+    def _moe_model_worker(self,role):
+        from .trading_moe import TradingMoELifecycle
+        state=(self.profile or self.runtime/self.mode)/"agent"/(role+"_moe")
+        worker=self.moe_model_workers.get(role)
+        if worker is None or worker.state!=state:
+            worker=TradingMoELifecycle(checkpoint=self.model_dir/(role+".pt"),state=state)
+            self.moe_model_workers[role]=worker
+        return worker
 
     def _write_autonomy(self):
         profile=self.profile or (self.runtime/self.mode)
@@ -156,12 +217,17 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         temporary.write_text(json.dumps({"enabled":self.autonomy_enabled,
                                           "paper_enabled":self.autonomy_enabled,
                                           "observe_enabled":self.observe_enabled,
-                                          "learning_enabled":self.learning_enabled},ensure_ascii=False),encoding="utf-8")
+                                          "learning_enabled":self.learning_enabled,
+                                          **{role+"_enabled":value and self.model_families.get(role)!="trading_moe" for role,value in self.model_enabled.items()},
+                                          "model_request_versions":self.model_request_versions},ensure_ascii=False),encoding="utf-8")
         temporary.replace(target)
         settings=_json(self.settings_path)
         settings.update({"mode":self.mode,"horizon":self.horizon,"autonomy_enabled":self.autonomy_enabled,
                          "paper_enabled":self.autonomy_enabled,"observe_enabled":self.observe_enabled,
                          "learning_enabled":self.learning_enabled})
+        settings.update({role+"_enabled":value for role,value in self.model_enabled.items()})
+        settings["model_request_versions"]=self.model_request_versions
+        settings["model_families"]=self.model_families
         self.settings_path.write_text(json.dumps(settings,ensure_ascii=False,indent=2),encoding="utf-8")
 
     def set_autonomy(self, enabled: bool) -> dict:
@@ -243,6 +309,10 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
                 return {"ok": True, "message": "System is already stopping."}
             self.run_requested = False
             self.stopping = True
+            self.model_enabled={role:False for role in self.model_enabled}
+            self._write_autonomy()
+            for role in ("champion","candidate"):
+                if self.model_families.get(role)=="trading_moe":self._moe_model_worker(role).stop()
             self.agent_reload_pending = False
             if self.profile:
                 (self.profile / "feed.stop").touch()
@@ -254,7 +324,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
     def _stop_children(self):
         for name, proc in list(self.children.items()):
             try:
-                proc.wait(timeout=90 if name == "agent" else 8)
+                proc.wait(timeout=90 if name in ("agent","champion","candidate") else 8)
             except subprocess.TimeoutExpired:
                 proc.terminate()
                 try:
@@ -281,7 +351,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
     def _monitor(self):
         while True:
             time.sleep(2)
-            if self.run_requested and not self.stopping and self.mode=="live" and not self.daily_cycle_pending:
+            if self.run_requested and all(self.model_enabled.values()) and "trading_moe" not in self.model_families.values() and not self.stopping and self.mode=="live" and not self.daily_cycle_pending:
                 cycle=self._daily_cycle_status()
                 if cycle["session_key"]!=cycle["current_session_key"] or cycle.get("pending_record"):
                     self.daily_cycle_pending=True
@@ -295,6 +365,18 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             with self.lock:
                 if not self.run_requested or not self.profile:
                     continue
+                agent=self.children.get("agent")
+                legacy_requested=any(enabled and self.model_families.get(role)!="trading_moe" for role,enabled in self.model_enabled.items())
+                if agent is not None and agent.poll() is None and not legacy_requested:
+                    models=_json(self.profile/"agent"/"metrics.json").get("models",{})
+                    if models and all(not state.get("loaded") and state.get("status")=="stopped" for state in models.values()):
+                        self.idle_agent_shutdown=True
+                        (self.profile/"agent"/"stop.request").touch()
+                        if self.idle_agent_deadline is None:self.idle_agent_deadline=time.monotonic()+5
+                        # Both roles have already saved and unloaded. Reclaim an
+                        # idle coordinator's CUDA context if old code is catching up.
+                        elif time.monotonic()>=self.idle_agent_deadline:agent.terminate()
+                else:self.idle_agent_deadline=None
                 if self.agent_reload_pending and not self.stopping:
                     agent = self.children.get("agent")
                     if agent is not None and agent.poll() is None:
@@ -316,6 +398,12 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
                         handle.close()
                     if name == "feed" and self.mode == "mock" and code == 0:
                         continue
+                    if name=="agent" and self.idle_agent_shutdown:
+                        self.idle_agent_shutdown=False
+                        self.idle_agent_deadline=None
+                        if not legacy_requested:continue
+                    if name in ("champion","candidate") and not self.model_enabled[name]:continue
+                    if name=="agent" and not legacy_requested:continue
                     if name == "feed":
                         (self.profile / "feed.stop").unlink(missing_ok=True)
                     time.sleep(.1)

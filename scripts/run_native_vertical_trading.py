@@ -88,7 +88,7 @@ def publish_paper_status(root,state,bridge,decision,row,model,completed=False):
     previous=pipeline.get("paper_trading",{})
     paper={**previous,"timestamp":row["timestamp"],"books":row["books"],"fills":bridge.paper_account.state["fills"][-20:],
         "pending_orders":dict(bridge.paper_account.state["pending"]),"reward_points":bridge.paper_account.reward_points(),
-        "optimizer_updates":model.optimizer_updates,"cycle_seconds":row["seconds"] if decision else previous.get("cycle_seconds"),"checkpoint":str(root/"TradingMoE.pt"),
+        "optimizer_updates":model.optimizer_updates,"cycle_seconds":row["seconds"] if decision else previous.get("cycle_seconds"),"checkpoint":str(getattr(model,"runtime_checkpoint",root/"TradingMoE.pt")),
         "replay":bridge.replay.stats(),"status":"paper_complete" if completed else "paper_running","live_executable":False}
     pipeline["paper_trading"]=paper
     if decision:
@@ -134,6 +134,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--root",type=Path,required=True);p.add_argument("--steps",type=int,default=6)
     p.add_argument("--state",type=Path,default=Path("runtime/trading_moe/native_vertical"))
+    p.add_argument("--checkpoint",type=Path,help="use this named model file without renaming or copying it")
     p.add_argument("--device",default="cuda:0");p.add_argument("--resume",action="store_true")
     p.add_argument("--continuous",action="store_true",help="keep one model resident and run until stop.request")
     p.add_argument("--interval",type=float,default=2,help="wall seconds between historical decisions")
@@ -147,9 +148,11 @@ def main():
 
 def run(args):
     torch.set_num_threads(4)
-    publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message="TradingMoE.pt를 한 번 적재하는 중입니다.")
+    checkpoint=args.checkpoint or args.root/"TradingMoE.pt"
+    publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message=f"{checkpoint.name}를 한 번 적재하는 중입니다.")
     load_started=time.perf_counter()
-    checkpoint=args.root/"TradingMoE.pt";model,saved=TradingMoE.load_checkpoint(checkpoint)
+    checkpoint=args.checkpoint or args.root/"TradingMoE.pt";model,saved=TradingMoE.load_checkpoint(checkpoint)
+    model.runtime_checkpoint=checkpoint
     if args.device.startswith("cuda") and not torch.cuda.is_available():raise RuntimeError("CUDA is required for the requested GPU worker")
     model.set_learning_device(args.device)
     release_offloaded_pages()
