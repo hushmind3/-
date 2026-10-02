@@ -42,16 +42,23 @@ class EvidenceAdapter(nn.Module):
 
 
 class VerticalController(nn.Module):
-    def __init__(self,sizes):
+    def __init__(self,sizes,stock_policy_ids=()):
         super().__init__()
-        self.market_ids=sorted(k for k in sizes if not k.startswith("macrophft_"))
-        self.policy_ids=sorted(k for k in sizes if k.startswith("macrophft_"))
+        self.stock_policy_ids=list(stock_policy_ids)
+        self.macro_policy_ids=sorted(k for k in sizes if k.startswith("macrophft_"))
+        self.market_ids=sorted(k for k in sizes if k not in self.stock_policy_ids and k not in self.macro_policy_ids)
+        self.policy_ids=self.macro_policy_ids+self.stock_policy_ids
         self.sizes=sizes
         self.router=nn.ModuleDict({k:nn.Linear(sizes[k],1) for k in self.market_ids})
         self.router_context=nn.Linear(16,len(self.market_ids))
         self.market_fusion=build_fusion_head({k:sizes[k] for k in self.market_ids})
         self.policy_adapters=nn.ModuleDict({k:nn.Linear(sizes[k],64) for k in self.policy_ids})
         self.policy_attention=nn.MultiheadAttention(64,4,batch_first=True)
+        if self.stock_policy_ids:
+            self.policy_router=nn.ModuleDict({k:nn.Linear(sizes[k],1) for k in self.policy_ids})
+            # Equal initial preferences; training may learn symbol/context-specific preferences.
+            for router in self.policy_router.values():
+                nn.init.zeros_(router.weight);nn.init.zeros_(router.bias)
         self.account_context=nn.Linear(16,64)
         self.controller_norm=nn.LayerNorm(64)
         # The residual starts at zero; the learned ETH policy decides first.
@@ -70,6 +77,12 @@ class VerticalController(nn.Module):
         latent=fused["shared_latent"]
         policy_mask=torch.stack([validity[k] for k in self.policy_ids],-1)
         tokens=torch.stack([self.policy_adapters[k](evidence[k]) for k in self.policy_ids],-2)
+        policy_gates=None
+        if self.stock_policy_ids:
+            policy_logits=torch.cat([self.policy_router[k](evidence[k]) for k in self.policy_ids],-1)
+            policy_gates=policy_logits.masked_fill(~policy_mask,-1e9).softmax(-1)*policy_mask
+            policy_gates=policy_gates/policy_gates.sum(-1,keepdim=True).clamp_min(1e-9)
+            tokens=tokens*policy_gates[...,None]*policy_mask.sum(-1)[...,None,None]
         b,n,e,w=tokens.shape
         unavailable=~policy_mask.any(-1)
         safe_mask=~policy_mask.clone();safe_mask[unavailable,0]=False
@@ -81,22 +94,37 @@ class VerticalController(nn.Module):
         head=self.market_fusion
         prior=torch.zeros_like(head.policy(final));allocation_prior=torch.zeros_like(head.allocation(final).squeeze(-1))
         if policy_q is not None:
-            q=torch.stack([policy_q[k] for k in self.policy_ids],-2)
+            q=torch.stack([policy_q[k] for k in self.macro_policy_ids],-2)
+            macro_mask=torch.stack([validity[k] for k in self.macro_policy_ids],-1)
             centered=q-q.mean(-1,keepdim=True)
             direction=centered/(centered.square().mean(-1,keepdim=True).sqrt().clamp_min(1e-8))
-            votes=direction.softmax(-1)*policy_mask[...,None]
-            votes=votes.sum(-2)/policy_mask.sum(-1,keepdim=True).clamp_min(1)
+            votes=direction.softmax(-1)*macro_mask[...,None]
+            votes=votes.sum(-2)/macro_mask.sum(-1,keepdim=True).clamp_min(1)
             flat,long=votes[...,0].clamp_min(1e-6).log(),votes[...,1].clamp_min(1e-6).log()
             held=account[...,1]>1e-6
             prior[...,0]=torch.where(held,flat,torch.full_like(flat,-4))
             prior[...,1]=torch.where(held,long,flat)
             prior[...,2]=torch.where(held,torch.full_like(long,-4),long)
-            prior=prior.masked_fill(unavailable[...,None],0)
-            allocation_prior=(long-flat).masked_fill(unavailable,0)
+            macro_unavailable=~macro_mask.any(-1)
+            prior=prior.masked_fill(macro_unavailable[...,None],0)
+            allocation_prior=(long-flat).masked_fill(macro_unavailable,0)
+            if self.stock_policy_ids:
+                stock_mask=torch.stack([validity[k] for k in self.stock_policy_ids],-1)
+                stock_votes=torch.stack([policy_q[k][...,:3] for k in self.stock_policy_ids],-2)
+                stock_gates=policy_gates[...,len(self.macro_policy_ids):]*stock_mask
+                stock_gates=stock_gates/stock_gates.sum(-1,keepdim=True).clamp_min(1e-9)
+                probabilities=(stock_votes*stock_gates[...,None]).sum(-2)
+                stock_prior=probabilities.clamp_min(1e-6).log()
+                stock_targets=torch.stack([policy_q[k][...,3] for k in self.stock_policy_ids],-1)
+                target=(stock_targets*stock_gates).sum(-1).clamp(1e-6,1-1e-6)
+                active=stock_mask.any(-1)
+                prior=torch.where(active[...,None],stock_prior,prior)
+                allocation_prior=torch.where(active,torch.logit(target),allocation_prior)
         return {"policy_logits":head.policy(final)+prior,"value":head.value(final).squeeze(-1),
             "allocation_scores":head.allocation(final).squeeze(-1)+allocation_prior,"cash_scores":head.cash(final.mean(1)),
             "shared_latent":final,"router_probabilities":gates,"policy_validity":policy_mask,
-            "coverage":market_mask.any(-1)}
+            "coverage":market_mask.any(-1)|policy_mask.any(-1),
+            **({"policy_router_probabilities":policy_gates} if policy_gates is not None else {})}
 
 
 class TradingMoE(nn.Module):
@@ -104,7 +132,7 @@ class TradingMoE(nn.Module):
         super().__init__()
         self.experts=nn.ModuleDict(experts)
         self.adapters=nn.ModuleDict({k:EvidenceAdapter(config["feature_sizes"][k]) for k in experts})
-        self.controller=VerticalController(config["feature_sizes"])
+        self.controller=VerticalController(config["feature_sizes"],config.get("stock_policy_ids",()))
         self.config,self.metadata,self.root=config,metadata,Path(root)
         self.macro_input_adapter=MacroHFTInputAdapter(**(metadata.get("macro_input_adapter") or macro_adapter_metadata(root)))
         self.optimizer_updates=0
@@ -146,15 +174,23 @@ class TradingMoE(nn.Module):
             else:
                 evidence[key],validity[key]=self.adapters[key](packet,symbols)
                 if evidence[key].shape[-1]!=size:raise ValueError(f"native shape changed for {key}")
+                if key in self.config.get("stock_policy_ids",()):
+                    universe=self.experts[key].entry["stock_policy"]["universe"]
+                    validity[key]&=torch.tensor([[s.upper() in universe for s in symbols]],device=validity[key].device)
         return evidence,validity
 
     def forward(self,snapshot,account_state,*,packets=None,device="cpu",explore=False):
-        started=time.perf_counter();profiles=[]
+        started=time.perf_counter();profiles=[];unavailable_policies={}
         if packets is None:
             packets=[]
             with registry_owner(self.gpu_lock):
                 for key,expert in self.experts.items():
                     data=snapshot["expert_inputs"].get(key)
+                    if key in self.config.get("stock_policy_ids",()) and data is None:
+                        data=expert.prepare_input(snapshot)
+                        if data is None:unavailable_policies[key]="symbol outside universe or native history/account unavailable"
+                    if key in self.config.get("stock_policy_ids",()) and data is not None:
+                        data={**data,"requested_symbols":snapshot["symbols"]}
                     if data is None:continue
                     if key.startswith("macrophft_") and (not data.get("native_features_verified") or
                         data.get("feature_schema")!="MacroHFT_36+9" or data.get("symbols")!=["ETHUSDT"]):continue
@@ -177,7 +213,7 @@ class TradingMoE(nn.Module):
         outputs=self.controller(evidence,validity,account_state.to(next(self.controller.parameters()).device),policy_q)
         trading=decode_trading_output(outputs,snapshot,outputs["coverage"][0].tolist())
         trading["policy_status"]="trained_vertical_controller" if self.optimizer_updates else "native_policy_prior"
-        trading["reason"]="Native MacroHFT policy prior plus market/account-conditioned controller"
+        trading["reason"]="Applicable frozen stock/crypto policy prior plus market/account-conditioned controller"
         probabilities=outputs["policy_logits"][0].softmax(-1)
         for n,s in enumerate(snapshot["symbols"]):
             if outputs["policy_validity"][0,n].any():
@@ -193,16 +229,21 @@ class TradingMoE(nn.Module):
             "raw_outputs":packets,"used_experts":[p["expert"] for p in packets],"selected_experts":[p["expert"] for p in packets],
             "evidence_as_of":{p["expert"]:p["as_of"] for p in packets},
             "policy_validity":outputs["policy_validity"].tolist(),"profiles":profiles,
+            "unavailable_stock_policies":unavailable_policies,
             "decision_seconds":time.perf_counter()-started,"training_performed":False}
         return result,outputs
 
     def policy_q(self,packets,symbols):
         device=next(self.controller.parameters()).device
-        values={k:torch.zeros(1,len(symbols),2,device=device) for k in self.controller.policy_ids}
+        values={k:torch.zeros(1,len(symbols),2 if k in self.controller.macro_policy_ids else 4,device=device) for k in self.controller.policy_ids}
         for packet in packets:
             if packet["expert"] not in values:continue
-            raw=torch.tensor(packet["native_output"],dtype=torch.float32,device=device).reshape(-1,2)
-            for j,s in enumerate(packet["symbols"]):values[packet["expert"]][0,symbols.index(s)]=raw[j]
+            key=packet["expert"]
+            if key in self.controller.stock_policy_ids:
+                raw=torch.tensor([[r["sell_score"],r["hold_score"],r["buy_score"],r["target_weight"]] for r in packet["common_output"]],device=device)
+            else:raw=torch.tensor(packet["native_output"],dtype=torch.float32,device=device).reshape(-1,2)
+            for j,s in enumerate(packet["symbols"]):
+                if s in symbols:values[key][0,symbols.index(s)]=raw[j]
         return values
 
     def save_checkpoint(self,path,optimizer=None):
@@ -228,6 +269,10 @@ class TradingMoE(nn.Module):
             prefix=f"experts.{key}.models."
             count=saved["config"]["native_module_counts"][key]
             states=[{k.removeprefix(prefix+str(i)+"."):v for k,v in saved["state_dict"].items() if k.startswith(prefix+str(i)+".")} for i in range(count)]
+            if entry.get("stock_policy"):
+                from .moe_stock_policies import StockPolicyExpert
+                experts[key]=StockPolicyExpert.restore(entry,states[0])
+                continue
             models=native_call(entry["backend"],root,saved["metadata"]["construction_inputs"][key],states=states,
                 load_only=True,runner_source=saved["metadata"]["native_runner_source"])
             experts[key]=NativeExpert(models,entry)
@@ -249,7 +294,37 @@ class TradingMoE(nn.Module):
             saved["config"]["policy_prior_version"]=1;saved["optimizer_state"]=None;saved["optimizer_updates"]=0
         model.optimizer_updates=saved["optimizer_updates"];model._native_sources=temp
         model.gpu_lock=Path(path).resolve().parent/"gpu-owner.lock"
-        return model,saved["optimizer_state"]
+        optimizer_state=saved["optimizer_state"]
+        previous=saved["metadata"].get("pre_expansion_optimizer_state")
+        if optimizer_state is None and previous and model.controller.stock_policy_ids:
+            optimizer_state=model._expand_optimizer_state(previous)
+        return model,optimizer_state
+
+    def _expand_optimizer_state(self,previous):
+        """Keep existing Adam moments by parameter NAME when new modules are added."""
+        stock=set(self.controller.stock_policy_ids)
+        original_ids=[k for k in self.experts if k not in stock]
+        old_names={"adapter":[f"adapters.{k}.{name}" for k in original_ids for name,_ in self.adapters[k].named_parameters()]}
+        with torch.random.fork_rng(devices=[]):
+            legacy=VerticalController({k:v for k,v in self.config["feature_sizes"].items() if k not in stock})
+        old_names["controller_router_fusion"]=["controller."+name for name,_ in legacy.named_parameters()]
+        moments={}
+        for group in previous["param_groups"]:
+            names=old_names[group["name"]]
+            if len(names)!=len(group["params"]):raise ValueError("legacy optimizer parameter layout changed")
+            moments.update({name:previous["state"][index] for name,index in zip(names,group["params"]) if index in previous["state"]})
+        by_identity={id(p):name for name,p in self.named_parameters()}
+        migrated={"state":{},"param_groups":[]};index=0
+        for group in self.parameter_groups():
+            previous_group=next(g for g in previous["param_groups"] if g["name"]==group["name"])
+            record={**previous_group,"params":[]}
+            for parameter in group["params"]:
+                record["params"].append(index)
+                name=by_identity[id(parameter)]
+                if name in moments:migrated["state"][index]=moments[name]
+                index+=1
+            migrated["param_groups"].append(record)
+        return migrated
 
 
 def package_verified_experts(root,baseline_result,construction_snapshot):

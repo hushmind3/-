@@ -206,6 +206,11 @@ class TradingMoE:
         if previous and saved.get("pipeline"):
             self.registry["pipeline"] = saved["pipeline"]
             self.fusion_checkpoint = saved["pipeline"].get("fusion_checkpoint")
+        # The legacy diagnostic wrapper does not own the registered PT policies.
+        # Refreshing its original catalog must not erase the runtime's additions.
+        for entry in previous.values():
+            if entry.get("backend")=="stock_policy":
+                self.registry["experts"].append(entry)
         self._publish()
 
     def _publish(self):

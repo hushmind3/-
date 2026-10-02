@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "pandas>=2.1", "torch>=2.2", "psutil>=5.9", "requests>=2.31", "keyring>=25.6", "websockets>=12.0"]
 
 [project.optional-dependencies]
-teachers = ["stable-baselines3>=2.3", "sb3-contrib>=2.3", "gymnasium>=0.29", "scikit-learn>=1.2"]
+teachers = ["stable-baselines3>=2.3", "sb3-contrib>=2.3", "gymnasium>=0.29", "scikit-learn>=1.2", "stockstats>=0.6"]
 desktop = ["PySide6>=6.6"]
 
 [tool.setuptools.packages.find]

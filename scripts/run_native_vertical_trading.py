@@ -216,7 +216,7 @@ def run(args):
             snapshot={"as_of":stamp,"symbols":panel.symbols,"currencies":{s:"USD" for s in panel.symbols},
                 "tradable_symbols":[s for j,s in enumerate(panel.symbols) if panel.observed[pi,j]],
                 "current_weights":{s:float(pstate[j][1]) for j,s in enumerate(panel.symbols)},"expert_inputs":{}}
-            for key in model.controller.policy_ids:snapshot["expert_inputs"][key]={**policy_data,"variant":model.experts[key].entry["variant"]}
+            for key in model.controller.macro_policy_ids:snapshot["expert_inputs"][key]={**policy_data,"variant":model.experts[key].entry["variant"]}
             if market_packets is None or (args.continuous and step%120==0):
                 inputs=market_inputs(args.root,native,index)
                 snapshot["expert_inputs"].update(inputs)
@@ -226,7 +226,7 @@ def run(args):
                 release_offloaded_pages()
             else:
                 packets=list(market_packets)
-                for key in model.controller.policy_ids:
+                for key in model.controller.macro_policy_ids:
                     data=snapshot["expert_inputs"][key]
                     with registry_owner(model.gpu_lock),model.scheduler.work("champion_live"):
                         packet=model.experts[key](model.root,data,args.device)
