@@ -14,6 +14,7 @@ from ..paths import default_runtime_dir
 from .resources import DASHBOARD_PATH, PAGE, ROOT, dashboard_asset
 from .runtime import Supervisor
 from .workers import handoff
+from .trading_moe import TradingMoELifecycle
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
           device: str = "auto", candidate_every: int = 16, fee: float = .001,
@@ -27,6 +28,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     supervisor = Supervisor(runtime_path, device, candidate_every, fee, horizon, config, initial_champion,
                             model_dir, settings_dir)
     restart_server_requested = threading.Event()
+    trading_moe = TradingMoELifecycle()
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "StockRLWeb/1.0"
@@ -74,6 +76,8 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                     "candidate_training":metrics.get("candidate_training")})
             if route == "/api/status":
                 return self._send(supervisor.status())
+            if route == "/api/trading-moe/status":
+                return self._send(trading_moe.status())
             if route in ("/api/experts", "/api/experts/output", "/api/experts/fusion"):
                 from ..expert_registry import read_registry, read_raw_output, read_fusion_output
                 registry = ROOT / "runtime/trading_moe/registry.json"
@@ -107,6 +111,9 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             except (ValueError, json.JSONDecodeError):
                 return self._send({"error": "invalid json"}, 400)
             route = urlparse(self.path).path
+            if route in ("/api/trading-moe/start","/api/trading-moe/stop"):
+                result=trading_moe.start() if route.endswith("/start") else trading_moe.stop()
+                return self._send(result,200 if result.get("ok") else 400)
             if route == "/api/server/restart":
                 if restart_server_requested.is_set():
                     return self._send({"error": "Server restart is already in progress."}, 409)

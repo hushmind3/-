@@ -38,7 +38,7 @@ class EvidenceAdapter(nn.Module):
                              np.full(len(x),np.log1p(row["sampling_seconds"] or 0))])
         values=np.concatenate([x/scale,meta],axis=-1).astype(np.float32)
         mask=np.asarray(row["coverage_mask"],bool);values[~mask]=0
-        return torch.from_numpy(values[None])*self.scale+self.bias,torch.from_numpy(mask[None])
+        return torch.from_numpy(values[None]).to(self.scale.device)*self.scale+self.bias,torch.from_numpy(mask[None]).to(self.scale.device)
 
 
 class VerticalController(nn.Module):
@@ -121,6 +121,12 @@ class TradingMoE(nn.Module):
             groups.append({"name":name,"params":list(module.parameters())})
         return groups
 
+    def set_learning_device(self,device):
+        """Move only the small learned modules, never all frozen native experts."""
+        self.adapters.to(device)
+        self.controller.to(device)
+        return self
+
     def _apply(self,fn,recurse=True):
         # Native execution transfers ONE expert. Upper model moves must never
         # materialize all 14 on CUDA as a side effect of model.cuda()/to().
@@ -135,7 +141,8 @@ class TradingMoE(nn.Module):
         for key,size in self.config["feature_sizes"].items():
             packet=packets.get(key)
             if packet is None:
-                evidence[key]=torch.zeros(1,len(symbols),size);validity[key]=torch.zeros(1,len(symbols),dtype=torch.bool)
+                device=self.adapters[key].scale.device
+                evidence[key]=torch.zeros(1,len(symbols),size,device=device);validity[key]=torch.zeros(1,len(symbols),dtype=torch.bool,device=device)
             else:
                 evidence[key],validity[key]=self.adapters[key](packet,symbols)
                 if evidence[key].shape[-1]!=size:raise ValueError(f"native shape changed for {key}")
@@ -167,8 +174,10 @@ class TradingMoE(nn.Module):
                 raise ValueError("unverified MacroHFT evidence cannot enter the controller")
         evidence,validity=self.prepare(packets,snapshot["symbols"])
         policy_q=self.policy_q(packets,snapshot["symbols"])
-        outputs=self.controller(evidence,validity,account_state,policy_q)
+        outputs=self.controller(evidence,validity,account_state.to(next(self.controller.parameters()).device),policy_q)
         trading=decode_trading_output(outputs,snapshot,outputs["coverage"][0].tolist())
+        trading["policy_status"]="trained_vertical_controller" if self.optimizer_updates else "native_policy_prior"
+        trading["reason"]="Native MacroHFT policy prior plus market/account-conditioned controller"
         probabilities=outputs["policy_logits"][0].softmax(-1)
         for n,s in enumerate(snapshot["symbols"]):
             if outputs["policy_validity"][0,n].any():
@@ -188,10 +197,11 @@ class TradingMoE(nn.Module):
         return result,outputs
 
     def policy_q(self,packets,symbols):
-        values={k:torch.zeros(1,len(symbols),2) for k in self.controller.policy_ids}
+        device=next(self.controller.parameters()).device
+        values={k:torch.zeros(1,len(symbols),2,device=device) for k in self.controller.policy_ids}
         for packet in packets:
             if packet["expert"] not in values:continue
-            raw=torch.tensor(packet["native_output"],dtype=torch.float32).reshape(-1,2)
+            raw=torch.tensor(packet["native_output"],dtype=torch.float32,device=device).reshape(-1,2)
             for j,s in enumerate(packet["symbols"]):values[packet["expert"]][0,symbols.index(s)]=raw[j]
         return values
 

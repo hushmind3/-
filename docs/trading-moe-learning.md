@@ -41,19 +41,32 @@ Use the provisioned expert Python environment. Its native dependencies include
   --state runtime/trading_moe/native_vertical_run --steps 20 --resume
 ```
 
-This is a finite consecutive historical run, not an always-on live feed service.
-Each cycle publishes existing registry `pipeline.paper_trading`: orders, fills,
-positions/cash/NAV, costs, rewards and update count. Open
-`http://127.0.0.1:8766/#experts` and refresh to see the new cards.
+This command runs a finite consecutive historical interval. The dedicated
+`http://127.0.0.1:8766/#trading-moe` screen starts a continuous historical worker
+using `--resume --continuous --interval 0.1`. It shows decisions, orders, fills,
+positions/cash/NAV, costs, rewards and optimizer updates. `#experts` retains
+native output diagnostics. This is historical PAPER operation, not a live feed.
 The ledger persists across reruns. Champion/Candidate and their accounts are not
 used or reset by this command.
 
-The eight market experts execute once per short run; original packets are reused
-within that window. Six native MacroHFT Q outputs and the account-aware controller
-execute each decision. GPU ownership is locked and at most one native expert is
-transferred at a time. Upper controller learning runs on CPU. The full checkpoint
-is saved once per window, before replay acknowledgements; replay IDs are scoped
-to the account episode to prevent cross-account ID collisions.
+The eight market experts refresh every 120 historical observations in continuous
+mode; their original packets are reused between refreshes. Six native MacroHFT Q
+outputs and the account-aware controller execute each decision. GPU ownership is
+locked and at most one native expert is transferred at a time. Native inference,
+adapters, router, fusion, controller and optimizer updates use CUDA by default.
+Original frozen CPU parameter views remain backed by the memory-mapped PT, rather
+than being copied back into new RAM buffers after each native forward. Windows
+can reclaim inactive mapped pages after loading and market refreshes.
+
+The worker loads PT once; status polling and HTTP server restart do not reload it.
+Start is idempotent and has a separate OS ownership lock. Stop finishes the current
+cycle, persists account and pending reward evidence, saves the full PT/optimizer,
+acknowledges trained replay rows, then exits. Resume continues the same account,
+native market timestamp and optimizer count. Replay IDs are scoped to the account
+episode to prevent cross-account ID collisions.
+
+Dedicated APIs: `GET /api/trading-moe/status`, `POST /api/trading-moe/start`,
+`POST /api/trading-moe/stop`. They read a small status snapshot, not model weights.
 
 ## Actual input provenance and units
 
@@ -88,6 +101,8 @@ Official sources: [MacroHFT](https://github.com/ZongweiLiang/MacroHFT),
 | Existing paper/reward/replay connector | `moe_paper.py` |
 | Controller update from paper reward | `moe_training.py` |
 | Consecutive run and registry publishing | `scripts/run_native_vertical_trading.py` |
+| Dedicated worker lifecycle/API | `web/trading_moe.py`, `web/server.py` |
+| Dedicated operating screen | `web/assets/trading-moe.js`, `web_dashboard.html` |
 
 Local logs: `cycles.jsonl` and `report.json` under the chosen state path. The
 tracked result summary records actual numbers. No additional long validation or

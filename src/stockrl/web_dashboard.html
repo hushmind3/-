@@ -41,12 +41,42 @@
         ><a href="#connection" data-page="connection">연결 설정</a
         ><a href="#system" data-page="details">상세 · 기록</a>
         <a href="#experts" data-page="experts">TradingMoE · 전문가</a>
+        <a href="#trading-moe" data-page="trading-moe">TradingMoE · 자동매매</a>
         <div class="nav-foot">
           동일 시장 · 독립 계좌<br />공동 경험 · 두 모델 학습
         </div>
       </nav>
 
       <main class="workspace" id="workspace">
+        <div data-view="trading-moe" class="page-view" hidden>
+          <section id="trading-moe" aria-label="TradingMoE 전용 가상매매">
+            <div class="page-heading"><h1>TradingMoE · 자동매매</h1><span class="pill good">PAPER · 실제 주문 OFF</span></div>
+            <article class="live-metric moe-run-header">
+              <div class="metric-heading"><span>TradingMoE.pt</span><span id="moeRunStatus" class="pill">상태 확인 중</span></div>
+              <div class="button-row"><button type="button" id="moeStart">▶ TradingMoE 시작</button><button type="button" id="moeStop">■ TradingMoE 정지</button></div>
+              <p id="moeRunMeta">저장된 계좌와 학습 상태에서 이어 실행합니다.</p>
+              <p id="moeCompute">연산 장치 확인 중</p>
+              <p id="moeRunMessage" role="status" aria-live="polite">공식 ETHUSDT 과거 시세를 연속 재생하며 가상매매와 학습을 진행합니다.</p>
+            </article>
+            <div class="metric-grid">
+              <article class="live-metric"><div class="metric-heading">순자산 NAV</div><strong class="metric-number" id="moeNav">—</strong><p id="moeReturn">—</p></article>
+              <article class="live-metric"><div class="metric-heading">현금</div><strong class="metric-number" id="moeCash">—</strong><p id="moeExposure">—</p></article>
+              <article class="live-metric"><div class="metric-heading">누적 손익</div><strong class="metric-number" id="moePnl">—</strong><p id="moeFees">—</p></article>
+            </div>
+            <div class="moe-main-grid">
+              <article class="live-metric"><div class="metric-heading"><span>최근 판단 · ETHUSDT</span><span id="moeDecisionBadge" class="pill">판단 대기</span></div><strong class="metric-number" id="moeAction">—</strong><p id="moeWeights">—</p><progress id="moeTargetProgress" max="100" value="0" aria-label="ETH 목표 비중"></progress><p id="moeDecisionDetail">—</p></article>
+              <article class="live-metric"><div class="metric-heading">현재 ETHUSDT 포지션</div><strong class="metric-number" id="moePosition">보유 없음</strong><p id="moePositionPrices">—</p><p id="moePositionPnl">—</p></article>
+            </div>
+            <div id="moeVerticalFlow" class="moe-flow" aria-label="수직 의사결정 흐름"><span data-stage="market">시장 expert 8개</span><b>→</b><span data-stage="state">Market State</span><b>→</b><span data-stage="policy">MacroHFT 6개</span><b>→</b><span data-stage="controller">Controller</span><b>→</b><span data-stage="action">BUY / HOLD / SELL</span></div>
+            <div class="metric-grid">
+              <article class="live-metric"><div class="metric-heading">최근 reward</div><strong class="metric-number" id="moeReward">—</strong><p id="moeRewardTotal">—</p></article>
+              <article class="live-metric"><div class="metric-heading">최근 loss</div><strong class="metric-number" id="moeLoss">—</strong><p id="moeLearnTime">—</p></article>
+              <article class="live-metric"><div class="metric-heading">누적 optimizer update</div><strong class="metric-number" id="moeUpdates">—</strong><p id="moeReplay">—</p></article>
+            </div>
+            <article class="live-metric"><div class="metric-heading"><span>최근 가상 체결</span><span id="moeFillCount" class="pill">0건</span></div><div class="table-scroll"><table><thead><tr><th>시각 · 원본 과거 시세</th><th>종목</th><th>BUY / SELL</th><th>수량</th><th>체결가</th><th>수수료</th><th>실현손익</th></tr></thead><tbody id="moeFillRows"><tr><td colspan="7">아직 체결 없음</td></tr></tbody></table></div></article>
+            <p class="metric-caption">1계약 = 0.001 ETH · USDT는 USD와 1:1로 가상 평가 · 원본 전문가 고정 / adapter·router·fusion·controller 학습 · <a href="#experts">전문가 진단 보기</a></p>
+          </section>
+        </div>
         <div data-view="experts" class="page-view" hidden>
           <section id="experts">
             <div class="page-heading"><h1>TradingMoE · 전문가</h1><span class="pill" id="expertRegistryBadge">등록 확인 중</span></div>
@@ -1912,6 +1942,7 @@
     <script defer="" src="/assets/learning.js?v=cards-layout-2"></script>
     <script defer="" src="/assets/trial.js?v=cards-layout-2"></script>
     <script defer="" src="/assets/experts.js?v=integrated-2"></script>
+    <script defer="" src="/assets/trading-moe.js?v=operate-1"></script>
     <script defer="" src="/assets/controls.js?v=cards-layout-2"></script>
   </body>
 </html>

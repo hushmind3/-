@@ -1,0 +1,132 @@
+{
+  "captured_at": "2026-10-03T00:08:12.1725137+09:00",
+  "source": "actual dedicated worker status API",
+  "status": "running",
+  "pid": 20248,
+  "load_count": 1,
+  "parameters": 2227295521,
+  "checkpoint_bytes": 8014055683,
+  "optimizer_updates": 1075,
+  "worker_ram_bytes": 320122880,
+  "compute": {
+    "inference_device": "cuda:0",
+    "learning_device": "cuda:0",
+    "gpu_name": "NVIDIA GeForce RTX 3070",
+    "allocated_bytes": 31968256,
+    "reserved_bytes": 50331648,
+    "expert_gpu_limit": 1,
+    "expert_storage": "CPU RAM"
+  },
+  "account": {
+    "initial_cash": 10000.0,
+    "cash": 8745.4947459139,
+    "positions": {
+      "ETHUSDT": {
+        "quantity": 759,
+        "average_cost": 1.5847815023039997,
+        "opened_timestamp": "2023-02-01T04:38:00"
+      }
+    },
+    "marks": {
+      "ETHUSDT": 1.6123399999999999,
+      "AAPL": 145.42999267578125
+    },
+    "fees": 47.34028737309501,
+    "slippage": 4.734016713,
+    "spread": 0.0,
+    "sell_tax": 0.0,
+    "realized_pnl": -51.65609383735931,
+    "symbol_realized_pnl": {
+      "ETHUSDT": -51.65609383735931
+    },
+    "trade_count": 23,
+    "trade_statistics": {
+      "first_timestamp": "2023-02-01T02:16:00",
+      "buy_count": 12,
+      "sell_count": 11,
+      "sell_wins": 0,
+      "sell_losses": 11,
+      "sell_flat": 0,
+      "sell_realized_sum": -51.65609383735931,
+      "holding_count": 11,
+      "holding_seconds_sum": 6360.0,
+      "holding_seconds_min": 60.0,
+      "holding_seconds_max": 1680.0,
+      "last_timestamp": "2023-02-01T04:38:00"
+    },
+    "equity": 9969.2608059139,
+    "net_pnl": -30.739194086099815,
+    "holdings_value": 1223.76606
+  },
+  "learning": {
+    "loss": -0.04747777804732323,
+    "reward_points": 0.0248952005058527,
+    "updated_at": "2026-10-03T00:08:11.961663+09:00"
+  },
+  "decision": {
+    "action": "HOLD",
+    "target_weight": 0.7595208287239075,
+    "current_weight": 0.12275394172394861,
+    "cash_weight": 0.2404792159795761,
+    "as_of": "2023-02-01 19:47:00",
+    "value": -0.14561741054058075,
+    "seconds": 0.18101720000049681
+  },
+  "replay": {
+    "total": 1290,
+    "eligible": 1290,
+    "untrained": 1290,
+    "quarantined": 0,
+    "unsupported": 0,
+    "daily": [
+      {
+        "day": "2023-02-02",
+        "enqueued": 574,
+        "first_trained": 0,
+        "completed": 0,
+        "exposures": 0,
+        "remaining": 574,
+        "blocked": 0,
+        "remaining_total": 574,
+        "removed_without_completion": 0
+      },
+      {
+        "day": "2023-02-01",
+        "enqueued": 1536,
+        "first_trained": 820,
+        "completed": 820,
+        "exposures": 820,
+        "remaining": 716,
+        "blocked": 0,
+        "remaining_total": 716,
+        "removed_without_completion": 0
+      }
+    ],
+    "blocked_reasons": {},
+    "completed_retained": 0,
+    "oldest": "2023-02-01T09:02:00",
+    "pending": 1,
+    "bytes": 5160960,
+    "model_remaining": {
+      "candidate": 1290,
+      "champion": 1290
+    },
+    "model_untrained": {
+      "candidate": 1290,
+      "champion": 1290
+    },
+    "storage_pressure": false
+  },
+  "stages": {
+    "market": true,
+    "state": true,
+    "policy": true,
+    "controller": true,
+    "action": true
+  },
+  "prior_observed_stop_saved_updates": 430,
+  "duplicate_start_observed": "already_running true with same PID",
+  "http_restart_observed": "same worker PID and load_count retained",
+  "browser": "start/loading/running and stopped/save/resume observed; latest CUDA operating screen rendered",
+  "long_validation_performed": false
+}

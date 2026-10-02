@@ -11,13 +11,14 @@ def update_controller(model,optimizer,experience,snapshot,packets,target_weights
     if experience.portfolio_reward is None:raise ValueError("paper NAV reward is missing")
     pstate=torch.as_tensor(experience.portfolio_state,dtype=torch.float32)
     astate=torch.as_tensor(experience.account_state,dtype=torch.float32).expand(len(pstate),-1)
-    account=torch.cat([pstate,astate],-1)[None]
+    device=next(model.controller.parameters()).device
+    account=torch.cat([pstate,astate],-1)[None].to(device)
     evidence,validity=model.prepare(packets,snapshot["symbols"])
     before=parameter_digest(model.controller)
     versions=[p._version for p in model.experts.parameters()]
     optimizer.zero_grad(set_to_none=True)
     output=model.controller(evidence,validity,account,model.policy_q(packets,snapshot["symbols"]))
-    reward=torch.tensor(100*float(experience.portfolio_reward),dtype=torch.float32)
+    reward=torch.tensor(100*float(experience.portfolio_reward),dtype=torch.float32,device=device)
     predicted=output["value"].mean()
     advantage=(reward-predicted).detach()
     # Action credit plus the actual submitted portfolio allocation, not a
@@ -32,7 +33,7 @@ def update_controller(model,optimizer,experience,snapshot,packets,target_weights
         log_action=torch.stack([log_probabilities[j,{"SELL":0,"HOLD":1,"BUY":2}[actions[snapshot["symbols"][j]]]] for j in indices]).mean()
     allocation=torch.cat([output["allocation_scores"][0],output["cash_scores"][0]])
     distribution=Dirichlet(F.softplus(allocation)+1)
-    weights=torch.tensor([target_weights[s] for s in snapshot["symbols"]]+[cash_weight]).clamp_min(1e-8)
+    weights=torch.tensor([target_weights[s] for s in snapshot["symbols"]]+[cash_weight],device=device).clamp_min(1e-8)
     weights=weights/weights.sum()
     allocation_logp=distribution.log_prob(weights)
     router=output["router_probabilities"]

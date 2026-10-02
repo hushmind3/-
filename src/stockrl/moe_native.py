@@ -32,11 +32,19 @@ class NativeExpert(nn.Module):
         return self.models[module_index](*args,**kwargs)
 
     def forward(self, root, data, device="cpu"):
+        # Frozen CPU tensors are views into the single mmap PT. Retain those
+        # views rather than copying every expert GPU -> newly allocated RAM.
+        frozen=all(not p.requires_grad for p in self.parameters())
+        cpu_parameters=[(p,p.detach()) for p in self.parameters()] if frozen else []
+        cpu_buffers=[(module,name,value) for module in self.modules() for name,value in module._buffers.items() if value is not None] if frozen else []
         try:
             return native_call(self.entry["backend"], root, data, device,
                                modules=list(self.models))
         finally:
-            self.cpu()
+            if frozen:
+                for parameter,value in cpu_parameters:parameter.data=value
+                for module,name,value in cpu_buffers:module._buffers[name]=value
+            else:self.cpu()
 
 
 def native_call(backend, root, data, device="cpu", *, modules=None, states=None,

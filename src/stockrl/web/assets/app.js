@@ -379,6 +379,7 @@ function refresh() {
   return statusRequest;
 }
 async function readStatus() {
+  if (screenVisible("trading-moe")) return refreshTradingMoE();
   if (screenVisible("experts")) return refreshExperts();
   try {
     render(await api("/api/status"));
@@ -506,6 +507,7 @@ function selectDashboardPage() {
   }
   if (current) render(current);
   if (page === "experts") refreshExperts();
+  if (page === "trading-moe") refreshTradingMoE();
   requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
 }
 document.addEventListener("DOMContentLoaded", startDashboard, { once: true });

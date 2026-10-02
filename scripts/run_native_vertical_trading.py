@@ -11,6 +11,8 @@ import hashlib
 from pathlib import Path
 import sys
 import time
+import os
+from datetime import datetime,timezone
 import numpy as np
 import pandas as pd
 import torch
@@ -21,6 +23,61 @@ from stockrl.moe_training import update_controller
 from stockrl.global_transformer import GlobalMarketPanel
 from stockrl.expert_registry import atomic_json
 from stockrl.expert_system import registry_owner
+
+worker_status_path=None
+
+
+def release_offloaded_pages():
+    """Let Windows reclaim inactive mmap checkpoint pages, without unloading modules."""
+    if os.name=="nt":
+        import ctypes
+        from ctypes import wintypes
+        kernel=ctypes.WinDLL("kernel32",use_last_error=True)
+        kernel.GetCurrentProcess.restype=wintypes.HANDLE
+        trim=ctypes.WinDLL("psapi",use_last_error=True).EmptyWorkingSet
+        trim.argtypes=[wintypes.HANDLE];trim.restype=wintypes.BOOL
+        trim(kernel.GetCurrentProcess())
+
+
+def publish_worker(state,model=None,bridge=None,row=None,decision=None,learning=None,**changes):
+    """Small polling snapshot; native evidence stays in the diagnostic registry."""
+    path=state/"worker_status.json"
+    try:data=json.loads(path.read_text(encoding="utf-8"))
+    except (OSError,ValueError):data={}
+    data.update(changes,pid=os.getpid(),updated_at=datetime.now(timezone.utc).isoformat())
+    if model is not None:
+        data.update(optimizer_updates=model.optimizer_updates,
+            applied_replay_rows=len(model.config.get("applied_replay_rows",{})))
+        learner_device=next(model.controller.parameters()).device
+        data["compute"]={"inference_device":"cuda:0" if torch.cuda.is_available() else "cpu",
+            "learning_device":str(learner_device),"gpu_name":torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+            "allocated_bytes":torch.cuda.memory_allocated(0) if torch.cuda.is_available() else 0,
+            "reserved_bytes":torch.cuda.memory_reserved(0) if torch.cuda.is_available() else 0,
+            "expert_gpu_limit":1,"expert_storage":"memory-mapped PT / sequential CUDA"}
+    if bridge is not None:
+        data.update(books=bridge.paper_account.snapshot()["books"],fills=bridge.paper_account.state["fills"][-20:],
+            pending_orders=bridge.paper_account.state["pending"],reward_points=bridge.paper_account.reward_points(),replay=bridge.replay.stats())
+    if row:data.update(market_timestamp=row["timestamp"],cycle_seconds=row["seconds"])
+    if decision:
+        output=decision["trading_output"];symbols=list(output["actions"])
+        eth=symbols.index("ETHUSDT")
+        cash=output["cash_weights_by_currency"]["USD"]+sum(weight for symbol,weight in output["target_weights"].items() if symbol not in decision["tradable_symbols"])
+        data["decision"]={"action":output["actions"]["ETHUSDT"],"target_weight":output["target_weights"]["ETHUSDT"],
+            "current_weight":decision["current_weights"].get("ETHUSDT",0),"cash_weight":cash,"as_of":decision["as_of"],
+            "value":decision["fusion_output"]["native_head_output"]["value"][0][eth],"seconds":decision.get("native_decision_seconds",decision["decision_seconds"])}
+        data["stages"]={"market":len([x for x in decision["used_experts"] if not x.startswith("macrophft_")])==8,
+            "state":True,"policy":len([x for x in decision["used_experts"] if x.startswith("macrophft_")])==6,"controller":True,"action":True}
+    if learning:data["learning"]={"loss":learning["loss"],"reward_points":learning["reward_points"],"updated_at":data["updated_at"]}
+    atomic_json(path,data)
+
+
+def save_contexts(state,contexts):
+    # Retain the evidence used by each pending action, including an action
+    # immediately before market-cache refresh. Never relabel it as newer data.
+    pending={}
+    for stamp,(snapshot,decision) in contexts.items():
+        pending[stamp]={"snapshot":snapshot,"trading_output":decision["trading_output"],"raw_outputs":decision["raw_outputs"]}
+    atomic_json(state/"pending_contexts.json",pending)
 
 
 def publish_paper_status(root,state,bridge,decision,row,model,completed=False):
@@ -78,8 +135,26 @@ def main():
     p.add_argument("--root",type=Path,required=True);p.add_argument("--steps",type=int,default=6)
     p.add_argument("--state",type=Path,default=Path("runtime/trading_moe/native_vertical"))
     p.add_argument("--device",default="cuda:0");p.add_argument("--resume",action="store_true")
-    args=p.parse_args();torch.set_num_threads(4)
+    p.add_argument("--continuous",action="store_true",help="keep one model resident and run until stop.request")
+    p.add_argument("--interval",type=float,default=2,help="wall seconds between historical decisions")
+    args=p.parse_args()
+    args.state.mkdir(parents=True,exist_ok=True)
+    global worker_status_path
+    worker_status_path=args.state/"worker_status.json"
+    with registry_owner(args.state/"worker-owner.lock"):
+        run(args)
+
+
+def run(args):
+    torch.set_num_threads(4)
+    publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message="TradingMoE.pt를 한 번 적재하는 중입니다.")
+    load_started=time.perf_counter()
     checkpoint=args.root/"TradingMoE.pt";model,saved=TradingMoE.load_checkpoint(checkpoint)
+    if args.device.startswith("cuda") and not torch.cuda.is_available():raise RuntimeError("CUDA is required for the requested GPU worker")
+    model.set_learning_device(args.device)
+    release_offloaded_pages()
+    publish_worker(args.state,model,status="loading",load_count=1,load_seconds=time.perf_counter()-load_started,
+        parameters=sum(p.numel() for p in model.parameters()),checkpoint_bytes=checkpoint.stat().st_size,message="계좌와 optimizer 상태를 복원하는 중입니다.")
     groups=model.parameter_groups()
     optimizer=torch.optim.AdamW(groups,lr=1e-4)
     if args.resume and saved:
@@ -91,8 +166,11 @@ def main():
         model.config["applied_replay_rows"]={}
         model.config["replay_account_episode"]=episode
     initial=deepcopy(bridge.paper_account.snapshot())
-    native=pd.read_feather(args.root/"native_data/MacroHFT/df_val.feather").iloc[:256].copy()
+    native=pd.read_feather(args.root/"native_data/MacroHFT/df_val.feather")
     native.timestamp=pd.to_datetime(native.timestamp)
+    last=bridge.paper_account.state["last_timestamp"]
+    first=128 if not args.resume or not last else max(128,int((pd.Timestamp(last)-native.timestamp.iloc[0]).total_seconds()/60)+1)
+    native=native.iloc[:min(len(native),first+(4096 if args.continuous else args.steps+2))].copy()
     market=native[["timestamp","open","high","low","close","volume"]].rename(columns={"timestamp":"date"})
     market["symbol"]="ETHUSDT";market["market"]="US";market["asset_class"]="crypto"
     stock=pd.read_csv(Path(__file__).resolve().parents[1]/"data/global_market_daily.csv")
@@ -107,19 +185,27 @@ def main():
     panel.closes[:,eth_index]*=.001
     before_hash=parameter_digest(model.controller)
     initial_updates=model.optimizer_updates
-    contexts={};rows=[];update_logs=[];last=bridge.paper_account.state["last_timestamp"]
+    contexts={};rows=[];update_logs=[]
     # Expensive market experts run once for this short window. Native policy Q
     # and account-aware controller run every minute using the frozen market state.
-    first=128 if not args.resume or not last else max(128,int((pd.Timestamp(last)-native.timestamp.iloc[0]).total_seconds()/60)+1)
+    if first>=len(native):
+        publish_worker(args.state,model,bridge,status="stopped",message="확보된 과거 시세 구간을 모두 처리했습니다.")
+        return
+    if args.resume and (args.state/"pending_contexts.json").exists():
+        for stamp,context in json.loads((args.state/"pending_contexts.json").read_text()).items():
+            contexts[stamp]=(context["snapshot"],{"trading_output":context["trading_output"],"raw_outputs":context["raw_outputs"]})
     inputs=market_inputs(args.root,native,first)
     market_packets=None
-    for step in range(args.steps+2):
+    step_count=len(native)-first if args.continuous else args.steps+2
+    publish_worker(args.state,model,bridge,status="running",message="공식 ETHUSDT 과거 구간을 이어 실행합니다.")
+    for step in range(step_count):
+        if args.continuous and (args.state/"stop.request").exists():break
         index=first+step;stamp=str(native.iloc[index].timestamp)
         pi=int(np.flatnonzero(panel.dates==np.datetime64(stamp))[0])
         if last and panel.dates[pi]<=np.datetime64(last):continue
         started=time.perf_counter();fills=bridge.advance(panel,pi)
         decision=None;orders=None
-        if step<args.steps:
+        if args.continuous or step<args.steps:
             pstate,astate=bridge.paper_account.model_inputs(panel,pi)
             account=torch.tensor(np.column_stack([pstate,np.broadcast_to(astate,(len(pstate),len(astate)))]),dtype=torch.float32)[None]
             held=bool(bridge.paper_account.state["books"]["USD"]["positions"].get("ETHUSDT"))
@@ -128,10 +214,13 @@ def main():
                 "tradable_symbols":[s for j,s in enumerate(panel.symbols) if panel.observed[pi,j]],
                 "current_weights":{s:float(pstate[j][1]) for j,s in enumerate(panel.symbols)},"expert_inputs":{}}
             for key in model.controller.policy_ids:snapshot["expert_inputs"][key]={**policy_data,"variant":model.experts[key].entry["variant"]}
-            if market_packets is None:
+            if market_packets is None or (args.continuous and step%120==0):
+                inputs=market_inputs(args.root,native,index)
                 snapshot["expert_inputs"].update(inputs)
                 with torch.no_grad():decision,_=model(snapshot,account,device=args.device,explore=True)
                 market_packets=[p for p in decision["raw_outputs"] if p["expert"] in model.controller.market_ids]
+                atomic_json(args.state/"market_evidence.json",market_packets)
+                release_offloaded_pages()
             else:
                 packets=list(market_packets)
                 for key in model.controller.policy_ids:
@@ -142,9 +231,11 @@ def main():
                     packets.append(packet)
                     if args.device.startswith("cuda"):torch.cuda.empty_cache()
                 with torch.no_grad():decision,_=model(snapshot,account,packets=packets,explore=True)
+            decision["native_decision_seconds"]=time.perf_counter()-started
+            decision["current_weights"]=snapshot["current_weights"]
             orders=bridge.submit(decision,panel,pi,paper_executable=True)
             contexts[str(panel.dates[pi])] = (snapshot,decision)
-        batch=bridge.replay.pending_batch(256,exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})});ack={}
+        batch=bridge.replay.pending_batch(256,exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})});ack={};latest_learning=None
         for exp in batch:
             if exp.source!="paper_account_portfolio" or not exp.portfolio_value_transition:continue
             context=contexts.get(exp.timestamp)
@@ -152,12 +243,14 @@ def main():
             snapshot,original=context
             change=update_controller(model,optimizer,exp,snapshot,original["raw_outputs"],original["trading_output"]["target_weights"],original["trading_output"]["cash_weights_by_currency"]["USD"],original["trading_output"]["actions"])
             update_logs.append({"timestamp":exp.timestamp,**change})
+            latest_learning=change
             ack.update({e._replay_row_id:1 for e in batch if e.timestamp==exp.timestamp})
         # Save once after this short continuous run, then acknowledge the rows.
         row={"timestamp":stamp,"decision":decision,"orders":orders,"fills":fills,
             "books":deepcopy(bridge.paper_account.snapshot()["books"]),"reward_points":bridge.paper_account.reward_points(),
             "seconds":time.perf_counter()-started,"replay_rows":bridge.replay.stats()["total"]}
         rows.append(row)
+        if args.continuous:rows=rows[-2:]
         publish_paper_status(args.root,args.state,bridge,decision,row,model)
         with (args.state/"cycles.jsonl").open("a",encoding="utf-8") as handle:handle.write(json.dumps(row)+"\n")
         # Remember updated IDs so the next step does not consume them again.
@@ -165,12 +258,23 @@ def main():
             if e._replay_row_id in ack:e._updated=True
         if ack:
             model.config.setdefault("applied_replay_rows",{}).update({str(k):1 for k in ack})
+            for stamp in {e.timestamp for e in batch if e._replay_row_id in ack}:contexts.pop(stamp,None)
+        save_contexts(args.state,contexts)
+        publish_worker(args.state,model,bridge,row,decision,latest_learning,status="running")
         last=str(panel.dates[pi])
         print(json.dumps({"step":step,"actions":decision["trading_output"]["actions"] if decision else None,
             "fills":fills,"NAV":row["books"]["USD"]["equity"],"updates":model.optimizer_updates,"seconds":row["seconds"]}),flush=True)
+        if args.continuous:
+            update_logs=update_logs[-1:]
+            deadline=time.monotonic()+max(0,args.interval)
+            while time.monotonic()<deadline and not (args.state/"stop.request").exists():time.sleep(min(.1,max(0,deadline-time.monotonic())))
+    publish_worker(args.state,model,bridge,status="saving",stop_requested=True,message="계좌·replay·optimizer·TradingMoE.pt를 저장하는 중입니다.")
+    bridge.paper_account.save();save_contexts(args.state,contexts)
     model.save_checkpoint(checkpoint,optimizer)
     bridge.replay.acknowledge_training({int(k):v for k,v in model.config.get("applied_replay_rows",{}).items()})
     if rows:publish_paper_status(args.root,args.state,bridge,None,rows[-1],model,completed=True)
+    publish_worker(args.state,model,bridge,status="stopped",stop_requested=False,message="저장 완료 · 다음 시작은 같은 계좌와 학습 상태에서 이어집니다.")
+    if args.continuous:return
     report={"initial":initial["books"],"final":bridge.paper_account.snapshot()["books"],"fills":bridge.paper_account.state["fills"],
         "contract_units":{"ETHUSDT":{"quantity_per_unit":.001,"quote_currency":"USDT","USD_parity_assumption":True}},
         "steps":[{"timestamp":r["timestamp"],"seconds":r["seconds"],"actions":r["decision"]["trading_output"]["actions"] if r["decision"] else None,
@@ -188,4 +292,8 @@ def main():
     print(json.dumps({k:v for k,v in report.items() if k not in ("initial","final","native_Q","fills","steps","updates")}),flush=True)
 
 
-if __name__=="__main__":main()
+if __name__=="__main__":
+    try:main()
+    except Exception as exc:
+        if worker_status_path:publish_worker(worker_status_path.parent,status="error",error=f"{type(exc).__name__}: {exc}")
+        raise
