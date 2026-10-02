@@ -1,6 +1,7 @@
 "use strict";
 // All commands are mocked. This suite never starts/stops/resets the live agents.
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const { build, fixture } = require("./frontend_regression.cjs");
 const { performance } = require("node:perf_hooks");
 let checks = 0;
@@ -68,6 +69,44 @@ const rich = {
 async function main() {
   const obj = build(true, clone(rich));
   obj.w.render(rich);
+  check(() =>
+    assert.equal(
+      obj.w.document.documentElement.dataset.uiRevision,
+      "cards-layout-2",
+    ),
+  );
+  check(() =>
+    assert(
+      [...obj.w.document.querySelectorAll("link[rel=stylesheet]")].every(
+        (e) => new URL(e.href).searchParams.get("v") === "cards-layout-2",
+      ),
+    ),
+  );
+  const source = fs.readFileSync("src/stockrl/web_dashboard.html", "utf8");
+  check(() =>
+    assert.equal(
+      source
+        .split('src="/assets/')
+        .slice(1)
+        .filter((x) => x.split('"')[0].endsWith("?v=cards-layout-2")).length,
+      7,
+    ),
+  );
+  const css = fs.readFileSync("src/stockrl/web/assets/dashboard.css", "utf8");
+  const rule = (selector) =>
+    css.slice(
+      css.indexOf(selector + " {"),
+      css.indexOf("}", css.indexOf(selector + " {")),
+    );
+  check(() => assert(rule(".sidebar").includes("grid-column: 1;")));
+  check(() => assert(rule(".workspace").includes("grid-column: 2;")));
+  check(() =>
+    assert(
+      css
+        .split(".command-feedback {")
+        .some((x) => x.split("}")[0].includes("grid-column: 1 / -1;")),
+    ),
+  );
   const errors = build(true, clone(rich));
   errors.w.render({
     ...rich,

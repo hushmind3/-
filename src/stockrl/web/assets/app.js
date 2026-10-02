@@ -458,6 +458,18 @@ function render(d) {
 
 // Start after the screen scripts have loaded. UI updates never restart the models.
 function startDashboard() {
+  // Old tabs can receive newer assets during deployment. Reload the document
+  // before running renderers that require the corresponding screen markup.
+  if (document.documentElement.dataset.uiRevision !== "cards-layout-2") {
+    const url = new URL(location.href);
+    if (url.searchParams.get("ui") !== "cards-layout-2") {
+      url.searchParams.set("ui", "cards-layout-2");
+      location.replace(url.href);
+    } else {
+      writeText("systemBadge", "화면 버전 불일치 · 새로고침 필요");
+    }
+    return;
+  }
   selectDashboardPage();
   window.addEventListener("hashchange", selectDashboardPage);
   setClock();

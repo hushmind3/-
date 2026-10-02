@@ -1200,6 +1200,8 @@ html {
   flex-direction: column;
   gap: 8px;
   padding: 22px 0;
+  grid-column: 1;
+  min-width: 0;
   align-self: start;
   position: sticky;
   top: 0;
@@ -1233,6 +1235,7 @@ html {
   padding: 28px 14px;
 }
 .workspace {
+  grid-column: 2;
   min-width: 0;
 }
 .page-heading {
@@ -2044,6 +2047,8 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .command-feedback {
+  grid-column: 1 / -1;
+  min-width: 0;
   margin-bottom: 14px;
 }
 .learning-situation {
@@ -2055,4 +2060,15 @@ body {
 .section-head .pill {
   max-width: 60%;
   white-space: normal;
+}
+
+/* Previous documents may still be open while their stylesheet is updated. */
+.app > .workflow-strip,
+.app > .workflow-lifecycle {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
 }
