@@ -210,9 +210,7 @@ const SYMBOL_NAMES = {
 let current = null,
   selectedMarket = "all",
   freshOnly = false,
-  busy = false,
-  environmentTouched = false,
-  refreshing = false;
+  environmentTouched = false;
 
 function dateOf(value) {
   if (!value) return null;
@@ -222,18 +220,17 @@ function dateOf(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+const clockFormat = new Intl.DateTimeFormat("ko-KR", {
+  timeZone: "Asia/Seoul",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 function timeOf(value) {
   const date = dateOf(value);
-  return date
-    ? new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(date)
-    : "기록 없음";
+  return date ? clockFormat.format(date) : "기록 없음";
 }
 
 function ageOf(value) {
@@ -262,15 +259,37 @@ let pendingText = null;
 let pendingProperties = null;
 const htmlValues = new WeakMap();
 const detailOwners = new WeakMap();
+const pageNodes = new Map();
+function screenVisible(name) {
+  if (!pageNodes.has(name))
+    pageNodes.set(name, document.querySelector(`[data-view="${name}"]`));
+  return !pageNodes.get(name)?.hidden;
+}
 function beginView() {
   pendingText = new Map();
   pendingProperties = new Map();
 }
 function detailsOpen(id) {
   const node = $(id);
-  if (!detailOwners.has(node)) detailOwners.set(node, node.closest("details"));
-  const panel = detailOwners.get(node);
-  return !panel || panel.open;
+  if (!detailOwners.has(node)) {
+    const parents = [];
+    for (let parent = node.parentElement; parent; parent = parent.parentElement)
+      if (parent.tagName === "DETAILS" || parent.hasAttribute("data-view")) {
+        // A closed panel still exposes its summary; outer closed panels stay lazy.
+        if (
+          parent.tagName === "DETAILS" &&
+          node.closest("summary")?.parentElement === parent
+        )
+          continue;
+        parents.push(parent);
+      }
+    detailOwners.set(node, parents);
+  }
+  return detailOwners
+    .get(node)
+    .every((parent) =>
+      parent.tagName === "DETAILS" ? parent.open : !parent.hidden,
+    );
 }
 function property(id, key, value) {
   if (pendingProperties) {
@@ -345,80 +364,99 @@ async function api(path, body) {
 }
 
 function setClock() {
-  text(
-    "clock",
-    new Intl.DateTimeFormat("ko-KR", {
-      timeZone: "Asia/Seoul",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(new Date()) + " KST",
-  );
+  text("clock", clockFormat.format(new Date()) + " KST");
 }
 
 let lastDecisionRenderKey = null;
 
-async function refresh() {
-  if (refreshing) return;
-  refreshing = true;
+let statusRequest = null;
+function refresh() {
+  if (!statusRequest)
+    statusRequest = readStatus().finally(() => {
+      statusRequest = null;
+    });
+  return statusRequest;
+}
+async function readStatus() {
   try {
     render(await api("/api/status"));
+    return true;
   } catch (error) {
     badge("systemBadge", "서버 연결 끊김", "bad");
     renderLearningSituation({ ...current, status_unavailable: true });
     renderWorkflowStatus({ status_unavailable: true });
+    renderProcessHealth({ status_unavailable: true });
     text("runTitle", "서버 연결 실패");
     text("runDetail", error.message);
     feedback("로컬 서버 상태를 읽지 못했습니다. 5초 후 다시 확인합니다.", true);
-  } finally {
-    refreshing = false;
+    return false;
   }
 }
 
+// Screen ownership is explicit. Hidden pages do no table/account work.
 function render(d) {
   current = d;
   beginView();
   try {
     renderControls(d);
-    renderStatus(d);
-    renderTelemetry(d);
-    renderMarkets(d);
-    renderDecisions(d);
-    renderLearningTotals(d);
-    renderPaperResults(d);
-    renderLiveAccounts(d);
-    renderLearningMeasurements(d);
-    renderLearningMetrics(d);
-    renderDailyLearning(d);
-    renderDualLearning(d);
-    renderConnection(d);
-    renderVenues(d);
+    if (screenVisible("overview")) {
+      renderStatus(d);
+      renderTelemetry(d);
+      renderWorkflowStatus(d);
+      renderProcessHealth(d);
+      renderPaperResults(d);
+      renderLiveAccounts(d);
+      renderOperationsOverview(d);
+      renderObservationStatus(d);
+      renderOverviewExperience(d);
+    }
+    if (screenVisible("market")) {
+      renderMarkets(d);
+      renderDecisions(d);
+      renderOutputDiagnostics(d);
+      renderVenues(d);
+    }
+    if (screenVisible("learning")) {
+      renderLearningTotals(d);
+      renderLearningMeasurements(d);
+      renderLearningMetrics(d);
+      renderDailyLearning(d);
+      renderDualLearning(d);
+      renderExperienceFlow(d);
+      renderLearnerSummary(d);
+    }
+    if (screenVisible("trial")) {
+      renderValidationAccounts(d);
+      renderPromotionHistory(d);
+      renderTrialSummary(d);
+    }
+    if (screenVisible("connection")) renderConnection(d);
+    if (screenVisible("details")) {
+      renderTelemetry(d);
+      renderGpuScheduler(d);
+      renderAccountInputContext(d);
+      renderProcessingHistory(d);
+      renderInferenceWork(d);
+      renderRuntimeUpdates(d);
+      renderDailyOperation(d);
+      if (detailsOpen("logs")) text("logs", d.logs || "운영 기록 없음");
+    }
+    if (
+      screenVisible("learning") ||
+      screenVisible("details") ||
+      detailsOpen("inputQuickSummary")
+    )
+      renderDailyOperation(d);
     text(
       "lastData",
       "최근 시장 데이터 · " + timeOf(d.metrics?.last_market_timestamp),
     );
-    if ($("logs").closest("details")?.open)
-      text("logs", d.logs || "운영 기록 없음");
-
-    renderOutputDiagnostics(d);
-    renderAccountDiagnostics(d);
-    renderDailyOperation(d);
-    renderInferenceWork(d);
-    renderOperationsOverview(d);
-    renderObservationStatus(d);
-    renderRuntimeUpdates(d);
-    renderExperienceFlow(d);
-    renderLearnerSummary(d);
-    renderTrialSummary(d);
-    renderWorkflowStatus(d);
   } finally {
     commitView();
   }
 }
 
-// Start after all four files have loaded. UI updates never restart the models.
+// Start after the screen scripts have loaded. UI updates never restart the models.
 function startDashboard() {
   selectDashboardPage();
   window.addEventListener("hashchange", selectDashboardPage);
@@ -456,3 +494,46 @@ function selectDashboardPage() {
   requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
 }
 document.addEventListener("DOMContentLoaded", startDashboard, { once: true });
+
+// Shared presentation only: these helpers own no account or trial state.
+function accountMoney(value, currency) {
+  return value == null
+    ? "—"
+    : Number(value).toLocaleString("ko-KR", {
+        maximumFractionDigits: currency === "KRW" ? 0 : 2,
+      }) +
+        " " +
+        currency;
+}
+
+function accountPercent(value) {
+  return value == null ? "—" : (Number(value) * 100).toFixed(2) + "%";
+}
+
+function accountTable(headers, rows) {
+  return (
+    "<table><thead><tr>" +
+    headers.map((x) => "<th>" + esc(x) + "</th>").join("") +
+    "</tr></thead><tbody>" +
+    rows
+      .map(
+        (row) =>
+          "<tr>" + row.map((x) => "<td>" + esc(x) + "</td>").join("") + "</tr>",
+      )
+      .join("") +
+    "</tbody></table>"
+  );
+}
+
+function tableRows(rows) {
+  return rows
+    .map(
+      (row) =>
+        "<tr>" +
+        row.map((value) => "<td>" + esc(value) + "</td>").join("") +
+        "</tr>",
+    )
+    .join("");
+}
+
+// Learning lifecycle counts use the same replay metrics as the worker.

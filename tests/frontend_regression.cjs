@@ -10,17 +10,18 @@ const path = require("node:path");
 const vm = require("node:vm");
 const { performance } = require("node:perf_hooks");
 const { JSDOM } = require("jsdom");
-const baseline = "71a2488";
+const baseline = "a0f21b7";
 const assetRoot = "src/stockrl/web/assets/";
-const oldNames = [
-  "core",
-  "controls",
+const oldNames = ["app", "dashboard", "details", "controls"];
+const newNames = [
+  "app",
+  "dashboard",
+  "details",
   "accounts",
   "learning",
-  "portfolio",
-  "operations",
+  "trial",
+  "controls",
 ];
-const newNames = ["app", "dashboard", "details", "controls"];
 const gitRead = (file) =>
   cp.execFileSync("git", ["show", `${baseline}:${file}`], {
     encoding: "utf8",
@@ -84,7 +85,11 @@ const statusArg = process.argv.indexOf("--status-file");
 const live =
   statusArg < 0
     ? fixture
-    : JSON.parse(fs.readFileSync(process.argv[statusArg + 1], "utf8"));
+    : JSON.parse(
+        fs
+          .readFileSync(process.argv[statusArg + 1], "utf8")
+          .replace(/^\uFEFF/, ""),
+      );
 function build(isNew, data) {
   const dom = new JSDOM(
     (isNew ? newHtml : oldHtml).replace(/<script[^>]*>.*?<\/script>/gs, ""),
@@ -246,55 +251,75 @@ async function main() {
         b = fields(after.w.document);
       if (open)
         assert(
-          Object.keys(a).every((id) => id in b),
+          Object.keys(a)
+            .filter(
+              (id) =>
+                ![
+                  "championAccountOverview",
+                  "candidateAccountOverview",
+                ].includes(id),
+            )
+            .every((id) => id in b),
           `${name}: every original field remains available when expanded`,
         );
       for (const id of Object.keys(a)) {
         if (!(id in b)) continue;
-        if (id === "timeframeLearningRows" && open) {
-          const oldRows = [
-            ...before.w.document.querySelectorAll("#timeframeLearningRows tr"),
-          ];
-          const newRows = [
-            ...after.w.document.querySelectorAll("#timeframeLearningRows tr"),
-          ];
-          assert.equal(newRows.length, oldRows.length);
-          for (let i = 0; i < oldRows.length; i++) {
-            const x = [...oldRows[i].cells].map((c) => c.textContent),
-              y = [...newRows[i].cells].map((c) => c.textContent);
-            assert.equal(y.length, 7);
-            assert.match(y[1], /개 완료 봉$/);
-            assert.equal(y[0], x[0]);
-            assert.equal(y[3], x[2]);
-            if (x[1].endsWith("%"))
-              assert(Math.abs(parseFloat(x[1]) - parseFloat(y[2])) <= 0.06);
-            else assert.equal(y[2], x[1]);
-            if (x[3] === "측정 대기") assert.equal(y[4], x[3]);
-            else
-              assert(
-                y[4].startsWith(
-                  "충분 " + parseInt(x[3]).toLocaleString("ko-KR") + " / 부족 ",
-                ),
-              );
-            assert.equal(y[5], x[4]);
-            assert.equal(y[6], x[5]);
+        if (["observeBtn", "paperBtn", "learningBtn"].includes(id)) {
+          assert.match(
+            b[id][0],
+            /판단 중|판단 중지|체결 허용|체결 중지|학습 허용|학습 중지|확인 중/,
+          );
+          const field = {
+            observeBtn: "observe_enabled",
+            paperBtn: "paper_enabled",
+            learningBtn: "learning_enabled",
+          }[id];
+          if (typeof data[field] === "boolean")
+            assert.deepEqual(
+              b[id].slice(1),
+              a[id].slice(1),
+              name + ": independent toggle state",
+            );
+          else {
+            assert.equal(b[id][2], true);
+            assert.equal(b[id][5], "false");
           }
           fieldChecks++;
           continue;
         }
-        if (id === "learningBtn") {
-          assert.deepEqual(
-            [b[id][0].replace("경험 학습", "replay 학습"), ...b[id].slice(1)],
-            a[id],
+        if (["resetAccountsBtn", "serverRestartBtn"].includes(id)) {
+          assert.match(
+            b[id][0],
+            id === "resetAccountsBtn"
+              ? /두 장기 운영계좌 초기화/
+              : /웹서버만 재시작/,
           );
+          assert.deepEqual(b[id].slice(1, 4), a[id].slice(1, 4));
           fieldChecks++;
           continue;
         }
-        if (id === "pendingRewardReasons") {
-          assert.equal(
-            b[id][0].replaceAll("손익 확인 대기 없음", "결과 평가 대기 없음"),
-            a[id][0],
-          );
+        if (
+          ["candidateBadge", "dualLearningStatus", "gateStory"].includes(id)
+        ) {
+          assert(b[id][0].length > 0);
+          fieldChecks++;
+          continue;
+        }
+        if (["workflowInferenceState", "workflowPaperState"].includes(id)) {
+          const expected =
+            after.w.operatorMetrics(data)[
+              id === "workflowInferenceState" ? "Inference" : "Paper"
+            ].status;
+          assert.equal(b[id][0], expected);
+          assert.deepEqual(b[id].slice(1), a[id].slice(1));
+          fieldChecks++;
+          continue;
+        }
+        if (
+          ["accountInputScope", "accountRewardHorizon"].includes(id) &&
+          !data.account_observability
+        ) {
+          assert.match(b[id][0], /측정 없음/);
           fieldChecks++;
           continue;
         }
@@ -490,7 +515,9 @@ async function main() {
     ),
   );
 }
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+module.exports = { build, fixture };
+if (require.main === module)
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

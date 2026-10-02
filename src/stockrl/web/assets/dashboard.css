@@ -3,7 +3,6 @@
   --bg: #f3f6fb;
   --surface: #fff;
   --ink: #18243b;
-  --muted: #62718a;
   --line: #dce4ef;
   --blue: #265edb;
   --blue-soft: #edf3ff;
@@ -24,7 +23,6 @@ html {
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--ink);
   font:
     14px/1.5 "Pretendard",
     "Malgun Gothic",
@@ -58,16 +56,13 @@ p {
   margin: 0;
 }
 .app {
-  max-width: 1540px;
   margin: 0 auto;
-  padding: 0 28px 65px;
 }
 .top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 15px;
-  padding: 21px 0 15px;
 }
 .identity {
   display: flex;
@@ -79,10 +74,8 @@ p {
   place-items: center;
   width: 43px;
   height: 43px;
-  border-radius: 12px;
   background: var(--blue);
   color: white;
-  font-size: 21px;
   font-weight: 900;
 }
 .identity strong {
@@ -115,8 +108,6 @@ p {
   gap: 6px;
   border-radius: 99px;
   padding: 5px 9px;
-  font-size: 11px;
-  font-weight: 850;
   background: #e9eef6;
   color: #57647b;
   white-space: nowrap;
@@ -167,7 +158,6 @@ p {
   border-bottom-color: var(--blue);
 }
 section {
-  scroll-margin-top: 18px;
   margin-bottom: 23px;
 }
 .section-head {
@@ -195,14 +185,11 @@ section {
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
 }
 .pad {
   padding: 20px;
 }
 .hero {
-  padding: 23px;
   border-color: #c7d9fb;
   background: linear-gradient(115deg, #fff 57%, #f0f5ff);
 }
@@ -231,13 +218,9 @@ section {
   margin-top: 4px;
 }
 .control-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.8fr 1.4fr;
-  gap: 14px;
   margin-top: 20px;
 }
 .control-box {
-  padding: 14px 16px;
   border: 1px solid #d7e1f0;
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.84);
@@ -340,11 +323,6 @@ section {
 .status-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-.status-card {
-  padding: 17px 18px;
 }
 .status-card .topline {
   display: flex;
@@ -1036,13 +1014,9 @@ tr:last-child td {
 .account-grid {
   align-items: start;
 }
-.account-card h3 {
-  font-size: 20px;
-}
 .account-overview {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
   margin: 18px 0;
 }
 .account-currency {
@@ -1053,14 +1027,11 @@ tr:last-child td {
 }
 .account-currency strong {
   display: block;
-  font-size: 25px;
   margin: 8px 0 4px;
   font-variant-numeric: tabular-nums;
 }
 .account-currency small {
-  display: block;
   color: #63789d;
-  line-height: 1.7;
 }
 .account-currency .currency-title {
   font-weight: 750;
@@ -1090,8 +1061,6 @@ tr:last-child td {
 .account-meta {
   font-size: 12px;
   color: #64799b;
-  line-height: 1.8;
-  margin: 12px 0;
 }
 .account-details {
   border-top: 1px solid #e6edf6;
@@ -1156,10 +1125,6 @@ tr:last-child td {
   .account-main b {
     font-size: 13px;
   }
-}
-
-[hidden] {
-  display: none !important;
 }
 .ops-jump {
   display: flex;
@@ -1252,7 +1217,6 @@ html {
   padding: 13px 15px;
   border-radius: 12px;
   font-weight: 650;
-  font-size: 14px;
 }
 .sidebar a:hover {
   background: #e9eef8;
@@ -1375,9 +1339,6 @@ section {
 .account-card {
   padding: 22px;
 }
-.account-card h3 {
-  font-size: 18px;
-}
 .account-card .section-head {
   margin-bottom: 15px;
 }
@@ -1395,8 +1356,6 @@ section {
   margin: 10px 0;
 }
 .compact-detail > summary {
-  color: #61708b;
-  font-size: 12px;
   cursor: pointer;
   font-weight: 650;
 }
@@ -1628,12 +1587,7 @@ footer {
 
 /* Readability: useful information must stay legible in the narrow app panel. */
 body {
-  font-size: 16px;
-  line-height: 1.6;
   color: #18243b;
-}
-:root {
-  --muted: #52627b;
 }
 .sidebar a {
   font-size: 15px;
@@ -1790,7 +1744,6 @@ body {
   border: 1px solid #cbdaf2;
   border-radius: 12px;
   padding: 16px;
-  margin: 12px 0;
   color: #30435f;
 }
 .learning-situation > strong {
@@ -1810,35 +1763,6 @@ body {
 }
 
 /* Operator hierarchy: live states first, reasons next, details on demand. */
-.workflow-strip {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 18px;
-}
-.workflow-strip a {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #ced9eb;
-  border-radius: 12px;
-  color: #253d60;
-  text-decoration: none;
-  font-size: 14px;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
-.workflow-strip span {
-  color: #53657d;
-  font-size: 13px;
-}
-.workflow-strip strong {
-  font-size: 15px;
-}
 #learningAtGlance {
   background: #eaf1ff;
   font-weight: 650;
@@ -1902,15 +1826,7 @@ body {
 .learning-lifecycle small {
   line-height: 1.7;
 }
-@media (max-width: 1000px) {
-  .workflow-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 @media (max-width: 680px) {
-  .workflow-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .learning-lifecycle {
     grid-template-columns: 1fr;
   }
@@ -1925,137 +1841,11 @@ body {
   }
 }
 
-@media (min-width: 520px) and (max-width: 680px) {
-  .workflow-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .workflow-strip a {
-    padding: 9px 11px;
-    font-size: 13px;
-  }
-  .workflow-strip strong {
-    font-size: 13px;
-  }
-}
-
 /* Fixed live metric slots: data changes never add/remove cards or move controls. */
-.workflow-strip {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  align-items: stretch;
-}
-.workflow-strip .live-metric {
-  height: 166px;
-  box-sizing: border-box;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 10px;
-  min-width: 0;
-  background: #fff;
-  border: 1px solid #d5deed;
-  border-radius: 15px;
-  color: #344c70;
-  overflow: hidden;
-}
-.workflow-strip .metric-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  min-height: 29px;
-}
-.workflow-strip .metric-heading > span:first-child {
-  font-size: 13px;
-  font-weight: 650;
-}
-.workflow-strip .metric-heading .pill {
-  font-size: 11px;
-  white-space: nowrap;
-  padding: 4px 8px;
-}
-.workflow-strip .metric-number,
-.workflow-strip .big {
-  font-size: 25px;
-  line-height: 1.3;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-}
-.workflow-strip progress {
-  appearance: none;
-  width: 100%;
-  height: 7px;
-  border: 0;
-  border-radius: 9px;
-  background: #e5ecf7;
-  flex-shrink: 0;
-}
-.workflow-strip progress::-webkit-progress-bar {
-  background: #e5ecf7;
-  border-radius: 9px;
-}
-.workflow-strip progress::-webkit-progress-value {
-  background: #2860df;
-  border-radius: 9px;
-}
-.workflow-strip progress.unmeasured {
-  opacity: 0.35;
-}
-.workflow-strip .metric-spacer {
-  height: 7px;
-  flex-shrink: 0;
-}
-.workflow-strip .metric-caption {
-  font-size: 12px;
-  line-height: 1.6;
-  color: #526783;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  min-height: 38px;
-  margin: 0;
-  background: transparent;
-  font-weight: 500;
-}
-.workflow-strip .gpu-summary .topline {
-  min-height: 29px;
-  margin: 0;
-  font-size: 13px;
-}
-.workflow-strip .gpu-summary .topline .pill {
-  font-size: 11px;
-  padding: 4px 8px;
-  white-space: nowrap;
-}
-.workflow-strip .gpu-summary .metric-sub {
-  font-size: 11px;
-  line-height: 1.6;
-  min-height: 38px;
-  display: block;
-}
-.workflow-strip .gpu-summary .metric-sub span {
-  display: block;
-  font-size: 11px;
-}
-.workflow-strip .gpu-summary .meter {
-  margin: 0;
-  height: 7px;
-}
 .learning-situation {
-  min-height: 220px;
   box-sizing: border-box;
-}
-.learning-situation > strong {
-  min-height: 28px;
-}
-.learning-situation p {
-  min-height: 24px;
 }
 #timeframeInputWarning {
-  min-height: 62px;
   box-sizing: border-box;
 }
 .learner-title > span {
@@ -2068,43 +1858,6 @@ body {
 .mini-card strong {
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 1500px) {
-  .workflow-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (max-width: 900px) {
-  .workflow-strip .live-metric {
-    height: 156px;
-    padding: 11px 12px;
-    gap: 8px;
-  }
-  .workflow-strip .metric-number,
-  .workflow-strip .big {
-    font-size: 22px;
-  }
-  .workflow-strip .metric-heading {
-    align-items: flex-start;
-  }
-  .workflow-strip .metric-heading > span:first-child {
-    font-size: 12px;
-  }
-  .workflow-strip .metric-heading .pill {
-    font-size: 10px;
-    padding: 3px 6px;
-  }
-}
-@media (max-width: 540px) {
-  .workflow-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .workflow-strip .live-metric {
-    height: 164px;
-  }
-  .learning-situation {
-    min-height: 265px;
-  }
-}
 
 #flowPendingWaitReason {
   height: 4.8em;
@@ -2114,6 +1867,192 @@ body {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
-.workflow-strip .metric-number {
-  min-height: 29px;
+
+/* Operator hierarchy: summary cards, then controls, then resources. */
+:root {
+  --card-radius: 16px;
+  --gap: 16px;
+  --muted: #52647e;
+}
+body {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  margin-bottom: 18px;
+}
+.overview-rounds {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.live-metric {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  color: var(--ink);
+  text-decoration: none;
+}
+.metric-heading,
+.topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: 700;
+}
+.metric-heading > span:first-child {
+  min-width: 0;
+}
+.metric-number,
+.live-metric .big {
+  display: block;
+  font-size: clamp(22px, 2.6vw, 34px);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.metric-caption {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.live-metric progress {
+  width: 100%;
+  height: 8px;
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  background: var(--line);
+}
+.live-metric progress::-webkit-progress-bar {
+  background: var(--line);
+  border-radius: 8px;
+}
+.live-metric progress::-webkit-progress-value {
+  background: var(--blue);
+  border-radius: 8px;
+}
+.live-metric progress.unmeasured {
+  opacity: 0.35;
+}
+.gpu-summary .metric-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.secondary-lags {
+  display: none;
+}
+.account-card {
+  min-width: 0;
+}
+.account-currency strong {
+  font-size: 30px;
+}
+.account-currency small {
+  display: block;
+  line-height: 1.55;
+}
+.pill {
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.pill.danger {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.command-feedback.error,
+.result.error {
+  color: var(--red);
+  background: var(--red-soft);
+}
+.learning-situation {
+  margin: 12px 0;
+}
+.learning-lifecycle > div,
+.learner-summary > div {
+  min-width: 0;
+  border-radius: var(--card-radius);
+}
+.learner-title span {
+  color: var(--muted);
+}
+#control {
+  margin-top: 22px;
+}
+#control .hero {
+  margin-bottom: 18px;
+}
+#runtimeAlert {
+  margin-bottom: 18px;
+}
+.account-overview {
+  gap: 12px;
+}
+@media (max-width: 960px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .overview-experience {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .metric-grid,
+  .overview-experience {
+    grid-template-columns: 1fr;
+  }
+  .metric-number,
+  .live-metric .big {
+    font-size: 28px;
+  }
+  .live-metric {
+    padding: 16px;
+  }
+  .account-currency strong {
+    font-size: 27px;
+  }
+}
+
+.round-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 0;
+}
+.round-metrics span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+.round-metrics strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.command-feedback {
+  margin-bottom: 14px;
+}
+.learning-situation {
+  padding: 8px 12px;
+}
+.learning-situation .compact-detail {
+  margin: 0;
+}
+.section-head .pill {
+  max-width: 60%;
+  white-space: normal;
 }

@@ -26,109 +26,14 @@
           ><span class="clock" id="clock">--:-- KST</span>
         </div>
       </header>
-      <section class="workflow-strip" aria-label="실시간 핵심 수치">
-        <a class="live-metric" href="#markets"
-          ><div class="metric-heading">
-            <span>시세 수신</span
-            ><span class="pill" id="workflowFeedState">확인 중</span>
-          </div>
-          <strong class="metric-number" id="workflowFeed">—</strong
-          ><progress
-            id="workflowFeedMeter"
-            max="100"
-            value="0"
-            aria-label="시세 수신"
-            aria-valuetext="미측정"
-          ></progress
-          ><small class="metric-caption" id="workflowFeedDetail"
-            >확인 중</small
-          ></a
-        >
-        <a class="live-metric" href="#control"
-          ><div class="metric-heading">
-            <span>두 모델의 시세 처리 지연</span
-            ><span class="pill" id="workflowInferenceState">확인 중</span>
-          </div>
-          <strong class="metric-number" id="workflowInference">—</strong
-          ><progress
-            id="workflowInferenceMeter"
-            max="100"
-            value="0"
-            aria-label="두 모델의 시세 처리 지연"
-            aria-valuetext="미측정"
-          ></progress
-          ><small class="metric-caption" id="workflowInferenceDetail"
-            >확인 중</small
-          ></a
-        >
-        <a class="live-metric" href="#control"
-          ><div class="metric-heading">
-            <span>가상계좌 누적 체결</span
-            ><span class="pill" id="workflowPaperState">확인 중</span>
-          </div>
-          <strong class="metric-number" id="workflowPaper">—</strong>
-          <div class="metric-spacer"></div>
-          <small class="metric-caption" id="workflowPaperDetail"
-            >확인 중</small
-          ></a
-        >
-        <a class="live-metric" href="#learning"
-          ><div class="metric-heading">
-            <span>오늘 학습·저장 완료</span
-            ><span class="pill" id="workflowLearningState">확인 중</span>
-          </div>
-          <strong class="metric-number" id="workflowLearning">—</strong
-          ><progress
-            id="workflowLearningMeter"
-            max="100"
-            value="0"
-            aria-label="오늘 학습·저장 완료"
-            aria-valuetext="미측정"
-          ></progress
-          ><small class="metric-caption" id="learningAtGlance"
-            >확인 중</small
-          ></a
-        >
-        <a class="live-metric" href="#promotionTrial"
-          ><div class="metric-heading">
-            <span>승급전 진행</span
-            ><span class="pill" id="workflowTrialState">확인 중</span>
-          </div>
-          <strong class="metric-number" id="workflowTrial">—</strong
-          ><progress
-            id="workflowTrialMeter"
-            max="100"
-            value="0"
-            aria-label="승급전 진행"
-            aria-valuetext="미측정"
-          ></progress
-          ><small class="metric-caption" id="workflowTrialDetail"
-            >확인 중</small
-          ></a
-        >
-        <div class="card status-card live-metric gpu-summary">
-          <div class="topline">
-            <span>GPU · 모델 메모리</span
-            ><span class="pill" id="gpuBadge">확인 중</span>
-          </div>
-          <strong class="big" id="gpuMemory">—</strong>
-          <div
-            class="meter"
-            role="progressbar"
-            aria-label="모델 GPU 메모리 사용 비율"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="0"
-            id="gpuMeter"
-          >
-            <div id="gpuFill"></div>
-          </div>
-          <div class="metric-sub">
-            <span id="gpuDevice">GPU 확인 중</span
-            ><span id="gpuPercent">—</span>
-          </div>
-        </div>
-      </section>
+      <div
+        class="command-feedback"
+        id="commandFeedback"
+        role="status"
+        aria-live="polite"
+        hidden=""
+      ></div>
+
       <nav class="sidebar" aria-label="작업 화면">
         <div class="nav-label">운용 에이전트</div>
         <a href="#control" data-page="overview">운영 · 계좌</a
@@ -157,6 +62,356 @@
             <h1>운영 · 계좌</h1>
             <span>실행 제어와 두 모델의 장기 가상계좌</span>
           </div>
+          <section
+            class="overview-health metric-grid"
+            aria-label="현재 운영 상태"
+          >
+            <a class="live-metric" href="#markets"
+              ><div class="metric-heading">
+                <span>시세 수신</span
+                ><span class="pill" id="workflowFeedState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowFeed">—</strong
+              ><progress
+                id="workflowFeedMeter"
+                max="100"
+                value="0"
+                aria-label="시세 수신"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="workflowFeedDetail"
+                >확인 중</small
+              ></a
+            ><a class="live-metric" href="#control"
+              ><div class="metric-heading">
+                <span>두 모델의 시세 처리 지연</span
+                ><span class="pill" id="workflowInferenceState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowInference">—</strong
+              ><progress
+                id="workflowInferenceMeter"
+                max="100"
+                value="0"
+                aria-label="두 모델의 시세 처리 지연"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="workflowInferenceDetail"
+                >확인 중</small
+              ></a
+            >
+            <article class="card live-metric process-health">
+              <div class="metric-heading">
+                <span>서버 · Feed · Agent</span
+                ><span class="pill" id="processHealthBadge">확인 중</span>
+              </div>
+              <strong class="metric-number" id="processHealthValue">—</strong
+              ><small class="metric-caption" id="processHealthDetail"
+                >확인 중</small
+              >
+            </article>
+          </section>
+          <div id="operationsOverview">
+            <div class="mini ops-status secondary-lags">
+              <div class="card mini-card">
+                <span>Champion · 새 시세 처리 지연</span
+                ><strong id="opChampionLag">—</strong
+                ><small id="opChampionTime"
+                  >관찰 처리와 실제 추론 시각 확인 중</small
+                >
+              </div>
+              <div class="card mini-card">
+                <span>Candidate · 새 시세 처리 지연</span
+                ><strong id="opCandidateLag">—</strong
+                ><small id="opCandidateQueue">미처리 시장 관찰 확인 중</small>
+              </div>
+            </div>
+            <details
+              class="notice ops-alert compact-detail"
+              id="runtimeAlertPanel"
+              hidden
+            >
+              <summary
+                id="runtimeAlertSummary"
+                role="status"
+                aria-live="polite"
+              >
+                최근 오류·지연
+              </summary>
+              <div
+                class="notice ops-alert"
+                id="runtimeAlert"
+                role="alert"
+                hidden
+              ></div>
+            </details>
+          </div>
+          <div id="liveAccounts">
+            <details class="compact-detail">
+              <summary>두 모델의 판단·학습·계좌 운영 방식</summary>
+              <div
+                class="notice"
+                id="liveAccountObservationNotice"
+                role="status"
+              >
+                운영 계좌와 학습 Candidate 계좌는 각 모델의 행동을 보는 누적
+                관찰용입니다. 가중치 버전·관찰 봉 수·시작 시각이 달라 두 계좌의
+                누적 손익은 승패 점수가 아닙니다. 승급 판정은 위 정식 대결만
+                사용합니다.
+              </div>
+            </details>
+            <div class="grid-2 account-grid" style="margin-top: 16px">
+              <article class="card pad account-card">
+                <div class="section-head">
+                  <h3>Champion 가상계좌</h3>
+                  <span class="pill" id="championLiveBadge">상태 확인 중</span>
+                </div>
+                <details class="compact-detail">
+                  <summary>판단 모델 · 갱신 정보</summary>
+                  <p class="help">
+                    저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된
+                    계좌 시각 기준입니다.
+                  </p>
+                  <div class="account-meta" id="championAccountMeta">—</div>
+                </details>
+
+                <div id="championAccountOverview" class="account-overview">
+                  <div class="account-currency">
+                    <div class="currency-title">KRW · 비용 차감 수익률</div>
+                    <strong id="championKRWReturn">—</strong>
+                    <div class="net-value" id="championKRWPnl">—</div>
+                    <small id="championKRWEquity">현재 순자산 —</small
+                    ><small id="championKRWExposure">현금 — · 최대 비중 —</small
+                    ><small id="championKRWTrades">체결 —</small>
+                  </div>
+                  <div class="account-currency">
+                    <div class="currency-title">USD · 비용 차감 수익률</div>
+                    <strong id="championUSDReturn">—</strong>
+                    <div class="net-value" id="championUSDPnl">—</div>
+                    <small id="championUSDEquity">현재 순자산 —</small
+                    ><small id="championUSDExposure">현금 — · 최대 비중 —</small
+                    ><small id="championUSDTrades">체결 —</small>
+                  </div>
+                </div>
+                <details class="compact-detail">
+                  <summary>현금 · 시작 자금 · 거래비용</summary>
+                  <div class="detail-list account-main">
+                    <div>
+                      <span>시작 자금 · KRW / USD</span
+                      ><b id="championLiveSeed">—</b>
+                    </div>
+                    <div>
+                      <span>현재 현금 · KRW / USD</span
+                      ><b id="championLiveCash">—</b>
+                    </div>
+                    <div>
+                      <span>누적 거래비용 · KRW / USD</span
+                      ><b id="paperCosts">—</b>
+                    </div>
+                    <div>
+                      <span>누적 체결 · KRW / USD</span
+                      ><b id="paperTradeCount">—</b>
+                    </div>
+                    <div>
+                      <span>보유 종목 수 · KRW / USD</span
+                      ><b id="championLivePositionCount">—</b>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="account-details">
+                  <summary>보유 종목 · 비중 · 평가손익</summary>
+                  <div id="positions" class="account-scroll">—</div>
+                </details>
+                <details class="account-details">
+                  <summary>지금 판단 · 행동 확률 · 목표 비중</summary>
+                  <p class="help" id="championPolicySummary">새 관측 대기</p>
+                  <div id="modelDirections" class="account-scroll">—</div>
+                </details>
+                <details class="account-details">
+                  <summary>손익과 비용 상세 · 최근 체결</summary>
+                  <p class="account-reading" id="championAccountReading">
+                    분석 대기
+                  </p>
+                  <div id="championTradingStatistics" class="account-scroll">
+                    —
+                  </div>
+                  <div id="championCostDetails" class="account-scroll">—</div>
+                  <p class="help">
+                    실현 / 평가 손익 · KRW <b id="krwPnlSplit">—</b> · USD
+                    <b id="usdPnlSplit">—</b>
+                  </p>
+                  <p class="help">
+                    최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.
+                  </p>
+                  <div id="championLiveFills" class="account-scroll">—</div>
+                </details>
+                <span id="krwNetPnl" hidden=""></span
+                ><span id="usdNetPnl" hidden=""></span>
+              </article>
+              <article class="card pad account-card">
+                <div class="section-head">
+                  <h3>Candidate 가상계좌</h3>
+                  <span class="pill" id="candidateLiveBadge">상태 확인 중</span>
+                </div>
+                <details class="compact-detail">
+                  <summary>판단 모델 · 갱신 정보</summary>
+                  <p class="help">
+                    저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된
+                    계좌 시각 기준입니다.
+                  </p>
+                  <div class="account-meta" id="candidateAccountMeta">—</div>
+                </details>
+
+                <div id="candidateAccountOverview" class="account-overview">
+                  <div class="account-currency">
+                    <div class="currency-title">KRW · 비용 차감 수익률</div>
+                    <strong id="candidateKRWReturn">—</strong>
+                    <div class="net-value" id="candidateKRWPnl">—</div>
+                    <small id="candidateKRWEquity">현재 순자산 —</small
+                    ><small id="candidateKRWExposure"
+                      >현금 — · 최대 비중 —</small
+                    ><small id="candidateKRWTrades">체결 —</small>
+                  </div>
+                  <div class="account-currency">
+                    <div class="currency-title">USD · 비용 차감 수익률</div>
+                    <strong id="candidateUSDReturn">—</strong>
+                    <div class="net-value" id="candidateUSDPnl">—</div>
+                    <small id="candidateUSDEquity">현재 순자산 —</small
+                    ><small id="candidateUSDExposure"
+                      >현금 — · 최대 비중 —</small
+                    ><small id="candidateUSDTrades">체결 —</small>
+                  </div>
+                </div>
+                <details class="compact-detail">
+                  <summary>현금 · 시작 자금 · 거래비용</summary>
+                  <div class="detail-list account-main">
+                    <div>
+                      <span>시드머니 · KRW / USD</span
+                      ><b id="candidateLiveSeed">—</b>
+                    </div>
+                    <div>
+                      <span>현재 현금 · KRW / USD</span
+                      ><b id="candidateLiveCash">—</b>
+                    </div>
+                    <div>
+                      <span>누적 거래비용 · KRW / USD</span
+                      ><b id="candidateLiveCosts">—</b>
+                    </div>
+                    <div>
+                      <span>누적 체결 · KRW / USD</span
+                      ><b id="candidateLiveTrades">—</b>
+                    </div>
+                    <div>
+                      <span>보유 종목 수 · KRW / USD</span
+                      ><b id="candidateLivePositionCount">—</b>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="account-details">
+                  <summary>보유 종목 · 비중 · 평가손익</summary>
+                  <div id="candidateLiveHoldings" class="account-scroll">—</div>
+                </details>
+                <details class="account-details">
+                  <summary>지금 판단 · 행동 확률 · 목표 비중</summary>
+                  <p class="help" id="candidatePolicySummary">새 관측 대기</p>
+                  <div id="candidateLiveDirections" class="account-scroll">
+                    —
+                  </div>
+                </details>
+                <details class="account-details">
+                  <summary>손익과 비용 상세 · 최근 체결</summary>
+                  <p class="account-reading" id="candidateAccountReading">
+                    분석 대기
+                  </p>
+                  <div id="candidateTradingStatistics" class="account-scroll">
+                    —
+                  </div>
+                  <div id="candidateCostDetails" class="account-scroll">—</div>
+                  <p class="help">
+                    실현 / 평가 손익 · KRW <b id="candidateLiveKrwSplit">—</b> ·
+                    USD <b id="candidateLiveUsdSplit">—</b>
+                  </p>
+                  <p class="help">
+                    최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.
+                  </p>
+                  <div id="candidateLiveFills" class="account-scroll">—</div>
+                </details>
+                <span id="candidateLiveStatus" hidden=""></span
+                ><span id="candidateLiveLastInference" hidden=""></span
+                ><span id="candidateLiveKrwNet" hidden=""></span
+                ><span id="candidateLiveUsdNet" hidden=""></span>
+              </article>
+            </div>
+          </div>
+          <section
+            class="overview-rounds metric-grid"
+            aria-label="학습과 승급전"
+          >
+            <a class="live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>오늘 학습·저장 완료</span
+                ><span class="pill" id="workflowLearningState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowLearning">—</strong
+              ><progress
+                id="workflowLearningMeter"
+                max="100"
+                value="0"
+                aria-label="오늘 학습·저장 완료"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="learningAtGlance"
+                >확인 중</small
+              ></a
+            ><a class="live-metric" href="#promotionTrial"
+              ><div class="metric-heading">
+                <span>승급전 진행</span
+                ><span class="pill" id="workflowTrialState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowTrial">—</strong
+              ><progress
+                id="workflowTrialMeter"
+                max="100"
+                value="0"
+                aria-label="승급전 진행"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="workflowTrialDetail"
+                >확인 중</small
+              ></a
+            >
+          </section>
+          <section class="overview-experience metric-grid">
+            <a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>손익 확인 중</span><span class="pill">결과 대기</span>
+              </div>
+              <strong class="metric-number" id="overviewExperiencePending"
+                >—</strong
+              ><small class="metric-caption"
+                >후속 시세로 보상 확정 후 학습</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>학습 가능한 경험</span><span class="pill">Replay</span>
+              </div>
+              <strong class="metric-number" id="overviewExperienceEligible"
+                >—</strong
+              ><small class="metric-caption" id="overviewLearningReason"
+                >학습 상태 확인 중</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>학습·저장 완료</span><span class="pill">두 모델</span>
+              </div>
+              <strong class="metric-number" id="overviewExperienceCompleted"
+                >—</strong
+              ><small class="metric-caption"
+                >최근 날짜 기록의 완료 합계</small
+              ></a
+            >
+          </section>
           <section id="control">
             <div class="card hero">
               <div class="hero-top">
@@ -254,16 +509,16 @@
                       class="button subtle"
                       id="serverRestartBtn"
                       type="button"
-                      title="Restart the 8766 service after saving live state"
+                      title="웹만 재시작합니다. Feed와 모델은 계속 실행됩니다."
                     >
-                      서버 재시작</button
+                      웹서버만 재시작</button
                     ><button
                       class="button danger"
                       id="resetAccountsBtn"
                       type="button"
-                      title="Champion과 Candidate 관찰 계좌를 시드머니로 초기화"
+                      title="두 모델의 누적 잔고·포지션·손익 초기화. 가중치·replay 유지. 진행 중 시험은 무효 처리될 수 있습니다."
                     >
-                      계좌 초기화</button
+                      두 장기 운영계좌 초기화</button
                     ><button class="button danger" id="stopBtn" type="button">
                       전체 정지
                     </button>
@@ -274,13 +529,6 @@
                   </div>
                 </div>
               </div>
-              <div
-                class="command-feedback"
-                id="commandFeedback"
-                role="status"
-                aria-live="polite"
-                hidden=""
-              ></div>
             </div>
             <details class="compact-detail">
               <summary>시세 수집·모델 프로세스·연결 상태</summary>
@@ -328,189 +576,53 @@
               </div>
             </details>
           </section>
-          <div id="operationsOverview">
-            <div class="mini ops-status">
-              <div class="card mini-card">
-                <span>Champion · 새 시세 처리 지연</span
-                ><strong id="opChampionLag">—</strong
-                ><small id="opChampionTime"
-                  >관찰 처리와 실제 추론 시각 확인 중</small
-                >
+          <section
+            class="overview-resources metric-grid"
+            aria-label="자원과 저장소"
+          >
+            <div class="card status-card live-metric gpu-summary">
+              <div class="topline">
+                <span>GPU · 메모리</span
+                ><span class="pill" id="gpuBadge">확인 중</span>
               </div>
-              <div class="card mini-card">
-                <span>Candidate · 새 시세 처리 지연</span
-                ><strong id="opCandidateLag">—</strong
-                ><small id="opCandidateQueue">미처리 시장 관찰 확인 중</small>
-              </div>
-            </div>
-            <div
-              class="notice ops-alert"
-              id="runtimeAlert"
-              role="alert"
-              hidden=""
-            ></div>
-          </div>
-          <div id="liveAccounts">
-            <details class="compact-detail">
-              <summary>두 모델의 판단·학습·계좌 운영 방식</summary>
+              <strong class="big" id="gpuMemory">—</strong>
               <div
-                class="notice"
-                id="liveAccountObservationNotice"
-                role="status"
+                class="meter"
+                role="progressbar"
+                aria-label="장치 GPU 메모리 사용 비율"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                id="gpuMeter"
               >
-                운영 계좌와 학습 Candidate 계좌는 각 모델의 행동을 보는 누적
-                관찰용입니다. 가중치 버전·관찰 봉 수·시작 시각이 달라 두 계좌의
-                누적 손익은 승패 점수가 아닙니다. 승급 판정은 위 정식 대결만
-                사용합니다.
+                <div id="gpuFill"></div>
               </div>
-            </details>
-            <div class="grid-2 account-grid" style="margin-top: 16px">
-              <article class="card pad account-card">
-                <div class="section-head">
-                  <h3>Champion 가상계좌</h3>
-                  <span class="pill" id="championLiveBadge">상태 확인 중</span>
-                </div>
-                <details class="compact-detail">
-                  <summary>판단 모델 · 갱신 정보</summary>
-                  <p class="help">
-                    저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된
-                    계좌 시각 기준입니다.
-                  </p>
-                  <div class="account-meta" id="championAccountMeta">—</div>
-                </details>
-
-                <div id="championAccountOverview" class="account-overview">
-                  계좌를 불러오는 중…
-                </div>
-                <div class="detail-list account-main">
-                  <div>
-                    <span>시작 자금 · KRW / USD</span
-                    ><b id="championLiveSeed">—</b>
-                  </div>
-                  <div>
-                    <span>현재 현금 · KRW / USD</span
-                    ><b id="championLiveCash">—</b>
-                  </div>
-                  <div>
-                    <span>누적 거래비용 · KRW / USD</span
-                    ><b id="paperCosts">—</b>
-                  </div>
-                  <div>
-                    <span>누적 체결 · KRW / USD</span
-                    ><b id="paperTradeCount">—</b>
-                  </div>
-                  <div>
-                    <span>보유 종목 수 · KRW / USD</span
-                    ><b id="championLivePositionCount">—</b>
-                  </div>
-                </div>
-
-                <details class="account-details">
-                  <summary>보유 종목 · 비중 · 평가손익</summary>
-                  <div id="positions" class="account-scroll">—</div>
-                </details>
-                <details class="account-details">
-                  <summary>지금 판단 · 행동 확률 · 목표 비중</summary>
-                  <p class="help" id="championPolicySummary">새 관측 대기</p>
-                  <div id="modelDirections" class="account-scroll">—</div>
-                </details>
-                <details class="account-details">
-                  <summary>손익과 비용 상세 · 최근 체결</summary>
-                  <p class="account-reading" id="championAccountReading">
-                    분석 대기
-                  </p>
-                  <div id="championTradingStatistics" class="account-scroll">
-                    —
-                  </div>
-                  <div id="championCostDetails" class="account-scroll">—</div>
-                  <p class="help">
-                    실현 / 평가 손익 · KRW <b id="krwPnlSplit">—</b> · USD
-                    <b id="usdPnlSplit">—</b>
-                  </p>
-                  <p class="help">
-                    최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.
-                  </p>
-                  <div id="championLiveFills" class="account-scroll">—</div>
-                </details>
-                <span id="krwNetPnl" hidden=""></span
-                ><span id="usdNetPnl" hidden=""></span>
-              </article>
-              <article class="card pad account-card">
-                <div class="section-head">
-                  <h3>Candidate 가상계좌</h3>
-                  <span class="pill" id="candidateLiveBadge">상태 확인 중</span>
-                </div>
-                <details class="compact-detail">
-                  <summary>판단 모델 · 갱신 정보</summary>
-                  <p class="help">
-                    저장된 최신 가중치로 각자 판단합니다. 아래 손익은 표시된
-                    계좌 시각 기준입니다.
-                  </p>
-                  <div class="account-meta" id="candidateAccountMeta">—</div>
-                </details>
-
-                <div id="candidateAccountOverview" class="account-overview">
-                  계좌를 불러오는 중…
-                </div>
-                <div class="detail-list account-main">
-                  <div>
-                    <span>시드머니 · KRW / USD</span
-                    ><b id="candidateLiveSeed">—</b>
-                  </div>
-                  <div>
-                    <span>현재 현금 · KRW / USD</span
-                    ><b id="candidateLiveCash">—</b>
-                  </div>
-                  <div>
-                    <span>누적 거래비용 · KRW / USD</span
-                    ><b id="candidateLiveCosts">—</b>
-                  </div>
-                  <div>
-                    <span>누적 체결 · KRW / USD</span
-                    ><b id="candidateLiveTrades">—</b>
-                  </div>
-                  <div>
-                    <span>보유 종목 수 · KRW / USD</span
-                    ><b id="candidateLivePositionCount">—</b>
-                  </div>
-                </div>
-
-                <details class="account-details">
-                  <summary>보유 종목 · 비중 · 평가손익</summary>
-                  <div id="candidateLiveHoldings" class="account-scroll">—</div>
-                </details>
-                <details class="account-details">
-                  <summary>지금 판단 · 행동 확률 · 목표 비중</summary>
-                  <p class="help" id="candidatePolicySummary">새 관측 대기</p>
-                  <div id="candidateLiveDirections" class="account-scroll">
-                    —
-                  </div>
-                </details>
-                <details class="account-details">
-                  <summary>손익과 비용 상세 · 최근 체결</summary>
-                  <p class="account-reading" id="candidateAccountReading">
-                    분석 대기
-                  </p>
-                  <div id="candidateTradingStatistics" class="account-scroll">
-                    —
-                  </div>
-                  <div id="candidateCostDetails" class="account-scroll">—</div>
-                  <p class="help">
-                    실현 / 평가 손익 · KRW <b id="candidateLiveKrwSplit">—</b> ·
-                    USD <b id="candidateLiveUsdSplit">—</b>
-                  </p>
-                  <p class="help">
-                    최근 보관된 최대 200건입니다. 누적 체결 건수와 다릅니다.
-                  </p>
-                  <div id="candidateLiveFills" class="account-scroll">—</div>
-                </details>
-                <span id="candidateLiveStatus" hidden=""></span
-                ><span id="candidateLiveLastInference" hidden=""></span
-                ><span id="candidateLiveKrwNet" hidden=""></span
-                ><span id="candidateLiveUsdNet" hidden=""></span>
-              </article>
+              <div class="metric-sub">
+                <span id="gpuDevice">GPU 확인 중</span
+                ><span id="gpuPercent">—</span>
+              </div>
             </div>
-          </div>
+            <a class="live-metric" href="#control"
+              ><div class="metric-heading">
+                <span>가상계좌 누적 체결</span
+                ><span class="pill" id="workflowPaperState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowPaper">—</strong>
+              <div class="metric-spacer"></div>
+              <small class="metric-caption" id="workflowPaperDetail"
+                >확인 중</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>Replay · 학습 DB</span
+                ><span class="pill" id="overviewReplayBadge">확인 중</span>
+              </div>
+              <strong class="metric-number" id="overviewReplaySize">—</strong
+              ><small class="metric-caption" id="overviewReplayDetail"
+                >미학습은 보존 · 양쪽 저장 확인 후 삭제</small
+              ></a
+            >
+          </section>
         </div>
         <div data-view="market" class="page-view">
           <div class="page-heading">
@@ -521,7 +633,7 @@
             <div class="section-head">
               <div>
                 <h2>시장별 시세 수신</h2>
-                <p>
+                <p class="help">
                   등록된 시장은 장외에도 계속 보입니다. 숫자는 최근 5분 실제
                   수신 종목 / 등록 종목입니다.
                 </p>
@@ -639,7 +751,7 @@
             <div class="section-head">
               <div>
                 <h2>시장 경험 학습 · 두 모델 대결</h2>
-                <p>
+                <p class="help">
                   Champion과 Candidate가 여러 시간봉을 함께 입력받아 계좌 순손익
                   경험을 각각 학습합니다. 승급은 고정 시험본끼리 동일한 미래
                   구간에서 비교합니다.
@@ -658,24 +770,73 @@
                 aria-label="지금 학습 상태"
                 aria-live="polite"
               >
-                <strong id="learningSituationTitle"
-                  >실제 학습 상태 확인 중</strong
-                >
-                <p id="learningSituationReason">
-                  현재 처리와 대기 이유를 불러옵니다.
-                </p>
-                <p>
-                  <b>다음 학습</b>
-                  <span id="learningSituationNext">확인 중</span>
-                </p>
-                <p>
-                  <b>마지막 완료</b>
-                  <span id="learningSituationLast">확인 중</span>
-                </p>
+                <details class="compact-detail">
+                  <summary>대기 이유 · 다음 학습 · 마지막 완료</summary>
+                  <strong id="learningSituationTitle"
+                    >실제 학습 상태 확인 중</strong
+                  >
+                  <p id="learningSituationReason">
+                    현재 처리와 대기 이유를 불러옵니다.
+                  </p>
+                  <p>
+                    <b>다음 학습</b>
+                    <span id="learningSituationNext">확인 중</span>
+                  </p>
+                  <p>
+                    <b>마지막 완료</b>
+                    <span id="learningSituationLast">확인 중</span>
+                  </p>
+                </details>
               </section>
               <p class="notice" id="timeframeInputWarning" role="status">
                 입력 기록 확인 중
               </p>
+              <div class="learner-summary" id="learnerSummary">
+                <div>
+                  <div class="learner-title">
+                    <strong>Champion</strong
+                    ><span id="learnerchampionState">—</span>
+                  </div>
+                  <div id="learnerchampionWork">—</div>
+                  <div class="round-metrics">
+                    <div>
+                      <span>최근 완료 샘플</span
+                      ><strong id="learnerchampionSamples">—</strong>
+                    </div>
+                    <div>
+                      <span>최근 학습 시간</span
+                      ><strong id="learnerchampionSeconds">—</strong>
+                    </div>
+                  </div>
+                  <small id="learnerchampionLast">—</small>
+                  <div class="learner-loss">
+                    <span>최근 완료 loss</span
+                    ><strong id="learnerchampionLoss">—</strong>
+                  </div>
+                </div>
+                <div>
+                  <div class="learner-title">
+                    <strong>Candidate</strong
+                    ><span id="learnercandidateState">—</span>
+                  </div>
+                  <div id="learnercandidateWork">—</div>
+                  <div class="round-metrics">
+                    <div>
+                      <span>최근 완료 샘플</span
+                      ><strong id="learnercandidateSamples">—</strong>
+                    </div>
+                    <div>
+                      <span>최근 학습 시간</span
+                      ><strong id="learnercandidateSeconds">—</strong>
+                    </div>
+                  </div>
+                  <small id="learnercandidateLast">—</small>
+                  <div class="learner-loss">
+                    <span>최근 완료 loss</span
+                    ><strong id="learnercandidateLoss">—</strong>
+                  </div>
+                </div>
+              </div>
               <div class="learning-lifecycle" id="learningLifecycle">
                 <div>
                   <span>① 손익 확인 중</span><strong id="flowPending">—</strong
@@ -708,8 +869,8 @@
                   <span>③ 학습·저장 완료</span
                   ><strong id="flowCompleted">—</strong
                   ><small
-                    >두 모델이 학습하고 가중치를 저장한 누계 · 완료 경험은
-                    DB에서 삭제</small
+                    >최근 날짜 기록 합계 · 양쪽 모델의 저장 확인 후 DB에서
+                    삭제</small
                   >
                 </div>
               </div>
@@ -722,7 +883,7 @@
                 class="notice"
                 id="learningErrorNotice"
                 role="alert"
-                hidden
+                hidden=""
               ></div>
               <details class="compact-detail">
                 <summary>현재 학습 대기 이유 · 처리 상태</summary>
@@ -841,32 +1002,7 @@
               <div class="notice" id="dualLearningStatus" role="status">
                 두 모델의 학습 상태를 확인 중입니다.
               </div>
-              <div class="learner-summary" id="learnerSummary">
-                <div>
-                  <div class="learner-title">
-                    <strong>Champion</strong
-                    ><span id="learnerchampionState">—</span>
-                  </div>
-                  <div id="learnerchampionWork">—</div>
-                  <small id="learnerchampionLast">—</small>
-                  <div class="learner-loss">
-                    <span>최근 완료 loss</span
-                    ><strong id="learnerchampionLoss">—</strong>
-                  </div>
-                </div>
-                <div>
-                  <div class="learner-title">
-                    <strong>Candidate</strong
-                    ><span id="learnercandidateState">—</span>
-                  </div>
-                  <div id="learnercandidateWork">—</div>
-                  <small id="learnercandidateLast">—</small>
-                  <div class="learner-loss">
-                    <span>최근 완료 loss</span
-                    ><strong id="learnercandidateLoss">—</strong>
-                  </div>
-                </div>
-              </div>
+
               <details class="compact-detail">
                 <summary>모델별 학습 횟수 · 버전 · GPU · 저장 세부</summary>
                 <div style="overflow-x: auto">
@@ -1493,7 +1629,9 @@
             <div class="section-head">
               <div>
                 <h2>키움 시세 연결</h2>
-                <p>인증, WebSocket 연결, 체결 수신을 각각 확인합니다.</p>
+                <p class="help">
+                  인증, WebSocket 연결, 체결 수신을 각각 확인합니다.
+                </p>
               </div>
               <span class="side-note" id="providerSaved">확인 중</span>
             </div>
@@ -1742,6 +1880,9 @@
       defer=""
       src="/assets/details.js?v=operator-views-20261002"
     ></script>
+    <script defer="" src="/assets/accounts.js"></script>
+    <script defer="" src="/assets/learning.js"></script>
+    <script defer="" src="/assets/trial.js"></script>
     <script
       defer=""
       src="/assets/controls.js?v=operator-views-20261002"

@@ -7,10 +7,11 @@ const context = vm.createContext({
   whole: (value) => Math.round(Number(value) || 0).toLocaleString("ko-KR"),
   timeOf: (value) => value,
 });
-vm.runInContext(
-  fs.readFileSync("src/stockrl/web/assets/dashboard.js", "utf8"),
-  context,
-);
+for (const screen of ["dashboard", "learning", "trial"])
+  vm.runInContext(
+    fs.readFileSync("src/stockrl/web/assets/" + screen + ".js", "utf8"),
+    context,
+  );
 const base = {
   agent_process_running: true,
   learning_enabled: true,
@@ -251,7 +252,7 @@ const modelLookbacks = [
     .match(/_LOOKBACK_BARS\s*=\s*\{([^}]+)\}/)[1]
     .matchAll(/"([^" ]+)":\s*(\d+)/g),
 ].map(([, name, n]) => [name, Number(n) + 1]);
-const uiSource = fs.readFileSync("src/stockrl/web/assets/details.js", "utf8");
+const uiSource = fs.readFileSync("src/stockrl/web/assets/learning.js", "utf8");
 for (const [name, n] of modelLookbacks)
   assert(
     new RegExp('"' + name + '":\\s*' + n + "[,\\s]").test(uiSource),
