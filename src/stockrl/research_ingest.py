@@ -15,7 +15,7 @@ import pandas as pd
 import torch
 from torch import nn
 
-from .global_transformer import GLOBAL_FEATURES
+from .market_panel import GLOBAL_FEATURES
 
 
 @dataclass

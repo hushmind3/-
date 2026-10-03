@@ -11,7 +11,8 @@ from torch.distributions import Categorical
 from ..global_transformer import GlobalMarketTransformer
 from ..multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES
 from .checkpoint import load_model, save_model
-from .data import Experience, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, TrainingMetrics
+from .data import ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, TrainingMetrics
+from ..experience import Experience
 from .losses import shared_experience_losses
 from .prefix_cache import FrozenPrefixCache, prefix_input, install_prefix_forward
 from .optimizer_state import restore_optimizer, remember_optimizer

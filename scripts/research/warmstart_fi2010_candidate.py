@@ -16,7 +16,8 @@ import torch
 import torch.nn.functional as F
 
 from stockrl.global_online import load_model, save_model
-from stockrl.global_transformer import stable_id, parameter_count
+from stockrl.global_transformer import parameter_count
+from stockrl.market_panel import stable_id
 from stockrl.research_ingest import fi2010_book_to_features, fi2010_file_to_arrays
 
 

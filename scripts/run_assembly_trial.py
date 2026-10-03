@@ -19,7 +19,7 @@ import torch
 from stockrl.assembly_orchestrator import read
 from stockrl.expert_registry import atomic_json
 from stockrl.expert_system import registry_owner
-from stockrl.global_transformer import GlobalMarketPanel
+from stockrl.market_panel import GlobalMarketPanel
 from stockrl.moe_paper import TradingMoEPaper
 from stockrl.trading_moe import TradingMoE
 from stockrl.paths import PROJECT_ROOT

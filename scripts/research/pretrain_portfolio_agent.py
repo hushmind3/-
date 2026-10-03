@@ -25,11 +25,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from stockrl.global_transformer import (GlobalMarketTransformer, TransformerConfig,
-                                        TIME_SCALE_NAMES, load_compatible_state_dict)
+from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, load_compatible_state_dict
+from stockrl.market_panel import TIME_SCALE_NAMES
 from stockrl.market_training import (CommonMarketTrainingLoader, ContextConditionedTransformer,
                                      NormalizedBarAdapter, CONTEXT_FEATURES)
-from stockrl.global_transformer import GLOBAL_FEATURES
+from stockrl.market_panel import GLOBAL_FEATURES
 from stockrl.global_transformer import parameter_count
 from stockrl.market_training import stable_id
 

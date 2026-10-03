@@ -14,7 +14,8 @@ import numpy as np
 import torch
 
 from stockrl.global_online import Experience, GlobalReplayBuffer, IncrementalMarketCSV, MarketObservation, OnlineGlobalAgent, REWARD_VERSION, save_model
-from stockrl.global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig
+from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig
+from stockrl.market_panel import GlobalMarketPanel
 from stockrl.market_training import ContextConditionedTransformer, CONTEXT_FEATURES
 from stockrl.multiscale import MULTISCALE_FEATURE_COUNT
 from stockrl.paper_account import PaperAccount

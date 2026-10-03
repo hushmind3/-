@@ -9,7 +9,8 @@ from torch import nn
 ROOT=Path(__file__).resolve().parents[2];sys.path[:0]=[str(ROOT/'scripts'),str(ROOT/'src')]
 import distill_fincast_temporal as temporal
 from bench_market_training_loader import utility
-from stockrl.global_transformer import parameter_count,stable_id
+from stockrl.global_transformer import parameter_count
+from stockrl.market_panel import stable_id
 from stockrl.market_training import load_market_candidate_checkpoint
 
 DATA=ROOT/'data/external_sources/marketgpt/12302019_AAPL/12302019.NASDAQ_ITCH50_AAPL_message_proc.npy'

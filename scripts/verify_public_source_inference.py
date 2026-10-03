@@ -10,7 +10,8 @@ import pandas as pd
 import torch
 
 from stockrl.global_online import load_model
-from stockrl.global_transformer import ACTION_NAMES, GlobalMarketPanel, parameter_count
+from stockrl.global_transformer import parameter_count
+from stockrl.market_panel import ACTION_NAMES, GlobalMarketPanel
 
 ROOT=Path(__file__).resolve().parents[1]
 BASE=ROOT/"runtime-global-cuda-final/champion.pt"

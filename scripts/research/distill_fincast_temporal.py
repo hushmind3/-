@@ -25,9 +25,8 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import distill_fincast_offline as base
-from stockrl.global_transformer import (GlobalMarketTransformer, TransformerConfig,
-                                        TIME_SCALE_NAMES, load_compatible_state_dict,
-                                        parameter_count)
+from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, load_compatible_state_dict, parameter_count
+from stockrl.market_panel import TIME_SCALE_NAMES
 from stockrl.market_training import (CommonMarketTrainingLoader, ContextConditionedTransformer,
                                      ITCHSnapshotAdapter, NormalizedBarAdapter,
                                      load_market_candidate_checkpoint)

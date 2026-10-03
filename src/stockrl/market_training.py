@@ -20,19 +20,13 @@ import torch
 from torch import nn
 from torch.utils.checkpoint import checkpoint
 
-from .global_transformer import (GLOBAL_FEATURES, GlobalMarketTransformer,
-                                 TransformerConfig, stable_id, load_compatible_state_dict)
+from .global_transformer import GlobalMarketTransformer, TransformerConfig, load_compatible_state_dict
+from .market_panel import GLOBAL_FEATURES, stable_id
 from .multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_FEATURE_NAMES
 from .daily_encoder import DailyHistoryEncoder
 
 
-CONTEXT_FEATURES = (
-    "universe_coverage", "recently_active_share", "advance_share", "decline_share",
-    "current_mean_return_pct", "current_return_vol_pct", "recent_mean_return_pct",
-    "recent_median_return_pct", "recent_return_vol_pct", "current_log_volume",
-    "current_trade_imbalance", "recent_median_spread_pct", "recent_p90_spread_pct",
-    "recent_mean_book_imbalance", "top10_volume_share", "recent_median_volatility_pct",
-)
+from .market_panel import MARKET_CONTEXT_FEATURES as CONTEXT_FEATURES
 CANONICAL_COLUMNS = (
     "time_key", "event_time_ns", "instrument", "symbol", "market", "asset_class",
     "close", "volume", "bid", "ask", "bid_size", "ask_size", "buy_volume",

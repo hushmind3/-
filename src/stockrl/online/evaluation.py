@@ -4,9 +4,9 @@ from pathlib import Path
 import time
 import numpy as np
 import torch
-from ..global_transformer import ACTION_NAMES, GlobalMarketPanel
+from ..market_panel import ACTION_NAMES, GlobalMarketPanel
 from ..paper_account import PaperAccount, _currency
-from .data import Experience
+from ..experience import Experience
 
 def benchmark_model(model, panel, window=128, repeats=3, device=None):
     from ..core import device_for

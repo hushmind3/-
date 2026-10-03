@@ -26,7 +26,8 @@ sys.path.insert(0, str(ROOT / "src"))
 import distill_fincast_offline as base
 import distill_fincast_temporal as temporal
 from bench_market_training_loader import batch_tensors, utility
-from stockrl.global_transformer import TIME_SCALE_NAMES, parameter_count
+from stockrl.global_transformer import parameter_count
+from stockrl.market_panel import TIME_SCALE_NAMES
 from stockrl.market_training import load_market_candidate_checkpoint
 
 

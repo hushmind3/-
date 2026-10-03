@@ -1,10 +1,10 @@
-﻿"""Elapsed reward settlement never fabricates a new quote or drops experience."""
+"""Elapsed reward settlement never fabricates a new quote or drops experience."""
 import unittest
 import tempfile
 from pathlib import Path
 import numpy as np
 import torch
-from stockrl.online.rewards import closed_market_credit_ready, saved_closing_panel
+from stockrl.rewards import closed_market_credit_ready, saved_closing_panel
 from stockrl.global_online import OnlineGlobalAgent, GlobalReplayBuffer, REWARD_VERSION
 from stockrl.paper_account import PaperAccount
 from test_online_pipeline import Panel

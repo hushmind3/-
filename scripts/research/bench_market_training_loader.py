@@ -20,7 +20,8 @@ import psutil
 import torch
 from torch import nn
 
-from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, parameter_count, stable_id
+from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, parameter_count
+from stockrl.market_panel import stable_id
 from stockrl.market_training import (CONTEXT_FEATURES, CommonMarketTrainingLoader,
                                     ContextConditionedTransformer, ITCHSnapshotAdapter,
                                     load_market_candidate_checkpoint)

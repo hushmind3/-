@@ -5,12 +5,13 @@ from pathlib import Path
 import json, os, time, pickle
 import numpy as np
 import torch
-from ..global_transformer import ACTION_NAMES, GlobalMarketPanel
+from ..market_panel import ACTION_NAMES, GlobalMarketPanel
 from ..paper_account import _currency
 from ..account_diagnostics import summarize_policy
 from ..multiscale import TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES
 from .checkpoint import _atomic_json
-from .data import IncrementalMarketCSV, MarketObservation, PAPER_EXPLORATION_EPSILON, REWARD_VERSION
+from .data import PAPER_EXPLORATION_EPSILON
+from ..experience import IncrementalMarketCSV, MarketObservation, REWARD_VERSION
 
 class _ObservationMixin:
     def _queue_candidate_live_observation(self,panel,index,paper_enabled,uniforms):

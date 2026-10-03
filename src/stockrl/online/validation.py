@@ -6,11 +6,11 @@ import json, os, time, queue
 import hashlib
 import numpy as np
 import torch
-from ..global_transformer import ACTION_NAMES
+from ..market_panel import ACTION_NAMES
 from ..paper_account import _currency
 from ..state_io import atomic_json
 from .checkpoint import load_model, save_model
-from .data import MarketObservation
+from ..experience import MarketObservation
 
 def should_promote(candidate_score:float, champion_score:float, minimum_delta:float=0.0)->bool:
     """Finite, strict promotion gate shared by online control and its checks."""

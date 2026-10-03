@@ -1,20 +1,11 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
 import os
-from dataclasses import asdict
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
-import torch
 
-from .core import (Config, TemporalActorCritic, device_for, evaluate, infer, load_checkpoint,
-                   load_market, make_teachers, observations, ppo_finetune, save_checkpoint,
-                   seed_all, split_indices, teacher_targets, train_distill)
-from .global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig, parameter_count
-from .global_online import OnlineGlobalAgent, benchmark_model, load_model
 from .paths import default_runtime_dir
 
 
@@ -27,39 +18,19 @@ def legacy_checkpoint_command(args: argparse.Namespace) -> None:
 
 def train(args: argparse.Namespace) -> None:
     legacy_checkpoint_command(args)
-    cfg=Config(window=args.window,fee=args.fee,seed=args.seed,device=args.device,epochs=args.epochs,
-               batch_size=args.batch_size,ppo_updates=args.ppo_updates)
-    seed_all(cfg.seed); device=device_for(cfg.device); print(f"device={device}")
-    df=load_market(args.data)
-    train_ix,valid_ix,test_ix=split_indices(len(df),cfg.train_fraction,cfg.valid_fraction)
-    x=observations(df,cfg.window); teachers=make_teachers(json.loads(Path(args.teachers).read_text(encoding="utf-8")))
-    print("teacher_weights="+json.dumps({t.name:t.weight for t in teachers}))
-    # Only request teacher labels for training timestamps; later split rows never
-    # enter the distilled training target arrays.
-    targets=np.zeros((len(df),3),np.float32); values=np.zeros(len(df),np.float32)
-    train_targets,train_values=teacher_targets(df.iloc[train_ix].reset_index(drop=True),teachers,cfg.window)
-    targets[train_ix]=train_targets; values[train_ix]=train_values
-    model=TemporalActorCritic(d_model=cfg.d_model).to(device)
-    ckpt_dir=Path(args.checkpoint_dir)
-    train_distill(model,x,targets,values,train_ix,cfg,device,ckpt_dir)
-    val=evaluate(model,df,x,valid_ix,cfg,device); print("validation="+json.dumps(val))
-    ppo_finetune(model,df,x,train_ix,cfg,device,ckpt_dir)
-    val=evaluate(model,df,x,valid_ix,cfg,device); test=evaluate(model,df,x,test_ix,cfg,device)
-    print("validation_after_ppo="+json.dumps(val)); print("test_backtest="+json.dumps(test))
-    save_checkpoint(ckpt_dir/"final.pt",model,cfg)
-    print(f"saved={ckpt_dir/'final.pt'}")
-    # Re-open the final artifact and run the inference path as part of the CLI workflow.
-    reloaded,_=load_checkpoint(ckpt_dir/"final.pt",device)
-    print("sample_inference="+json.dumps(infer(reloaded,df,cfg.window,device)))
 
 
 def predict(args: argparse.Namespace) -> None:
+    from .core import device_for, infer, load_checkpoint, load_market
     device=device_for(args.device); model,cfg=load_checkpoint(args.checkpoint,device)
     print(json.dumps(infer(model,load_market(args.data),cfg.window,device),indent=2))
 
 
 def public_teacher_dataset(args: argparse.Namespace) -> None:
-    from .public_teachers import _logits_for
+    import numpy as np
+    import pandas as pd
+    import torch
+    from .core import load_market, make_teachers, teacher_targets
     df=load_market(args.data); spec=json.loads(Path(args.teachers).read_text(encoding="utf-8")); teachers=make_teachers(spec)
     target=Path(args.output); target.mkdir(parents=True,exist_ok=True)
     all_probs=[]; all_vals=[]; w=np.asarray([max(t.weight,0) for t in teachers],np.float64); w/=w.sum()
@@ -80,8 +51,11 @@ def public_teacher_dataset(args: argparse.Namespace) -> None:
 
 
 def global_info(args: argparse.Namespace) -> None:
-    import psutil
     from .core import device_for
+    from .global_transformer import GlobalMarketTransformer, TransformerConfig, parameter_count
+    from .market_panel import GlobalMarketPanel
+    from .global_online import benchmark_model
+    import psutil
     cfg=TransformerConfig(); model=GlobalMarketTransformer(cfg)
     params=parameter_count(model); bytes_fp32=params*4
     info={"architecture":"alternating temporal/cross-market Transformer actor-critic",
@@ -95,6 +69,9 @@ def global_info(args: argparse.Namespace) -> None:
 
 
 def global_online(args: argparse.Namespace) -> None:
+    from .global_transformer import TransformerConfig, parameter_count
+    from .market_panel import GlobalMarketPanel
+    from .global_online import OnlineGlobalAgent, load_model
     import psutil
     cfg=TransformerConfig()
     agent=OnlineGlobalAgent(args.state_dir,args.device,cfg,capacity=args.replay_capacity,window=args.window,
@@ -288,4 +265,3 @@ def main() -> None:
 
 
 if __name__=="__main__": main()
-

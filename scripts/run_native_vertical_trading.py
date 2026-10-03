@@ -20,7 +20,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"src"))
 from stockrl.trading_moe import TradingMoE,parameter_digest
 from stockrl.moe_paper import TradingMoEPaper
 from stockrl.moe_training import update_controller
-from stockrl.global_transformer import GlobalMarketPanel
+from stockrl.market_panel import GlobalMarketPanel
 from stockrl.expert_registry import atomic_json
 from stockrl.expert_system import registry_owner
 from stockrl.paths import TRADING_MOE_CHECKPOINT

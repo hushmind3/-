@@ -14,7 +14,7 @@ import numpy as np
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"src"))
 from stockrl.moe_paper import TradingMoEPaper
-from stockrl.global_transformer import GlobalMarketPanel
+from stockrl.market_panel import GlobalMarketPanel
 from stockrl.expert_registry import atomic_json, read_fusion_output
 
 

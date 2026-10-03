@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from stockrl.global_online import Experience, GlobalReplayBuffer
-from stockrl.global_transformer import GlobalMarketPanel
+from stockrl.market_panel import GlobalMarketPanel
 from stockrl.research_ingest import (fi2010_book_to_features, fi2010_file_to_arrays,
                                     trademaster_csv_to_global)
 

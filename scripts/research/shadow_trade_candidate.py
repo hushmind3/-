@@ -21,7 +21,8 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from stockrl.market_training import CommonMarketTrainingLoader, NormalizedBarAdapter, load_market_candidate_checkpoint
-from stockrl.global_transformer import ACTION_NAMES, TransformerConfig
+from stockrl.global_transformer import TransformerConfig
+from stockrl.market_panel import ACTION_NAMES
 from pretrain_portfolio_agent import (Portfolio, instrument_map_for_daily,
     load_economic_panels, make_context, SLIPPAGE_RATE)
 

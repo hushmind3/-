@@ -9,8 +9,8 @@ import numpy as np
 
 from .paper_account import PaperAccount, _currency
 from .replay_store import GlobalReplayBuffer
-from .online.rewards import _RewardMixin
-from .online.data import REWARD_VERSION
+from .rewards import _RewardMixin
+from .experience import REWARD_VERSION
 
 
 class TradingMoEPaper(_RewardMixin):
