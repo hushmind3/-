@@ -3,19 +3,19 @@
   "revision": "74a9ce6eb66854cf406c8642ab18ec9aea7ae468",
   "files": [
     {
-      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\README.md",
+      "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\README.md",
       "bytes": 668,
       "sha256": "9d0918b382ff6fbbc6762ef410129cc96a6a7af002a2a17eac33061ee542dd81",
       "upstream_sha256": null
     },
     {
-      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\config.json",
+      "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\config.json",
       "bytes": 1204,
       "sha256": "2660ee6ca9fa7fac1d10d4ae4e90f6b30733e838e3637dc44d03714d2dc856b3",
       "upstream_sha256": null
     },
     {
-      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\generation_config.json",
+      "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\generation_config.json",
       "bytes": 147,
       "sha256": "d95040b38f040f6dadaefaa30334ce9c06db6fec16b1bc85eef115afe7f6ead6",
       "upstream_sha256": null

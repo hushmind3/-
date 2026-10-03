@@ -4,13 +4,13 @@
     "revision": "0e0117387f39004a9016484a186a908917e22426",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\README.md",
         "bytes": 8863,
         "sha256": "24d59758e911d355a79608b6686610a14f649270d6d852f3d86b2a1e8232ce89",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\config.json",
         "bytes": 301,
         "sha256": "2366e7ccfec76cbc19cf3c4c1b9c5d901be336ca1e83f2d2292c9bff381b77a2",
         "upstream_sha256": null
@@ -28,13 +28,13 @@
     "revision": "2b554741eca47781b64468546e77fef3e85130e6",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-base\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-base\\README.md",
         "bytes": 8841,
         "sha256": "73fccc29fd1cda62e7e2b0467c0d2b6f5b551b46a4f4cac0c7bca51c0a0b4697",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-base\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-base\\config.json",
         "bytes": 228,
         "sha256": "77ebc3038b647709b92be002f801d72e1a385f4c8c2c5aa1cc6cf21fcfe44eb2",
         "upstream_sha256": null
@@ -52,19 +52,19 @@
     "revision": "74a9ce6eb66854cf406c8642ab18ec9aea7ae468",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\README.md",
         "bytes": 668,
         "sha256": "9d0918b382ff6fbbc6762ef410129cc96a6a7af002a2a17eac33061ee542dd81",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\config.json",
         "bytes": 1204,
         "sha256": "2660ee6ca9fa7fac1d10d4ae4e90f6b30733e838e3637dc44d03714d2dc856b3",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\generation_config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Chronos_Small_2023_Global\\generation_config.json",
         "bytes": 147,
         "sha256": "d95040b38f040f6dadaefaa30334ce9c06db6fec16b1bc85eef115afe7f6ead6",
         "upstream_sha256": null
@@ -82,31 +82,31 @@
     "revision": "e9d7c4e8dcbbb5d0b559c41fddeb409dac152c53",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\EXAONE_Finance_v1.0_Technical_Report.pdf",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\EXAONE_Finance_v1.0_Technical_Report.pdf",
         "bytes": 1397938,
         "sha256": "1ed941c2dd1474717abe7a729a28292ee37f11c12dc9d917b8e01a0252429bae",
         "upstream_sha256": "1ed941c2dd1474717abe7a729a28292ee37f11c12dc9d917b8e01a0252429bae"
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\LICENSE",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\LICENSE",
         "bytes": 12545,
         "sha256": "2ea59f85ed1d65bb1fd2394ce6f7418db6ef612bcd7bb9bc0cec271195c16fc3",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\Notice.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\Notice.md",
         "bytes": 47536,
         "sha256": "f6a2b0644843eecfb2117838cee3acde569c5a07230eb0cc8b172d114ba01d2a",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\README.md",
         "bytes": 7983,
         "sha256": "031bde248267fee58f6ef6a16426c9cc2b598f0f5418153b39d113b5e025e943",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\config.json",
         "bytes": 1117,
         "sha256": "e82a06240e5d146ffb555d9414f544ecbe4d0fd92f2872d1ec06d0c8a838e569",
         "upstream_sha256": null
@@ -124,13 +124,13 @@
     "revision": "22801e12efb5a6f11df5dad5f8886fb0b478c3a1",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimesFM_20M_2023_Global\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimesFM_20M_2023_Global\\README.md",
         "bytes": 653,
         "sha256": "e70949965fc3524dad99013b019acf1e8aad8290acbea8e017efe1613945bbcc",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimesFM_20M_2023_Global\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimesFM_20M_2023_Global\\config.json",
         "bytes": 326,
         "sha256": "08380b93c292df7305b203b01e7941073c241630297c0ca13c5a3541bdbe6c36",
         "upstream_sha256": null
@@ -148,25 +148,25 @@
     "revision": "794591bfeb1225fdf742cec0f4c71f20c3f3b87e",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\README.md",
         "bytes": 400,
         "sha256": "c0ab1a3140946b09c2e10f62194eda89db391bde05576fbfcf664f703829f1f6",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\config.json",
         "bytes": 892,
         "sha256": "cd582cc3dd64decc15c088735d18dcae00ad2bdc013ec6a814af7999e16952bd",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\configuration_time_moe.py",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\configuration_time_moe.py",
         "bytes": 2503,
         "sha256": "d9b2e91a18fcc79753af7504a93382d43fa87d168318db01eb8431ef8d1b1125",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\generation_config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\generation_config.json",
         "bytes": 69,
         "sha256": "d90f7f1d9ef012f9ec0bd76fdf42e6979d086f157d65910b3b273edfb100e748",
         "upstream_sha256": null
@@ -178,13 +178,13 @@
         "upstream_sha256": "28d1cbf480c1f63d4ad56d8b7649d9860b9afa9f31abeedff9decea48d9aee57"
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\modeling_time_moe.py",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\modeling_time_moe.py",
         "bytes": 51921,
         "sha256": "afd34fc6799799ef7784ae55425da7e58f4dabe49f2873744af201c06ebcfae6",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\ts_generation_mixin.py",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\ts_generation_mixin.py",
         "bytes": 11529,
         "sha256": "b8ed9708bb450dda5443093ce46fa84890ae119823bd897e7f86c4f50dd2814d",
         "upstream_sha256": null
@@ -194,13 +194,13 @@
   {
     "repo": "DeepIntoStreams/TSFM_Finance",
     "revision": "7a377ee8e9a0f6bb49af6c79252839d0efeebe4c",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\TSFM_Finance",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\TSFM_Finance",
     "archive_sha256": "74a65d34535c528ae9d73b5e0eaafba07525dde041c03027f3c860d64b01712d"
   },
   {
     "repo": "DVampire/EarnMore",
     "revision": "810ff594ea755bdcc951f617be9f888548b45c7a",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\EarnMore",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\EarnMore",
     "archive_sha256": "7e34b63d83dedb169cbbfeccd73f6088838c5a2e0d783397a5cacc76b13e3c30"
   },
   {
@@ -208,7 +208,7 @@
     "revision": "f80057ebcacbd43dbf72c2d7acd804e58eeaccd4",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\MarketGPT-100m\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\MarketGPT-100m\\README.md",
         "bytes": 24,
         "sha256": "d8d7a46d41a1a37fe4f0a5f637bf55c649310185329127d8a2204632e480be17",
         "upstream_sha256": null
@@ -224,49 +224,49 @@
   {
     "repo": "DataDog/toto",
     "revision": "9213d2c86f716c43010a0a3b2b6a0e3f440e6743",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\toto",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\toto",
     "archive_sha256": "930081f0245adc992619d63dd57621071436056ca7e8619d363de87ac3c98581"
   },
   {
     "repo": "LGAI-Research/EXAONE-Forecast",
     "revision": "5e6e5224f2a0205f146bc772082d7fa4f59bd7c5",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\EXAONE-Forecast",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\EXAONE-Forecast",
     "archive_sha256": "31e727abcdf9f1d3819d6a699b3b63d6638da50105bb56ac2676687e6dfa5960"
   },
   {
     "repo": "Time-MoE/Time-MoE",
     "revision": "915bfda4c78a544d62a2bec6ab22948423059236",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\Time-MoE",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\Time-MoE",
     "archive_sha256": "93236b77383ddd3191cd7e25e5d97b20da99dee0c46ed6b6d41f69a5895bf3d9"
   },
   {
     "repo": "TradeMaster-NTU/EarnHFT",
     "revision": "0e1e11a6d9aff70efb1807baa3416429568deb31",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\EarnHFT",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\EarnHFT",
     "archive_sha256": "5a2917efaef326d05265af385e844a42e5a03439dee26f6236c3f5cca890e8f7"
   },
   {
     "repo": "vincent05r/FinCast-fts",
     "revision": "488b19d1d85fa2b3d4b93469530cefdcf1cc97a4",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\FinCast-fts",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\FinCast-fts",
     "archive_sha256": "949e160219ba5f57c184fbc31d8812608c595b2fdbf44415b29ca8fef792938c"
   },
   {
     "repo": "ZhengyaoJiang/PGPortfolio",
     "revision": "48cc5a4af5edefd298e7801b95b0d4696f5175dd",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\PGPortfolio",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\PGPortfolio",
     "archive_sha256": "2e2d8356b88b71b8e479cd2b9ef8b97d723771de0c7f162d010f88c5ea51cdcd"
   },
   {
     "repo": "ZONG0004/MacroHFT",
     "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\MacroHFT",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\MacroHFT",
     "archive_sha256": "8669b6c8832a7a5b576b8a86d1f996fa5b869089a4944e87a5d926febd75b57e"
   },
   {
     "repo": "shiyu-coder/Kronos",
     "revision": "67b630e67f6a18c9e9be918d9b4337c960db1e9a",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\Kronos",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\Kronos",
     "archive_sha256": "5ef8e3d01d1076bb208cc5035eec13afee48dd8fc1bbe6347913a2a5d7b07b9d"
   },
   {
@@ -274,13 +274,13 @@
     "revision": "a7bab288f5e95f8606f8306f86659357e1c001ef",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\README.md",
         "bytes": 7197,
         "sha256": "8f457beaf36fd6bda363ae8c23ab9c145dcb459ae306ea05ac49873a62ed5f8d",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\config.json",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\config.json",
         "bytes": 598,
         "sha256": "9cd42ebab5167752f4382f9304a26c05a44e20eb13b71eea8810f729fed0ffd7",
         "upstream_sha256": null
@@ -296,7 +296,7 @@
   {
     "repo": "TradeMaster-NTU/TradeMaster",
     "revision": "1747cc18db3fe2639af12defc80e138c51a625c0",
-    "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\sources\\TradeMaster",
+    "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\sources\\TradeMaster",
     "archive_sha256": "7f422cf2f9ce53af86df4059a218cd8eb0c55de87a05304d9a74c8c584729e62"
   },
   {
@@ -304,13 +304,13 @@
     "revision": "2d7d90b159db8961d27c2cf165d51195902ef92b",
     "files": [
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\README.md",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\README.md",
         "bytes": 2040,
         "sha256": "cbc5c2eb63cd9cc2ff8baa1ed888cd062e81ec170413ffe9827b920bc726794d",
         "upstream_sha256": null
       },
       {
-        "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\checksum_f.txt",
+        "path": "C:\\Users\\hushm\\Desktop\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\checksum_f.txt",
         "bytes": 73,
         "sha256": "c6fae0899a4de9f1485488f203e0c043bec61916cc16e11c3220849558c7dc97",
         "upstream_sha256": null

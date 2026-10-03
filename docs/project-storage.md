@@ -62,3 +62,11 @@ $expertRoot = Join-Path (Get-Location) 'artifacts/experts'
 
 이 명령은 가상매매와 학습을 실행합니다. 단순 경로 확인용으로 실행하지
 마십시오. 기존 대시보드 시작/정지 버튼도 같은 경로를 사용합니다.
+
+## 현재 로컬 프로젝트 위치
+
+2026-10-03 프로젝트를 `C:\Users\hushm\Desktop\금융매매모델`로 이전했습니다. 서버와 runtime, vendor 소스, Python 환경은 새 위치를 사용하며 모델 가중치는 기존 `C:\Users\hushm\Desktop\모델`에 유지합니다.
+
+로컬 JSON의 프로젝트 경로와 두 Python 환경의 activation/console launcher 경로를 갱신했습니다. 새 위치에서 Python/pip 실행, CUDA RTX 3070 인식, 서버 응답, expert 20개 및 기존 조립 Candidate/queue 보존을 확인했습니다.
+
+기존 OneDrive 위치의 Git 일부는 클라우드 공급자 중지로 복사가 막혀 GitHub origin의 전체 Git 기록을 새 `.git`에 복원했습니다. 이전 위치의 잠긴 `.git`는 복구용으로만 남아 있으며 현재 서버나 Git은 이를 참조하지 않습니다. 부분 복사본은 바탕화면 외부 휴지통에 보관했습니다.
