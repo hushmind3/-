@@ -157,7 +157,7 @@ Champion과 Candidate는 같은 필수 시장 관찰을 각자 추론하고 독�
 
 ## 실행
 
-Windows에서 프로젝트 루트의 `StockRL Start.bat`을 실행합니다. 로컬 운영 화면은 `http://127.0.0.1:8766/`, 상태 API는 `http://127.0.0.1:8766/api/status`입니다. 실행 중 상태는 API에서 확인하며, 과거 저장 지표만으로 현재 작동 여부를 판단하지 않습니다.
+Windows에서 프로젝트 루트의 `서버켜기.cmd`를 더블클릭합니다. 서버만 켜고 브라우저를 열며, 이미 실행 중이면 같은 서버를 재사용합니다. Feed·Champion·Candidate·TradingMoE는 화면에서 각각 시작합니다. 로컬 운영 화면은 `http://127.0.0.1:8766/`, 상태 API는 `http://127.0.0.1:8766/api/status`입니다.
 
 Python 3.10 이상과 실행 환경에 맞는 PyTorch가 필요합니다.
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import json
 from pathlib import Path
-import re
 import socket
 import subprocess
 import sys
@@ -15,21 +14,10 @@ import webbrowser
 
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "src"))
+from stockrl.paths import default_runtime_dir
 PORT = 8766
 URL = f"http://127.0.0.1:{PORT}/"
-
-
-def default_runtime_dir() -> Path:
-    configured = os.environ.get("STOCKRL_RUNTIME_DIR")
-    market = os.environ.get("STOCKRL_MARKET", "korea").strip().lower()
-    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", market):
-        raise ValueError("STOCKRL_MARKET must be a simple market name such as 'korea' or 'nasdaq'")
-    candidate = (Path(configured).expanduser() if configured else
-                 ROOT / "runtime" / "markets" / market)
-    resolved = candidate.resolve()
-    if not resolved.is_relative_to(ROOT.resolve()):
-        raise ValueError(f"StockRL runtime must stay inside the project folder: {ROOT}")
-    return resolved
 
 
 def ready() -> bool:
@@ -39,14 +27,9 @@ def ready() -> bool:
             if (response.status == 200 and payload.get("service") == "stockrl"
                     and payload.get("port") == PORT):
                 return True
-        # Older StockRL servers do not include the health identity yet. Accept
-        # their specific status shape so the known 8766 server can be reused.
-        with urlopen(URL + "api/status", timeout=2) as response:
-            payload = json.load(response)
-            return response.status == 200 and all(key in payload for key in
-                ("provider", "feed_running", "agent_running", "paper_account", "instruments"))
-    except (OSError, URLError):
+    except (OSError, URLError, ValueError):
         return False
+    return False
 
 
 def port_in_use() -> bool:
@@ -58,9 +41,11 @@ def port_in_use() -> bool:
 
 
 def main() -> int:
+    open_browser = "--no-browser" not in sys.argv[1:]
     if ready():
         print(f"StockRL is already running: {URL}")
-        webbrowser.open(URL, new=2)
+        if open_browser:
+            webbrowser.open(URL, new=2)
         return 0
     if port_in_use():
         print(f"Port {PORT} is occupied by an unrecognized or older server; it was not replaced.",
@@ -73,7 +58,8 @@ def main() -> int:
     env["STOCKRL_RUNTIME_DIR"] = str(log_dir)
     env["STOCKRL_WEB_PORT"] = str(PORT)
     env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
-    command = [sys.executable, "-m", "stockrl.launch_web", "--server-only"]
+    env["PYTHONUTF8"] = "1"
+    command = [sys.executable, "-m", "stockrl.launch_web", "--server-only", "--dashboard-only"]
     for log_name in ("web.stdout.log", "web.stderr.log"):
         log_file=log_dir/log_name
         if log_file.exists() and log_file.stat().st_size >= 2*1024*1024:
@@ -88,7 +74,8 @@ def main() -> int:
     for _ in range(40):
         if ready():
             print(f"StockRL started (PID {process.pid}): {URL}")
-            webbrowser.open(URL, new=2)
+            if open_browser:
+                webbrowser.open(URL, new=2)
             return 0
         if process.poll() is not None:
             break

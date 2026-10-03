@@ -16,3 +16,6 @@ __pycache__/
 # Machine-local pretrained originals, native datasets and dedicated Python envs.
 /artifacts/experts/
 /runtime/gpu-owner.lock
+
+# Recoverable local cleanup; never upload archived datasets/source ZIPs.
+/휴지통/

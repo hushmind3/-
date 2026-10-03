@@ -4,8 +4,8 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from .web_app import serve
-from .paths import default_runtime_dir
+from .web.server import serve
+from .paths import default_runtime_dir, DEFAULT_MODEL_DIR
 
 
 def main() -> None:
@@ -13,7 +13,7 @@ def main() -> None:
     dashboard_only = "--dashboard-only" in sys.argv[1:]
     port = 8766
     runtime = default_runtime_dir()
-    model_dir = Path(os.environ.get("STOCKRL_MODEL_DIR", str(Path.home() / "Desktop" / "모델")))
+    model_dir = Path(os.environ.get("STOCKRL_MODEL_DIR", str(DEFAULT_MODEL_DIR)))
     initial_champion = model_dir / "champion.pt"
     print(f"StockRL starting: http://127.0.0.1:{port}/", flush=True)
     serve(

@@ -4,7 +4,7 @@
 
 ## 실행과 상태 확인
 
-Windows에서 `StockRL Start.bat`을 실행합니다. 기본 로컬 대시보드는 `http://127.0.0.1:8766/`, 상태 API는 `http://127.0.0.1:8766/api/status`입니다. API에서 feed와 agent 진행 시각, replay 건수, Candidate 학습·검증 단계, paper 계좌, 실제 주문 OFF를 확인합니다. API가 응답하지 않으면 현재 운영 상태는 미확인입니다.
+Windows에서 `서버켜기.cmd`을 실행합니다. 기본 로컬 대시보드는 `http://127.0.0.1:8766/`, 상태 API는 `http://127.0.0.1:8766/api/status`입니다. API에서 feed와 agent 진행 시각, replay 건수, Candidate 학습·검증 단계, paper 계좌, 실제 주문 OFF를 확인합니다. API가 응답하지 않으면 현재 운영 상태는 미확인입니다.
 
 한국 market runtime은 `runtime/markets/korea/live`에 저장합니다. feed 파일, replay SQLite, paper 계좌, cursor, 로그와 검증 상태를 포함하며 Git에는 넣지 않습니다. Champion과 Candidate 가중치는 바탕화면 `모델` 폴더에만 둡니다.
 
