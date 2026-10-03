@@ -7,6 +7,8 @@ const context = vm.createContext({
   whole: (value) => Math.round(Number(value) || 0).toLocaleString("ko-KR"),
   timeOf: (value) => value,
 });
+const appSource = fs.readFileSync("src/stockrl/web/assets/app.js", "utf8");
+vm.runInContext(appSource.slice(appSource.indexOf("function modelIsRunning"), appSource.indexOf("const $ =")), context);
 for (const screen of ["dashboard", "learning", "trial"])
   vm.runInContext(
     fs.readFileSync("src/stockrl/web/assets/" + screen + ".js", "utf8"),
@@ -310,12 +312,12 @@ for (const card of Object.values(
   assert.equal(card.status, "연결 끊김");
   assert.equal(card.ratio, null);
 }
-assert.equal(context.operatorMetrics({}).Learning.status, "미확인");
+assert.equal(context.operatorMetrics({}).Learning.status, "학습 프로세스 상태 미확인");
 assert.equal(
   context.operatorMetrics({
     agent_process_running: true,
     learning_enabled: false,
   }).Learning.status,
-  "OFF",
+  "학습 OFF · 경험 보존",
 );
 console.log(JSON.stringify({ metricCardChecks: 12 }));

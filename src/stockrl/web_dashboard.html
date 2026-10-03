@@ -126,6 +126,180 @@
             <h1>운영 · 계좌</h1>
             <span>실행 제어와 두 모델의 장기 가상계좌</span>
           </div>
+          <section id="control">
+            <div class="card hero">
+              <div class="hero-top">
+                <div>
+                  <div class="kicker">실행할 작업 선택</div>
+                  <h1 id="runTitle">서버 확인 중</h1>
+                  <p id="runDetail">수집기와 모델 상태를 불러오고 있습니다.</p>
+                </div>
+                <span class="pill" id="appliedBadge">설정 확인 중</span>
+              </div>
+              <div class="control-grid">
+                <div class="control-box">
+                  <span class="control-label">무엇을 실행할지 선택</span>
+                  <div class="choice-row mode-switches">
+                    <button
+                      class="choice"
+                      id="observeBtn"
+                      type="button"
+                      disabled=""
+                    >
+                      모델 판단: 확인 중</button
+                    ><button
+                      class="choice"
+                      id="paperBtn"
+                      type="button"
+                      disabled=""
+                    >
+                      가상계좌 체결: 확인 중</button
+                    ><button
+                      class="choice"
+                      id="learningBtn"
+                      type="button"
+                      disabled=""
+                    >
+                      경험 학습: 확인 중
+                    </button>
+                  </div>
+                  <div class="mode-meanings">
+                    <span><b>모델 판단</b> · 실행 중인 모델의 새 판단 허용</span
+                    ><span
+                      ><b>가상 체결</b> · 결정된 주문을 가상계좌에 실행</span
+                    ><span
+                      ><b>경험 학습</b> · 실행 중인 모델의 저장 경험 학습 허용</span
+                    >
+                  </div>
+                  <details class="compact-detail">
+                    <summary>각 작업의 실행 범위</summary>
+                    <div class="caption" id="autonomyDetail">
+                      모델 판단·가상 체결·replay 학습은 각각 독립 제어합니다.
+                      시세 수집·저장은 계속됩니다. 실제 주문은 OFF입니다.
+                    </div>
+                  </details>
+                </div>
+                <details class="compact-detail">
+                  <summary>통합 시장 입력 · 적용 설정</summary>
+                  <div class="control-box">
+                    <span class="control-label">모델 판단 입력</span>
+                    <div>
+                      <strong>1·3·5·15·60분봉</strong><br /><strong
+                        >일봉 · 주봉 · 월봉</strong
+                      >
+                    </div>
+                    <div class="settings-line">
+                      <span id="appliedSettings">여러 시간봉 통합 판단</span>
+                    </div>
+                    <div class="caption">
+                      매번 여러 시간봉을 한 번에 입력받아 종목·매매·자금 배분을
+                      판단합니다. 각 시간봉에서 확보된 완료 봉을 사용합니다.
+                    </div>
+                  </div>
+                </details>
+                <div class="control-box">
+                  <span class="control-label"
+                    >시세 수집 · 모델 실행
+                    <span class="pill bad">실제 주문 OFF</span></span
+                  >
+                  <div class="button-row">
+                    <button class="button primary" id="applyBtn" type="button">
+                      시스템 시작</button
+                    ><button
+                      class="button subtle"
+                      id="reconnectBtn"
+                      type="button"
+                    >
+                      시세 재연결
+                    </button>
+                    <button
+                      class="button subtle"
+                      id="serverRestartBtn"
+                      type="button"
+                      title="웹만 재시작합니다. 시세 수집과 모델은 계속 실행됩니다."
+                    >
+                      웹서버만 재시작</button
+                    ><button
+                      class="button danger"
+                      id="resetAccountsBtn"
+                      type="button"
+                      title="두 모델의 누적 잔고·포지션·손익 초기화. 가중치·replay 유지. 진행 중 시험은 무효 처리될 수 있습니다."
+                    >
+                      두 장기 운영계좌 초기화</button
+                    ><button class="button danger" id="stopBtn" type="button">
+                      전체 정지
+                    </button>
+                  </div>
+                  <div class="model-commands" aria-label="모델별 시작과 정지">
+                    <div class="model-command">
+                      <div class="topline"><strong>Champion</strong><span class="pill" id="championCommandState">확인 중</span></div>
+                      <div class="button-row"><button class="button primary" id="championModelStart" type="button">Champion 시작</button><button class="button subtle" id="championModelStop" type="button" disabled>Champion 저장 후 정지</button></div>
+                      <p class="caption" id="championModelMessage" role="status" aria-live="polite">현재 실행 상태를 확인합니다.</p>
+                    </div>
+                    <div class="model-command">
+                      <div class="topline"><strong>Candidate</strong><span class="pill" id="candidateCommandState">확인 중</span></div>
+                      <div class="button-row"><button class="button primary" id="candidateModelStart" type="button">Candidate 시작</button><button class="button subtle" id="candidateModelStop" type="button" disabled>Candidate 저장 후 정지</button></div>
+                      <p class="caption" id="candidateModelMessage" role="status" aria-live="polite">현재 실행 상태를 확인합니다.</p>
+                    </div>
+                  </div>
+                  <div class="caption">시스템 시작은 시세 수집만 켭니다. 모델 시작·정지는 각각 독립적이며, 정지해도 계좌와 학습 기록은 유지됩니다.</div>
+                  <div class="caption">
+                    실제 주문은 사용자가 명시적으로 허용하기 전까지 실행하지
+                    않습니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <details class="compact-detail">
+              <summary>시세 수집·모델 프로세스·연결 상태</summary>
+              <div class="status-grid" aria-label="운영 상태">
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>시장 데이터</span
+                    ><span class="pill" id="feedBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="freshCount">—</strong>
+                  <div class="detail" id="feedDetail">
+                    최근 5분 수신 종목을 확인 중입니다.
+                  </div>
+                </div>
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>모델 판단</span
+                    ><span class="pill" id="agentBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="decisionCount">—</strong>
+                  <div class="detail" id="agentDetail">
+                    마지막 판단 시각을 확인 중입니다.
+                  </div>
+                </div>
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>키움 시세</span
+                    ><span class="pill" id="brokerBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="brokerState">—</strong>
+                  <div class="detail" id="brokerDetail">
+                    인증·소켓·실제 체결 수신을 구분합니다.
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="compact-detail">
+              <summary>표시 기준 · 실제 주문 상태</summary>
+              <div class="notice" id="truthNotice">
+                <strong>표시 기준</strong> · 연결됨은 인증·소켓 상태, 수신 중은
+                최근 5분의 새 시세 기준입니다. GPU 연산률과 VRAM은 실제 장치
+                측정값입니다. 수집과 판단 시각이 벌어지면 모델 처리가 뒤처지는
+                중입니다.
+              </div>
+            </details>
+            <details id="previousLearningErrorsPanel" class="compact-detail" hidden>
+              <summary>지난 실행의 학습 오류 기록 · 현재 실행 상태와 별개</summary>
+              <pre id="previousLearningErrors" class="caption"></pre>
+            </details>
+          </section>
           <section
             class="overview-health metric-grid"
             aria-label="현재 운영 상태"
@@ -165,7 +339,7 @@
             >
             <article class="card live-metric process-health">
               <div class="metric-heading">
-                <span>서버 · Feed · Agent</span
+                <span>서버 · 시세 수집 · 모델</span
                 ><span class="pill" id="processHealthBadge">확인 중</span>
               </div>
               <strong class="metric-number" id="processHealthValue">—</strong
@@ -229,10 +403,8 @@
                   <h3>Champion 가상계좌</h3>
                   <span class="pill" id="championLiveBadge">상태 확인 중</span>
                 </div>
-                <div class="button-row"><button id="championModelStart">Champion 시작</button><button id="championModelStop" disabled>Champion 정지</button></div>
                 <p class="help" id="championModelResidency">실제 적재 OFF · RAM 가중치 0 GB · GPU 가중치 0 GB</p>
                 <p class="help" id="championModelDecision">최근 판단 —</p>
-                <p class="help" role="status" id="championModelMessage">계좌 유지 · 모델은 별도로 시작합니다.</p>
                 <details class="compact-detail">
                   <summary>판단 모델 · 갱신 정보</summary>
                   <p class="help">
@@ -321,10 +493,8 @@
                   <h3>Candidate 가상계좌</h3>
                   <span class="pill" id="candidateLiveBadge">상태 확인 중</span>
                 </div>
-                <div class="button-row"><button id="candidateModelStart">Candidate 시작</button><button id="candidateModelStop" disabled>Candidate 정지</button></div>
                 <p class="help" id="candidateModelResidency">실제 적재 OFF · RAM 가중치 0 GB · GPU 가중치 0 GB</p>
                 <p class="help" id="candidateModelDecision">최근 판단 —</p>
-                <p class="help" role="status" id="candidateModelMessage">계좌 유지 · 모델은 별도로 시작합니다.</p>
                 <details class="compact-detail">
                   <summary>판단 모델 · 갱신 정보</summary>
                   <p class="help">
@@ -484,170 +654,7 @@
               ></a
             >
           </section>
-          <section id="control">
-            <div class="card hero">
-              <div class="hero-top">
-                <div>
-                  <div class="kicker">실행할 작업 선택</div>
-                  <h1 id="runTitle">서버 확인 중</h1>
-                  <p id="runDetail">수집기와 모델 상태를 불러오고 있습니다.</p>
-                </div>
-                <span class="pill" id="appliedBadge">설정 확인 중</span>
-              </div>
-              <div class="control-grid">
-                <div class="control-box">
-                  <span class="control-label">무엇을 실행할지 선택</span>
-                  <div class="choice-row mode-switches">
-                    <button
-                      class="choice"
-                      id="observeBtn"
-                      type="button"
-                      disabled=""
-                    >
-                      모델 판단: 확인 중</button
-                    ><button
-                      class="choice"
-                      id="paperBtn"
-                      type="button"
-                      disabled=""
-                    >
-                      가상계좌 체결: 확인 중</button
-                    ><button
-                      class="choice"
-                      id="learningBtn"
-                      type="button"
-                      disabled=""
-                    >
-                      경험 학습: 확인 중
-                    </button>
-                  </div>
-                  <div class="mode-meanings">
-                    <span><b>모델 판단</b> · 두 모델이 새 시세로 행동 결정</span
-                    ><span
-                      ><b>가상 체결</b> · 결정된 주문을 가상계좌에 실행</span
-                    ><span
-                      ><b>경험 학습</b> · 저장된 결과로 가중치 업데이트</span
-                    >
-                  </div>
-                  <details class="compact-detail">
-                    <summary>각 작업의 실행 범위</summary>
-                    <div class="caption" id="autonomyDetail">
-                      모델 판단·가상 체결·replay 학습은 각각 독립 제어합니다.
-                      시세 수집·저장은 계속됩니다. 실제 주문은 OFF입니다.
-                    </div>
-                  </details>
-                </div>
-                <details class="compact-detail">
-                  <summary>통합 시장 입력 · 적용 설정</summary>
-                  <div class="control-box">
-                    <span class="control-label">모델 판단 입력</span>
-                    <div>
-                      <strong>1·3·5·15·60분봉</strong><br /><strong
-                        >일봉 · 주봉 · 월봉</strong
-                      >
-                    </div>
-                    <div class="settings-line">
-                      <span id="appliedSettings">여러 시간봉 통합 판단</span>
-                    </div>
-                    <div class="caption">
-                      매번 여러 시간봉을 한 번에 입력받아 종목·매매·자금 배분을
-                      판단합니다. 각 시간봉에서 확보된 완료 봉을 사용합니다.
-                    </div>
-                  </div>
-                </details>
-                <div class="control-box">
-                  <span class="control-label"
-                    >시스템 명령
-                    <span class="pill bad">실제 주문 OFF</span></span
-                  >
-                  <div class="button-row">
-                    <button class="button primary" id="applyBtn" type="button">
-                      시스템 시작</button
-                    ><button
-                      class="button subtle"
-                      id="reconnectBtn"
-                      type="button"
-                    >
-                      시세 재연결
-                    </button>
-                    <button
-                      class="button subtle"
-                      id="agentReloadBtn"
-                      type="button"
-                      title="모델 상태를 저장한 뒤 모델 프로세스만 재시작합니다. 시세 수집과 웹은 유지됩니다."
-                    >
-                      모델 코드 적용</button
-                    ><button
-                      class="button subtle"
-                      id="serverRestartBtn"
-                      type="button"
-                      title="웹만 재시작합니다. Feed와 모델은 계속 실행됩니다."
-                    >
-                      웹서버만 재시작</button
-                    ><button
-                      class="button danger"
-                      id="resetAccountsBtn"
-                      type="button"
-                      title="두 모델의 누적 잔고·포지션·손익 초기화. 가중치·replay 유지. 진행 중 시험은 무효 처리될 수 있습니다."
-                    >
-                      두 장기 운영계좌 초기화</button
-                    ><button class="button danger" id="stopBtn" type="button">
-                      전체 정지
-                    </button>
-                  </div>
-                  <div class="caption">
-                    실제 주문은 사용자가 명시적으로 허용하기 전까지 실행하지
-                    않습니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <details class="compact-detail">
-              <summary>시세 수집·모델 프로세스·연결 상태</summary>
-              <div class="status-grid" aria-label="운영 상태">
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>시장 데이터</span
-                    ><span class="pill" id="feedBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="freshCount">—</strong>
-                  <div class="detail" id="feedDetail">
-                    최근 5분 수신 종목을 확인 중입니다.
-                  </div>
-                </div>
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>모델 판단</span
-                    ><span class="pill" id="agentBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="decisionCount">—</strong>
-                  <div class="detail" id="agentDetail">
-                    마지막 판단 시각을 확인 중입니다.
-                  </div>
-                </div>
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>키움 시세</span
-                    ><span class="pill" id="brokerBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="brokerState">—</strong>
-                  <div class="detail" id="brokerDetail">
-                    인증·소켓·실제 체결 수신을 구분합니다.
-                  </div>
-                </div>
-              </div>
-            </details>
 
-            <details class="compact-detail">
-              <summary>표시 기준 · 실제 주문 상태</summary>
-              <div class="notice" id="truthNotice">
-                <strong>표시 기준</strong> · 연결됨은 인증·소켓 상태, 수신 중은
-                최근 5분의 새 시세 기준입니다. GPU 연산률과 VRAM은 실제 장치
-                측정값입니다. 수집과 판단 시각이 벌어지면 모델 처리가 뒤처지는
-                중입니다.
-              </div>
-            </details>
-          </section>
           <section
             class="overview-resources metric-grid"
             aria-label="자원과 저장소"
@@ -1060,7 +1067,7 @@
                     ><b id="pendingLearningCount">—</b>
                   </div>
                   <div>
-                    <span>마지막 시장 판단 / 시세와 cursor 지연</span
+                    <span>마지막 처리 시세 · 새 시세와의 시간 차이</span
                     ><b id="learningObservationTime">—</b>
                   </div>
                   <div>

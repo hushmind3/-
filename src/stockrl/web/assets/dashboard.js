@@ -357,20 +357,23 @@ function renderTelemetry(d) {
     "gpuDevice",
     d.gpu?.name || d.metrics?.cuda_device || d.metrics?.device || "장치 미확인",
   );
-  const cuda =
-    d.agent_running && String(d.metrics?.device || "").startsWith("cuda");
+  const roles = runningModelRoles(d);
+  const running = roles.length > 0;
+  const devices = roles.map((role) => String(d.model_runtime?.[role]?.compute_device || d.model_runtime?.[role]?.device || d.metrics?.device || ""));
+  const cuda = devices.some((device) => device.startsWith("cuda"));
+  const mps = devices.some((device) => device.startsWith("mps"));
   badge(
     "gpuBadge",
     cuda
       ? "CUDA 적용"
-      : d.agent_running
-        ? d.metrics?.device === "mps"
+      : running
+        ? mps
           ? "MPS 적용"
           : "CPU 사용"
         : "모델 정지",
-    cuda || (d.agent_running && d.metrics?.device === "mps")
+    cuda || (running && mps)
       ? "good"
-      : d.agent_running
+      : running
         ? "warn"
         : "bad",
   );
@@ -397,19 +400,17 @@ function renderTelemetry(d) {
     const m = d.metrics || {};
     const used = num(m.cuda_memory_allocated_bytes),
       total = num(m.cuda_total_memory_bytes),
-      ratio = total ? Math.min(100, (used / total) * 100) : 0,
-      cuda = d.agent_running && String(m.device || "").startsWith("cuda"),
-      mps = d.agent_running && String(m.device || "").startsWith("mps");
+      ratio = total ? Math.min(100, (used / total) * 100) : 0;
     badge(
       "gpuBadge",
       cuda
         ? "CUDA 적용"
         : mps
           ? "MPS 적용"
-          : d.agent_running
+          : running
             ? "CPU 사용"
             : "모델 정지",
-      cuda || mps ? "good" : d.agent_running ? "warn" : "bad",
+      cuda || mps ? "good" : running ? "warn" : "bad",
     );
     text(
       "gpuMemory",
@@ -447,26 +448,26 @@ function renderOperationsOverview(d) {
   const lag = (v) => (v == null ? "미측정" : whole(v) + "초");
   text(
     "opChampionLag",
-    !d.agent_process_running ? "정지" : lag(health.lag_seconds),
+    !modelIsRunning(d, "champion") ? "정지" : d.model_runtime?.champion?.memory_scope === "worker" ? "과거 구간 실행" : lag(health.lag_seconds),
   );
 
   text(
     "opCandidateLag",
-    !d.agent_process_running ? "정지" : lag(candidate.lag_seconds),
+    !modelIsRunning(d, "candidate") ? "정지" : d.model_runtime?.candidate?.memory_scope === "worker" ? "과거 구간 실행" : lag(candidate.lag_seconds),
   );
 
   const warnings = [];
-  if (health.status === "error")
+  if (modelIsRunning(d, "champion") && health.status === "error")
     warnings.push(
       "Champion 판단 오류: " + (health.reason || "오류 기록 확인 필요"),
     );
   if (d.feed_metrics?.broker_error)
     warnings.push("시세 연결 오류: " + d.feed_metrics.broker_error);
-  if (m.agent_last_input_error)
+  if (d.agent_process_running && m.agent_last_input_error)
     warnings.push("최근 입력 오류: " + m.agent_last_input_error);
-  if (candidate.status === "error")
+  if (modelIsRunning(d, "candidate") && candidate.status === "error")
     warnings.push("Candidate 판단 오류: " + candidate.reason);
-  else if (candidate.status === "stale")
+  else if (modelIsRunning(d, "candidate") && candidate.status === "stale")
     warnings.push(
       "Candidate 필수 관찰 처리가 feed보다 " +
         lag(candidate.lag_seconds) +
@@ -474,20 +475,27 @@ function renderOperationsOverview(d) {
         whole(candidate.pending) +
         "개는 DB에 남아 있으며 아래 Candidate 손익도 마지막 처리 시각 기준입니다.",
     );
-  if (health.status === "stale")
+  if (modelIsRunning(d, "champion") && health.status === "stale")
     warnings.push(
       "Champion이 시세보다 " + lag(health.lag_seconds) + " 뒤처져 있습니다.",
     );
-  if (m.last_candidate_error)
-    warnings.push("최근 Candidate 학습 오류: " + m.last_candidate_error);
-  if (m.last_champion_error)
-    warnings.push("최근 Champion 학습 오류: " + m.last_champion_error);
-  $("runtimeAlertPanel").hidden = !warnings.length;
+  const previousErrors = [];
+  for (const role of ["champion", "candidate"]) {
+    const error = m["last_" + role + "_error"];
+    if (!error) continue;
+    const name = role === "champion" ? "Champion" : "Candidate";
+    if (modelIsRunning(d, role) && d.model_runtime?.[role]?.memory_scope !== "worker")
+      warnings.push("최근 " + name + " 학습 오류: " + error);
+    else previousErrors.push(name + " 지난 실행: " + error);
+  }
+  text("previousLearningErrors", previousErrors.join("\n") || "지난 학습 오류 없음");
+  property("previousLearningErrorsPanel", "hidden", !previousErrors.length);
+  property("runtimeAlertPanel", "hidden", !warnings.length);
   text(
     "runtimeAlertSummary",
     "최근 오류·지연 " + whole(warnings.length) + "건 · 원인 확인",
   );
-  $("runtimeAlert").hidden = !warnings.length;
+  property("runtimeAlert", "hidden", !warnings.length);
   text("runtimeAlert", warnings.join(" "));
 }
 
@@ -531,25 +539,33 @@ function renderObservationStatus(d) {
     badge("agentBadge", "판단 OFF", "");
     text(
       "agentDetail",
-      "사용자가 새 모델 판단을 중지했습니다. 시세 저장·보유 평가·replay 학습은 계속됩니다.",
+      "새 판단 중지 · 시세 수집은 계속 · 저장 경험 학습은 학습 설정에 따릅니다.",
     );
-    for (const role of ["champion", "candidate"]) {
-      badge(role + "LiveBadge", "판단 OFF", "");
+    for (const role of runningModelRoles(d)) {
+      badge(role + "LiveBadge", "실행 중 · 새 판단 중지", "");
       text(
         role === "champion" ? "opChampionLag" : "opCandidateLag",
         "판단 OFF",
       );
     }
-    text("opChampionTime", "추론 중지 · 시세 저장·보유 평가 계속");
-    text("opCandidateQueue", "추론 중지 · 기존 경험 처리·학습 계속");
+    text("opChampionTime", modelIsRunning(d, "champion") ? "새 판단 중지 · 시세 수집 계속" : "모델 정지 · 마지막 기록 유지");
+    text("opCandidateQueue", modelIsRunning(d, "candidate") ? "새 판단 중지 · 저장 경험 학습은 설정에 따름" : "모델 정지 · 미처리 경험 보존");
   } else {
     const m = d.metrics || {},
       observer = d.candidate_live_account || {};
-    if (m.champion_inference_skipped_reason === "context_only")
+    if (modelIsRunning(d, "champion") && m.champion_inference_skipped_reason === "context_only")
       badge("championLiveBadge", "문맥 갱신 · 풀 추론 없음", "");
-    if (observer.status === "context_only")
+    if (modelIsRunning(d, "candidate") && observer.status === "context_only")
       badge("candidateLiveBadge", "문맥 갱신 · 풀 추론 없음", "");
   }
+  for (const role of runningModelRoles(d)) {
+    const runtime = d.model_runtime?.[role];
+    if (runtime?.memory_scope !== "worker") continue;
+    text(role === "champion" ? "opChampionTime" : "opCandidateQueue", "공식 ETHUSDT 과거 구간 · 최근 판단 " + timeOf(runtime.last_decision));
+    text(role === "champion" ? "opChampionLag" : "opCandidateLag", "과거 구간 · 실시간 지연 비교 없음");
+    if (role === "champion") text("agentDetail", runtime.source + " · " + timeOf(runtime.last_decision));
+  }
+
 }
 
 // Shared safe row builder; cached html() keeps table nodes on unchanged data.
@@ -607,7 +623,7 @@ function operatorMetrics(d) {
     },
     Inference: {
       number: count(lag) + "초",
-      status: !d.agent_process_running
+      status: !runningModelRoles(d).length
         ? "정지"
         : d.observe_enabled === false
           ? "판단 중지"
@@ -650,24 +666,7 @@ function operatorMetrics(d) {
     },
     Learning: {
       number: count(today?.completed) + " / " + count(today?.enqueued) + "건",
-      status:
-        d.agent_process_running !== true
-          ? d.agent_process_running === false
-            ? "정지"
-            : "미확인"
-          : d.learning_enabled !== true
-            ? d.learning_enabled === false
-              ? "OFF"
-              : "미확인"
-            : state.error
-              ? "오류"
-              : m.champion_training || m.candidate_training
-                ? "학습 중"
-                : !known(m.replay_eligible_backlog)
-                  ? "미측정"
-                  : Number(m.replay_eligible_backlog) > 0
-                    ? "처리 대기"
-                    : "결과 대기",
+      status: state.title,
       detail:
         "남은 학습 " +
         count(m.replay_eligible_backlog) +
@@ -677,7 +676,7 @@ function operatorMetrics(d) {
       ratio: ratio(today?.completed, today?.enqueued),
       tone: state.error
         ? "bad"
-        : m.champion_training || m.candidate_training
+        : modelIsLearning(d, "champion") || modelIsLearning(d, "candidate")
           ? "blue"
           : "",
     },
@@ -706,6 +705,19 @@ function operatorMetrics(d) {
       tone: v.active ? "blue" : "",
     },
   };
+  const runningRoles = runningModelRoles(d);
+  if (runningRoles.length && runningRoles.every((role) => d.model_runtime?.[role]?.memory_scope === "worker")) {
+    Object.assign(cards.Inference, {number:"과거 구간", status:"TradingMoE 실행", detail:"공식 ETHUSDT 과거 시세 · 실시간 시세 지연과 비교하지 않음", ratio:null, tone:"good"});
+    cards.Learning.detail = "TradingMoE는 별도 replay 사용 · 아래 완료 건수는 기존 공통 replay 기록";
+  } else if (d.model_runtime && runningRoles.length) {
+    const activeLags = runningRoles.map((role) => (role === "champion" ? h : c).lag_seconds);
+    if (activeLags.every(known)) {
+      const actualLag = Math.max(...activeLags.map(Number));
+      cards.Inference.number = count(actualLag) + "초";
+      cards.Inference.ratio = ratio(actualLag, threshold);
+      cards.Inference.detail = runningRoles.map((role) => (role === "champion" ? "Champion" : "Candidate") + " " + count((role === "champion" ? h : c).lag_seconds) + "초").join(" · ");
+    }
+  }
   if (d.status_unavailable)
     for (const card of Object.values(cards))
       Object.assign(card, {
@@ -778,17 +790,21 @@ function renderProcessHealth(d) {
   const parts = [
     ["웹서버", true],
     ["Feed", d.feed_running],
-    ["Agent", d.agent_process_running],
+    ["Champion", modelIsRunning(d, "champion")],
+    ["Candidate", modelIsRunning(d, "candidate")],
   ];
-  const ready = d.feed_running && d.agent_process_running;
+  const roles = runningModelRoles(d);
+  const transitioning = Object.values(d.model_runtime || {}).some((item) => ["loading", "saving"].includes(item.status));
+  const problem = Object.values(d.model_runtime || {}).some((item) => item.error || item.requested && ["stopped", "error"].includes(item.status));
+  const ready = d.feed_running && roles.length > 0 && !problem && !transitioning;
   badge(
     "processHealthBadge",
-    ready ? "실행 중" : d.running ? "일부 정지" : "정지",
-    ready ? "good" : "warn",
+    problem ? "모델 오류" : transitioning ? "모델 전환 중" : ready ? "실행 중" : d.feed_running ? "시세 수집 중" : "정지",
+    problem ? "bad" : transitioning ? "warn" : d.feed_running ? "good" : "",
   );
   text(
     "processHealthValue",
-    ready ? "운영 정상" : d.running ? "확인 필요" : "시스템 정지",
+    problem ? "모델 오류 확인" : transitioning ? "모델 로딩·저장 중" : ready ? "운영 정상" : d.feed_running ? "시세 수집 · 모델 정지" : "시스템 정지",
   );
   text(
     "processHealthDetail",

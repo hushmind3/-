@@ -1283,6 +1283,20 @@ section {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.model-commands {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.model-command {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line, #dbe4f5);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+}
+.model-command .caption { margin: 8px 0 0; }
 .control-grid > .compact-detail {
   grid-column: 1 / -1;
   grid-row: 2;

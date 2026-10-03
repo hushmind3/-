@@ -161,7 +161,7 @@ function renderValidationAccounts(d) {
                 "봉 · 새 시험 대기"
               : status === "collecting"
                 ? "시험 계좌 확인 중 · " + bars + " / " + required + "봉"
-                : d.learning?.candidate_training
+                : modelIsLearning(d, "candidate")
                   ? "Candidate 학습 중 · 학습 완료 후 대결 시작"
                   : "새 Candidate 대결 대기";
   text(

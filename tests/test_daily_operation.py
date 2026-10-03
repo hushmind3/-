@@ -76,9 +76,10 @@ class DailyOperationChecks(unittest.TestCase):
         panel=Panel();panel.observed[:,0]=False
         with TemporaryDirectory(dir=ROOT) as directory:
             root=Path(directory);agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent._init_model_lifecycle(False)
             agent.state_dir=root;agent.replay=GlobalReplayBuffer(journal_path=root/"replay.sqlite3",dual_learning=True)
             for i in (1,2):agent.replay.enqueue_market_observation(MarketObservation(panel,i,8),True,())
-            agent.window=8;agent.stop=threading.Event();agent.stop.set();agent.metrics={}
+            agent.window=8;agent.stop=MagicMock();agent.stop.is_set.side_effect=[False,False,False,False,True];agent.metrics={}
             agent.candidate_live_model=None;agent.candidate_live_account=PaperAccount.in_memory(.001,.0001)
             agent.candidate_portfolio_pending=[];agent.candidate_live_state_path=root/"observer.json"
             agent.candidate_live_inference_lock=threading.Lock()
@@ -99,6 +100,7 @@ class DailyOperationChecks(unittest.TestCase):
         self.assertLess(scheduler.priority("champion_learning_step"),scheduler.priority("champion_live"))
         self.assertEqual(scheduler.snapshot()["learning_priority_until_utc"],"2026-10-01T13:30:00+00:00")
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.live_priority_enabled=True;agent.candidate_live_inference_lock=scheduler
         with scheduler.work("candidate_live"):
             self.assertIsNone(agent._live_learning_wait_reason())
@@ -130,6 +132,7 @@ class DailyOperationChecks(unittest.TestCase):
     def test_replay_learning_waits_only_for_actual_gpu_inference(self):
         from stockrl.gpu_scheduler import FairGpuScheduler
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.live_priority_enabled=True;agent.metrics={"observation_caught_up":False}
         agent.replay=MagicMock();agent.replay.market_observation_stats.return_value={"pending":3}
         agent.candidate_live_inference_lock=FairGpuScheduler()
@@ -147,6 +150,7 @@ class DailyOperationChecks(unittest.TestCase):
     def test_learning_segments_yield_to_inference_without_losing_accumulated_gradient(self):
         from stockrl.gpu_scheduler import FairGpuScheduler
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.live_priority_enabled=True;agent.metrics={};agent.device=torch.device("cpu")
         agent.candidate_live_inference_lock=FairGpuScheduler()
         parameter=torch.nn.Parameter(torch.tensor(1.0));durations=[];order=[]
@@ -455,6 +459,7 @@ class DailyOperationChecks(unittest.TestCase):
         from test_online_pipeline import PipelineTests
         panel=Panel();panel.dates=(panel.dates[0]+np.arange(8)*np.timedelta64(15,"s"))
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.replay=GlobalReplayBuffer();agent.metrics={"paper_experiences_seen":0}
         agent.window=4;agent.champion=FixedPolicy();agent.paper_account=PaperAccount.in_memory(0,0)
         agent.horizon_kind="bars";agent.horizon_amount=1
@@ -473,7 +478,8 @@ class DailyOperationChecks(unittest.TestCase):
         panel=Panel();panel.closes[:,0]=[100,99,98,106,107,108,109,110]
         with TemporaryDirectory(dir=ROOT) as directory:
             path=Path(directory)/"replay.sqlite3"
-            agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.window=4;agent.champion=FixedPolicy()
+            agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent._init_model_lifecycle(False);agent.window=4;agent.champion=FixedPolicy()
             agent.replay=GlobalReplayBuffer(journal_path=path,dual_learning=True)
             agent.metrics={"paper_experiences_seen":0};agent.horizon_kind="bars";agent.horizon_amount=1
             account=PaperAccount.in_memory(0,0);agent.paper_account=account
@@ -545,6 +551,7 @@ class DailyOperationChecks(unittest.TestCase):
 
     def test_learner_retries_statistics_error_and_resumes_training(self):
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.stop=threading.Event();agent.metrics={};agent.replay=MagicMock()
         agent.candidate_replay_passes=1;agent.dual_learning_enabled=False
         agent.candidate_retry_after=0
@@ -564,9 +571,10 @@ class DailyOperationChecks(unittest.TestCase):
         with TemporaryDirectory(dir=ROOT) as directory:
             root=Path(directory)
             agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent._init_model_lifecycle(False)
             agent.replay=GlobalReplayBuffer(journal_path=root/"replay.sqlite3",dual_learning=True)
             for i in (1,2):agent.replay.enqueue_market_observation(MarketObservation(panel,i,8),True,(.9,.9))
-            agent.window=8;agent.stop=threading.Event();agent.stop.set()
+            agent.window=8;agent.stop=MagicMock();agent.stop.is_set.side_effect=[False,False,False,False,True]
             agent.metrics={};agent.device=torch.device("cpu")
             agent.champion=FixedPolicy();agent.candidate_live_model=FixedPolicy()
             agent.candidate_live_model_version=3
@@ -586,7 +594,8 @@ class DailyOperationChecks(unittest.TestCase):
     def test_clone_preserves_weights_dtypes_outputs_and_has_independent_storage(self):
         cfg=TransformerConfig(d_model=16,n_heads=2,n_layers=2,max_symbols=4,
             n_markets=4,n_asset_types=4,max_seq_len=8)
-        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.cfg=cfg
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False);agent.cfg=cfg
         for contextual in (False,True):
             with self.subTest(contextual=contextual):
                 backbone=GlobalMarketTransformer(cfg).half()
@@ -615,7 +624,8 @@ class DailyOperationChecks(unittest.TestCase):
             n_markets=4,n_asset_types=4,max_seq_len=8)
         source=ContextConditionedTransformer(GlobalMarketTransformer(cfg))
         source._stockrl_uses_market_context=True;source._stockrl_symbol_map={}
-        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent);agent.cfg=cfg
+        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False);agent.cfg=cfg
         agent.metrics={};agent.candidate_live_model=None
         agent.candidate_live_model_lock=threading.Lock()
         agent._publish_candidate_observer(source,1)

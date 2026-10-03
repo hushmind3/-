@@ -373,7 +373,6 @@ async function main() {
   for (const [id, url, payload] of [
     ["applyBtn", "/api/start", { mode: "live" }],
     ["reconnectBtn", "/api/feed/reconnect", {}],
-    ["agentReloadBtn", "/api/agent/reload", {}],
     ["stopBtn", "/api/stop", {}],
     [
       "recheckBtn",
@@ -400,6 +399,53 @@ async function main() {
     check(() => assert.deepEqual(o.calls, [{ url, payload }]));
     o.w.close();
   }
+  // Both model lifecycles are independent of feed and of each other.
+  for (const role of ["champion", "candidate"]) {
+    const data = {...clone(fixture), agent_process_running: false,
+      model_runtime: {champion: {status:"stopped",loaded:false,requested:false},candidate: {status:"stopped",loaded:false,requested:false}}};
+    const o=build(true,data);o.w.render(data);
+    check(()=>assert.match(o.w.document.getElementById("runTitle").textContent,/시세 수집 중 · 모델 정지/));
+    const start=o.w.document.getElementById(role+"ModelStart");
+    check(()=>assert(start.closest("#control")));
+    check(()=>assert(!o.w.document.getElementById("agentReloadBtn")));
+    await start.onclick();
+    check(()=>assert.deepEqual(o.calls,[{url:"/api/models/"+role+"/start",payload:{}}]));
+    data.model_runtime[role]={status:"running",loaded:true,requested:true};o.w.render(data);
+    check(()=>assert(start.disabled));
+    check(()=>assert(!o.w.document.getElementById(role+"ModelStop").disabled));
+    check(()=>assert.equal(o.w.document.getElementById(role+"CommandState").textContent,"실행 중"));
+    await o.w.document.getElementById(role+"ModelStop").onclick();
+    check(()=>assert.equal(o.calls.at(-1).url,"/api/models/"+role+"/stop"));
+    o.w.close();
+  }
+  // Failed requests stay visible after refresh; stale historic errors aren't live failures.
+  const lifecycleState={...clone(fixture),agent_process_running:false,
+    model_runtime:{champion:{status:"stopped",loaded:false,requested:false},candidate:{status:"stopped",loaded:false,requested:false}},
+    metrics:{last_champion_error:"old reward_settlement error",champion_training:true}};
+  const lifecycle=build(true,lifecycleState);lifecycle.w.render(lifecycleState);
+  const originalFetch=lifecycle.w.fetch;
+  lifecycle.w.fetch=(url,options)=>options?.method==="POST"?Promise.resolve({ok:false,json:async()=>({error:"start rejected"})}):originalFetch(url,options);
+  await lifecycle.w.document.getElementById("championModelStart").onclick();
+  check(()=>assert.match(lifecycle.w.document.getElementById("championModelMessage").textContent,/start rejected/));
+  check(()=>assert(lifecycle.w.document.getElementById("runtimeAlert").hidden));
+  lifecycle.w.document.getElementById("previousLearningErrorsPanel").open=true;lifecycle.w.render(lifecycleState);
+  check(()=>assert.match(lifecycle.w.document.getElementById("previousLearningErrors").textContent,/old reward_settlement/));
+  check(()=>assert.match(lifecycle.w.learningSituation(lifecycleState).title,/정지/));
+  check(()=>assert(lifecycle.w.document.getElementById("control").compareDocumentPosition(lifecycle.w.document.querySelector(".overview-health"))&4));
+  lifecycle.w.close();
+  // A dedicated CUDA MoE worker is alive even while the legacy agent is stopped.
+  const nativeState={...clone(fixture),agent_process_running:false,agent_running:false,
+    model_runtime:{champion:{status:"running",loaded:true,requested:true,memory_scope:"worker",compute_device:"cuda:0",source:"ETH historical"},candidate:{status:"stopped",loaded:false,requested:false}},
+    metrics:{last_champion_error:"historic legacy error",champion_training:true},account_observability:{champion:{},candidate:{}}};
+  const native=build(true,nativeState);native.w.render(nativeState);
+  check(()=>assert.match(native.w.document.getElementById("gpuBadge").textContent,/CUDA/));
+  check(()=>assert.match(native.w.learningSituation(nativeState).title,/TradingMoE/));
+  check(()=>assert.equal(native.w.operatorMetrics(nativeState).Inference.number,"과거 구간"));
+  check(()=>assert(!native.w.modelIsLearning(nativeState,"champion")));
+  nativeState.observe_enabled=false;nativeState.model_runtime.champion={status:"stopped",loaded:false,requested:false};native.w.render(nativeState);
+  check(()=>assert.equal(native.w.document.getElementById("championLiveBadge").textContent,"정지"));
+  check(()=>assert.equal(native.w.document.getElementById("championCommandState").textContent,"정지"));
+  native.w.close();
   // Coalesce overlapping refreshes; do not duplicate API work.
   const coalesced = build(true, clone(fixture));
   let gets = 0,

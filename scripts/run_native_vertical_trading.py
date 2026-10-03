@@ -130,6 +130,36 @@ def market_inputs(root,frame,index):
         "fincast":price,"exaone":price,"timemoe":price,"marketgpt":itch}
 
 
+def runtime_modes(state):
+    """Named models share the operator's flags; standalone MoE keeps its own lifecycle."""
+    if state.name not in ("champion_moe", "candidate_moe"):
+        return dict(observe_enabled=True, paper_enabled=True, learning_enabled=True)
+    try:
+        flags=json.loads((state.parent/"autonomy.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return dict(observe_enabled=False, paper_enabled=False, learning_enabled=False)
+    return {key:bool(flags.get(key,False)) for key in ("observe_enabled","paper_enabled","learning_enabled")}
+
+
+def learn_saved_contexts(model,optimizer,bridge,contexts):
+    batch=bridge.replay.pending_batch(256,exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})})
+    ack={};latest=None;logs=[]
+    for exp in batch:
+        if exp.source!="paper_account_portfolio" or not exp.portfolio_value_transition:continue
+        context=contexts.get(exp.timestamp)
+        if not context:continue
+        snapshot,original=context
+        latest=update_controller(model,optimizer,exp,snapshot,original["raw_outputs"],original["trading_output"]["target_weights"],original["trading_output"]["cash_weights_by_currency"]["USD"],original["trading_output"]["actions"])
+        logs.append({"timestamp":exp.timestamp,**latest})
+        ack.update({e._replay_row_id:1 for e in batch if e.timestamp==exp.timestamp})
+    for exp in batch:
+        if exp._replay_row_id in ack:exp._updated=True
+    if ack:
+        model.config.setdefault("applied_replay_rows",{}).update({str(k):1 for k in ack})
+        for stamp in {exp.timestamp for exp in batch if exp._replay_row_id in ack}:contexts.pop(stamp,None)
+    return latest,logs
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--root",type=Path,required=True);p.add_argument("--steps",type=int,default=6)
@@ -202,11 +232,22 @@ def run(args):
     step_count=len(native)-first if args.continuous else args.steps+2
     publish_worker(args.state,model,bridge,status="running",message="공식 ETHUSDT 과거 구간을 이어 실행합니다.")
     for step in range(step_count):
+        modes=runtime_modes(args.state)
+        while args.continuous and not modes["observe_enabled"] and not (args.state/"stop.request").exists():
+            latest=None
+            if modes["learning_enabled"]:
+                latest,logs=learn_saved_contexts(model,optimizer,bridge,contexts)
+                update_logs.extend(logs);update_logs=update_logs[-1:]
+                save_contexts(args.state,contexts)
+            publish_worker(args.state,model,bridge,learning=latest,status="running",modes=modes,
+                learning_active=latest is not None,message="새 판단 중지 · 저장 경험 학습 허용" if modes["learning_enabled"] else "새 판단·학습 중지 · 모델 메모리 유지")
+            time.sleep(.25)
+            modes=runtime_modes(args.state)
         if args.continuous and (args.state/"stop.request").exists():break
         index=first+step;stamp=str(native.iloc[index].timestamp)
         pi=int(np.flatnonzero(panel.dates==np.datetime64(stamp))[0])
         if last and panel.dates[pi]<=np.datetime64(last):continue
-        started=time.perf_counter();fills=bridge.advance(panel,pi)
+        started=time.perf_counter();fills=bridge.advance(panel,pi,enabled=modes["paper_enabled"])
         decision=None;orders=None
         if args.continuous or step<args.steps:
             pstate,astate=bridge.paper_account.model_inputs(panel,pi)
@@ -236,18 +277,12 @@ def run(args):
                 with torch.no_grad():decision,_=model(snapshot,account,packets=packets,explore=True)
             decision["native_decision_seconds"]=time.perf_counter()-started
             decision["current_weights"]=snapshot["current_weights"]
-            orders=bridge.submit(decision,panel,pi,paper_executable=True)
+            orders=bridge.submit(decision,panel,pi,paper_executable=modes["paper_enabled"])
             contexts[str(panel.dates[pi])] = (snapshot,decision)
-        batch=bridge.replay.pending_batch(256,exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})});ack={};latest_learning=None
-        for exp in batch:
-            if exp.source!="paper_account_portfolio" or not exp.portfolio_value_transition:continue
-            context=contexts.get(exp.timestamp)
-            if not context:continue
-            snapshot,original=context
-            change=update_controller(model,optimizer,exp,snapshot,original["raw_outputs"],original["trading_output"]["target_weights"],original["trading_output"]["cash_weights_by_currency"]["USD"],original["trading_output"]["actions"])
-            update_logs.append({"timestamp":exp.timestamp,**change})
-            latest_learning=change
-            ack.update({e._replay_row_id:1 for e in batch if e.timestamp==exp.timestamp})
+        latest_learning=None
+        if modes["learning_enabled"]:
+            latest_learning,logs=learn_saved_contexts(model,optimizer,bridge,contexts)
+            update_logs.extend(logs)
         # Save once after this short continuous run, then acknowledge the rows.
         row={"timestamp":stamp,"decision":decision,"orders":orders,"fills":fills,
             "books":deepcopy(bridge.paper_account.snapshot()["books"]),"reward_points":bridge.paper_account.reward_points(),
@@ -256,14 +291,8 @@ def run(args):
         if args.continuous:rows=rows[-2:]
         publish_paper_status(args.root,args.state,bridge,decision,row,model)
         with (args.state/"cycles.jsonl").open("a",encoding="utf-8") as handle:handle.write(json.dumps(row)+"\n")
-        # Remember updated IDs so the next step does not consume them again.
-        for e in batch:
-            if e._replay_row_id in ack:e._updated=True
-        if ack:
-            model.config.setdefault("applied_replay_rows",{}).update({str(k):1 for k in ack})
-            for stamp in {e.timestamp for e in batch if e._replay_row_id in ack}:contexts.pop(stamp,None)
         save_contexts(args.state,contexts)
-        publish_worker(args.state,model,bridge,row,decision,latest_learning,status="running")
+        publish_worker(args.state,model,bridge,row,decision,latest_learning,status="running",modes=modes,learning_active=latest_learning is not None)
         last=str(panel.dates[pi])
         print(json.dumps({"step":step,"actions":decision["trading_output"]["actions"] if decision else None,
             "fills":fills,"NAV":row["books"]["USD"]["equity"],"updates":model.optimizer_updates,"seconds":row["seconds"]}),flush=True)

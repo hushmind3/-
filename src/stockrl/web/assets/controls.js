@@ -17,24 +17,17 @@ function connectResult(message, error = false) {
 
 function renderSystemControls(d) {
   const changing = !!(d.stopping || d.restarting);
-  badge(
-    "systemBadge",
-    d.running
-      ? d.feed_running
-        ? "시스템 실행 중"
-        : "시스템 일부 대기"
-      : "시스템 정지",
-    d.running ? (d.feed_running ? "good" : "warn") : "bad",
-  );
+  const roles = runningModelRoles(d);
+  badge("systemBadge", d.status_unavailable ? "상태 미확인" : roles.length ? "모델 " + roles.length + "개 실행 중" : d.feed_running ? "시세 수집 중 · 모델 정지" : "시스템 정지", d.status_unavailable ? "bad" : roles.length || d.feed_running ? "good" : "");
   badge(
     "appliedBadge",
-    changing ? "시스템 전환 중" : "시장 feed · 모델은 각각 시작",
+    changing ? "시스템 전환 중" : "시세 수집 · 모델 각각 시작",
     changing ? "warn" : "good",
   );
 
   text(
     "applyBtn",
-    d.restarting ? "적용 중…" : d.running ? "시스템 실행 중" : "시스템 시작",
+    d.restarting ? "적용 중…" : d.feed_running ? "시세 수집 실행 중" : "시스템 시작 · 시세 수집",
   );
   property("applyBtn", "disabled", !!pendingCommand || changing || !!d.running);
   property(
@@ -102,7 +95,6 @@ function renderConnection(d) {
 const commandButtons = [
   "applyBtn",
   "reconnectBtn",
-  "agentReloadBtn",
   "serverRestartBtn",
   "resetAccountsBtn",
   "stopBtn",
@@ -176,11 +168,13 @@ $("applyBtn").onclick = () =>
   });
 
 const modelCommandPending = new Set();
+const modelCommandErrors = new Map();
 for (const role of ["champion", "candidate"]) {
   for (const action of ["start", "stop"]) {
     $(role + "Model" + (action === "start" ? "Start" : "Stop")).onclick = async () => {
       if (modelCommandPending.has(role)) return;
       modelCommandPending.add(role);
+      modelCommandErrors.delete(role);
       $(role + "ModelStart").disabled = $(role + "ModelStop").disabled = true;
       text(role + "ModelMessage", action === "start" ? "적재 요청 중" : "저장·해제 요청 중");
       try {
@@ -188,6 +182,7 @@ for (const role of ["champion", "candidate"]) {
         if (!result.ok) throw new Error(result.error || "요청 실패");
         text(role + "ModelMessage", action === "start" ? "적재 요청됨 · 상태를 확인합니다" : "현재 작업 후 저장하고 이 모델만 해제합니다");
       } catch (error) {
+        modelCommandErrors.set(role, "요청 실패: " + error.message);
         text(role + "ModelMessage", "요청 실패: " + error.message);
       } finally {
         modelCommandPending.delete(role);
@@ -214,19 +209,6 @@ $("serverRestartBtn").onclick = () =>
     feedback(
       "웹서버 재연결을 확인하세요. 모델 프로세스는 별도로 확인할 수 있습니다.",
       true,
-    );
-  });
-
-$("agentReloadBtn").onclick = () =>
-  runCommand($("agentReloadBtn"), async () => {
-    feedback(
-      "모델이 현재 작업을 저장한 뒤 모델 프로세스만 다시 적용됩니다. 시세 수집과 웹은 유지됩니다.",
-    );
-    const result = await api("/api/agent/reload", {});
-    feedback(
-      result.pending
-        ? "승급전이 끝나면 자동으로 재적용합니다."
-        : "모델이 상태를 저장한 후 재적용됩니다.",
     );
   });
 
@@ -340,31 +322,11 @@ function renderModeControls(d) {
     paper = !!d.paper_enabled,
     learning = d.learning_enabled !== false;
   property("serverRestartBtn", "disabled", !!pendingCommand || changing);
-  const validationActive = !!d.metrics?.candidate_validation_active,
-    reloadPending = !!d.agent_reload_pending;
-  property(
-    "agentReloadBtn",
-    "disabled",
-    !!pendingCommand ||
-      changing ||
-      !d.running ||
-      !d.agent_process_running ||
-      reloadPending,
-  );
-  property(
-    "agentReloadBtn",
-    "title",
-    reloadPending
-      ? "재적용은 승급전 종료 후 자동 적용됩니다."
-      : validationActive
-        ? "승급전 중 재적용을 예약합니다."
-        : "저장 후 모델만 재시작합니다. 시세 수집과 웹은 유지됩니다.",
-  );
   for (const mode of modeDefinitions) {
     const known = typeof d[mode.field] === "boolean",
       on = d[mode.field];
     const label = known
-      ? mode.label + ": " + (on ? mode.on + " · 중지" : mode.off + " · 시작")
+      ? mode.label + ": " + (on ? mode.on + " · 끄기" : mode.off + " · 켜기")
       : mode.label + ": 확인 중";
     text(
       mode.id,
@@ -374,27 +336,12 @@ function renderModeControls(d) {
     attribute(mode.id, "aria-pressed", String(known && on));
     property(mode.id, "disabled", !!pendingCommand || changing || !known);
   }
-  text(
-    "runTitle",
-    d.running
-      ? observe
-        ? "모델 판단 실행 중"
-        : "모델 판단 중지 · 시세 저장 계속"
-      : "시스템 정지",
-  );
-  text(
-    "runDetail",
-    "판단 " +
-      (observe ? "ON" : "OFF") +
-      " | 체결 " +
-      (paper ? "ON" : "OFF") +
-      " | 학습 " +
-      (learning ? "ON" : "OFF") +
-      " | 실제 주문 OFF",
-  );
+  const roles = runningModelRoles(d);
+  text("runTitle", roles.length ? roles.map((role) => role === "champion" ? "Champion" : "Candidate").join(" · ") + " 실행 중" : d.feed_running ? "시세 수집 중 · 모델 정지" : "시스템 정지");
+  text("runDetail", "실행 중인 모델에 적용 · 판단 " + (observe ? "허용" : "중지") + " | 가상 체결 " + (paper ? "허용" : "중지") + " | 경험 학습 " + (learning ? "허용" : "중지") + " | 실제 주문 OFF");
   text(
     "autonomyDetail",
-    "판단: 두 모델의 새 추론·승급전. 체결: 기존 주문 실행·새 판단 주문 접수. 학습: 저장된 replay로 두 모델 업데이트. 각각 독립 제어합니다. 판단 OFF에서도 시세 저장·기존 보유 평가·replay 학습은 계속됩니다. 비트코인·환율 등 문맥용 시세만 바뀌면 풀 추론하지 않습니다.",
+    "모델 시작·정지와 아래 작업 허용은 별개입니다. 판단을 꺼도 시세 수집과 저장 경험 학습은 계속됩니다. 가상 체결을 끄면 새 주문과 대기 주문 체결을 중지하고 보유는 유지합니다. 학습을 끄면 가중치를 갱신하지 않고 경험을 보존합니다. TradingMoE 모델은 확보된 ETHUSDT 과거 구간을 사용하며, 전용 자동매매 화면은 별도로 제어합니다.",
   );
 }
 
@@ -404,9 +351,9 @@ const modeDefinitions = [
     id: "observeBtn",
     field: "observe_enabled",
     label: "모델 판단",
-    on: "판단 중",
+    on: "판단 허용",
     off: "판단 중지",
-    start: "두 모델의 판단 시작이 확인됐습니다.",
+    start: "새 판단을 허용했습니다. 모델은 Champion·Candidate 시작 버튼으로 각각 실행합니다.",
     stop: "새 판단·승급전 중지. 시세 저장·기존 보유 평가·학습 설정은 유지됩니다.",
   },
   {
@@ -425,7 +372,7 @@ const modeDefinitions = [
     on: "학습 허용",
     off: "학습 중지",
     start: "두 모델의 replay 학습 허용이 확인됐습니다.",
-    stop: "학습 중지 요청이 확인됐습니다. 진행 batch는 저장하고 미학습 경험은 보존됩니다.",
+    stop: "학습 중지 요청이 확인됐습니다. 진행 중인 학습 묶음은 저장하고 미학습 경험은 보존됩니다.",
   },
 ];
 for (const mode of modeDefinitions)
@@ -443,13 +390,32 @@ for (const mode of modeDefinitions)
           message: enabled ? mode.start : mode.stop,
         };
       },
-      mode.label + (enabled ? " 시작 요청 중" : " 중지 요청 중"),
+      mode.label + (enabled ? " 허용 요청 중" : " 중지 요청 중"),
     );
   };
+
+function renderModelControls(d) {
+  for (const role of ["champion", "candidate"]) {
+    const lifecycle = d.model_runtime?.[role];
+    const active = modelIsRunning(d, role);
+    if (!lifecycle) {
+    text(role + "CommandState", "상태 확인 중");
+    property(role + "ModelStart", "disabled", true);
+    property(role + "ModelStop", "disabled", true);
+      continue;
+    }
+    text(role + "CommandState", modelCommandPending.has(role) ? "요청 중" : modelStateLabel(lifecycle));
+    property(role + "CommandState", "className", "pill " + (lifecycle.error ? "bad" : active ? "good" : lifecycle.status === "loading" || lifecycle.status === "saving" ? "warn" : ""));
+    property(role + "ModelStart", "disabled", d.status_unavailable || !!pendingCommand || d.stopping || modelCommandPending.has(role) || lifecycle.requested && lifecycle.status !== "error" || lifecycle.status === "saving");
+    property(role + "ModelStop", "disabled", d.status_unavailable || !!pendingCommand || d.stopping || modelCommandPending.has(role) || !lifecycle.requested && !lifecycle.loaded || lifecycle.status === "saving");
+    if (!modelCommandPending.has(role)) text(role + "ModelMessage", modelCommandErrors.get(role) || lifecycle.error || (lifecycle.status === "stopped" ? "계좌 유지 · 모델 메모리 해제" : lifecycle.status === "saving" ? "현재 작업을 마친 뒤 저장·해제합니다" : lifecycle.status === "loading" ? "현재 파일을 적재하는 중입니다" : lifecycle.source || "선택한 판단·가상 체결·경험 학습을 실행합니다"));
+  }
+}
 
 function renderControls(d) {
   renderSystemControls(d);
   renderModeControls(d);
+  renderModelControls(d);
   if (pendingCommand) text(pendingCommand.id, pendingCommand.label);
 }
 

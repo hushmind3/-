@@ -145,6 +145,9 @@ class Experience:
     portfolio_goal_reward_points: float = 0.0
     goal_terminal: bool = False
     goal_episode_id: str | None = None
+    reward_settlement: str | None = None
+    reward_end_timestamp: str | None = None
+    reward_quote_timestamp: str | None = None
 
 
 def parse_horizon(value: int | str) -> tuple[str, int]:

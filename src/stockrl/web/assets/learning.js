@@ -74,15 +74,23 @@ function learningSituation(d) {
     : null;
   const pendingValue = m.replay_pending_count ?? m.pending_experiences;
   const pending = known(pendingValue) ? Number(pendingValue) : null;
-  const error =
-    m.learner_statistics_error ||
-    m.agent_last_input_error ||
-    m.last_champion_error ||
-    m.last_candidate_error;
-  const active = ["champion", "candidate"]
+  const roles = runningModelRoles(d);
+  const legacyRoles = roles.filter((role) => d.model_runtime?.[role]?.memory_scope !== "worker");
+  const workerRoles = roles.filter((role) => d.model_runtime?.[role]?.memory_scope === "worker");
+  const error = d.agent_process_running
+    ? m.learner_statistics_error || m.agent_last_input_error || legacyRoles.map((role) => m["last_" + role + "_error"]).find(Boolean)
+    : null;
+  const active = legacyRoles
     .filter((role) => m[role + "_training"])
-    .map((role) => (role === "champion" ? "Champion" : "Candidate"))
+    .map((role) => role === "champion" ? "Champion" : "Candidate")
     .join(" · ");
+  if (workerRoles.length && !legacyRoles.length)
+    return {
+      title: workerRoles.map((role) => role === "champion" ? "Champion" : "Candidate").join(" · ") + (d.learning_enabled === false ? " 학습 중지" : " TradingMoE · 학습 허용"),
+      reason: "공식 ETHUSDT 과거 구간을 실행합니다. 이 모델의 계좌와 replay는 기존 두 모델의 replay DB와 별개입니다.",
+      next: "해당 모델의 상세에서 최근 학습 결과를 확인하세요. 아래 DB 수치는 기존 공통 replay입니다.",
+      tone: d.learning_enabled === false ? "" : "blue",
+    };
   const wait = String(m.learning_wait_reason || "");
   if (d.agent_process_running !== true)
     return {
@@ -91,7 +99,7 @@ function learningSituation(d) {
           ? "학습 프로세스 정지"
           : "학습 프로세스 상태 미확인",
       reason: "현재 실행 중인 학습 프로세스가 확인되지 않습니다.",
-      next: "운영 · 계좌에서 시스템 실행 상태를 확인하세요.",
+      next: "운영 · 계좌의 Champion 시작 또는 Candidate 시작으로 모델을 실행하세요. 시스템 시작은 시세 수집만 켭니다.",
       tone: "warn",
       error,
     };
@@ -216,11 +224,15 @@ function renderLearnerSummary(d) {
   const m = d.metrics || {};
   for (const role of ["champion", "candidate"]) {
     const round = m[role + "_last_completed_round"];
-    const active = !!m[role + "_training"];
+    const active = modelIsLearning(d, role);
     const remaining = m[role + "_eligible_replay_count"];
     const state = learningSituation(d);
-    const label =
-      d.agent_process_running !== true
+    const lifecycle = d.model_runtime?.[role];
+    const label = lifecycle && !modelIsRunning(d, role)
+      ? modelStateLabel(lifecycle) + " · 기존 공통 학습 기록"
+      : lifecycle?.memory_scope === "worker"
+        ? "TradingMoE · " + (d.learning_enabled === false ? "학습 중지" : "학습 허용") + " · 별도 replay 사용"
+      : d.agent_process_running !== true
         ? d.agent_process_running === false
           ? "학습 프로세스 정지"
           : "학습 프로세스 미확인"
@@ -334,7 +346,7 @@ function pendingOutcomeState(d) {
 function renderLearningTotals(d) {
   const m = d.metrics || {};
 
-  const training = !!m.candidate_training;
+  const training = modelIsLearning(d, "candidate");
 
   text("lastUpdateFull", timeOf(m.last_update_utc));
   text("lastPromotion", timeOf(m.last_promotion_utc));
@@ -425,11 +437,13 @@ function renderModelComparison(d) {
       trainable == null ? "미측정" : whole(trainable) + "개",
     );
     const enabled = m[role + "_learning_enabled"],
-      training = m[role + "_training"];
+      training = modelIsLearning(d, role);
     text(
       "compare" + title + "LearningState",
-      !d.agent_process_running
+      !modelIsRunning(d, role)
         ? "정지 · 마지막 기록"
+        : d.model_runtime?.[role]?.memory_scope === "worker"
+          ? "TradingMoE · 별도 학습 기록 사용"
         : d.learning_enabled === false
           ? "학습 OFF · replay 보존"
           : !enabled
@@ -709,7 +723,7 @@ function renderLearningMetrics(d) {
           ? "정지"
           : "미측정"
         : num(value).toFixed(0) + "초",
-    training = !!m.candidate_training,
+    training = modelIsLearning(d, "candidate"),
     trial = !!m.candidate_validation_active,
     trialPaused = trial && d.observe_enabled === false;
   const progress = trialPaused
@@ -755,7 +769,7 @@ function renderLearningMetrics(d) {
           "초 · 단계당 " +
           num(round.step_compute_seconds).toFixed(1) +
           "초"
-      : m.candidate_training
+      : modelIsLearning(d, "candidate")
         ? "학습 중 · 이번 회차 완료 후 시간 측정"
         : "아직 측정 전",
   );
@@ -990,7 +1004,7 @@ function renderDailyLearning(d) {
     blocked =
       Number(m.replay_quarantined_count || 0) +
       Number(m.replay_unsupported_count || 0),
-    forwards = m.candidate_training
+    forwards = modelIsLearning(d, "candidate")
       ? m.candidate_window_forwards_current
       : m.last_candidate_window_forwards;
   text(
@@ -1018,9 +1032,9 @@ function renderDailyLearning(d) {
 
 function renderDualLearning(d) {
   const m = d.metrics || {};
-  const activeRole = m.champion_training
+  const activeRole = modelIsLearning(d, "champion")
       ? "champion"
-      : m.candidate_training
+      : modelIsLearning(d, "candidate")
         ? "candidate"
         : null,
     backlog = Number(m.replay_eligible_backlog || 0),
@@ -1028,11 +1042,11 @@ function renderDualLearning(d) {
     learningOn = d.learning_enabled !== false;
   for (const role of ["champion", "candidate"]) {
     const title = role === "champion" ? "Champion" : "Candidate",
-      active = !!m[role + "_training"],
+      active = modelIsLearning(d, role),
       prefix = "dual" + title;
     text(
       prefix + "State",
-      !d.running
+      !modelIsRunning(d, role)
         ? "정지"
         : !learningOn
           ? "학습 OFF · " +

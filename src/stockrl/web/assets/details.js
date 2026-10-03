@@ -452,8 +452,10 @@ function renderGpuScheduler(d) {
     lag = (v) => (v == null ? "미측정" : whole(v) + "초");
   text(
     "opGpuWork",
-    !d.agent_process_running
+    !runningModelRoles(d).length
       ? "정지"
+      : !d.agent_process_running
+        ? "TradingMoE 전용 작업 · 기존 작업 대기열과 별개"
       : schedule.policy
         ? roleName(schedule.active)
         : "새 계측 적용 대기",

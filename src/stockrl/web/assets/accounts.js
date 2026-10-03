@@ -95,7 +95,7 @@ function renderCandidateLiveAccount(d, summaryOnly = false) {
       : (v.decisions || [])
           .map((x) => instrumentLabel(x.symbol, d) + " " + x.action)
           .join(" · ") || "최근 판단 없음",
-    status = !d.agent_process_running
+    status = !modelIsRunning(d, "candidate")
       ? "정지 · 마지막 관찰 " +
         (v.last_observation_timestamp
           ? timeOf(v.last_observation_timestamp)
@@ -255,14 +255,14 @@ function renderAccountDiagnostics(d) {
       isChampion = role === "champion";
     const health = isChampion ? d.agent_health : d.agent_health?.candidate;
     const lifecycle=d.model_runtime?.[role];
-    const active = lifecycle ? lifecycle.loaded && lifecycle.status === "running" : Boolean(d.agent_process_running),
+    const active = modelIsRunning(d, role),
       enabled = Boolean(d.paper_enabled);
     const badge = isChampion ? "championLiveBadge" : "candidateLiveBadge";
-    const error = account.observer_error || health?.status === "error";
+    const error = lifecycle?.error || active && (account.observer_error || health?.status === "error");
     text(
       badge,
       lifecycle
-        ? ({stopped:"정지",loading:"로딩 중",running:"실행 중",saving:"저장 중",error:"정지 · 오류"}[lifecycle.status] || "정지")
+        ? modelStateLabel(lifecycle)
         : error
         ? "판단 오류"
         : !active
@@ -278,11 +278,9 @@ function renderAccountDiagnostics(d) {
                 : "관찰만",
     );
     if (lifecycle) {
-      property(role + "ModelStart", "disabled", modelCommandPending.has(role) || lifecycle.requested && lifecycle.status !== "error" || lifecycle.status === "saving");
-      property(role + "ModelStop", "disabled", modelCommandPending.has(role) || !lifecycle.requested && !lifecycle.loaded || lifecycle.status === "saving");
-      text(role + "ModelResidency", "실제 적재 " + (lifecycle.loaded ? "ON" : "OFF") + " · RAM " + (lifecycle.memory_scope === "worker" ? "사용 " : "가중치 ") + decimal((lifecycle.ram_weight_bytes || 0)/1024**3,2) + " GB · GPU tensor " + decimal((lifecycle.gpu_weight_bytes || 0)/1024**3,2) + " GB · 보관 " + (lifecycle.device || "미적재") + (lifecycle.loaded ? " / 계산 " + (lifecycle.compute_device || lifecycle.device || "—") : ""));
+      text(role + "ModelResidency", (lifecycle.loaded ? "모델 적재됨" : "모델 메모리 해제됨") + " · RAM " + (lifecycle.memory_scope === "worker" ? "프로세스 사용 " : "가중치 ") + decimal((lifecycle.ram_weight_bytes || 0)/1024**3,2) + " GB · GPU 가중치 " + decimal((lifecycle.gpu_weight_bytes || 0)/1024**3,2) + " GB" + (lifecycle.loaded ? " · 계산 장치 " + (lifecycle.compute_device || lifecycle.device || "—") : ""));
       text(role + "ModelDecision", "최근 판단 " + timeOf(account.last_full_decision_timestamp) + " · " + (account.last_inference_seconds == null ? "—" : decimal(account.last_inference_seconds,2) + "초"));
-      if (!modelCommandPending.has(role)) text(role + "ModelMessage", lifecycle.error || (lifecycle.status === "stopped" ? "계좌 유지 · 모델 메모리 해제" : lifecycle.status === "saving" ? "현재 작업을 마친 뒤 저장·해제합니다" : lifecycle.status === "loading" ? "현재 파일을 적재하는 중입니다" : lifecycle.source || "각 모델의 판단·가상매매·replay 학습을 실행합니다"));
+
     }
     property(
       badge,

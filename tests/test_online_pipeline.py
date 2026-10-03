@@ -64,6 +64,7 @@ class FixedPolicy(torch.nn.Module):
 class PipelineTests(unittest.TestCase):
     def test_replay_learning_drains_partial_batches_without_new_quotes(self):
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.replay=GlobalReplayBuffer()
         for row_id in (1,2):
             row=SimpleNamespace(source="paper_account_symbol",reward_version=REWARD_VERSION,
@@ -251,6 +252,7 @@ class PipelineTests(unittest.TestCase):
             np.testing.assert_array_equal(restored[0]["features"],exp.features)
             panel=Panel(); panel.dates+=np.timedelta64(4,"D")
             agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+            agent._init_model_lifecycle(False)
             agent.replay=GlobalReplayBuffer(journal_path=path)
             agent.paper_account=PaperAccount.in_memory(.001,.0001)
             agent.metrics={}; agent.horizon_kind="seconds"; agent.horizon_amount=60
@@ -336,6 +338,7 @@ class PipelineTests(unittest.TestCase):
                               n_markets=4,n_asset_types=4,max_seq_len=8)
         model=GlobalMarketTransformer(cfg)
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.device=torch.device("cpu"); agent.metrics={"nonfinite_updates":0}
         agent.champion=model; agent.window=4
         examples=[self.experience(symbol_index=i) for i in (0,1)]
@@ -353,6 +356,7 @@ class PipelineTests(unittest.TestCase):
     def test_reward_keeps_symbol_index_of_original_input(self):
         panel=Panel(); panel.symbols.reverse()
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.replay=GlobalReplayBuffer(); agent.paper_account=PaperAccount.in_memory(.001,.0001)
         agent.metrics={}; agent.max_pending_age_seconds=86400
         agent.horizon_kind="seconds"; agent.horizon_amount=60
@@ -432,6 +436,7 @@ class PipelineTests(unittest.TestCase):
     def test_validation_counts_distinct_future_minutes(self):
         panel=Panel(); panel.dates[2]=panel.dates[1]+np.timedelta64(15,"s")
         agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent._init_model_lifecycle(False)
         agent.validation_active=True; agent.validation_candidate=object(); agent.window=4
         agent.validation_start_after=str(panel.dates[0]); agent.validation_generation=1
         agent.validation_last_enqueued_minute=None; agent.validation_queue=queue.Queue(maxsize=32)

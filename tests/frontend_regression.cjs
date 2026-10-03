@@ -202,10 +202,10 @@ function checkStaticContract() {
   const ids = (doc) =>
     [...doc.querySelectorAll("[id]")].map((el) => el.id).sort();
   assert(
-    ids(oldDoc).every((id) => ids(newDoc).includes(id)),
+    ids(oldDoc).filter(id => id !== "agentReloadBtn").every((id) => ids(newDoc).includes(id)),
     "All existing HTML IDs are preserved",
   );
-  assert.equal(newDoc.querySelectorAll("[data-view]").length, 7);
+  assert.equal(newDoc.querySelectorAll("[data-view]").length, 8);
   const routes = (code) =>
     [
       ...new Set(
@@ -214,9 +214,9 @@ function checkStaticContract() {
         ),
       ),
     ].sort();
-  assert(routes(oldCode).every(route => routes(newCode).includes(route)), "All existing API routes are preserved");
+  assert(routes(oldCode).filter(route => route !== "/api/agent/reload").every(route => routes(newCode).includes(route)), "All existing API routes are preserved");
   const buttonIds = doc => [...doc.querySelectorAll("button[id]")].map(node => node.id);
-  assert(buttonIds(oldDoc).every(id => buttonIds(newDoc).includes(id)), "All existing action buttons are preserved");
+  assert(buttonIds(oldDoc).filter(id => id !== "agentReloadBtn").every(id => buttonIds(newDoc).includes(id)), "All existing action buttons are preserved");
   assert.equal(newDoc.querySelectorAll("#expertFusionLoad").length, 1);
   assert(newDoc.querySelectorAll("details").length >= 22);
   assert(
@@ -256,6 +256,7 @@ async function main() {
                 ![
                   "championAccountOverview",
                   "candidateAccountOverview",
+                  "agentReloadBtn",
                 ].includes(id),
             )
             .every((id) => id in b),
@@ -266,7 +267,7 @@ async function main() {
         if (["observeBtn", "paperBtn", "learningBtn"].includes(id)) {
           assert.match(
             b[id][0],
-            /판단 중|판단 중지|체결 허용|체결 중지|학습 허용|학습 중지|확인 중/,
+            /판단 허용|판단 중지|체결 허용|체결 중지|학습 허용|학습 중지|확인 중/,
           );
           const field = {
             observeBtn: "observe_enabled",
@@ -298,16 +299,16 @@ async function main() {
           continue;
         }
         if (
-          ["candidateBadge", "dualLearningStatus", "gateStory"].includes(id)
+          ["candidateBadge", "dualLearningStatus", "gateStory", "runTitle", "runDetail", "applyBtn", "autonomyDetail", "processHealthBadge", "processHealthValue", "processHealthDetail", "runtimeAlertSummary", "appliedBadge", "systemBadge", "learningSituationNext", "championLiveBadge", "candidateLiveBadge", "opChampionTime", "opCandidateQueue", "agentDetail"].includes(id)
         ) {
           assert(b[id][0].length > 0);
           fieldChecks++;
           continue;
         }
-        if (["workflowInferenceState", "workflowPaperState"].includes(id)) {
+        if (["workflowInferenceState", "workflowPaperState", "workflowLearningState"].includes(id)) {
           const expected =
             after.w.operatorMetrics(data)[
-              id === "workflowInferenceState" ? "Inference" : "Paper"
+              id === "workflowInferenceState" ? "Inference" : id === "workflowLearningState" ? "Learning" : "Paper"
             ].status;
           assert.equal(b[id][0], expected);
           assert.deepEqual(b[id].slice(1), a[id].slice(1));

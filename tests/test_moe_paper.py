@@ -1,5 +1,7 @@
 import tempfile
 import unittest
+import json
+import runpy
 from pathlib import Path
 from types import SimpleNamespace
 import numpy as np
@@ -14,6 +16,27 @@ def panel():
 
 
 class PaperBridgeTests(unittest.TestCase):
+    def test_paper_off_cancels_orders_without_erasing_positions_or_learning(self):
+        self.bridge.advance(self.panel,0)
+        self.bridge.submit(self.result,self.panel,0,paper_executable=True)
+        self.assertTrue(self.bridge.paper_account.state["pending"])
+        self.assertEqual(self.bridge.advance(self.panel,1,enabled=False),[])
+        self.assertFalse(self.bridge.paper_account.state["pending"])
+        self.assertEqual(self.bridge.paper_account.state["books"]["USD"]["cash"],10000)
+
+    def test_named_moe_reads_independent_operator_flags(self):
+        modes=runpy.run_path(str(Path(__file__).resolve().parents[1]/"scripts/run_native_vertical_trading.py"))["runtime_modes"]
+        state=Path(self.temp.name)/"champion_moe"
+        self.assertFalse(any(modes(state).values()))
+        for observe in (False,True):
+            for paper in (False,True):
+                for learning in (False,True):
+                    expected=dict(observe_enabled=observe,paper_enabled=paper,learning_enabled=learning)
+                    (state.parent/"autonomy.json").write_text(json.dumps(expected))
+                    self.assertEqual(modes(state),expected)
+        # The standalone MoE screen remains independent of the legacy controls.
+        self.assertTrue(all(modes(Path(self.temp.name)/"native_vertical_run").values()))
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.bridge=TradingMoEPaper(Path(self.temp.name));self.panel=panel()
         self.result={"as_of":str(self.panel.dates[0]),"trading_output":{"executable":False,

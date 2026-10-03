@@ -3,6 +3,23 @@
 // Application state, API, DOM change checks, polling and render composition.
 
 const nodes = new Map();
+// Feed liveness and model liveness are separate. All operational cards use this.
+function modelIsRunning(data, role) {
+  const runtime = data.model_runtime?.[role];
+  return runtime
+    ? runtime.loaded === true && runtime.status === "running"
+    : data.agent_process_running === true;
+}
+function runningModelRoles(data) {
+  return ["champion", "candidate"].filter((role) => modelIsRunning(data, role));
+}
+function modelIsLearning(data, role) {
+  return modelIsRunning(data, role) && data.learning_enabled !== false
+    && data.model_runtime?.[role]?.memory_scope !== "worker" && data.metrics?.[role + "_training"] === true;
+}
+function modelStateLabel(runtime) {
+  return ({stopped: "정지", loading: "로딩 중", running: "실행 중", saving: "저장 중", error: "정지 · 오류"})[runtime?.status] || "상태 미확인";
+}
 const $ = (id) => {
   if (!nodes.has(id)) {
     const node = document.getElementById(id);

@@ -1,5 +1,7 @@
 ﻿"""Elapsed reward settlement never fabricates a new quote or drops experience."""
 import unittest
+import tempfile
+from pathlib import Path
 import numpy as np
 import torch
 from stockrl.online.rewards import closed_market_credit_ready, saved_closing_panel
@@ -9,6 +11,19 @@ from test_online_pipeline import Panel
 
 
 class PendingRewardChecks(unittest.TestCase):
+    def test_closed_reward_metadata_survives_replay_reload(self):
+        panel,agent,decision=self.setup_case()
+        with tempfile.TemporaryDirectory() as directory:
+            journal=Path(directory)/"replay.sqlite3"
+            agent.replay=GlobalReplayBuffer(journal_path=journal)
+            agent._mature_portfolio([decision],panel,2)
+            restored=GlobalReplayBuffer(journal_path=journal)
+            self.assertEqual(len(restored.items),2)
+            for experience in restored.items:
+                self.assertEqual(experience.reward_settlement,"closed_market_last_real_mark")
+                self.assertEqual(experience.reward_end_timestamp,str(panel.dates[2]))
+                self.assertEqual(experience.reward_quote_timestamp,str(panel.dates[1]))
+
     def setup_case(self, current="2026-10-01T11:06:00"):
         panel=Panel()
         panel.dates=np.array(["2026-10-01T10:00:00","2026-10-01T10:59:00",current],dtype="datetime64[ns]")

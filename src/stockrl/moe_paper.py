@@ -27,8 +27,8 @@ class TradingMoEPaper(_RewardMixin):
         # It is isolated in this MoE's own journal, not Candidate's live DB.
         self.pending = self.replay.load_pending("candidate_portfolio")
 
-    def advance(self, panel, index):
-        fills = self.paper_account.process_bar(panel, index, enabled=True)
+    def advance(self, panel, index, *, enabled=True):
+        fills = self.paper_account.process_bar(panel, index, enabled=enabled)
         self.pending = self._mature_portfolio(self.pending, panel, index, fills,
                                              account=self.paper_account, origin_model="trading_moe")
         self.replay.save_pending_kind("candidate_portfolio", self.pending)
