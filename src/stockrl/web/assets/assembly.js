@@ -15,7 +15,7 @@ function renderAssembly(data) {
     ["Candidate",candidate.candidate_id || "없음"],["대기 후보",whole(data.queue.length)+"개"],
     ["누적 시험",whole(data.experiments)+"회"],["승격",whole(data.promotions)+"회"],
     ["탈락",whole(data.rejections)+"회"],["새 Expert",whole(data.new_experts.length)+"개"]];
-  html("assemblyBoard",()=>board.map(([title,value])=>'<article class="status-card"><div class="status-top"><span class="status-title">'+esc(title)+'</span></div><div class="big assembly-number">'+esc(value)+'</div></article>').join(""));
+  html("assemblyBoard",()=>board.map(([title,value])=>'<article class="card status-card"><div class="topline"><span>'+esc(title)+'</span></div><div class="big assembly-number">'+esc(value)+'</div></article>').join(""));
   text("assemblyMessage",data.message || "");
   for (const button of document.querySelectorAll("[data-assembly-setting]")) {
     const key=button.dataset.assemblySetting, enabled=data.settings[key];
