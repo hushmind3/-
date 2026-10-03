@@ -313,6 +313,9 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             return {"ok": True, "message": "Model is saving state and will restart; feed and web stay running."}
 
     def stop(self, keep_restart: bool = False):
+        assembly=getattr(self,"assembly_orchestrator",None)
+        if assembly:
+            assembly.start(False)
         with self.lock:
             if not keep_restart:
                 self.restart_request = None

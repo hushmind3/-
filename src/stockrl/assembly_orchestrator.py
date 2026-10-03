@@ -259,6 +259,8 @@ class AssemblyOrchestrator:
             if worker.process():return {"ok":True,"already_running":True}
             self.state["trial_paused"] = False
             self.current["evaluation_state"] = "replay"
+            self.current["reason"] = None
+            self.state["message"] = "현재 Candidate 시험 시작 · 같은 조건으로 Champion과 비교"
             (self.directory/"results"/(self.current["candidate_id"]+".json")).unlink(missing_ok=True)
             result = worker.start()
             if not result.get("ok"):
@@ -311,6 +313,9 @@ class AssemblyOrchestrator:
                     elif result["state"] == "rejected":
                         self.state["rejections"]+=1
                         self._archive(result.get("reason","비교 탈락"));self.current={}
+                    if not self.current and self.state["settings"]["auto_replace"]:
+                        if not self.queue:self.generate()
+                        self._install_next()
                     self._persist()
                 elif self.current["evaluation_state"] in ("replay","paper") and self.worker and not self.worker.process():
                     self.current.update(evaluation_state="blocked",reason="시험 worker가 결과 저장 없이 종료됐습니다. 시험 시작으로 재개할 수 있습니다.")

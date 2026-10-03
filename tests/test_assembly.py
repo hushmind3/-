@@ -63,5 +63,33 @@ class AssemblyTests(unittest.TestCase):
         self.assertFalse(self.worker.state["enabled"])
         with self.assertRaises(ValueError):self.worker.settings({"auto_promote":"yes"})
 
+    def write_trial_result(self, state):
+        self.worker.generate();self.worker.generate()
+        self.worker.current["evaluation_state"]="replay"
+        candidate_id=self.worker.current["candidate_id"]
+        result=self.worker.directory/"results"/(candidate_id+".json")
+        result.parent.mkdir(exist_ok=True)
+        result.write_text(json.dumps({"candidate_id":candidate_id,"state":state,"reason":"comparison test","scores":{}}))
+        return candidate_id
+
+    def test_finished_rejection_rotates_without_starting_automation(self):
+        rejected=self.write_trial_result("rejected")
+        queued=self.worker.queue[0]["candidate_id"]
+        self.worker.tick()
+        self.assertFalse(self.worker.state["enabled"])
+        self.assertEqual(self.worker.current["candidate_id"],queued)
+        self.assertNotEqual(rejected,queued)
+        self.assertEqual(self.worker.state["rejections"],1)
+        self.assertEqual(self.worker.current["evaluation_state"],"ready")
+
+    def test_qualified_candidate_waits_for_promotion_switch(self):
+        qualified=self.write_trial_result("qualified")
+        self.worker.tick()
+        self.assertEqual(self.worker.current["evaluation_state"],"qualified")
+        self.assertEqual(self.worker.state["promotions"],0)
+        self.worker.settings({"auto_promote":True});self.worker.tick()
+        self.assertEqual(self.worker.champion["candidate_id"],qualified)
+        self.assertEqual(self.worker.state["promotions"],1)
+
 
 if __name__=="__main__":unittest.main()

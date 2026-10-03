@@ -48,11 +48,21 @@ def cached_rows():
 def evaluate(args,model,recipe,phase,rows,native,panel,state_file):
     model.load_assembly_state(state_file)
     model.apply_assembly_recipe(recipe)
-    directory=args.state/"assembly"/recipe["candidate_id"]/phase
+    # Every pair starts from the same fresh capital. Reusing a Champion book
+    # from an earlier candidate would skip bars and lose its measured drawdown.
+    side="candidate" if recipe["candidate_id"]==args.candidate_id else "champion"
+    directory=args.state/"assembly"/args.candidate_id/side/phase
     # Restart interrupted trials from their real saved books; no operational reset.
     bridge=TradingMoEPaper(directory,credit_seconds=60)
     initial=bridge.paper_account.state["books"]["USD"]["initial_cash"]
-    peak=initial;drawdown=0;seconds=0;decisions=0;used=set()
+    progress_file=directory/"progress.json"
+    progress=read(progress_file)
+    peak=progress.get("peak",initial);drawdown=progress.get("drawdown",0)
+    seconds=progress.get("seconds",0);decisions=progress.get("decisions",0)
+    used=set(progress.get("used_experts",[]))
+    def save_progress():
+        atomic_json(progress_file,{"peak":peak,"drawdown":drawdown,"seconds":seconds,
+            "decisions":decisions,"used_experts":sorted(used)})
     for row in rows:
         if (args.state/"stop.request").exists():raise InterruptedError("사용자가 시험을 정지했습니다.")
         stamp=row["timestamp"]
@@ -90,6 +100,7 @@ def evaluate(args,model,recipe,phase,rows,native,panel,state_file):
         peak=max(peak,book["equity"]);drawdown=max(drawdown,1-book["equity"]/peak)
         decisions+=1;seconds+=time.perf_counter()-started
         used.update(p["expert"] for p in packets)
+        save_progress()
         publish_worker(args.state,model,bridge,decision=decision,status="running",evaluation_stage=phase,
             assembly_candidate_id=args.candidate_id,message=phase+" · "+recipe["candidate_id"],learning_active=False,
             selected_experts=decision["used_experts"])
@@ -99,9 +110,12 @@ def evaluate(args,model,recipe,phase,rows,native,panel,state_file):
     # One actual later bar matures orders/reward under the same fee engine.
     last=rows[-1]["timestamp"]
     after=np.flatnonzero(panel.dates>np.datetime64(last))
-    if len(after):bridge.advance(panel,int(after[0]))
+    if len(after) and (not bridge.paper_account.state.get("last_timestamp") or
+            panel.dates[int(after[0])]>np.datetime64(bridge.paper_account.state["last_timestamp"])):
+        bridge.advance(panel,int(after[0]))
     book=bridge.paper_account.snapshot()["books"]["USD"]
     drawdown=max(drawdown,1-book["equity"]/max(peak,book["equity"]))
+    save_progress()
     return {"initial_NAV":initial,"final_NAV":book["equity"],"net_return":book["equity"]/initial-1,
         "pnl":book["net_pnl"],"trades":book["trade_count"],"fees":book["fees"],
         "slippage":book.get("slippage",0),"max_drawdown":drawdown,"seconds":seconds,
