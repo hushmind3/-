@@ -21,7 +21,7 @@ from contextlib import contextmanager
 
 from .gpu_scheduler import FairGpuScheduler
 from .expert_registry import atomic_json, utc_now
-from .paths import GPU_OWNER_LOCK
+from .paths import GPU_OWNER_LOCK, expert_weight_path
 
 
 @contextmanager
@@ -377,7 +377,7 @@ class TradingMoE:
         import torch
         sizes = {a["expert"]:a["shape"][1]+3 for a in adapted}
         signature = hashlib.sha256(json.dumps(sizes, sort_keys=True).encode()).hexdigest()[:16]
-        checkpoint = self.root / "fusion" / (signature + ".untrained.pt")
+        checkpoint = expert_weight_path(self.root / "fusion" / (signature + ".untrained.pt"))
         if self.fusion_signature != signature:
             with torch.random.fork_rng(devices=[]):
                 torch.manual_seed(2026)

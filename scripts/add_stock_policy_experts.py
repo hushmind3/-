@@ -18,7 +18,7 @@ import torch
 from stable_baselines3 import A2C, PPO, SAC
 from stockrl.moe_stock_policies import StockPolicyExpert, INDICATORS, make_policy
 from stockrl.trading_moe import TradingMoE, EvidenceAdapter, parameter_digest
-from stockrl.paths import EXPERT_ASSETS_DIR, TRADING_MOE_CHECKPOINT
+from stockrl.paths import EXPERT_ASSETS_DIR, EXPERT_WEIGHTS_DIR, TRADING_MOE_CHECKPOINT, expert_weight_path
 
 
 def write_json(path, value):
@@ -58,7 +58,7 @@ def download(root):
         filename=f'trade_data_deepseek_{name}_2019_2023.csv'
         tasks.append((root/'dapo'/filename,f'https://huggingface.co/datasets/benstaf/nasdaq_2013_2023/resolve/{revision}/{filename}'))
     def fetch(task):
-        path,url=task;path.parent.mkdir(parents=True,exist_ok=True)
+        path,url=task;path=expert_weight_path(path);path.parent.mkdir(parents=True,exist_ok=True)
         if not path.exists():
             temporary=path.with_suffix(path.suffix+'.download')
             with requests.get(url,stream=True,timeout=120) as response:
@@ -66,7 +66,7 @@ def download(root):
                 with temporary.open('wb') as stream:
                     for block in response.iter_content(1024*1024):stream.write(block)
             temporary.replace(path)
-        return dict(path=str(path.relative_to(root)),url=url,bytes=path.stat().st_size,sha256=file_hash(path))
+        return dict(path=str(path.resolve()),url=url,bytes=path.stat().st_size,sha256=file_hash(path))
     with ThreadPoolExecutor(max_workers=6) as pool:files=list(pool.map(fetch,tasks))
     write_json(root/'downloads.json',dict(revisions=provenance,files=files))
     print('Official source/weight files ready:',len(files),flush=True)
@@ -95,7 +95,7 @@ def verify(root, device):
     ]
     experts, inputs, report = {}, {}, []
     for key, name, relative, algorithm, kind, universe, frame in definitions:
-        path = root / relative
+        path = expert_weight_path(root / relative)
         spec = dict(common, kind=kind, universe=universe, schema=key+'_native_v1')
         if kind == 'dapo':
             weights = torch.load(path, map_location='cpu', weights_only=True)
@@ -150,14 +150,14 @@ def verify(root, device):
         print(key,entry['parameters'],'native inference OK',round(packet['worker_seconds'],4),flush=True)
     write_json(root/'native-verification.json',report)
     write_json(root/'native-inputs.json',inputs)
-    torch.save({'entries':{k:e.entry for k,e in experts.items()},'states':{k:e.models[0].state_dict() for k,e in experts.items()}},root/'verified-policies.pt')
+    torch.save({'entries':{k:e.entry for k,e in experts.items()},'states':{k:e.models[0].state_dict() for k,e in experts.items()}},expert_weight_path(root/'verified-policies.pt'))
 
 
 def package(root, checkpoint):
     model, optimizer = TradingMoE.load_checkpoint(checkpoint)
     original = {k:parameter_digest(e) for k,e in model.experts.items()}
     original_controller = {k:v.detach().clone() for k,v in model.controller.state_dict().items()}
-    verified=torch.load(root/'verified-policies.pt',map_location='cpu',weights_only=True)
+    verified=torch.load(expert_weight_path(root/'verified-policies.pt'),map_location='cpu',weights_only=True)
     new_ids=list(verified['entries'])
     if model.config.get('stock_policy_ids'):raise ValueError('stock policies are already registered; do not repack/reset learned adapters')
     model.config['stock_policy_ids']=new_ids
@@ -195,7 +195,7 @@ def package(root, checkpoint):
 
 def publish(root,report=None,entries=None):
     if report is None:report=json.loads((root/'package-report.json').read_text(encoding='utf-8'))
-    if entries is None:entries=torch.load(root/'verified-policies.pt',map_location='cpu',weights_only=True)['entries']
+    if entries is None:entries=torch.load(expert_weight_path(root/'verified-policies.pt'),map_location='cpu',weights_only=True)['entries']
     registry_path=Path('runtime/trading_moe/registry.json')
     if registry_path.exists():
         from stockrl.expert_registry import atomic_json
@@ -205,7 +205,7 @@ def publish(root,report=None,entries=None):
         for row in verified_report:
             key=row['expert'];entry=entries[key]
             folder='dapo' if key=='stock_dapo' else 'adilbai' if key=='stock_adilbai' else 'msft' if key=='stock_msft_ppo' else 'finrl/trained_models'
-            relative=(root/folder/row['filename']).relative_to(root.parent).as_posix()
+            relative=str(expert_weight_path(root/folder/row['filename']).resolve())
             output=root/(key+'-raw.json');write_json(output,dict(native_output=row['raw_output'],raw_policy_output=row['raw_output'],
                 common_output=row['common_output'],output_shape=row['native_output_shape'],
                 input_shapes={'observation':row['observation_shape']},as_of=verified_inputs[key]['as_of'],units='native_policy_action'))
@@ -227,7 +227,7 @@ def publish(root,report=None,entries=None):
 
 def fresh(root,checkpoint,device):
     # Fail if any original model/scaler file is opened in this new process.
-    forbidden={str(p.resolve()).casefold() for base in (root,root.parent/'checkpoints') for p in base.rglob('*') if p.suffix in ('.pth','.zip','.pkl','.pt','.safetensors')}
+    forbidden={str(p.resolve()).casefold() for base in (root,root.parent/'checkpoints',EXPERT_WEIGHTS_DIR) for p in base.rglob('*') if p.suffix in ('.pth','.zip','.pkl','.pt','.safetensors')}
     def audit(event,args):
         if event=='open' and isinstance(args[0],str) and str(Path(args[0]).resolve()).casefold() in forbidden:
             raise RuntimeError('fresh load tried to read an external policy weight/scaler')

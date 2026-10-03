@@ -9,11 +9,33 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MARKET = "korea"
 DEFAULT_MODEL_DIR = Path.home() / "Desktop" / "모델"
-# Only operating checkpoints belong on the Desktop. Sources, original expert
-# downloads, native data and Python environments belong to this project.
+# All operating and original expert weights belong on the Desktop. Vendor
+# code, config, native data and Python environments belong to this project.
 EXPERT_ASSETS_DIR = PROJECT_ROOT / "artifacts" / "experts"
+EXPERT_WEIGHTS_DIR = DEFAULT_MODEL_DIR / "experts"
 TRADING_MOE_CHECKPOINT = DEFAULT_MODEL_DIR / "TradingMoE.pt"
 GPU_OWNER_LOCK = PROJECT_ROOT / "runtime" / "gpu-owner.lock"
+
+
+def expert_weight_path(path: str | Path) -> Path:
+    """Resolve original weights separately from vendor code/config/data.
+
+    Temporary source trees reconstructed from an embedded PT and caller-owned
+    test directories keep their own paths; only project expert assets relocate.
+    """
+    path = Path(path)
+    try:
+        relative = path.resolve().relative_to(EXPERT_ASSETS_DIR.resolve())
+    except ValueError:
+        return path
+    groups = {"checkpoints": "market", "stock-policies": "stock",
+              "sources": "vendor", "fusion": "fusion"}
+    if relative.parts[0] not in groups:
+        return path
+    weight = path.suffix.lower() in (".pt", ".pth", ".safetensors", ".bin")
+    weight |= path.suffix.lower() == ".zip" and relative.parts[0] in ("checkpoints", "stock-policies")
+    weight |= path.name == "best_model.pkl" and relative.parts[0] == "sources"
+    return EXPERT_WEIGHTS_DIR / groups[relative.parts[0]] / Path(*relative.parts[1:]) if weight else path
 
 
 def ensure_project_path(path: str | Path, label: str = "runtime") -> Path:

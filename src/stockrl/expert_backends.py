@@ -13,6 +13,32 @@ from pathlib import Path
 import sys
 import time
 import types
+from .paths import expert_weight_path
+
+
+def load_native_pretrained(cls, directory, **kwargs):
+    """Read config from the project and original tensors from the model folder."""
+    import torch
+    from safetensors.torch import load_file
+    directory = Path(directory)
+    config = json.loads((directory / "config.json").read_text(encoding="utf-8"))
+    if cls.__name__ == "ChronosPipeline":
+        from chronos import ChronosConfig, ChronosModel
+        from transformers import AutoConfig, AutoModelForSeq2SeqLM
+        model = AutoModelForSeq2SeqLM.from_config(AutoConfig.from_pretrained(directory, local_files_only=True))
+        state = load_file(str(expert_weight_path(directory / "model.safetensors")))
+        # HF safetensors saves shared T5 embeddings once, rather than repeating
+        # their aliases. Restore the same tied tensors before strict loading.
+        for name in ("encoder.embed_tokens.weight", "decoder.embed_tokens.weight", "lm_head.weight"):
+            if name not in state and (name != "lm_head.weight" or model.config.tie_word_embeddings):
+                state[name] = state["shared.weight"]
+        model.load_state_dict(state, strict=True)
+        model.tie_weights()
+        chronos_config = ChronosConfig(**config["chronos_config"])
+        return cls(chronos_config.create_tokenizer(), ChronosModel(chronos_config, model))
+    model = cls(**config)
+    model.load_state_dict(load_file(str(expert_weight_path(directory / "model.safetensors"))), strict=True)
+    return model
 
 
 def source_module(name, path):
@@ -111,7 +137,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
 
     if expert == "chronos":
         from chronos import ChronosPipeline
-        pipeline = ChronosPipeline.from_pretrained(
+        pipeline = load_native_pretrained(ChronosPipeline,
             str(ckpt / "Chronos_Small_2023_Global"), device_map="cpu",
             torch_dtype=torch.float32, local_files_only=True,
         )
@@ -127,14 +153,14 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
             cfg = ppd.TimesFMConfig(num_layers=9, num_heads=6, num_kv_heads=6,
                                    head_dim=72, hidden_size=432, intermediate_size=1248)
             model = ppd.PatchedTimeSeriesDecoder(cfg)
-            state = load_file(str(ckpt / "TimesFM_20M_2023_Global/model.safetensors"))
+            state = load_file(str(expert_weight_path(ckpt / "TimesFM_20M_2023_Global/model.safetensors")))
             state = {k.removeprefix("module.").removeprefix("model."): v for k, v in state.items()}
         else:
             sys.path.insert(0, str(sources / "FinCast-fts/src"))
             ppd = source_module("research_fincast_decoder", sources / "FinCast-fts/src/ffm/pytorch_patched_decoder_MOE.py")
             cfg = ppd.FFMConfig(num_experts=4, gating_top_n=2)
             model = ppd.PatchedTimeSeriesDecoder_MOE(cfg)
-            state = torch.load(ckpt / "FinCast/v1.pth", map_location="cpu", weights_only=True, mmap=True)
+            state = torch.load(expert_weight_path(ckpt / "FinCast/v1.pth"), map_location="cpu", weights_only=True, mmap=True)
         model.load_state_dict(state, strict=True)
         del state
         frozen(model)
@@ -157,7 +183,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         directory = ckpt / "EXAONE-Forecast-for-Finance-1.0"
         cfg = EXAONEFinanceConfig.from_pretrained(str(directory), local_files_only=True)
         model = EXAONEFinance(cfg)
-        model.load_state_dict(load_file(str(directory / "exaone-finance-1.0.safetensors")), strict=True)
+        model.load_state_dict(load_file(str(expert_weight_path(directory / "exaone-finance-1.0.safetensors"))), strict=True)
         frozen(model)
         # Official API loader expects model.safetensors, while the official HF
         # artifact has another name. Attach the verbatim loaded model directly.
@@ -183,7 +209,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         module = source_module("research_timemoe.modeling_time_moe", directory / "modeling_time_moe.py")
         cfg = module.TimeMoeConfig.from_pretrained(str(directory), local_files_only=True)
         model = module.TimeMoeForPrediction(cfg).to(dtype=torch.bfloat16)
-        model.load_state_dict(load_file(str(directory / "model.safetensors")), strict=True)
+        model.load_state_dict(load_file(str(expert_weight_path(directory / "model.safetensors"))), strict=True)
         frozen(model)
         mean = series.mean(axis=1, keepdims=True)
         scale = series.std(axis=1, keepdims=True).clip(1e-6)
@@ -205,7 +231,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         directory = ckpt / "Toto-2.0-313m"
         cfg = native.Toto2ModelConfig(**json.loads((directory / "config.json").read_text()))
         model = native.Toto2Model(cfg)
-        model.load_state_dict(load_file(str(directory / "model.safetensors")), strict=True)
+        model.load_state_dict(load_file(str(expert_weight_path(directory / "model.safetensors"))), strict=True)
         frozen(model)
         def infer():
             x = torch.tensor(series[None], device=device)
@@ -218,8 +244,8 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         import pandas as pd
         sys.path.insert(0, str(sources / "Kronos"))
         from model import Kronos, KronosTokenizer, KronosPredictor
-        model = Kronos.from_pretrained(str(ckpt / "Kronos-base"), local_files_only=True)
-        tokenizer = KronosTokenizer.from_pretrained(str(ckpt / "Kronos-Tokenizer-base"), local_files_only=True)
+        model = load_native_pretrained(Kronos, str(ckpt / "Kronos-base"), local_files_only=True)
+        tokenizer = load_native_pretrained(KronosTokenizer, str(ckpt / "Kronos-Tokenizer-base"), local_files_only=True)
         frozen(model); frozen(tokenizer)
         predictor = KronosPredictor(model, tokenizer, device=device, max_context=512)
         def infer():
@@ -241,7 +267,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
     elif expert == "marketgpt":
         module = source_module("research_marketgpt", sources / "MarketGPT/equities/fast_model.py")
         path = ckpt / "MarketGPT-100m/ckpt_finetune_AAPL_v3.pt"
-        saved = torch.load(path, map_location="cpu", weights_only=True, mmap=True)
+        saved = torch.load(expert_weight_path(path), map_location="cpu", weights_only=True, mmap=True)
         args = dict(saved["model_args"])
         tokens = np.asarray(data["itch_tokens"], dtype=np.int64)
         if data.get("token_schema") != "MarketGPT_ITCH_Vocab_v3" or tokens.ndim != 2:
@@ -273,7 +299,7 @@ def run_native(expert, root, data, device="cpu", status_path=None, expert_id=Non
         if variant not in [f"{regime}/{label}" for regime in ("slope","vol") for label in (1,2,3)]:
             raise ValueError("unknown MacroHFT sub-agent")
         model = module.subagent(36, 9, 2, 64)
-        model.load_state_dict(torch.load(directory / f"result/low_level/ETHUSDT/best_model/{variant}/best_model.pkl",
+        model.load_state_dict(torch.load(expert_weight_path(directory / f"result/low_level/ETHUSDT/best_model/{variant}/best_model.pkl"),
                                        map_location="cpu", weights_only=True), strict=True)
         frozen(model)
         def infer():

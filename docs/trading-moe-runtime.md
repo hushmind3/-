@@ -2,9 +2,11 @@
 
 ## 현재 구성
 
+원본 모델 가중치는 `Desktop/모델/experts`에 보존합니다. 프로젝트에는 가중치를 두지 않습니다. 현재 저장 구조는 [project-storage.md](project-storage.md)를 따릅니다.
+
 14개 등록: forecast/event expert 8개(Kronos tokenizer는 Kronos에 포함)와 MacroHFT 원본 subagent 6개입니다. EarnHFT/EarnMore/DeepScalper/EIIE는 공식 source를 확보했지만, 확인한 공식 public 경로에 trained checkpoint가 없어 미등록입니다.
 
-- 원본 위치: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts`
+- 소스·설정·데이터·실행 환경 위치: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts`
 - 기존 `champion.pt`/`candidate.pt`, replay, paper account는 이 시스템에 연결하지 않습니다.
 - 실제 측정: [frozen-expert-measurements.md](frozen-expert-measurements.md)
 - 설계: [heterogeneous-experts-design.md](heterogeneous-experts-design.md)

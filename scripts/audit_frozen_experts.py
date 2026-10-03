@@ -4,6 +4,9 @@ No model imports or training. Every registered expert must have a finite frozen
 native output from verify_frozen_experts.py. Hashes identify original artifacts.
 """
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from stockrl.paths import expert_weight_path
 import argparse
 import hashlib
 import json
@@ -49,21 +52,21 @@ def build(root):
             metadata = json.loads((root / "checkpoints" / directory / "download.json").read_text(encoding="utf-8"))
             pinned.append({"model": metadata["model"], "revision": metadata["revision"]})
             for item in metadata["files"]:
-                path = Path(item["path"])
+                path = expert_weight_path(Path(item["path"]))
                 actual = digest(path)
                 if path.stat().st_size != item["bytes"] or actual != item["sha256"]:
                     raise ValueError(f"original artifact changed: {path}")
                 if path.suffix in (".pth", ".pt", ".safetensors", ".bin", ".zip"):
-                    files.append({"path":str(path.relative_to(root)), "bytes":path.stat().st_size,
+                    files.append({"path":str(path.resolve()), "bytes":path.stat().st_size,
                         "sha256":actual, "archive":path.suffix == ".zip"})
         if key == "marketgpt":
-            path = root / "checkpoints/MarketGPT-100m/ckpt_finetune_AAPL_v3.pt"
-            files.append({"path":str(path.relative_to(root)), "bytes":path.stat().st_size,
+            path = expert_weight_path(root / "checkpoints/MarketGPT-100m/ckpt_finetune_AAPL_v3.pt")
+            files.append({"path":str(path.resolve()), "bytes":path.stat().st_size,
                 "sha256":digest(path), "archive":False})
         if not folder:
             regime, label = key.removeprefix("macrophft_").split("_")
-            path = root / f"sources/MacroHFT/result/low_level/ETHUSDT/best_model/{regime}/{label}/best_model.pkl"
-            files.append({"path":str(path.relative_to(root)), "bytes":path.stat().st_size,
+            path = expert_weight_path(root / f"sources/MacroHFT/result/low_level/ETHUSDT/best_model/{regime}/{label}/best_model.pkl")
+            files.append({"path":str(path.resolve()), "bytes":path.stat().st_size,
                 "sha256":digest(path), "archive":False})
         source_meta = root / "sources" / source / "SOURCE_REVISION.json"
         if not source_meta.exists():

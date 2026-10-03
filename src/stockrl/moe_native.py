@@ -59,6 +59,8 @@ def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
         def visit_Call(self,node):
             node=self.generic_visit(node)
             name=node.func.id if isinstance(node.func,ast.Name) else node.func.attr if isinstance(node.func,ast.Attribute) else ""
+            if name=="load_native_pretrained":
+                return ast.Call(ast.Name("_pretrained",ast.Load()),node.args,node.keywords)
             if name in constructors:
                 return ast.Call(ast.Name("_construct",ast.Load()),[ast.Lambda(ast.arguments(posonlyargs=[],args=[],kwonlyargs=[],kw_defaults=[],defaults=[]),node)],[])
             if name=="from_pretrained" and isinstance(node.func,ast.Attribute) and isinstance(node.func.value,ast.Name) and node.func.value.id in {"ChronosPipeline","Kronos","KronosTokenizer"}:
@@ -101,7 +103,7 @@ def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
     def pretrained(cls,directory,**kwargs):
         nonlocal cursor
         if modules is None and states is None:
-            result=cls.from_pretrained(directory,**kwargs)
+            result=expert_backends.load_native_pretrained(cls,directory,**kwargs)
             cursor+=1
             return result
         cfg=json.loads((Path(directory)/"config.json").read_text(encoding="utf-8"))
