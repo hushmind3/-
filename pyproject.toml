@@ -17,4 +17,4 @@ desktop = ["PySide6>=6.6"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-stockrl = ["web_dashboard.html", "web/assets/*.css", "web/assets/*.js"]
+stockrl = ["web/dist/index.html", "web/dist/assets/*"]

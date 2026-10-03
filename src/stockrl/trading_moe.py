@@ -195,7 +195,7 @@ class TradingMoE(nn.Module):
         started=time.perf_counter();profiles=[];unavailable_policies={}
         if packets is None:
             packets=[]
-            with registry_owner(self.gpu_lock):
+            with registry_owner(self.gpu_lock,wait=True,on_wait=getattr(self,"gpu_wait_callback",None)):
                 for key,expert in self.experts.items():
                     if hasattr(self,"assembly_enabled") and key not in self.assembly_enabled:continue
                     data=snapshot["expert_inputs"].get(key)

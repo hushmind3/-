@@ -86,7 +86,7 @@ def evaluate(args,model,recipe,phase,rows,native,panel,state_file):
         for key in model.controller.macro_policy_ids:
             if key not in recipe["enabled_experts"]:continue
             data={**policy_data,"variant":model.experts[key].entry["variant"]}
-            with registry_owner(model.gpu_lock),model.scheduler.work("candidate_live"):
+            with registry_owner(model.gpu_lock,wait=True),model.scheduler.work("candidate_live"):
                 packet=model.experts[key](model.root,data,args.device)
             packet.update(expert=key,native_features_verified=True)
             packets.append(packet)

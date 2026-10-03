@@ -17,6 +17,7 @@ import tempfile
 import time
 import threading
 import uuid
+import errno
 from contextlib import contextmanager
 
 from .gpu_scheduler import FairGpuScheduler
@@ -25,8 +26,8 @@ from .paths import GPU_OWNER_LOCK, expert_weight_path
 
 
 @contextmanager
-def registry_owner(path):
-    """OS ownership lock; concurrent wrappers cannot launch GPU experts together."""
+def registry_owner(path, *, wait=False, on_wait=None):
+    """Serialize GPU work; singleton worker locks still reject duplicate owners."""
     lock_path = Path(path)
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     with lock_path.open("a+b") as stream:
@@ -34,17 +35,27 @@ def registry_owner(path):
         if stream.tell() == 0:
             stream.write(b"0")
             stream.flush()
-        stream.seek(0)
+        waiting_started = None
+        while True:
+            stream.seek(0)
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError as exc:
+                if not wait or exc.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                    raise RuntimeError("another TradingMoE wrapper owns the GPU execution lock") from exc
+                if waiting_started is None:
+                    waiting_started = time.monotonic()
+                    if on_wait:on_wait(True, 0.0)
+                time.sleep(.05)
         try:
-            if os.name == "nt":
-                import msvcrt
-                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
-            else:
-                import fcntl
-                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError as exc:
-            raise RuntimeError("another TradingMoE wrapper owns the GPU execution lock") from exc
-        try:
+            if waiting_started is not None and on_wait:
+                on_wait(False, time.monotonic()-waiting_started)
             yield
         finally:
             stream.seek(0)

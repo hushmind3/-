@@ -40,7 +40,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             return
 
         def _send(self, payload, code=200, content_type="application/json; charset=utf-8"):
-            data = payload.encode("utf-8") if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False,separators=(",",":")).encode("utf-8")
+            data = payload if isinstance(payload, bytes) else payload.encode("utf-8") if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False,separators=(",",":")).encode("utf-8")
             compressed="gzip" in self.headers.get("Accept-Encoding","") and len(data)>1024
             if compressed: data=gzip.compress(data,compresslevel=1)
             self.send_response(code); self.send_header("Content-Type", content_type)

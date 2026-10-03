@@ -186,7 +186,7 @@ def main():
 def run(args):
     torch.set_num_threads(4)
     checkpoint=args.checkpoint or TRADING_MOE_CHECKPOINT
-    publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message=f"{checkpoint.name}를 한 번 적재하는 중입니다.")
+    publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,gpu_waiting=False,gpu_wait_seconds=0,message=f"{checkpoint.name}를 한 번 적재하는 중입니다.")
     load_started=time.perf_counter()
     model,saved=TradingMoE.load_checkpoint(checkpoint)
     assembly_recipe=None
@@ -207,6 +207,10 @@ def run(args):
         try:optimizer.load_state_dict(saved)
         except ValueError:pass
     bridge=TradingMoEPaper(args.state,credit_seconds=60)
+    def gpu_wait(waiting,seconds):
+        publish_worker(args.state,model,bridge,gpu_waiting=waiting,gpu_wait_seconds=seconds,
+            message="다른 모델의 GPU 작업을 기다립니다 · 종료하지 않고 차례대로 실행" if waiting else "GPU 차례 확보 · 가상매매를 이어 실행합니다.")
+    model.gpu_wait_callback=gpu_wait
     episode=bridge.paper_account.state["episode_id"]
     if model.config.get("replay_account_episode")!=episode:
         model.config["applied_replay_rows"]={}
@@ -284,7 +288,7 @@ def run(args):
                 for key in model.controller.macro_policy_ids:
                     if assembly_recipe and key not in assembly_recipe["enabled_experts"]:continue
                     data=snapshot["expert_inputs"][key]
-                    with registry_owner(model.gpu_lock),model.scheduler.work("champion_live"):
+                    with registry_owner(model.gpu_lock,wait=True,on_wait=gpu_wait),model.scheduler.work("champion_live"):
                         packet=model.experts[key](model.root,data,args.device)
                     packet["expert"]=key;packet["native_features_verified"]=True
                     packets.append(packet)
