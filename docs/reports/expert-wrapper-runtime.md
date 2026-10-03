@@ -1,15 +1,17 @@
-# TradingMoE · 원본 보존 통합 추론
+# 초기 expert wrapper · 원본 보존 통합 추론
+
+이 문서는 14개 expert 독립 검증 당시의 진단 경로 기록입니다. 현재 TradingMoE.pt 운용은 [실행·학습 안내](../trading-moe-learning.md)를 따릅니다.
 
 ## 현재 구성
 
-원본 모델 가중치는 `Desktop/모델/experts`에 보존합니다. 프로젝트에는 가중치를 두지 않습니다. 현재 저장 구조는 [project-storage.md](project-storage.md)를 따릅니다.
+원본 모델 가중치는 `Desktop/모델/experts`에 보존합니다. 프로젝트에는 가중치를 두지 않습니다. 현재 저장 구조는 [project-storage.md](../project-storage.md)를 따릅니다.
 
 14개 등록: forecast/event expert 8개(Kronos tokenizer는 Kronos에 포함)와 MacroHFT 원본 subagent 6개입니다. EarnHFT/EarnMore/DeepScalper/EIIE는 공식 source를 확보했지만, 확인한 공식 public 경로에 trained checkpoint가 없어 미등록입니다.
 
 - 소스·설정·데이터·실행 환경 위치: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts`
 - 기존 `champion.pt`/`candidate.pt`, replay, paper account는 이 시스템에 연결하지 않습니다.
 - 실제 측정: [frozen-expert-measurements.md](frozen-expert-measurements.md)
-- 설계: [heterogeneous-experts-design.md](heterogeneous-experts-design.md)
+- 설계: [heterogeneous-experts-design.md](../heterogeneous-experts-design.md)
 - pinned 파일 hashes/parameters/dtype/source revision: [trading-moe-artifacts.json](trading-moe-artifacts.json)
 - 원본 파일은 분리 보존합니다. 모델 합치기·증류·가지치기·학습을 수행하지 않습니다.
 
@@ -21,7 +23,7 @@
 $expertRoot = 'C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts'
 $expertPython = "$expertRoot\venv\Scripts\python.exe"
 & $expertPython scripts/verify_frozen_experts.py --root $expertRoot --device cuda:0
-& $expertPython scripts/audit_frozen_experts.py --root $expertRoot --report docs/frozen-expert-measurements.md
+& $expertPython scripts/audit_frozen_experts.py --root $expertRoot --report docs/reports/frozen-expert-measurements.md
 & $expertPython scripts/run_trading_moe.py --root $expertRoot --device cuda:0
 # 선택된 2개 expert → adapter → CPU fusion → 진단용 매매 출력:
 & $expertPython scripts/run_trading_moe.py --root $expertRoot --device cuda:0 --probe
@@ -77,7 +79,7 @@ Router는 사용 가능한 입력과 비용 한도에 따른 deterministic top-k
 
 - 독립 CUDA inference: 14개 통과, optimizer/학습 0회.
 - 14개 native worker → 원본 파일 → adapter → shared representation → CPU fusion → 매매 출력까지 실제 실행.
-- 실제 최신 측정과 네 가지 시간의 정의: [trading-moe-inference.md](trading-moe-inference.md), [JSON 측정값](trading-moe-inference-measurements.json).
+- 실제 최신 측정과 네 가지 시간의 정의: [추론 측정 범위](expert-wrapper-inference.md), [JSON 측정값](trading-moe-inference-measurements.json).
 - 자동 residency trace: maximum concurrent expert 1, GPU residency 실제 관측, 완료 후 expert RAM/VRAM 0.
 - CPU contract unit tests: 24개 통과. 원본 보존, 변경된 evidence 반영, missing mask, 통화별 비중, checkpoint 재현, owner lock, 경로 제한 포함.
 - 기존 UI regression: 2,210 field 검사, 24개 independent mode action 검사, 67개 behavior 검사 통과. 13개 기존 action/filter 버튼 유지.

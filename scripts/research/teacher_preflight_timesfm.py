@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "runtime-global-market-training/teacher-preflight/timesfm-pkg"))
 from timesfm import ForecastConfig
 from timesfm.timesfm_2p5.timesfm_2p5_torch import TimesFM_2p5_200M_torch

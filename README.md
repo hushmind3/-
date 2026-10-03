@@ -26,7 +26,7 @@ Windows 새 컴퓨터에서는 다음 순서로 실행합니다.
 - 원본 expert 가중치와 학습 가능 그룹은 구분하며, 업데이트 그룹은 실행 설정에 따릅니다. GPU expert는 동시에 최대 1개씩 실행하고, 다른 worker가 GPU 잠금을 사용하면 차례를 기다립니다.
 - `TradingMoE.pt`는 worker 시작 때 한 번 적재합니다. 화면 조회·새로고침으로 다시 적재하지 않습니다. 정지는 계좌·optimizer·replay와 모델 저장 후 종료합니다.
 
-자세한 구조는 [TradingMoE 학습 경로](docs/trading-moe-learning.md), [전용 lifecycle](docs/trading-moe-runtime.md), [주식 정책 expert](docs/stock_policy_experts.md)에 있습니다.
+자세한 구조는 [TradingMoE 학습 경로](docs/trading-moe-learning.md), [주식 정책 expert](docs/stock_policy_experts.md)에 있습니다.
 
 ## 운영 화면
 
@@ -70,6 +70,24 @@ npm run build
 기존 API와 hash 주소를 유지합니다. 공통 polling은 중복 요청을 합치고, 접힌 상세는 펼칠 때 렌더링합니다. 버튼은 요청 중·성공·실패를 표시합니다. [화면 기능 대조와 검증 방법](docs/frontend.md)
 
 ## GitHub와 로컬 파일
+
+폴더는 다음 역할로 나눕니다. 루트에는 README·설치/서버 실행 파일·패키지 설정만 둡니다.
+
+| 폴더 | 내용 |
+| --- | --- |
+| `src/` | Python 실행 코드 |
+| `frontend/` | React 소스와 프론트 개발 설정 |
+| `requirements/` | 기본·MoE·Toto·Mac 의존성 목록 |
+| `scripts/` | 설치·운영 worker·데이터/전문가 관리 도구 |
+| `scripts/research/` | 기존 Transformer 증류·preflight·벤치 등 선택적 연구 도구 |
+| `docs/` | 현재 운영·설계 안내. [문서 목록](docs/README.md) |
+| `docs/reports/` | 원본 전문가 측정·실행 결과와 과거 정리 보고서 |
+| `configs/`, `data/` | 설정과 필요한 시장 입력 |
+| `artifacts/experts/` | 전문가 소스·config·입력·Python 환경 |
+| `runtime/` | 현재 계좌·replay·실행 상태. Git 제외 |
+| `tests/` | 자동 테스트 |
+
+복구용 휴지통은 프로젝트 옆 `금융매매모델-휴지통/`에 둡니다. 조립 탈락 작업파일도 이곳으로 이동하며 프로젝트 안에 휴지통을 만들지 않습니다. 이동한 파일의 원래 경로는 해당 정리 묶음의 `이동목록.json`에 남습니다.
 
 GitHub에는 소스·설정·설치/실행 스크립트·React 소스와 정적 빌드·필요한 expert 코드와 입력 자료를 전달합니다. 모델/PT, 설치된 Python 환경, Node 의존성, runtime의 계좌·DB·replay·로그·캐시, 컴퓨터별 인증 설정, 휴지통은 전달하지 않습니다.
 

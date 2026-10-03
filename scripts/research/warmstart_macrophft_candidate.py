@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from stockrl.global_online import GlobalReplayBuffer,load_model,save_model
 from stockrl.global_transformer import parameter_count
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 CKPT=ROOT/"runtime-global-research-pretrain/candidate.pt"
 REPLAY=ROOT/"runtime-global-research-pretrain/teacher_replay.pt"
 DEVICE=torch.device("cuda" if torch.cuda.is_available() else "cpu")

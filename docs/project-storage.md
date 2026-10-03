@@ -5,6 +5,10 @@
 
 | 위치 | 내용 |
 | --- | --- |
+| `requirements/` | 기본·MoE·Toto·Mac 설치 목록 |
+| `scripts/research/` | 기존 선택적 Transformer 연구 스크립트 |
+| `docs/reports/` | 측정 JSON·실행 및 정리 결과 |
+| 프로젝트 옆 `금융매매모델-휴지통` | 복구 가능한 미사용 문서·화면·탈락 시험 작업파일 |
 | `Desktop/모델` | 운영 체크포인트와 PT 백업 |
 | `Desktop/모델/experts/market` | 시장 전문가 원본 가중치와 가중치 압축파일 |
 | `Desktop/모델/experts/stock` | 주식 정책 원본 가중치와 검증용 정책 묶음 |

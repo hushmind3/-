@@ -17,8 +17,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--registry", type=Path, default=Path("runtime/trading_moe/registry.json"))
-    parser.add_argument("--report", type=Path, default=Path("docs/trading-moe-inference-measurements.json"))
-    parser.add_argument("--markdown", type=Path, default=Path("docs/trading-moe-inference-measurements.md"))
+    parser.add_argument("--report", type=Path, default=Path("docs/reports/trading-moe-inference-measurements.json"))
+    parser.add_argument("--markdown", type=Path, default=Path("docs/reports/trading-moe-inference-measurements.md"))
     args = parser.parse_args()
     root = args.root.resolve()
     registry = read_registry(args.registry)
@@ -92,7 +92,7 @@ def main():
         f"GPU 동시 expert 최대 **1개** · residency {len(trace)}회 기록 · 완료 후 모든 expert 미적재.", "",
         "원본 JSON SHA256 및 내용 일치 14개 확인. Fusion/head는 미학습 frozen 진단용, 학습/optimizer/계좌 실행 없음.", "",
         "실제 일봉 주식 입력과 합성 ITCH/ETH schema fixture를 함께 사용한 경로 검증입니다. 거래 성과 검증이 아닙니다.", "",
-        "[측정 범위·구현 설명](trading-moe-inference.md) · [기계 판독 원본](trading-moe-inference-measurements.json)", ""]
+        "[측정 범위·구현 설명](expert-wrapper-inference.md) · [기계 판독 원본](trading-moe-inference-measurements.json)", ""]
     args.markdown.parent.mkdir(parents=True,exist_ok=True)
     args.markdown.write_text("\n".join(lines),encoding="utf-8")
     print(json.dumps({"verified_experts":14, "raw_hashes":14, "timing_fields":56,

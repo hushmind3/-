@@ -3,7 +3,7 @@
 param([switch]$Apply)
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')).TrimEnd('\')
-$trashRoot = [IO.Path]::GetFullPath((Join-Path ([Environment]::GetFolderPath('Desktop')) '금융매매모델-휴지통')).TrimEnd('\')
+$trashRoot = [IO.Path]::GetFullPath((Join-Path (Split-Path $projectRoot -Parent) ((Split-Path $projectRoot -Leaf) + '-휴지통'))).TrimEnd('\')
 if ($trashRoot.StartsWith($projectRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
     throw '휴지통은 프로젝트 밖에 있어야 합니다.'
 }

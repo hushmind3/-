@@ -1,4 +1,6 @@
-# TradingMoE 통합 추론 · 학습 없는 경로 검증
+# 초기 expert wrapper · 학습 없는 추론 검증
+
+초기 14개 expert 진단 당시의 기록입니다. 현재 TradingMoE.pt 가상매매·학습 운용은 [실행 안내](../trading-moe-learning.md)를 따릅니다.
 
 ## 완료 범위
 

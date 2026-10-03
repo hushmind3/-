@@ -25,7 +25,7 @@ from stockrl.market_training import (CONTEXT_FEATURES, CommonMarketTrainingLoade
                                     ContextConditionedTransformer, ITCHSnapshotAdapter,
                                     load_market_candidate_checkpoint)
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE = ROOT / "data/external_sources/nasdaq/itch_snapshots_full_itch50_corrected.csv"
 DEFAULT_CHAMPION = ROOT / "runtime-global-cuda-final/champion.pt"
 DEFAULT_RUNTIME = ROOT / "runtime-global-market-training"

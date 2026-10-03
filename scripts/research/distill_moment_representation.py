@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/"scripts"),str(ROOT/"src")]
 import distill_fincast_temporal as temporal
 from bench_market_training_loader import batch_tensors,utility

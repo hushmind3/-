@@ -29,4 +29,4 @@ GPU 동시 expert 최대 **1개** · residency 871회 기록 · 완료 후 모�
 
 실제 일봉 주식 입력과 합성 ITCH/ETH schema fixture를 함께 사용한 경로 검증입니다. 거래 성과 검증이 아닙니다.
 
-[측정 범위·구현 설명](trading-moe-inference.md) · [기계 판독 원본](trading-moe-inference-measurements.json)
+[측정 범위·구현 설명](expert-wrapper-inference.md) · [기계 판독 원본](trading-moe-inference-measurements.json)

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 PKG=ROOT/"runtime-global-market-training/teacher-preflight/uni2ts-pkg"
 sys.path.insert(0,str(PKG))
 # Load the official raw forecast module without optional Lightning/GluonTS wrappers;

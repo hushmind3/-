@@ -20,7 +20,7 @@ from stockrl.global_transformer import stable_id, parameter_count
 from stockrl.research_ingest import fi2010_book_to_features, fi2010_file_to_arrays
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data/external_sources/fi2010/selected"
 BASE = ROOT / "runtime-global-cuda-final/champion.pt"
 OUT = ROOT / "runtime-global-research-pretrain/candidate.pt"

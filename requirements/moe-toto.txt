@@ -1,4 +1,4 @@
--r requirements.txt
+-r base.txt
 torch==2.14.0+cu132
 transformers==4.51.3
 pyarrow==20.0.0

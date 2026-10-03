@@ -10,7 +10,7 @@
 - 공용 champion.pt는 읽기 전용이다. Candidate마다 파일을 복사하지 않는다.
 - recipe와 router/fusion/controller/adapter state만 runtime/assembly 아래에 저장한다. 실제 기본 state는 약 3.37 MiB이다.
 - state.json, queue.json, current_recipe.json, champion_recipe.json, history.jsonl, recipes/, results/, trainable/에 진행상태·조건·성적을 보존한다.
-- 탈락/승격 후보의 시험 계좌와 replay 작업파일은 휴지통/assembly-experiments로 이동한다. recipe, 작은 state와 성적·이유는 남는다.
+- 탈락/승격 후보의 시험 계좌와 replay 작업파일은 프로젝트 밖의 금융매매모델-휴지통/assembly-experiments로 이동한다. recipe, 작은 state와 성적·이유는 남는다.
 - 웹 재시작은 동일 Candidate worker에 재연결한다. 정지 후 재개도 저장된 recipe/계좌를 사용한다.
 
 ## 재사용

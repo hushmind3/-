@@ -23,7 +23,7 @@ from stockrl.market_training import (CONTEXT_FEATURES, CommonMarketTrainingLoade
     ContextConditionedTransformer, ITCHSnapshotAdapter)
 from stockrl.global_transformer import parameter_count
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def save_candidate(path: Path, model, cfg, loader, champion_path, champion_sha, source_path, source_sha, step, epoch_order,

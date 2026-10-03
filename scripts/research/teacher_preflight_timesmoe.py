@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 TEACHER_DIR = ROOT / "models/teachers/TimeMoE-50M"
 # Work around an unrelated broken torchvision installation in this environment.
 import transformers.utils.import_utils as iu

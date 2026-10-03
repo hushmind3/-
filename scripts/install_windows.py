@@ -47,8 +47,8 @@ def main():
     args = parser.parse_args()
     os.environ["PYTHONUTF8"] = "1"
     if not args.prepare_only:
-        install_environment("venv", "requirements-moe.txt")
-        install_environment("venv-toto", "requirements-moe-toto.txt", toto=True)
+        install_environment("venv", "requirements/moe.txt")
+        install_environment("venv-toto", "requirements/moe-toto.txt", toto=True)
     prepare_local_paths()
     return 0
 

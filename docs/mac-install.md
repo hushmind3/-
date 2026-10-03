@@ -1,6 +1,6 @@
 # Continual Trading Agent — Mac 실행 안내
 
-이 문서는 프로젝트를 Apple Silicon Mac에서 실행하는 방법입니다. 현재 설정·저장 규칙은 저장소 루트의 `AGENTS.md`와 `README.md`를 따릅니다. 저장소는 공개이므로 비밀 키·계좌 정보·운영 runtime을 커밋하지 마세요.
+이 문서는 기존 Transformer/MPS 실행 경로의 Mac 안내입니다. 현재 TradingMoE 전용 worker는 CUDA를 요구하며 Mac에서의 TradingMoE 실행은 검증하지 않았습니다. 현재 구조는 루트 [README](../README.md)를 기준으로 합니다. 비밀 키·계좌 정보·운영 runtime은 커밋하지 않습니다.
 
 ## 설치 및 실행
 
@@ -8,7 +8,7 @@
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements-mac.txt
+python -m pip install -r requirements/mac.txt
 ./scripts/start_mac.sh
 ```
 

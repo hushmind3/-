@@ -15,7 +15,7 @@ import threading
 import uuid
 
 from .expert_registry import atomic_json, ensure_registry
-from .paths import DEFAULT_MODEL_DIR, PROJECT_ROOT
+from .paths import DEFAULT_MODEL_DIR, PROJECT_ROOT, PROJECT_TRASH_DIR
 
 
 def now():
@@ -489,8 +489,8 @@ class AssemblyOrchestrator:
         self._event(recipe["evaluation_state"], recipe, reason, scores=recipe.get("scores",{}),recipe_path=str(path))
         if self.worker:
             source=(self.worker.state/"assembly"/recipe["candidate_id"]).resolve()
-            destination=(PROJECT_ROOT/"휴지통/assembly-experiments"/recipe["candidate_id"]).resolve()
-            if source.is_relative_to(PROJECT_ROOT.resolve()) and destination.is_relative_to(PROJECT_ROOT.resolve()) and source.is_dir():
+            destination=(PROJECT_TRASH_DIR/"assembly-experiments"/recipe["candidate_id"]).resolve()
+            if source.is_relative_to(PROJECT_ROOT.resolve()) and destination.is_relative_to(PROJECT_TRASH_DIR.resolve()) and source.is_dir():
                 destination.parent.mkdir(parents=True,exist_ok=True)
                 if not destination.exists():shutil.move(str(source),str(destination))
 

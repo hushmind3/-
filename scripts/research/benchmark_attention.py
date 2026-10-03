@@ -78,7 +78,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     try:
         import sys
-        sys.path.insert(0, str(Path(__file__).resolve().parents[1]/"src"))
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"src"))
         report = run(args)
     except BaseException as exc:
         report = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"[:500]}

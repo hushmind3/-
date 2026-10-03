@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_TRASH_DIR = PROJECT_ROOT.parent / (PROJECT_ROOT.name + "-휴지통")
 DEFAULT_MARKET = "korea"
 DEFAULT_MODEL_DIR = Path.home() / "Desktop" / "모델"
 # All operating and original expert weights belong on the Desktop. Vendor

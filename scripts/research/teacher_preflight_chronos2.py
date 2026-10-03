@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"runtime-global-market-training/teacher-preflight/chronos-pkg"))
 import transformers.utils.import_utils as iu
 iu._torchvision_available=False  # workaround for this host's unrelated torchvision NMS error
