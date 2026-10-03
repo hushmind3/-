@@ -32,4 +32,3 @@
 
 - [TradingMoE 공용 부품 분리](reports/shared-infrastructure.md)
 
-- [구형 0.5B 퇴역 · MoE 운영 역할 유지](reports/transformer-retirement.md)
