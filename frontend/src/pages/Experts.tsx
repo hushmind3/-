@@ -1,168 +1,24 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { api } from '../api';
 import { usePolling } from '../hooks';
 import { at, bytes, fmt, num, obj, str, time } from '../data';
 import type { Data } from '../types';
-import {
-  ActionButton,
-  Badge,
-  Card,
-  DataPanel,
-  DataTree,
-  ErrorState,
-  Loading,
-  Panel,
-  StatCard,
-  Stats,
-  Table,
-} from '../components/ui';
-function ExpertCard({ expert: e }: { expert: Data }) {
-  const [raw, setRaw] = useState<Data>();
-  return (
-    <Card
-      title={str(e.name)}
-      badge={
-        <Badge tone={e.error ? 'bad' : e.active ? 'good' : 'neutral'}>
-          {e.active ? '실행 중' : e.loaded ? '적재됨' : '미적재'}
-        </Badge>
-      }
-    >
-      <strong className="stat compact">
-        {fmt(num(e.parameters) / 1e9, 4)}B <small>{str(e.dtype)}</small>
-      </strong>
-      <p>{str(e.role)}</p>
-      <dl className="key-values">
-        <div>
-          <dt>원본 Checkpoint / 가중치 메모리</dt>
-          <dd>
-            {bytes(e.checkpoint_bytes)} / {bytes(e.weight_bytes)}
-          </dd>
-        </div>
-        <div>
-          <dt>현재 위치 / RAM / VRAM</dt>
-          <dd>
-            {str(e.location)} / {bytes(e.ram_bytes)} / {bytes(e.vram_bytes)}
-          </dd>
-        </div>
-        <div>
-          <dt>원본 가중치 / Router</dt>
-          <dd>
-            {e.frozen ? '고정' : '학습 가능'} · {e.router_selected ? '최근 선택됨' : '미선택'}
-          </dd>
-        </div>
-        <div>
-          <dt>최근 추론 / 사용 시각</dt>
-          <dd>
-            {fmt(e.last_inference_seconds, 3)}초 · {time(e.last_used_at)}
-          </dd>
-        </div>
-      </dl>
-      {e.error && <p className="bad">{str(e.error)}</p>}
-      <Panel title="적재 · GPU 전송 · 계산 · 왕복 시간">
-        <Table
-          headers={['첫 적재', 'GPU 전송', '계산', '전체 왕복']}
-          rows={[
-            [
-              ...[
-                'cold_load_seconds',
-                'gpu_transfer_seconds',
-                'forward_seconds',
-                'round_trip_seconds',
-              ].map((k) => fmt(at(e, 'last_timings.' + k), 3) + '초'),
-            ],
-          ]}
-        />
-      </Panel>
-      <Panel title="원본 입력 · 출력 shape · raw 출력">
-        <a
-          href={'/api/experts/output?id=' + encodeURIComponent(str(e.id))}
-          download={str(e.id) + '.raw.json'}
-        >
-          전체 원본 JSON 저장
-        </a>
-        <DataTree
-          data={{
-            input_shapes: e.last_input_shapes || e.input_shapes,
-            output_shape: e.last_output_shape || e.output_shape,
-            origin: e.raw_output_origin,
-            sha256: e.raw_output_sha256,
-          }}
-        />
-        <ActionButton
-          label={str(e.name) + ' 원본 출력 조회'}
-          task={async () => {
-            const r = await api.raw(str(e.id));
-            setRaw(r);
-            return r;
-          }}
-        />
-        {raw && <DataTree data={raw} />}
-      </Panel>
-      <DataPanel title="학습 universe · 출처 · 라이선스 · 원본 메타데이터" data={e} />
-    </Card>
-  );
-}
+import { ActionButton, DataTable, ErrorState, JsonDetails, Loading, SectionLabel, Signal } from '../components/ui';
+
 export function Experts() {
-  const q = usePolling('/api/experts'),
-    r = q.data;
-  const [fusion, setFusion] = useState<Data>();
-  if (!r) return q.error ? <ErrorState message={q.error} retry={q.refresh} /> : <Loading />;
-  const t = obj(r.totals);
-  return (
-    <>
-      {q.error && <ErrorState message={q.error} retry={q.refresh} />}
-      <Stats>
-        <StatCard
-          title="등록된 Expert"
-          value={fmt(t.expert_count, 0) + '개'}
-          detail="실제 Registry 목록"
-        />
-        <StatCard
-          title="전체 파라미터"
-          value={fmt(num(t.parameters) / 1e9, 4) + 'B'}
-          detail={'활성 ' + fmt(num(t.active_parameters) / 1e9, 4) + 'B'}
-        />
-        <StatCard
-          title="Checkpoint 합계"
-          value={bytes(t.checkpoint_bytes)}
-          detail={'가중치 ' + bytes(t.weight_bytes)}
-        />
-        <StatCard
-          title="Expert RAM / VRAM"
-          value={bytes(t.ram_bytes) + ' / ' + bytes(t.vram_bytes)}
-          detail="현재 적재된 전문가 기준"
-        />
-      </Stats>
-      <Card title="통합 추론 · 원본 출력 유지">
-        <a href="/api/experts/fusion" download="TradingMoE.json">
-          전체 통합 JSON 저장
-        </a>
-        <ActionButton
-          label="최근 통합 출력 조회"
-          task={async () => {
-            const result = await api.fusion();
-            setFusion(result);
-            return result;
-          }}
-        />
-        {fusion && <DataTree data={fusion} />}
-        <DataPanel title="최근 통합 경로 · 가상매매 · 계좌 변경" data={r.pipeline} />
-      </Card>
-      <div className="two-column">
-        {(r.experts || []).map((e) => (
-          <ExpertCard key={str(e.id)} expert={e} />
-        ))}
+  const q=usePolling('/api/experts'), r=q.data, [search,setSearch]=useState(''),[role,setRole]=useState('all'),[selectedId,setSelectedId]=useState(''),[raw,setRaw]=useState<Data>(),[fusion,setFusion]=useState<Data>();
+  const list=useMemo(()=> (r?.experts||[]).filter((e)=>(role==='all'||e.role===role)&&[e.name,e.id,e.role,e.universe].some((v)=>str(v,'').toLowerCase().includes(search.toLowerCase()))),[r?.experts,role,search]);
+  if(!r)return q.error?<ErrorState message={q.error} retry={q.refresh}/>:<Loading/>;
+  const totals=obj(r.totals), expert=list.find((item)=>item.id===selectedId)||list[0];
+  return <>
+    {q.error&&<ErrorState message={q.error} retry={q.refresh}/>}
+    <div className="registry-summary"><div><small>REGISTERED EXPERTS</small><strong>{fmt(totals.expert_count,0)}</strong><span>실제 runtime registry</span></div><div><small>TOTAL PARAMETERS</small><strong>{fmt(num(totals.parameters)/1e9,3)}B</strong><span>active {fmt(num(totals.active_parameters)/1e9,3)}B</span></div><div><small>CHECKPOINT SIZE</small><strong>{bytes(totals.checkpoint_bytes)}</strong><span>weights {bytes(totals.weight_bytes)}</span></div><div><small>LIVE MEMORY</small><strong>{bytes(totals.ram_bytes)} / {bytes(totals.vram_bytes)}</strong><span>RAM / VRAM</span></div></div>
+    <section className="registry-browser"><header className="region-heading"><div><small>DYNAMIC EXPERT REGISTRY</small><h2>목록과 선택 전문가</h2></div><span>{list.length} / {fmt(totals.expert_count,0)} 표시</span></header><div className="registry-toolbar"><label>전문가 찾기<input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="모델 이름, 역할, universe"/></label><label>역할<select value={role} onChange={(e)=>setRole(e.target.value)}><option value="all">모든 역할</option><option value="market">시장 인식</option><option value="policy">매매 정책</option></select></label></div>
+      <div className="registry-layout"><div className="registry-list"><DataTable headers={['Expert / 역할','활성·적재','Params','RAM / VRAM','Router','추론 시간','오류']} rows={list.map((e)=>[<button className="expert-select" aria-pressed={expert?.id===e.id} onClick={()=>setSelectedId(str(e.id))}><b>{str(e.name)}</b><small>{str(e.role)}</small></button>,<span className="status-stack"><Signal label="활성" value={e.active?'예':'아니오'} tone={e.active?'good':'neutral'}/><Signal label="적재" value={e.loaded?str(e.location,'예'):'아니오'} tone={e.loaded?'good':'neutral'}/></span>,<span className="numeric">{fmt(num(e.parameters)/1e9,3)}B<br/><small>{str(e.dtype)}</small></span>,<span className="numeric">{bytes(e.ram_bytes)}<br/>{bytes(e.vram_bytes)}</span>,e.router_selected?<b className="selected-tag">선택됨</b>:'—',fmt(e.last_inference_seconds,3)+'초',e.error?<span className="error-text">{str(e.error)}</span>:'—'])}/></div>
+        {expert?<aside className="expert-inspector"><header><div><small>SELECTED EXPERT</small><h3>{str(expert.name)}</h3></div><Signal label="원본 weights" value={expert.frozen?'고정':'학습 가능'} tone={expert.frozen?'neutral':'warn'}/></header><div className="inspector-stats"><div><small>Parameter</small><b>{fmt(expert.parameters,0)}</b></div><div><small>Checkpoint</small><b>{bytes(expert.checkpoint_bytes)}</b></div><div><small>Weight memory</small><b>{bytes(expert.weight_bytes)}</b></div><div><small>최근 사용</small><b>{time(expert.last_used_at)}</b></div></div><DataTable headers={['계산 구간','소요 시간']} rows={['cold_load_seconds','gpu_transfer_seconds','forward_seconds','round_trip_seconds'].map((key)=>[({cold_load_seconds:'첫 적재',gpu_transfer_seconds:'GPU 전송',forward_seconds:'Forward 계산',round_trip_seconds:'전체 왕복'} as Record<string,string>)[key],fmt(at(expert,'last_timings.'+key),4)+'초'])}/>{expert.error&&<p className="error-text">{str(expert.error)}</p>}<JsonDetails title="입력 shape · 출력 shape" data={{input:expert.last_input_shapes||expert.input_shapes,output:expert.last_output_shape||expert.output_shape}}/><JsonDetails title="역할 · universe · 출처 · 라이선스" data={{role:expert.role,universe:expert.universe,symbol_applicability:expert.symbol_applicability,source:expert.source,license:expert.license,architecture:expert.architecture}}/><div className="action-row"><ActionButton label="전문가 raw output 조회" task={async()=>{const value=await api.raw(str(expert.id));setRaw(value);return value;}}/><a href={'/api/experts/output?id='+encodeURIComponent(str(expert.id))} download={str(expert.id)+'.json'}>raw JSON 받기</a></div>{raw&&<JsonDetails title="원본 출력" data={raw}/>}</aside>:<p className="empty-state">검색 조건에 맞는 전문가가 없습니다.</p>}
       </div>
-      <DataPanel title="사용 불가 모델 · 원인" data={r.unavailable} />
-      <DataPanel
-        title="Router · Fusion · 학습 연결 상태"
-        data={{
-          router: r.router_status,
-          fusion: r.fusion_head_status,
-          live: r.live_integration,
-          error: r.recent_error,
-        }}
-      />
-    </>
-  );
+    </section>
+    <section className="fusion-inspector"><SectionLabel eyebrow="TRADINGMOE INFERENCE" title="최근 통합 출력" detail={<a href="/api/experts/fusion" download="TradingMoE.json">JSON 저장</a>}/><ActionButton label="통합 출력 불러오기" task={async()=>{const value=await api.fusion();setFusion(value);return value;}}/>{fusion&&<JsonDetails title="통합 raw output" data={fusion}/>}<JsonDetails title="실행 경로 요약" data={r.pipeline}/></section>
+    <div className="diagnostic-region"><JsonDetails title="현재 입력이 없어 제외된 전문가" data={r.unavailable}/><JsonDetails title="Router · Fusion 상태와 최근 오류" data={{router:r.router_status,fusion:r.fusion_head_status,live:r.live_integration,error:r.recent_error}}/></div>
+  </>;
 }

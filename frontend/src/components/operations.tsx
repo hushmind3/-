@@ -1,395 +1,54 @@
-import { memo } from 'react';
 import { api, endpoints } from '../api';
-import { at, bytes, fmt, num, obj, pct, rows, state, str, time } from '../data';
-import type { Data, Json, ModelRuntime, Role, StatusResponse } from '../types';
-import {
-  ActionButton,
-  Badge,
-  Buttons,
-  Card,
-  DataPanel,
-  Display,
-  Panel,
-  StatCard,
-  Stats,
-  Table,
-  Toggle,
-} from './ui';
+import { at, fmt, num, obj, pct, rows, str, time } from '../data';
+import type { Data, Json, StatusResponse } from '../types';
+import { ActionButton, DataTable, Disclosure, Signal, Toggle } from './ui';
 
-export function ModeControls({ status: s }: { status: StatusResponse }) {
-  return (
-    <Card title="실행할 작업 선택">
-      <Buttons>
-        <Toggle
-          label="모델 판단"
-          enabled={!!s.observe_enabled}
-          path={endpoints.modes}
-          field="observe_enabled"
-        />
-        <Toggle
-          label="가상 체결"
-          enabled={!!s.paper_enabled}
-          path={endpoints.modes}
-          field="paper_enabled"
-        />
-        <Toggle
-          label="경험 학습"
-          enabled={!!s.learning_enabled}
-          path={endpoints.modes}
-          field="learning_enabled"
-        />
-      </Buttons>
-      <p className="muted">
-        판단은 행동 결정 · 체결은 가상계좌 변경 · 학습은 저장된 경험으로 가중치 업데이트
-      </p>
-      <DataPanel
-        title="각 작업의 실행 범위 · 실제 적용 설정"
-        data={{
-          observe_enabled: s.observe_enabled,
-          paper_enabled: s.paper_enabled,
-          learning_enabled: s.learning_enabled,
-          autonomy_enabled: s.autonomy_enabled,
-          rules: at(s, 'metrics.operating_rules'),
-        }}
-      />
-    </Card>
-  );
-}
-export function SystemControls({ status: s }: { status: StatusResponse }) {
-  return (
-    <Card
-      title="시스템 명령"
-      badge={
-        <Badge tone={s.real_orders_enabled ? 'bad' : 'neutral'}>
-          실제 주문 {s.real_orders_enabled ? 'ON' : 'OFF'}
-        </Badge>
-      }
-    >
-      <Buttons>
-        <ActionButton
-          label={s.feed_running ? '시장 Feed 실행 중' : '시장 Feed 시작'}
-          disabled={!!s.feed_running}
-          path={endpoints.start}
-          body={{ mode: 'live' }}
-        />
-        <ActionButton label="시세 재연결" path={endpoints.reconnect} />
-        <ActionButton label="웹서버만 재시작" path={endpoints.serverRestart} />
-        <ActionButton label="전체 정지" path={endpoints.stop} tone="bad" />
-      </Buttons>
-      <Buttons>
-        <ActionButton
-          label="두 장기 운영계좌 초기화"
-          path={endpoints.resetAccounts}
-          tone="bad"
-          confirm="Champion과 Candidate의 장기 가상계좌를 초기화합니다. 모델 가중치와 replay는 유지합니다. 계속할까요?"
-        />
-      </Buttons>
-      <p className="muted">시스템 시작은 Feed만 실행합니다. 모델은 각각 시작하세요.</p>
-    </Card>
-  );
+export function ExecutionModes({ status: s }: { status: StatusResponse }) {
+  return <section className="control-block mode-controls"><header><div><small>INDEPENDENT FLAGS</small><h2>실행 모드</h2></div><span>Feed가 켜져 있어도 각 모드는 독립적으로 전환됩니다.</span></header><div className="switch-row"><Toggle label="모델 판단" enabled={!!s.observe_enabled} path={endpoints.modes} field="observe_enabled"/><Toggle label="가상 체결" enabled={!!s.paper_enabled} path={endpoints.modes} field="paper_enabled"/><Toggle label="경험 학습" enabled={!!s.learning_enabled} path={endpoints.modes} field="learning_enabled"/></div><div className="mode-definitions"><span><b>판단</b> 새 시세로 행동 결정</span><span><b>체결</b> paper 계좌 반영</span><span><b>학습</b> 확정 경험으로 가중치 업데이트</span></div></section>;
 }
 
-export function FillTable({ fills, eth = false }: { fills: Json | undefined; eth?: boolean }) {
-  return (
-    <Table
-      headers={['시각', '종목', '행동', '수량', '체결가', '수수료', '실현손익']}
-      rows={rows(fills)
-        .slice(-30)
-        .reverse()
-        .map((f) => [
-          time(f.timestamp || f.date || f.time),
-          str(f.symbol),
-          str(f.side || f.action),
-          fmt(num(f.quantity) * (eth ? 0.001 : 1), 6),
-          fmt(num(f.price || f.fill_price) * (eth ? 1000 : 1), 4),
-          fmt(f.fee || f.fees, 4),
-          fmt(f.realized_pnl || f.net_pnl, 4),
-        ])}
-    />
-  );
+export function RuntimeCommands({ status: s }: { status: StatusResponse }) {
+  return <section className="control-block command-block"><header><div><small>SHARED FEED CONTROL</small><h2>시세 수집 제어</h2></div><Signal label="실제 주문" value={s.real_orders_enabled ? '허용' : '차단'} tone={s.real_orders_enabled ? 'bad' : 'good'}/></header><div className="action-row"><ActionButton label={s.feed_running ? 'Feed 수신 중' : '시장 Feed 시작'} disabled={!!s.feed_running} path={endpoints.start} body={{mode:'live'}}/><ActionButton label="시세 재연결" path={endpoints.reconnect}/><ActionButton label="웹서버만 재시작" path={endpoints.serverRestart}/><ActionButton label="전체 정지" tone="bad" path={endpoints.stop}/><ActionButton label="두 장기 운영계좌 초기화" tone="bad" path={endpoints.resetAccounts} confirm="Champion과 Candidate의 장기 가상계좌만 초기화합니다. 가중치와 replay는 유지합니다. 계속할까요?"/></div><p>시작은 Feed만 켭니다. 전체 정지는 Feed·운영 모델·Assembly 시험을 저장 후 정지합니다. 별도 TradingMoE worker는 자동매매 화면에서 정지합니다.</p></section>;
 }
-function positions(book: Data): Data[] {
-  return Array.isArray(book.positions)
-    ? rows(book.positions)
-    : Object.entries(obj(book.positions)).map(([symbol, p]) => ({
-        symbol,
-        ...obj(p),
-        mark: obj(book.marks)[symbol],
-      }));
+
+function runtime(scope: Data, field: string) { return at(scope, field); }
+export function ModelComparison({ status: s }: { status: StatusResponse }) {
+  const decisions = rows(s.decisions);
+  const roles = ['champion','candidate'] as const;
+  return <section className="model-comparison"><header className="region-heading"><div><small>MODEL WORKERS · SAME FIELDS</small><h2>Champion ↔ Candidate</h2></div><span>worker, 계좌, replay는 각자 독립</span></header><div className="model-actions">{roles.map((role) => {const r=s.model_runtime?.[role]||{}, name=role==='champion'?'Champion':'Candidate'; return <div key={role} className={'model-control '+role}><strong>{name}</strong><Signal label="상태" value={str(r.status,'정지')} tone={r.error?'bad':r.loaded?'good':'neutral'}/><div className="action-row"><ActionButton label={name+' 시작'} path={api.model(role,'start')} disabled={r.status==='saving'||((!!r.loaded||!!r.requested)&&r.status!=='error')}/><ActionButton label={name+' 저장 후 정지'} path={api.model(role,'stop')} disabled={r.status==='saving'||(!r.loaded&&!r.requested)}/></div>{r.error&&<p className="error-text">{str(r.error)}</p>}</div>;})}</div><DataTable headers={['비교 항목','Champion','Candidate']} rows={[
+    ['최근 판단', decisionText(decisions,'champion'), decisionText(decisions,'candidate')],
+    ['적재 · 장치', modelDevice(s.model_runtime?.champion), modelDevice(s.model_runtime?.candidate)],
+    ['최근 시세 시점', time(s.model_runtime?.champion?.last_decision), time(s.model_runtime?.candidate?.last_decision)],
+    ['판단 소요', seconds(s.model_runtime?.champion?.decision_seconds), seconds(s.model_runtime?.candidate?.decision_seconds)],
+    ['학습 · 누적 업데이트', training(s,'champion'), training(s,'candidate')],
+    ['Replay 학습 가능 / 손익 대기', replay(s.model_runtime?.champion), replay(s.model_runtime?.candidate)],
+  ]}/><p className="subtle">{str(s.model_runtime?.candidate?.source).includes('조립 Candidate 시험')?'Candidate 실행 슬롯에서 Assembly 시험 중입니다. 시험 계좌는 아래 별도 영역에서 확인하세요.':'일반 Candidate worker가 운영 계좌로 실행 중입니다.'}</p></section>;
 }
-export const BookCard = memo(
-  ({ currency, book, eth = false }: { currency: string; book: Data; eth?: boolean }) => {
-    const nav = num(book.equity),
-      seed = num(book.initial_cash),
-      pnl = book.net_pnl ?? nav - seed,
-      rate = book.net_return_rate ?? (seed ? num(pnl) / seed : 0),
-      ps = positions(book);
-    return (
-      <Card title={currency + ' · 가상계좌'} badge={<Badge>PAPER</Badge>}>
-        <strong className="stat">
-          {fmt(book.equity)} {currency}
-        </strong>
-        <p className={num(pnl) < 0 ? 'bad' : 'good'}>
-          {fmt(pnl)} · {pct(rate)}
-        </p>
-        <dl className="key-values">
-          <div>
-            <dt>현금</dt>
-            <dd>{fmt(book.cash)}</dd>
-          </div>
-          <div>
-            <dt>시작 자금</dt>
-            <dd>{fmt(book.initial_cash)}</dd>
-          </div>
-          <div>
-            <dt>비용 합계</dt>
-            <dd>
-              {fmt(
-                book.costs ??
-                  num(book.fees) + num(book.slippage) + num(book.spread) + num(book.sell_tax),
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>포지션 / 체결</dt>
-            <dd>
-              {ps.length}종목 / {fmt(book.trade_count, 0)}회
-            </dd>
-          </div>
-        </dl>
-        <Panel title="보유 종목 · 평가손익">
-          <Table
-            headers={['종목', '수량', '평단', '현재가', '평가손익', '비중']}
-            rows={ps.map((p) => {
-              const qty = num(p.quantity),
-                mark = num(p.mark || p.current_price || p.price),
-                avg = num(p.average_cost);
-              return [
-                str(p.symbol),
-                fmt(qty * (eth ? 0.001 : 1), 6),
-                fmt(avg * (eth ? 1000 : 1), 4),
-                fmt(mark * (eth ? 1000 : 1), 4),
-                fmt(p.unrealized_pnl ?? qty * (mark - avg)),
-                pct(p.weight ?? (nav ? (qty * mark) / nav : 0)),
-              ];
-            })}
-          />
-        </Panel>
-        <DataPanel title="수수료 · 세금 · 손익 상세" data={book} />
-      </Card>
-    );
-  },
-);
-export function Books({ books, eth = false }: { books: Json | undefined; eth?: boolean }) {
-  return (
-    <div className="two-column">
-      {Object.entries(obj(books)).map(([currency, book]) => (
-        <BookCard key={currency} currency={currency} book={obj(book)} eth={eth} />
-      ))}
-    </div>
-  );
+function decisionText(decisions: Data[], role: string) {const d=decisions.find((x)=>x.role===role); return d?str(d.symbol)+' · '+str(d.action)+' · 목표 '+pct(d.target_weight):'새 판단 대기';}
+function modelDevice(r: Data|undefined) {return str(r?.loaded?'적재됨':'미적재')+' · '+str(r?.compute_device||r?.device,'—');}
+function seconds(value: Json|undefined) {return value==null?'—':fmt(value,3)+'초';}
+function training(s: StatusResponse, role: 'champion'|'candidate') {const r=s.model_runtime?.[role]; return (r?.learning_active?'학습 중':'학습 대기')+' · '+fmt(r?.optimizer_updates,0)+'회';}
+function replay(r: Data|undefined) {return fmt(runtime(r||{},'replay.eligible')??runtime(r||{},'replay.remaining_for_update'),0)+'건 · '+fmt(runtime(r||{},'replay.pending'),0)+'건 결과 대기';}
+
+type AccountLine={owner:string; currency:string; book:Data; test:boolean};
+function accountRows(s: StatusResponse): AccountLine[] {
+  const rowsOut:AccountLine[]=[];
+  for(const role of ['champion','candidate'] as const){const model=s.model_runtime?.[role]||{}, owner=role==='champion'?'Champion':'Candidate', test=str(model.source).includes('조립 Candidate 시험')||model.account_scope==='trial'; const books=test?model.books:(model.books||(role==='champion'?s.paper_financials:at(s,'candidate_live_account.books'))); for(const [currency,book] of Object.entries(obj(books))) rowsOut.push({owner,currency,book:obj(book),test});}
+  return rowsOut;
 }
-export const ModelCard = memo(
-  ({ role, runtime, books }: { role: Role; runtime: ModelRuntime; books: Json | undefined }) => {
-    const name = role === 'champion' ? 'Champion' : 'Candidate',
-      active = !!runtime.loaded && ['running', 'observing'].includes(str(runtime.status));
-    return (
-      <Card
-        title={name + " · TradingMoE"}
-        badge={
-          <Badge tone={runtime.error ? 'bad' : active ? 'good' : 'neutral'}>
-            {state(runtime.status)}
-          </Badge>
-        }
-      >
-        <Buttons>
-          <ActionButton
-            label={name + ' 시작'}
-            path={api.model(role, 'start')}
-            disabled={
-              runtime.status === 'saving' ||
-              ((!!runtime.loaded || !!runtime.requested) && runtime.status !== 'error')
-            }
-          />
-          <ActionButton
-            label={name + ' 저장 후 정지'}
-            path={api.model(role, 'stop')}
-            disabled={runtime.status === 'saving' || (!runtime.loaded && !runtime.requested)}
-          />
-        </Buttons>
-        {runtime.error && (
-          <p role="alert" className="bad">
-            {str(runtime.error)}
-          </p>
-        )}
-        <dl className="key-values">
-          <div>
-            <dt>실제 적재 / 계산 장치</dt>
-            <dd>
-              {runtime.loaded ? '적재됨' : '미적재'} ·{' '}
-              {runtime.loaded ? str(runtime.compute_device || runtime.device) : '미실행'}
-            </dd>
-          </div>
-          <div>
-            <dt>모델 RAM / VRAM</dt>
-            <dd>
-              {bytes(runtime.loaded ? runtime.ram_weight_bytes : 0)} /{' '}
-              {bytes(runtime.loaded ? runtime.gpu_weight_bytes : 0)}
-            </dd>
-          </div>
-          <div>
-            <dt>최근 판단 / 소요 시간</dt>
-            <dd>
-              {time(runtime.last_decision)} · {fmt(runtime.decision_seconds, 3)}초
-            </dd>
-          </div>
-        </dl>
-        <p className="muted">{runtime.account_scope === "trial" ? "조립 시험계좌 · 장기 운영계좌 유지" : "장기 운영계좌"}</p>
-        <Books books={books} eth={runtime.source_kind === 'historical_paper'} />
-        <DataPanel title={name + ' 실행 · 학습 상세'} data={runtime} />
-      </Card>
-    );
-  },
-);
-export function ModelCards({ status: s }: { status: StatusResponse }) {
-  return (
-    <div className="two-column">
-      {(['champion', 'candidate'] as const).map((role) => {
-        const runtime = s.model_runtime?.[role] || {};
-        return (
-          <ModelCard
-            key={role}
-            role={role}
-            runtime={runtime}
-            books={
-              runtime.books ||
-              (role === 'champion' ? s.paper_financials : at(s, 'candidate_live_account.books'))
-            }
-          />
-        );
-      })}
-    </div>
-  );
+function held(book:Data):Data[]{const p=book.positions; return Array.isArray(p)?p.filter((value):value is Data=>!!value&&typeof value==='object'&&!Array.isArray(value)): Object.entries(obj(p)).map(([symbol,value])=>({symbol,...obj(value),mark:obj(book.marks)[symbol]}));}
+export function AccountsComparison({status:s}:{status:StatusResponse}) {
+  const entries=accountRows(s), operating=entries.filter((e)=>!e.test), trials=entries.filter((e)=>e.test);
+  const table=(list:AccountLine[])=> <DataTable headers={['계좌','순자산 / 손익','현금','포지션','체결','총 비용','보유 종목']} rows={list.map(({owner,currency,book})=>{const pnl=num(book.net_pnl??(num(book.equity)-num(book.initial_cash))), pos=held(book);return[owner+' · '+currency, <strong className={pnl<0?'negative':'positive'}>{fmt(book.equity)} <small>{currency}</small><small> 손익 {fmt(pnl)} · {pct(book.net_return_rate??(num(book.initial_cash)?pnl/num(book.initial_cash):0))}</small></strong>,fmt(book.cash),pos.length+'종목',fmt(book.trade_count,0)+'회',fmt(book.costs??(num(book.fees)+num(book.slippage)+num(book.spread)+num(book.sell_tax))),pos.length?pos.map((p)=>str(p.symbol)).join(', '):'현금 보유'];})}/>;
+  return <section className="account-comparison"><header className="region-heading"><div><small>PAPER LEDGERS</small><h2>가상계좌 비교</h2></div><span>장기 운영과 시험 계좌를 분리 표시</span></header>{table(operating)}{trials.length>0&&<div className="trial-ledger"><h3>Assembly 시험계좌 <span>장기 운영계좌와 별도</span></h3>{table(trials)}</div>}{entries.map((e)=>{const positions=held(e.book);return positions.length?<Disclosure key={e.owner+e.currency} title={e.owner+' · '+e.currency+' 보유 종목 상세'}><DataTable headers={['종목','수량','평단','현재가','평가손익','비중']} rows={positions.map((p)=>[str(p.symbol),fmt(p.quantity,6),fmt(p.average_cost,4),fmt(p.mark??p.current_price??p.price,4),fmt(p.unrealized_pnl),pct(p.weight)])}/></Disclosure>:null;})}</section>;
 }
-export function LearningBoard({ status: s }: { status: StatusResponse }) {
-  return (
-    <Stats>
-      {(['champion', 'candidate'] as const).map((role) => {
-        const r = s.model_runtime?.[role] || {},
-          l = obj(r.learning),
-          live = !!r.loaded && !!r.learning_active;
-        return (
-          <StatCard
-            key={role}
-            title={role === 'champion' ? 'Champion · 학습' : 'Candidate · 학습'}
-            value={fmt(r.optimizer_updates, 0) + '회 업데이트'}
-            badge={
-              <Badge tone={live ? 'good' : 'neutral'}>
-                {live ? '학습 중' : r.loaded && s.learning_enabled ? '다음 경험 대기' : '학습 중지'}
-              </Badge>
-            }
-            detail={
-              <>
-                최근 loss {fmt(l.loss, 6)} · reward {fmt(l.reward_points, 6)}
-                <br />
-                {time(l.updated_at || l.last_update_utc)} · {live ? '현재 실행' : '최근 저장 기록'}
-              </>
-            }
-          />
-        );
-      })}
-    </Stats>
-  );
+
+export function FillHistory({ fills, eth=false }: { fills: Json|undefined; eth?: boolean }) {
+  const records=rows(fills).slice(-30).reverse();
+  return <DataTable headers={['시각','종목','매매','수량','체결가','수수료','실현손익']} empty="아직 체결이 없습니다." rows={records.map((f)=>[time(f.timestamp||f.date||f.time),str(f.symbol),str(f.side||f.action),fmt(num(f.quantity)*(eth?.001:1),6),fmt(num(f.price||f.fill_price)*(eth?1000:1),4),fmt(f.fee||f.fees,4),fmt(f.realized_pnl||f.net_pnl,4)])}/>;
 }
-export function ReplayCards({ replay: r }: { replay: Data }) {
-  const completed =
-    r.completed ??
-    (Array.isArray(r.daily) ? rows(r.daily).reduce((n, d) => n + num(d.completed), 0) : undefined);
-  return (
-    <Stats>
-      <StatCard
-        title="손익 확인 대기"
-        value={fmt(r.pending, 0) + '건'}
-        detail="후속 시세가 들어오면 손익 확정 · 아직 학습 전"
-      />
-      <StatCard
-        title="학습 가능한 경험"
-        value={fmt(r.eligible, 0) + '건'}
-        detail={'미학습 ' + fmt(r.untrained, 0) + '건'}
-      />
-      <StatCard
-        title="학습 완료"
-        value={fmt(completed, 0) + '건'}
-        detail="완료 누계 · DB 잔여와 다름"
-      />
-      <StatCard
-        title="Replay DB"
-        value={bytes(r.bytes)}
-        badge={
-          <Badge tone={num(r.quarantined) + num(r.unsupported) ? 'warn' : 'neutral'}>
-            {num(r.quarantined) + num(r.unsupported) ? '보류 있음' : '사용 가능'}
-          </Badge>
-        }
-        detail={
-          '현재 ' +
-          fmt(r.total, 0) +
-          '건 · 보류 ' +
-          fmt(r.quarantined, 0) +
-          ' · 호환 불가 ' +
-          fmt(r.unsupported, 0)
-        }
-      />
-    </Stats>
-  );
-}
-export function ResourceCards({ status: s }: { status: StatusResponse }) {
-  const gpu = obj(s.physical_gpu),
-    used = num(gpu.memory_used_mb),
-    total = num(gpu.memory_total_mb);
-  return (
-    <Stats>
-      <StatCard
-        title="GPU · 전체 VRAM"
-        value={fmt(used / 1024) + ' / ' + fmt(total / 1024) + ' GiB'}
-        badge={<Badge>{str(s.gpu, 'GPU')}</Badge>}
-        progress={total ? (used / total) * 100 : 0}
-        detail={'GPU 연산 ' + fmt(gpu.utilization_percent, 0) + '% · 다른 앱 포함'}
-      />
-      <StatCard
-        title="시장 Feed"
-        value={s.feed_running ? '수신 프로세스 실행' : '정지'}
-        badge={
-          <Badge tone={s.feed_running ? 'good' : 'neutral'}>{s.feed_running ? 'ON' : 'OFF'}</Badge>
-        }
-        detail={
-          '최근 5분 ' +
-          fmt(at(s, 'input_availability.fresh'), 0) +
-          ' / ' +
-          fmt(s.configured_instruments, 0) +
-          '종목'
-        }
-      />
-      <StatCard
-        title="Agent · 모델 프로세스"
-        value={s.agent_process_running ? '실행 중' : '정지'}
-        detail={
-          'Champion ' +
-          state(s.model_runtime?.champion?.status) +
-          ' / Candidate ' +
-          state(s.model_runtime?.candidate?.status)
-        }
-      />
-    </Stats>
-  );
-}
-export function SummaryTable({ data, fields }: { data: Data; fields: [string, string][] }) {
-  return (
-    <Table
-      headers={['항목', '현재 값']}
-      rows={fields.map(([key, text]) => [
-        text,
-        <Display key={key} value={at(data, key)} field={key.split('.').at(-1)} />,
-      ])}
-    />
-  );
+
+export function LearningPair({status:s}:{status:StatusResponse}) {
+  const models=s.model_runtime||{};
+  return <DataTable headers={['모델','실행 상태','optimizer 누계','최근 samples · 시간','loss · reward','미학습 replay · 결과 대기']} rows={(['champion','candidate'] as const).map((role)=>{const m=models[role]||{}, l=obj(m.learning),r=obj(m.replay);return[role==='champion'?'Champion':'Candidate',m.learning_active?'학습 중':s.learning_enabled&&m.loaded?'경험 대기':'중지',fmt(m.optimizer_updates,0)+'회',fmt(l.samples??at(s.metrics,role+'_last_completed_round.samples'),0)+'건 · '+fmt(l.seconds??s.learning?.candidate_update_seconds,3)+'초','loss '+fmt(l.loss,6)+' · reward '+fmt(l.reward_points,6),fmt(r.eligible??r.remaining_for_update,0)+'건 · '+fmt(r.pending,0)+'건'];})}/>;
 }

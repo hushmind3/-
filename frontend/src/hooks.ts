@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { api } from './api';
 import type { Data, ReadEndpoint, Responses } from './types';
 interface Snapshot {
@@ -111,12 +111,17 @@ export async function refreshAll() {
       }),
   );
 }
+function subscribeHash(onChange: () => void) {
+  window.addEventListener('hashchange', onChange);
+  window.addEventListener('popstate', onChange);
+  return () => {
+    window.removeEventListener('hashchange', onChange);
+    window.removeEventListener('popstate', onChange);
+  };
+}
+function currentHash() {
+  return window.location.hash;
+}
 export function useHash() {
-  const [hash, setHash] = useState(window.location.hash);
-  useEffect(() => {
-    const change = () => setHash(window.location.hash);
-    window.addEventListener('hashchange', change);
-    return () => window.removeEventListener('hashchange', change);
-  }, []);
-  return hash;
+  return useSyncExternalStore(subscribeHash, currentHash, () => '#control');
 }

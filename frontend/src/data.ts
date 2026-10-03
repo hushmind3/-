@@ -82,8 +82,8 @@ export const pages = [
   ['promotionTrial', '승급전'],
   ['connection', '연결 설정'],
   ['system', '상세 · 기록'],
-  ['experts', 'TradingMoE · 전문가'],
-  ['trading-moe', 'TradingMoE · 자동매매'],
+  ['experts', '전문가'],
+  ['trading-moe', '자동매매'],
   ['assembly', '조립 · 자동실험'],
 ] as const;
 export type Page = (typeof pages)[number][0];

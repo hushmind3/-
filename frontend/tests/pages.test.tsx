@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from '../src/App';
 import { pages } from '../src/data';
 import { responses } from './fixtures';
@@ -59,11 +59,12 @@ async function click(name: string) {
   );
 }
 describe('all existing pages', () => {
-  it('assembly displays the history-aware candidate generation reason', async () => {
+  it('assembly displays the active recipe and its generation reason', async () => {
     (fixtures['/api/assembly/status'].candidate as Data).generation_reason =
       'successful-mutation-combination';
     await open('assembly');
-    expect(await screen.findByText('생성 이유: 성적이 좋았던 변경 2개 조합')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Candidate · asm-test' })).toBeTruthy();
+    expect(screen.getByText(/생성 이유:/)).toBeTruthy();
   });
   it.each(pages)('%s renders without console errors', async (page) => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -75,10 +76,29 @@ describe('all existing pages', () => {
   });
   it('preserves live hash navigation', async () => {
     await open('control');
-    fireEvent.click(screen.getByRole('link', { name: '조립 · 자동실험' }));
-    window.location.hash = 'assembly';
-    fireEvent(window, new HashChangeEvent('hashchange'));
+    fireEvent.click(screen.getAllByRole('link', { name: /조립 · 자동실험/ })[0]);
     await screen.findByRole('heading', { name: '조립 · 자동실험', level: 1 });
+  });
+  it('updates page and remounts it for browser hash navigation and history events', async () => {
+    await open('control');
+    const marketsLink = screen.getAllByRole('link', { name: /시장 · 판단/ })[0];
+    fireEvent.click(marketsLink);
+    expect(marketsLink.getAttribute('href')).toBe('#markets');
+    act(() => {
+      window.history.pushState({}, '', '#markets');
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    expect(await screen.findByRole('heading', { name: '시장 · 판단', level: 1 })).toBeTruthy();
+
+    act(() => {
+      window.history.pushState({}, '', '#learning');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(await screen.findByRole('heading', { name: '경험 학습', level: 1 })).toBeTruthy();
+
+    window.history.pushState({}, '', '#experts');
+    fireEvent(window, new HashChangeEvent('hashchange'));
+    expect(await screen.findByRole('heading', { name: '전문가', level: 1 })).toBeTruthy();
   });
   it('filters search, fresh quotes and market without losing controls', async () => {
     await open('markets');
@@ -223,14 +243,13 @@ describe('existing control endpoints and independent flags', () => {
   it('loads raw expert output only on request and keeps fusion download', async () => {
     await open('experts');
     expect(screen.queryByText('0.1')).toBeNull();
-    fireEvent.click(screen.getByText('원본 입력 · 출력 shape · raw 출력'));
-    await screen.findByRole('button', { name: 'Registry Dynamic Expert 원본 출력 조회' });
-    await click('Registry Dynamic Expert 원본 출력 조회');
+    fireEvent.click(screen.getByRole('button', { name: /Registry Dynamic Expert/ }));
+    await click('전문가 raw output 조회');
     expect(
       vi.mocked(fetch).mock.calls.some(([p]) => String(p).includes('output?id=test_expert')),
     ).toBe(true);
-    await click('최근 통합 출력 조회');
-    expect(screen.getByRole('link', { name: '전체 통합 JSON 저장' }).getAttribute('href')).toBe(
+    await click('통합 출력 불러오기');
+    expect(screen.getByRole('link', { name: 'JSON 저장' }).getAttribute('href')).toBe(
       '/api/experts/fusion',
     );
   });

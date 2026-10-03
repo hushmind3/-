@@ -1,22 +1,22 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ActionButton, Button, CommandProvider, Panel, Toggle } from '../src/components/ui';
+import { Action, ActionButton, CommandProvider, Disclosure, Toggle } from '../src/components/ui';
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
 it('updates content without recreating the button DOM node', () => {
-  const r = render(<Button>1</Button>);
+  const r = render(<Action>1</Action>);
   const original = screen.getByRole('button');
-  r.rerender(<Button>2</Button>);
+  r.rerender(<Action>2</Action>);
   expect(screen.getByRole('button')).toBe(original);
   expect(original.textContent).toBe('2');
 });
 it('does not mount hidden details until expanded', async () => {
   render(
-    <Panel title="상세">
+    <Disclosure title="상세">
       <div>expensive data</div>
-    </Panel>,
+    </Disclosure>,
   );
   expect(screen.queryByText('expensive data')).toBeNull();
   fireEvent.click(screen.getByText('상세'));
@@ -34,7 +34,7 @@ it('prevents duplicate commands and shows pending then success', async () => {
   fireEvent.click(screen.getByRole('button', { name: '시작 요청 중…' }));
   expect(task).toHaveBeenCalledTimes(1);
   await act(async () => resolve({ ok: true }));
-  await screen.findByText('요청 적용 완료');
+  await screen.findByText('변경 적용 완료');
 });
 it('failed toggles retain authoritative state and show error', async () => {
   vi.stubGlobal(
