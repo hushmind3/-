@@ -1,7 +1,7 @@
 # 구형 0.5B 퇴역 · TradingMoE Champion/Candidate 유지
 
 - 구형 GlobalMarketTransformer/OnlineGlobalAgent, 학습·승급·prefix cache·전용 연구 도구와 PySide 구형 화면을 외부 휴지통으로 이동했습니다. 모델 원본 PT는 변경하지 않았습니다.
-- Champion/Candidate는 역할 이름으로 유지합니다. Champion은 현재 champion.pt의 TradingMoE와 Champion recipe를 사용하고, Candidate 시작/정지는 기존 AssemblyOrchestrator.trial()로 연결합니다. 후보는 공용 Champion PT와 작은 recipe/학습 state를 사용하며 전체 PT를 복사하지 않습니다.
+- Champion/Candidate는 역할 이름으로 유지합니다. 두 운영 모델의 시작/정지는 각 모델 worker에 연결합니다. 조립 시험은 별도의 시험 버튼으로 실행하며 운영계좌 표시를 대체하지 않습니다. 후보는 공용 Champion PT와 작은 recipe/학습 state를 사용하며 전체 PT를 복사하지 않습니다. Candidate 운영 버튼이 조립 시험을 시작하던 연결은 `0df48a1`에서 수정했습니다.
 - 시장 Feed는 모델과 독립입니다. 중복 시작을 방지하고 시작 실패 시 요청 상태를 복구합니다. 실패한 모델을 자동 재적재하는 루프도 없앴습니다.
 - 웹서버가 모델 종류 확인을 위해 torch.load()하던 경로를 제거했습니다. 모델 적재는 해당 worker에서만 수행합니다.
 - 상태 API는 현재 MoE worker/가상계좌에서 계산합니다. 구형 metrics·관찰 큐·승급 기록으로 현재 실행이나 GPU·학습량을 표시하지 않습니다. /api/runtime도 같은 상태를 사용합니다.
