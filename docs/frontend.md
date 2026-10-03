@@ -62,4 +62,4 @@ API 변경 버튼을 자동 테스트에서는 mock하므로 계좌 초기화나
 브라우저에서는 실제 Python API 조회와 독립 모드/조립 설정 토글을 변경 후 복원하고 페이지 전환, raw/fusion 조회, polling을 확인합니다.
 Python 정적 제공과 경로 탈출 차단은 `tests/test_react_assets.py`로 확인합니다.
 기존 모델 lifecycle/체결/학습은 backend 구현을 유지하며 프론트 테스트에서 대용량 모델을 재훈련하지 않습니다.
-이 작업은 로컬 변경이며 GitHub push를 하지 않습니다.
+React 전환은 먼저 로컬에서 완료·검증했으며, 이후 사용자의 업로드 요청에 따라 GitHub main에 반영했습니다.
