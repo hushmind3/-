@@ -42,31 +42,6 @@ class BrokerAdapter(ABC):
     def close(self) -> None: ...
 
 
-class MockBroker(BrokerAdapter):
-    """Safe test broker that records simulated orders and has no network client."""
-    is_live = False
-
-    def __init__(self):
-        self.connected = False
-        self.orders: list[dict[str, Any]] = []
-        self.stopped = False
-
-    def connect(self) -> None:
-        self.connected = True; self.stopped = False
-
-    def place_order(self, order: OrderRequest) -> dict[str, Any]:
-        if not self.connected or self.stopped:
-            raise RuntimeError("mock broker is disconnected or emergency-stopped")
-        result = {"status": "paper_filled", "symbol": order.symbol, "side": order.side.upper(),
-                  "quantity": order.quantity, "timestamp": order.timestamp, "live_order": False}
-        self.orders.append(result)
-        return result
-
-    def emergency_stop(self) -> None:
-        self.stopped = True
-
-    def close(self) -> None:
-        self.connected = False
 
 
 class BrokerWorker:

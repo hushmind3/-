@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import psutil
+from ..state_io import atomic_json
 
 
 class AttachedWorker:
@@ -38,10 +39,8 @@ def handoff(supervisor):
             process=psutil.Process(worker.pid)
             records[name]={"pid":worker.pid,"created":process.create_time(),"command":process.cmdline()}
     path=supervisor.runtime/"web_workers.json"
-    temporary=path.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps({"mode":supervisor.mode,"profile":str(supervisor.profile),
-        "run_requested":supervisor.run_requested,"workers":records}),encoding="utf-8")
-    temporary.replace(path)
+    atomic_json({"mode":supervisor.mode,"profile":str(supervisor.profile),
+        "run_requested":supervisor.run_requested,"workers":records},path)
 
 
 def adopt(supervisor):

@@ -11,9 +11,18 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+import threading
 import time
 import types
 from .paths import expert_weight_path
+
+_source_lock = threading.RLock()
+
+
+def _source_signature(path):
+    path = Path(path).resolve()
+    stat = path.stat()
+    return (str(path), stat.st_mtime_ns, stat.st_size)
 
 
 def load_native_pretrained(cls, directory, **kwargs):
@@ -42,11 +51,21 @@ def load_native_pretrained(cls, directory, **kwargs):
 
 
 def source_module(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
+    with _source_lock:
+        signature = _source_signature(path)
+        module = sys.modules.get(name)
+        if module is not None and getattr(module, "_stockrl_source_signature", None) == signature:
+            return module
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            sys.modules.pop(name, None)
+            raise
+        module._stockrl_source_signature = signature
+        return module
 
 
 def toto_native_module(directory):
@@ -56,21 +75,28 @@ def toto_native_module(directory):
     that import and that bridge class are omitted; all network AST nodes and
     checkpoint tensors stay unchanged. The original source file is not edited.
     """
-    package = types.ModuleType("research_toto")
-    package.__path__ = [str(directory)]
-    sys.modules[package.__name__] = package
-    source_module("research_toto.configuration", directory / "configuration.py")
-    path = directory / "model.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    tree.body = [node for node in tree.body if not (
-        isinstance(node, ast.ImportFrom) and node.module == "gluonts.torch"
-        or isinstance(node, ast.ClassDef) and node.name == "Toto2GluonTSModel")]
-    module = types.ModuleType("research_toto.model")
-    module.__package__ = "research_toto"
-    module.__file__ = str(path)
-    sys.modules[module.__name__] = module
-    exec(compile(tree, str(path), "exec"), module.__dict__)
-    return module
+    with _source_lock:
+        directory = Path(directory)
+        path = directory / "model.py"
+        signature = (_source_signature(path), _source_signature(directory / "configuration.py"))
+        module = sys.modules.get("research_toto.model")
+        if module is not None and getattr(module, "_stockrl_source_signature", None) == signature:
+            return module
+        package = types.ModuleType("research_toto")
+        package.__path__ = [str(directory)]
+        sys.modules[package.__name__] = package
+        source_module("research_toto.configuration", directory / "configuration.py")
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        tree.body = [node for node in tree.body if not (
+            isinstance(node, ast.ImportFrom) and (node.module or "").startswith("gluonts")
+            or isinstance(node, ast.ClassDef) and node.name in ("Toto2GluonTSModel", "_FnImputation"))]
+        module = types.ModuleType("research_toto.model")
+        module.__package__ = "research_toto"
+        module.__file__ = str(path)
+        sys.modules[module.__name__] = module
+        exec(compile(tree, str(path), "exec"), module.__dict__)
+        module._stockrl_source_signature = signature
+        return module
 
 
 def run_native(expert, root, data, device="cpu", status_path=None, expert_id=None):

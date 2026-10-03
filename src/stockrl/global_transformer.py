@@ -1,7 +1,7 @@
 """Global cross-asset Transformer and leakage-safe panel construction.
 
 The default configuration is intentionally a real ~0.5B parameter model.
-Use ``small_config`` only for unit tests; production commands never select it.
+Tests construct an explicit small TransformerConfig; production uses the default.
 """
 from __future__ import annotations
 
@@ -47,11 +47,6 @@ class TransformerConfig:
     feature_count: int = len(GLOBAL_FEATURES)
 
 
-def small_config() -> TransformerConfig:
-    """Explicit tiny config for adapter/unit checks only."""
-    return TransformerConfig(d_model=64, n_heads=4, n_layers=2, ff_mult=4,
-                             max_symbols=128, n_markets=16, n_asset_types=16,
-                             max_seq_len=32)
 
 
 class TransformerBlock(nn.Module):

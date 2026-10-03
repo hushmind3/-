@@ -27,3 +27,5 @@
 - [통합 추론 시간 측정](reports/trading-moe-inference-measurements.md)
 - 원본 JSON: `reports/trading-moe-artifacts.json`, `trading-moe-execution-result.json`, `trading-moe-lifecycle-result.json`
 - 과거 정리 기록: `reports/server-cleanup.md`, `reports/moe-runtime-cleanup.md`
+
+- [Python 코드 정리 · 호출 경로·보존 범위·검증](reports/python-code-cleanup.md)

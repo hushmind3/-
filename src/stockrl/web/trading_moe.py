@@ -1,5 +1,4 @@
 """Dedicated PT worker lifecycle. Status reads never import torch or load weights."""
-import json
 import os
 from pathlib import Path
 import subprocess
@@ -8,6 +7,7 @@ import psutil
 from .resources import ROOT
 from ..expert_registry import atomic_json
 from ..paths import EXPERT_ASSETS_DIR, TRADING_MOE_CHECKPOINT
+from ..state_io import read_json
 
 
 class TradingMoELifecycle:
@@ -20,10 +20,7 @@ class TradingMoELifecycle:
         self.runner_script="run_native_vertical_trading.py"
         self.extra_args=[]
 
-    @staticmethod
-    def read(path):
-        try:return json.loads(path.read_text(encoding="utf-8"))
-        except (OSError,ValueError):return {}
+    read = staticmethod(read_json)
 
     def process(self):
         record=self.read(self.record)

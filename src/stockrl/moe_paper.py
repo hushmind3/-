@@ -63,8 +63,9 @@ class TradingMoEPaper(_RewardMixin):
                 tradable.setdefault(currency, []).append(j)
         paper_cash = dict(cash)
         output_currencies = result.get("currencies") or {s:"USD" for s in weights}
+        tradable_symbols = {panel.symbols[j] for indices in tradable.values() for j in indices}
         for symbol, weight in weights.items():
-            if not any(symbol == panel.symbols[j] for indices in tradable.values() for j in indices):
+            if symbol not in tradable_symbols:
                 currency = output_currencies[symbol]
                 paper_cash[currency] = paper_cash.get(currency,0) + weight
         for currency, indices in tradable.items():
@@ -85,19 +86,30 @@ class TradingMoEPaper(_RewardMixin):
             queued |= self.paper_account.queue_decisions(sub,index,probs,True,allocation,acts)
         existing = {d["decision_id"] for d in self.pending}
         start = max(0,index-127)
+        decision_inputs = None
         for indices in tradable.values():
             for j in indices:
                 symbol = panel.symbols[j]
                 decision_id = f"{stamp}|{symbol}"
                 if decision_id in existing:
                     continue
+                if decision_inputs is None:
+                    # All symbols in this decision observe the same owned input
+                    # block. Outcome processing reads these arrays; it never
+                    # mutates them. Keep one copy, independent of future bars.
+                    decision_inputs = {
+                        "features":panel.features[start:index+1].copy(),
+                        "valid_mask":panel.observed[start:index+1].copy(),
+                        "symbol_ids":panel.symbol_ids.copy(),
+                        "market_ids":panel.market_ids.copy(),
+                        "asset_ids":panel.asset_ids.copy(),
+                        "portfolio_state":np.asarray(pstate,dtype=np.float32),
+                        "account_state":np.asarray(astate,dtype=np.float32),
+                    }
                 self.pending.append({"timestamp":stamp,"decision_id":decision_id,"symbol":symbol,
                     "symbol_index":j,"input_symbols":list(panel.symbols),
                     "action":{"SELL":0,"HOLD":1,"BUY":2}[actions_by_symbol[symbol]],
-                    "features":panel.features[start:index+1].copy(),"valid_mask":panel.observed[start:index+1].copy(),
-                    "symbol_ids":panel.symbol_ids.copy(),"market_ids":panel.market_ids.copy(),
-                    "asset_ids":panel.asset_ids.copy(),"portfolio_state":np.asarray(pstate,dtype=np.float32),
-                    "account_state":np.asarray(astate,dtype=np.float32),"reward_version":REWARD_VERSION,
+                    **decision_inputs,"reward_version":REWARD_VERSION,
                     "entry_price":float(panel.closes[index,j]),"bars_elapsed":0,
                     "equity_before":self.paper_account.normalized_equity(),
                     "symbol_pnl_before":self.paper_account.symbol_net_pnl(symbol),

@@ -16,17 +16,12 @@ import uuid
 
 from .expert_registry import atomic_json, ensure_registry
 from .paths import DEFAULT_MODEL_DIR, PROJECT_ROOT, PROJECT_TRASH_DIR
+from .state_io import read_json as read
 
 
 def now():
     return datetime.now(timezone.utc).isoformat()
 
-
-def read(path, fallback=None):
-    try:
-        return json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return deepcopy(fallback if fallback is not None else {})
 
 
 def recipe_fingerprint(recipe):

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import json
 import re
 from typing import Iterator
 
@@ -155,20 +154,3 @@ def fi2010_book_to_features(book40: np.ndarray) -> np.ndarray:
                  (float(bprice[0])-float(bprice[-1])), 2.0)
     # These are per-feature standardized inputs, not physical prices or sizes.
     return np.nan_to_num(x)
-
-
-def finrl_imitation_records(path: str | Path, action_column: str = "greedy") -> Iterator[TeacherRecord]:
-    """Yield portfolio allocations as warm-start records, never hard targets."""
-    df = pd.read_csv(path)
-    required = {"date", "tic", action_column}
-    if not required.issubset(df.columns):
-        raise ValueError(f"FinRL imitation columns missing: {sorted(required-set(df.columns))}")
-    for (date, symbol), group in df.groupby(["date", "tic"], sort=True):
-        weights = pd.to_numeric(group[action_column], errors="coerce").fillna(0).to_numpy(np.float32)
-        yield TeacherRecord("FinRL-Imitation", str(date), str(symbol), weights,
-                            "portfolio allocation; not proof of executed order/fill")
-
-
-def write_source_manifest(path: str | Path, sources: list[dict]) -> None:
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    Path(path).write_text(json.dumps({"sources": sources}, indent=2), encoding="utf-8")

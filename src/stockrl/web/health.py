@@ -1,15 +1,9 @@
 """Market sessions and persisted progress health."""
 from __future__ import annotations
-import json
 import sqlite3
 from datetime import datetime, time as day_time, timezone
 from pathlib import Path
-
-def _json(path: Path) -> dict:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+from ..state_io import read_json as _json
 
 def _utc_datetime(value: object) -> datetime | None:
     if not value:

@@ -7,8 +7,7 @@ No original source/checkpoint is changed and no expert probe is repeated.
 import ast
 import inspect
 import json
-import sys
-import types
+from functools import lru_cache
 from pathlib import Path
 from types import SimpleNamespace
 import torch
@@ -47,10 +46,10 @@ class NativeExpert(nn.Module):
             else:self.cpu()
 
 
-def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
-                load_only=False, runner_source=None):
-    """Use exactly the baseline native data preparation and native forward."""
-    source = runner_source or inspect.getsource(expert_backends.run_native)
+@lru_cache(maxsize=8)
+def _compiled_runner(runner):
+    """Cache code only; model instances and per-call bindings stay outside."""
+    source = runner if isinstance(runner, str) else inspect.getsource(runner)
     tree = ast.parse(source)
     constructors = {"EXAONEFinance", "PatchedTimeSeriesDecoder", "PatchedTimeSeriesDecoder_MOE",
                     "TimeMoeForPrediction", "Toto2Model", "Transformer", "subagent"}
@@ -77,20 +76,15 @@ def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
         if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="loaded_seconds" for t in node.targets):
             function.body.insert(index,ast.If(ast.Name("_load_only",ast.Load()),[ast.Return(ast.Name("models",ast.Load()))],[]))
             break
+    ast.fix_missing_locations(tree)
+    return compile(tree, "<registered baseline native backend>", "exec")
+
+
+def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
+                load_only=False, runner_source=None):
+    """Use exactly the baseline native data preparation and native forward."""
+    code = _compiled_runner(runner_source or expert_backends.run_native)
     namespace=dict(vars(expert_backends))
-    def standalone_toto(directory):
-        package=types.ModuleType("research_toto");package.__path__=[str(directory)]
-        sys.modules[package.__name__]=package
-        expert_backends.source_module("research_toto.configuration",directory/"configuration.py")
-        path=directory/"model.py";tree=ast.parse(path.read_text(encoding="utf-8"))
-        # All GluonTS imports belong exclusively to the optional bridge class.
-        tree.body=[n for n in tree.body if not (isinstance(n,ast.ImportFrom) and (n.module or "").startswith("gluonts")
-                  or isinstance(n,ast.ClassDef) and n.name in ("Toto2GluonTSModel","_FnImputation"))]
-        module=types.ModuleType("research_toto.model");module.__package__="research_toto";module.__file__=str(path)
-        sys.modules[module.__name__]=module
-        exec(compile(tree,str(path),"exec"),module.__dict__)
-        return module
-    namespace["toto_native_module"]=standalone_toto
     cursor=0
     restored=0
 
@@ -144,8 +138,7 @@ def native_call(backend, root, data, device="cpu", *, modules=None, states=None,
         return result
 
     namespace.update(_construct=construct,_pretrained=pretrained,_weights=weights,_restore=restore,_load_only=load_only)
-    ast.fix_missing_locations(tree)
-    exec(compile(tree,"<registered baseline native backend>","exec"),namespace)
+    exec(code,namespace)
     # Baseline backend reseeds isolated workers; do not overwrite policy RNG here.
     with torch.random.fork_rng(devices=[]):
         return namespace["run_native"](backend,Path(root),data,device)
