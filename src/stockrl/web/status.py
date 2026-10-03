@@ -119,18 +119,21 @@ class _StatusMixin:
                 loaded=live and native.get("load_count",0)>0
                 status="saving" if native.get("stop_requested") and live else native["status"]
                 ledger=_json(worker.state/"paper_account.json")
-                # Assembly publishes trial books, not the Candidate long-term ledger.
+                # Saved operating accounts survive model replacement and trial runs.
+                account_path=worker.state/"paper_account.json"
+                saved_path=profile/"agent"/("paper_account.json" if role=="champion" else "candidate_observer_account.json")
+                saved_ledger=_json(saved_path)
+                def has_trades(account):
+                    return bool(account.get("fills") or account.get("pending") or any(
+                        book.get("positions") or book.get("trade_count")
+                        for book in account.get("books",{}).values()))
+                saved_account=bool(saved_ledger and (not ledger or not has_trades(ledger)))
+                if saved_account:
+                    ledger=saved_ledger
+                    account_path=saved_path
                 trial=worker.runner_script=="run_assembly_trial.py"
                 summary=summarize_account(ledger)
                 books=summary["books"]
-                if trial:
-                    trial_id=native.get("assembly_candidate_id")
-                    phase=native.get("evaluation_stage")
-                    if phase not in ("replay","paper"):phase="paper"
-                    trial_root=worker.state/"assembly"/str(trial_id)/"candidate"
-                    trial_ledger=_json(trial_root/phase/"paper_account.json")
-                    if not trial_ledger:trial_ledger=_json(trial_root/"replay/paper_account.json")
-                    books=summarize_account(trial_ledger)["books"]
                 runtime[role]={"status":status,"requested":requested,"loaded":loaded,"pid":native.get("pid"),
                     "family":"trading_moe","checkpoint":str(worker.checkpoint),"error":native.get("error"),
                     "device":compute.get("learning_device") if loaded else None,
@@ -138,9 +141,9 @@ class _StatusMixin:
                     "ram_weight_bytes":native.get("worker_ram_bytes",0),
                     "gpu_weight_bytes":compute.get("allocated_bytes",0) if live else 0,
                     "last_decision":decision.get("as_of"),"decision_seconds":decision.get("seconds"),
-                    "updated_at":native.get("updated_at"),"source_kind":"historical_paper",
+                    "updated_at":native.get("updated_at"),"source_kind":"saved_operating_account" if saved_account else "historical_paper",
                     "source":"TradingMoE · 공식 ETHUSDT 과거 가상매매" if not trial else "TradingMoE · 조립 Candidate 시험",
-                    "memory_scope":"worker","account_scope":"trial" if trial else "long_term",
+                    "memory_scope":"worker","account_scope":"long_term","account_path":str(account_path),
                     "learning_active":live and bool(native.get("learning_active")),"learning":learning,
                     "optimizer_updates":native.get("optimizer_updates",0),"replay":native.get("replay",{}),"books":books}
                 accounts[role]={**summary,"books":books,"training":runtime[role]["learning_active"],

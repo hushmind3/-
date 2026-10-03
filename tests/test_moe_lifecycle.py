@@ -67,13 +67,38 @@ class MoELifecycleTests(unittest.TestCase):
         self.assertFalse(s.model_enabled['candidate'])
         self.assertFalse(json.loads((s.profile/'agent/autonomy.json').read_text())['candidate_enabled'])
 
-    def test_candidate_uses_existing_assembly_lifecycle_without_pt_copy(self):
-        s=self.supervisor;s.assembly_orchestrator=Mock()
-        s.assembly_orchestrator.trial.return_value={'ok':True}
+    def test_candidate_operating_start_does_not_start_assembly_trial(self):
+        s=self.supervisor;s.assembly_orchestrator=SimpleNamespace(worker=None,trial=Mock())
+        s._launch=Mock()
         self.assertTrue(s.set_model('candidate',True)['ok'])
         s.set_model('candidate',False)
-        self.assertEqual([call.args for call in s.assembly_orchestrator.trial.call_args_list],[(True,),(False,)])
+        s.assembly_orchestrator.trial.assert_not_called()
+        s._launch.assert_called_once_with('candidate')
         self.assertEqual(list(s.model_dir.iterdir()),[])
+
+    def test_trial_does_not_replace_saved_operating_account(self):
+        worker=self.workers['candidate'];worker.runner_script='run_assembly_trial.py'
+        path=self.supervisor.profile/'agent/candidate_observer_account.json'
+        account=PaperAccount(path,.001,.0001)
+        account.state['books']['USD']['cash']=8765
+        account.state['books']['USD']['positions']={'MSFT':{'quantity':2,'average_cost':100}}
+        account.save();before=path.read_bytes()
+        with patch('stockrl.provider_credentials.public_status',return_value={'provider':'public','environment':'paper'}):
+            status=self.supervisor.status()
+        candidate=status['model_runtime']['candidate']
+        self.assertEqual(candidate['account_scope'],'long_term')
+        self.assertEqual(candidate['books']['USD']['cash'],8765)
+        self.assertEqual(candidate['books']['USD']['positions'][0]['symbol'],'MSFT')
+        self.assertEqual(path.read_bytes(),before)
+
+    def test_stopped_trial_runner_is_reset_for_candidate_operation(self):
+        worker=self.workers['candidate'];worker.runner_script='run_assembly_trial.py'
+        s=self.supervisor;s._launch=Mock()
+        s.assembly_orchestrator=SimpleNamespace(worker=worker,trial=Mock())
+        s.set_model('candidate',True)
+        self.assertEqual(worker.runner_script,'run_native_vertical_trading.py')
+        self.assertIsNone(s.assembly_orchestrator.worker)
+        s.assembly_orchestrator.trial.assert_not_called()
 
     def test_system_start_only_launches_feed_and_does_not_import_torch(self):
         s=self.supervisor;s.run_requested=False;s._launch=Mock()

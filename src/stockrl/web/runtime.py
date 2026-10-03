@@ -139,14 +139,23 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
     def set_model(self, role, enabled):
         if role not in self.model_enabled:return {"error":"Unknown model role"}
         assembly=getattr(self,"assembly_orchestrator",None)
-        if role=="candidate" and assembly is not None:
-            return assembly.trial(enabled)
+        if role=="candidate" and assembly is not None and assembly.worker is not None:
+            if assembly.worker.runner_script=="run_assembly_trial.py" and assembly.worker.process():
+                if not enabled:return assembly.trial(False)
+                return {"error":"Candidate 조립 시험 실행 중입니다. 시험을 정지한 뒤 운영 모델을 시작하세요."}
         with self.lock:
             if self.stopping:return {"error":"System is saving; wait for completion."}
             if enabled and not self.run_requested:
                 result=self.start(self.mode,self.horizon)
                 if not result.get("ok"):return result
             worker=self._moe_model_worker(role)
+            if role=="candidate" and not worker.process():
+                worker.runner_script="run_native_vertical_trading.py"
+                worker.extra_args=[]
+                recipe=ROOT/"runtime/assembly/current_recipe.json"
+                if recipe.is_file() and _json(recipe).get("enabled_experts"):
+                    worker.extra_args=["--recipe",str(recipe)]
+                if assembly is not None and assembly.worker is worker:assembly.worker=None
             state=worker.status()
             if enabled and state.get("alive"):
                 if state.get("stop_requested"):return {"error":"Model is saving; wait before starting."}
