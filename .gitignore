@@ -29,6 +29,8 @@ __pycache__/
 /artifacts/experts/sources/**/*.png
 /artifacts/experts/sources/**/*.jpg
 /artifacts/experts/sources/**/*.pdf
+/artifacts/experts/sources/**/*.ipynb
+/artifacts/experts/stock-policies/**/*.ipynb
 /runtime/gpu-owner.lock
 
 # Recoverable local cleanup; never upload archived datasets/source ZIPs.
