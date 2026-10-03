@@ -59,6 +59,12 @@ async function click(name: string) {
   );
 }
 describe('all existing pages', () => {
+  it('assembly displays the history-aware candidate generation reason', async () => {
+    (fixtures['/api/assembly/status'].candidate as Data).generation_reason =
+      'successful-mutation-combination';
+    await open('assembly');
+    expect(await screen.findByText('생성 이유: 성적이 좋았던 변경 2개 조합')).toBeTruthy();
+  });
   it.each(pages)('%s renders without console errors', async (page) => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
     await open(page);

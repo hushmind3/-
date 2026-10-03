@@ -44,7 +44,7 @@ Windows 새 컴퓨터에서는 다음 순서로 실행합니다.
 
 Champion과 Candidate는 각자의 모델·계좌·실행 상태를 갖습니다. 둘 중 하나만 실행하거나 둘 다 정지한 채 Feed만 실행할 수 있습니다. 전용 TradingMoE worker는 별도 lifecycle입니다. 장기 운영계좌와 승급전 시험계좌는 구분합니다. 기존 Transformer 지원 코드는 호환 경로로 남아 있으며, 그 승격 조건을 TradingMoE 자동조립 평가 조건으로 취급하지 않습니다.
 
-자동조립 Candidate는 공용 expert 본체와 작은 recipe/router/fusion/controller state를 사용하며 후보마다 전체 PT를 복사하지 않습니다. [자동조립 구조와 평가](docs/assembly.md)
+자동조립 Candidate는 공용 expert 본체와 작은 recipe/router/fusion/controller state를 사용하며 후보마다 전체 PT를 복사하지 않습니다. 후보 생성은 실험 이력과 신규 expert 시험 상태를 반영하고, 같은 recipe의 반복과 효과 없는 변경을 제외합니다. [자동조립 구조와 평가](docs/assembly.md)
 
 ## 프론트엔드 수정
 

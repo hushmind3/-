@@ -15,6 +15,12 @@ import {
   Table,
   Toggle,
 } from '../components/ui';
+const generationReasons: Record<string, string> = {
+  'history-guided': '실험 이력 반영',
+  'new-expert-probe': '새 전문가 첫 시험',
+  exploration: '새 조합 탐색',
+  'successful-mutation-combination': '성적이 좋았던 변경 2개 조합',
+};
 export function Assembly() {
   const q = usePolling('/api/assembly/status', 3000),
     a = q.data;
@@ -160,6 +166,11 @@ export function Assembly() {
       </Card>
       <Card title="현재 Candidate · 변경 내용" badge={<Badge>{state(c.evaluation_state)}</Badge>}>
         <p>{str(c.mutation_description)}</p>
+        {c.generation_reason && (
+          <p className="muted">
+            생성 이유: {generationReasons[str(c.generation_reason)] || str(c.generation_reason)}
+          </p>
+        )}
         <p className="muted">
           {str(
             c.reason ||
@@ -235,6 +246,8 @@ export function Assembly() {
           history: a.history,
           champion: ch,
           registry_versions: a.registry_versions,
+          expert_trials: a.expert_trials,
+          history_stats: a.history_stats,
         }}
       />
     </>

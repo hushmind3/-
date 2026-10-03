@@ -138,6 +138,14 @@ def main():
         torch.set_num_threads(4)
         publish_worker(args.state,status="loading",evaluation_stage="replay",assembly_candidate_id=args.candidate_id,error=None)
         rows,source=cached_rows()
+        market_ages={}
+        for row in rows:
+            for packet in row["decision"]["raw_outputs"]:
+                if packet["expert"].startswith("macrophft_"):continue
+                age=(pd.Timestamp(row["timestamp"])-pd.Timestamp(packet["as_of"])).total_seconds()
+                if age>=0:market_ages.setdefault(packet["expert"],set()).add(age)
+        result["evaluation_context"]={"symbols":["ETHUSDT"],
+            "market_ages":{key:sorted(ages) for key,ages in market_ages.items()}}
         # Decode only the small trained modules and six real native policy bodies.
         # All eight large market expert bodies stay in their shared file/cache.
         model,_=TradingMoE.load_checkpoint(args.checkpoint,cached_market=True)
