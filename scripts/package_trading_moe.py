@@ -7,6 +7,7 @@ import time
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"src"))
 from stockrl.expert_registry import read_fusion_output,atomic_json
 from stockrl.trading_moe import TradingMoE,package_verified_experts,parameter_digest
+from stockrl.paths import TRADING_MOE_CHECKPOINT
 from run_trading_moe import all_expert_snapshot
 
 
@@ -17,7 +18,7 @@ def main():
     parser.add_argument("--load-only",action="store_true")
     parser.add_argument("--skip-expert-hashes",action="store_true",help="restore without rereading all frozen tensors for hashes")
     args=parser.parse_args()
-    target=args.checkpoint or args.root/"TradingMoE.pt"
+    target=args.checkpoint or TRADING_MOE_CHECKPOINT
     started=time.perf_counter()
     if args.load_only:
         model,optimizer_state=TradingMoE.load_checkpoint(target)

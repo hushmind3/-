@@ -7,12 +7,13 @@ import threading
 import psutil
 from .resources import ROOT
 from ..expert_registry import atomic_json
+from ..paths import EXPERT_ASSETS_DIR, TRADING_MOE_CHECKPOINT
 
 
 class TradingMoELifecycle:
     def __init__(self,checkpoint=None,state=None):
-        self.artifacts=Path.home()/"Desktop"/"모델"/"heterogeneous-experts"
-        self.checkpoint=Path(checkpoint) if checkpoint else self.artifacts/"TradingMoE.pt"
+        self.artifacts=EXPERT_ASSETS_DIR
+        self.checkpoint=Path(checkpoint) if checkpoint else TRADING_MOE_CHECKPOINT
         self.state=Path(state) if state else ROOT/"runtime/trading_moe/native_vertical_run"
         self.record=self.state/"worker.json" if state else ROOT/"runtime/trading_moe/worker.json"
         self.lock=threading.RLock()

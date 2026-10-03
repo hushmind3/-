@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import psutil
 
 from stockrl.expert_registry import atomic_json, read_registry, read_raw_output, read_fusion_output
@@ -201,7 +202,7 @@ class ExpertContracts(unittest.TestCase):
 
     def test_wrapper_owner_lock_excludes_concurrent_execution(self):
         owner = self.root / "gpu-owner.lock"
-        with registry_owner(owner):
+        with patch("stockrl.expert_system.GPU_OWNER_LOCK",owner), registry_owner(owner):
             with self.assertRaises(RuntimeError):
                 with registry_owner(owner): self.fail("second owner admitted")
             with self.assertRaises(RuntimeError): TradingMoE(self.root,registry_path=self.root / "other.json")

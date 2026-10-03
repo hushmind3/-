@@ -23,6 +23,7 @@ from stockrl.moe_training import update_controller
 from stockrl.global_transformer import GlobalMarketPanel
 from stockrl.expert_registry import atomic_json
 from stockrl.expert_system import registry_owner
+from stockrl.paths import TRADING_MOE_CHECKPOINT
 
 worker_status_path=None
 
@@ -88,7 +89,7 @@ def publish_paper_status(root,state,bridge,decision,row,model,completed=False):
     previous=pipeline.get("paper_trading",{})
     paper={**previous,"timestamp":row["timestamp"],"books":row["books"],"fills":bridge.paper_account.state["fills"][-20:],
         "pending_orders":dict(bridge.paper_account.state["pending"]),"reward_points":bridge.paper_account.reward_points(),
-        "optimizer_updates":model.optimizer_updates,"cycle_seconds":row["seconds"] if decision else previous.get("cycle_seconds"),"checkpoint":str(getattr(model,"runtime_checkpoint",root/"TradingMoE.pt")),
+        "optimizer_updates":model.optimizer_updates,"cycle_seconds":row["seconds"] if decision else previous.get("cycle_seconds"),"checkpoint":str(getattr(model,"runtime_checkpoint",TRADING_MOE_CHECKPOINT)),
         "replay":bridge.replay.stats(),"status":"paper_complete" if completed else "paper_running","live_executable":False}
     pipeline["paper_trading"]=paper
     if decision:
@@ -178,10 +179,10 @@ def main():
 
 def run(args):
     torch.set_num_threads(4)
-    checkpoint=args.checkpoint or args.root/"TradingMoE.pt"
+    checkpoint=args.checkpoint or TRADING_MOE_CHECKPOINT
     publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message=f"{checkpoint.name}를 한 번 적재하는 중입니다.")
     load_started=time.perf_counter()
-    checkpoint=args.checkpoint or args.root/"TradingMoE.pt";model,saved=TradingMoE.load_checkpoint(checkpoint)
+    model,saved=TradingMoE.load_checkpoint(checkpoint)
     model.runtime_checkpoint=checkpoint
     if args.device.startswith("cuda") and not torch.cuda.is_available():raise RuntimeError("CUDA is required for the requested GPU worker")
     model.set_learning_device(args.device)

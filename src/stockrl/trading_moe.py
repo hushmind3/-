@@ -15,6 +15,7 @@ from .moe_native import NativeExpert, native_call
 from . import expert_backends
 from .gpu_scheduler import FairGpuScheduler
 from .moe_inputs import MacroHFTInputAdapter,macro_adapter_metadata
+from .paths import EXPERT_ASSETS_DIR, GPU_OWNER_LOCK
 
 
 def parameter_digest(module):
@@ -137,7 +138,7 @@ class TradingMoE(nn.Module):
         self.macro_input_adapter=MacroHFTInputAdapter(**(metadata.get("macro_input_adapter") or macro_adapter_metadata(root)))
         self.optimizer_updates=0
         self.scheduler=FairGpuScheduler()
-        self.gpu_lock=self.root/"gpu-owner.lock"
+        self.gpu_lock=GPU_OWNER_LOCK
         self.experts.requires_grad_(False).eval()
 
     def parameter_groups(self,train_experts=()):
@@ -279,7 +280,7 @@ class TradingMoE(nn.Module):
         # Older local packing predates embedding the native feature list.
         if "macro_input_adapter" not in saved["metadata"]:
             import os
-            artifact_root=Path(path).resolve().parent
+            artifact_root=EXPERT_ASSETS_DIR
             saved["metadata"]["macro_input_adapter"]=macro_adapter_metadata(artifact_root)
         model=cls(experts,saved["config"],saved["metadata"],root)
         # Native states are already attached with assign; copy only the small head.
@@ -293,7 +294,7 @@ class TradingMoE(nn.Module):
                 nn.init.zeros_(head.weight);nn.init.zeros_(head.bias)
             saved["config"]["policy_prior_version"]=1;saved["optimizer_state"]=None;saved["optimizer_updates"]=0
         model.optimizer_updates=saved["optimizer_updates"];model._native_sources=temp
-        model.gpu_lock=Path(path).resolve().parent/"gpu-owner.lock"
+        model.gpu_lock=GPU_OWNER_LOCK
         optimizer_state=saved["optimizer_state"]
         previous=saved["metadata"].get("pre_expansion_optimizer_state")
         if optimizer_state is None and previous and model.controller.stock_policy_ids:

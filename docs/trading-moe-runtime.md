@@ -4,7 +4,7 @@
 
 14개 등록: forecast/event expert 8개(Kronos tokenizer는 Kronos에 포함)와 MacroHFT 원본 subagent 6개입니다. EarnHFT/EarnMore/DeepScalper/EIIE는 공식 source를 확보했지만, 확인한 공식 public 경로에 trained checkpoint가 없어 미등록입니다.
 
-- 원본 위치: `C:\Users\hushm\Desktop\모델\heterogeneous-experts`
+- 원본 위치: `C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts`
 - 기존 `champion.pt`/`candidate.pt`, replay, paper account는 이 시스템에 연결하지 않습니다.
 - 실제 측정: [frozen-expert-measurements.md](frozen-expert-measurements.md)
 - 설계: [heterogeneous-experts-design.md](heterogeneous-experts-design.md)
@@ -16,7 +16,7 @@
 현재 설치된 격리 환경에서 아래 순서로 실행합니다. 독립 검증용 입력은 artifact root의 `verification/`에 있습니다. 실행 시 GPU를 점유하는 기존 agent와 겹치지 않게 운영합니다. 각 worker가 끝나고 GPU를 반환한 뒤 다음 expert가 시작됩니다.
 
 ```powershell
-$expertRoot = 'C:\Users\hushm\Desktop\모델\heterogeneous-experts'
+$expertRoot = 'C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts'
 $expertPython = "$expertRoot\venv\Scripts\python.exe"
 & $expertPython scripts/verify_frozen_experts.py --root $expertRoot --device cuda:0
 & $expertPython scripts/audit_frozen_experts.py --root $expertRoot --report docs/frozen-expert-measurements.md

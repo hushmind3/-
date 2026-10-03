@@ -21,6 +21,7 @@ from contextlib import contextmanager
 
 from .gpu_scheduler import FairGpuScheduler
 from .expert_registry import atomic_json, utc_now
+from .paths import GPU_OWNER_LOCK
 
 
 @contextmanager
@@ -169,7 +170,7 @@ class TradingMoE:
         self.fusion_checkpoint = None
         self.registry_path = Path(registry_path) if registry_path else Path(__file__).resolve().parents[2] / "runtime/trading_moe/registry.json"
         self.lock = threading.Lock()
-        with registry_owner(self.root / "gpu-owner.lock"):
+        with registry_owner(GPU_OWNER_LOCK):
             self._register_catalog()
 
     def _register_catalog(self):
@@ -232,7 +233,7 @@ class TradingMoE:
                 raise ValueError(f"original checkpoint hash changed: {path}")
 
     def infer(self, snapshot):
-        with self.lock, registry_owner(self.root / "gpu-owner.lock"):
+        with self.lock, registry_owner(GPU_OWNER_LOCK):
             try:
                 return self._infer(snapshot)
             except BaseException as exc:

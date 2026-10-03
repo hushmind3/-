@@ -35,9 +35,9 @@ Use the provisioned expert Python environment. Its native dependencies include
 `unit-scaling==0.3.5` and `docstring-parser==0.18` for Toto.
 
 ```powershell
-& 'C:\Users\hushm\Desktop\모델\heterogeneous-experts\venv\Scripts\python.exe' `
+& 'C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts\venv\Scripts\python.exe' `
   scripts/run_native_vertical_trading.py `
-  --root 'C:\Users\hushm\Desktop\모델\heterogeneous-experts' `
+  --root 'C:\Users\hushm\OneDrive\문서\ChatGPT\금융매매모델\artifacts\experts' `
   --state runtime/trading_moe/native_vertical_run --steps 20 --resume
 ```
 

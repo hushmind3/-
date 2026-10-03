@@ -12,3 +12,7 @@ __pycache__/
 
 # TradingMoE generated residency, process samples and local artifact paths.
 /runtime/trading_moe/
+
+# Machine-local pretrained originals, native datasets and dedicated Python envs.
+/artifacts/experts/
+/runtime/gpu-owner.lock

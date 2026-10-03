@@ -18,6 +18,7 @@ import torch
 from stable_baselines3 import A2C, PPO, SAC
 from stockrl.moe_stock_policies import StockPolicyExpert, INDICATORS, make_policy
 from stockrl.trading_moe import TradingMoE, EvidenceAdapter, parameter_digest
+from stockrl.paths import EXPERT_ASSETS_DIR, TRADING_MOE_CHECKPOINT
 
 
 def write_json(path, value):
@@ -303,8 +304,8 @@ def fresh(root,checkpoint,device):
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('stage',choices=['download','verify','package','publish','fresh'])
-    parser.add_argument('--root',type=Path,default=Path(r'C:\Users\hushm\Desktop\모델\heterogeneous-experts\stock-policies'))
-    parser.add_argument('--checkpoint',type=Path,default=Path(r'C:\Users\hushm\Desktop\모델\heterogeneous-experts\TradingMoE.pt'))
+    parser.add_argument('--root',type=Path,default=EXPERT_ASSETS_DIR/'stock-policies')
+    parser.add_argument('--checkpoint',type=Path,default=TRADING_MOE_CHECKPOINT)
     parser.add_argument('--device',default='cuda:0')
     args=parser.parse_args()
     if args.stage=='download':download(args.root)

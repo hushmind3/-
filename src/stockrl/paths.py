@@ -9,6 +9,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MARKET = "korea"
 DEFAULT_MODEL_DIR = Path.home() / "Desktop" / "모델"
+# Only operating checkpoints belong on the Desktop. Sources, original expert
+# downloads, native data and Python environments belong to this project.
+EXPERT_ASSETS_DIR = PROJECT_ROOT / "artifacts" / "experts"
+TRADING_MOE_CHECKPOINT = DEFAULT_MODEL_DIR / "TradingMoE.pt"
+GPU_OWNER_LOCK = PROJECT_ROOT / "runtime" / "gpu-owner.lock"
 
 
 def ensure_project_path(path: str | Path, label: str = "runtime") -> Path:

@@ -4,7 +4,7 @@
 
 ## 최종 모델
 
-- `C:/Users/hushm/Desktop/모델/heterogeneous-experts/TradingMoE.pt`
+- `C:/Users/hushm/Desktop/모델/TradingMoE.pt`
 - 독립 expert **20개**: 기존 시장 분석 8개 + MacroHFT 6개 + 신규 주식 정책 6개.
 - adapter/controller 포함 총 **2,229,175,352 parameter = 2.229175352B**.
 - 실제 파일 **8,021,807,613 bytes = 8.021808 GB**.
@@ -85,10 +85,10 @@ symbol_id / buy_score / hold_score / sell_score / target_weight / confidence
 전체 native 출력, common 출력, hash, universe, shape, 시각과 계측값:
 
 ```text
-C:/Users/hushm/Desktop/모델/heterogeneous-experts/stock-policies/native-verification.json
-C:/Users/hushm/Desktop/모델/heterogeneous-experts/stock-policies/native-inputs.json
-C:/Users/hushm/Desktop/모델/heterogeneous-experts/stock-policies/fresh-process-report.json
-C:/Users/hushm/Desktop/모델/heterogeneous-experts/stock-policies/downloads.json
+C:/Users/hushm/OneDrive/문서/ChatGPT/금융매매모델/artifacts/experts/stock-policies/native-verification.json
+C:/Users/hushm/OneDrive/문서/ChatGPT/금융매매모델/artifacts/experts/stock-policies/native-inputs.json
+C:/Users/hushm/OneDrive/문서/ChatGPT/금융매매모델/artifacts/experts/stock-policies/fresh-process-report.json
+C:/Users/hushm/OneDrive/문서/ChatGPT/금융매매모델/artifacts/experts/stock-policies/downloads.json
 ```
 
 ## 다시 실행
