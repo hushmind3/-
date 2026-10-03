@@ -5,9 +5,11 @@ from pathlib import Path
 import numpy as np
 import torch
 from stockrl.rewards import closed_market_credit_ready, saved_closing_panel
-from stockrl.global_online import OnlineGlobalAgent, GlobalReplayBuffer, REWARD_VERSION
+from stockrl.rewards import _RewardMixin
+from stockrl.replay_store import GlobalReplayBuffer
+from stockrl.experience import REWARD_VERSION
 from stockrl.paper_account import PaperAccount
-from test_online_pipeline import Panel
+from test_paper_infrastructure import Panel
 
 
 class PendingRewardChecks(unittest.TestCase):
@@ -29,7 +31,7 @@ class PendingRewardChecks(unittest.TestCase):
         panel.dates=np.array(["2026-10-01T10:00:00","2026-10-01T10:59:00",current],dtype="datetime64[ns]")
         panel.observed=panel.observed[:3].copy();panel.observed[2,0]=False
         panel.features=panel.features[:3];panel.closes=panel.closes[:3].copy();panel.closes[2,0]=panel.closes[1,0]
-        agent=OnlineGlobalAgent.__new__(OnlineGlobalAgent)
+        agent=_RewardMixin()
         agent.metrics={};agent.replay=GlobalReplayBuffer()
         agent.paper_account=PaperAccount.in_memory(.001,.0001)
         agent.paper_account.state["books"]["KRW"]["positions"]["TEST.KS"]={"quantity":10,"average_cost":100.0}

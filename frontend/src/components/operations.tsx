@@ -195,7 +195,7 @@ export const ModelCard = memo(
       active = !!runtime.loaded && ['running', 'observing'].includes(str(runtime.status));
     return (
       <Card
-        title={name}
+        title={name + " · TradingMoE"}
         badge={
           <Badge tone={runtime.error ? 'bad' : active ? 'good' : 'neutral'}>
             {state(runtime.status)}
@@ -244,6 +244,7 @@ export const ModelCard = memo(
             </dd>
           </div>
         </dl>
+        <p className="muted">{runtime.account_scope === "trial" ? "조립 시험계좌 · 장기 운영계좌 유지" : "장기 운영계좌"}</p>
         <Books books={books} eth={runtime.source_kind === 'historical_paper'} />
         <DataPanel title={name + ' 실행 · 학습 상세'} data={runtime} />
       </Card>

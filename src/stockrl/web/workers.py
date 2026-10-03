@@ -57,7 +57,12 @@ def adopt(supervisor):
         raise ValueError("worker profile is outside runtime")
     children={}
     for name,record in data["workers"].items():
-        if name not in {"feed","agent","champion","candidate"}:
+        if name == "agent":
+            # Retired Transformer workers are never re-adopted or restarted.
+            (profile/"agent"/"stop.request").parent.mkdir(parents=True,exist_ok=True)
+            (profile/"agent"/"stop.request").touch()
+            continue
+        if name not in {"feed","champion","candidate"}:
             raise ValueError("unknown worker role")
         try:
             worker=AttachedWorker(record)

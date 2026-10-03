@@ -2,19 +2,14 @@
 from __future__ import annotations
 import csv
 from collections import deque
-from contextlib import closing
 import os
-import sqlite3
 import shutil
 import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
-from ..paper_account import KR_SELL_TAX_ASSUMPTION, SEED_CASH
-from ..account_diagnostics import summarize_account, valid_bid_ask_count, input_availability
-from ..operating_rules import daily_boundary
-from ..state_io import atomic_json
-from .health import _agent_progress_health, _candidate_progress_health, _json, _market_group, _market_overview
+from ..account_diagnostics import summarize_account, input_availability
+from .health import _json, _market_group, _market_overview
 
 class _StatusMixin:
     def _market_row_count(self, path: Path) -> int:
@@ -104,526 +99,123 @@ class _StatusMixin:
         self._gpu_snapshot = snapshot
         return snapshot
 
-    def _daily_cycle_status(self):
-        profile=self.profile or self.runtime/self.mode
-        path=profile/"agent"/"daily_account_summary.json"
-        key,next_reset=daily_boundary(hour=int(self.operating_rules["account_reset_hour_kst"]))
-        saved=_json(path)
-        if not saved:
-            # Enabling the schedule does not pretend old cumulative results
-            # are a complete day, or reset the current account mid-session.
-            saved={"session_key":key,"last_reset_utc":None,"history":[]}
-            atomic_json(saved,path)
-        return {**saved,"current_session_key":key,"next_reset_utc":next_reset,
-            "hour_kst":int(self.operating_rules["account_reset_hour_kst"]),
-            "in_progress":self.daily_cycle_pending,
-            "live_accounts_preserved":not self.operating_rules.get("daily_reset_live_accounts",False),
-            "order":"finish frozen daily competition; preserve long-term live accounts"}
-
     def status(self) -> dict:
         with self.lock:
-            profile = self.profile or (self.runtime / self.mode)
-            state, data = profile / "agent", profile / "market.csv"
-            metrics = _json(state / "metrics.json")
-            applied_rules=metrics.get("runtime_updates",{}).get("applied_rules")
-            if applied_rules: self.operating_rules=dict(applied_rules)
-            feed_metrics = _json(profile / ("live_feed_metrics.json" if self.mode == "live" else "mock_feed_metrics.json"))
-            instrument_settings=_json(self.config)
-            instruments=instrument_settings.get("instruments",[])
-            path = state / "decisions.csv"
-            decision_cache = self._latest_by_symbol(path, "decisions")
-            quote_cache = self._latest_by_symbol(data, "quotes")
-            decisions = list(decision_cache["recent"])[::-1]
-            latest_decisions = decision_cache["latest"]
-            latest_quotes = quote_cache["latest"]
-            fresh_symbols = set(feed_metrics.get("fresh_symbols_5m", []))
-            configured_symbols = {str(item.get("symbol", "")) for item in instruments}
-            instrument_status = []
-            for item in instruments:
-                symbol = item.get("symbol", "")
-                quote = latest_quotes.get(symbol)
-                decision = latest_decisions.get(symbol)
-                instrument_status.append({
-                    "symbol": symbol, "name": item.get("name"),
-                    "market": item.get("market"), "asset_class": item.get("asset_class"),
-                    "provider": item.get("provider"), "group": _market_group(item),
-                    "fresh": symbol in fresh_symbols,
-                    "quote": {key: quote.get(key) for key in ("date", "close", "volume")}
-                             if quote else None,
-                    "decision": {key: decision.get(key) for key in
-                                 ("date", "action", "p_sell", "p_hold", "p_buy", "value")}
-                                if decision else None})
-            action_direction = {"BUY": 1, "SELL": -1, "HOLD": 0}
-            model_directions = {
-                symbol: action_direction.get(row.get("action"), 0)
-                for symbol, row in latest_decisions.items()
-            }
-            paper_account = _json(state / "paper_account.json")
-            candidate_observer_account = _json(state / "candidate_observer_account.json")
-            candidate_observer_state = _json(state / "candidate_observer_state.json")
-            # The Candidate worker publishes independently of Champion's
-            # metrics writer. Read its committed cursor and the durable queue
-            # directly so catch-up is visible while the main worker is busy.
-            replay_path=state/"replay.sqlite3"
-            if replay_path.exists():
-                try:
-                    with closing(sqlite3.connect(replay_path.resolve().as_uri()+"?mode=ro",uri=True,timeout=.2)) as db:
-                        pending,oldest=db.execute("SELECT COUNT(*),MIN(stamp) FROM market_observations").fetchone()
-                        totals=dict(db.execute("SELECT name,total FROM observation_counts"))
-                        origins=dict(db.execute("SELECT role,created FROM origin_counts"))
-                    metrics["shared_observation"]={"pending":pending,"oldest":oldest,
-                        "common":totals.get("common",0),"candidate_completed":totals.get("candidate",0),
-                        "experience_origins":origins,"source":"live_db",
-                        "updated_utc":time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),
-                        "read_error":None}
-                except sqlite3.Error as exc:
-                    shared=dict(metrics.get("shared_observation") or {})
-                    shared.update(source="last_saved_metrics",
-                        updated_utc=shared.get("updated_utc") or metrics.get("last_update_utc"),
-                        read_error=type(exc).__name__)
-                    metrics["shared_observation"]=shared
-            else:
-                # Removed/archived legacy DB must not revive old dashboard counters.
-                metrics["shared_observation"]={"pending":0,"common":0,"candidate_completed":0,
-                    "experience_origins":{},"source":"empty_legacy_replay","read_error":None}
-                for key in ("replay_count","trainable_replay_count","replay_eligible_backlog",
-                            "replay_pending_count","pending_experiences","replay_file_bytes",
-                            "replay_untrained_count","replay_quarantined_count","replay_unsupported_count",
-                            "candidate_eligible_replay_count","champion_eligible_replay_count"):
-                    metrics[key]=0
-                metrics["daily_learning"]=[]
-            if candidate_observer_state.get("observation_profile"):
-                metrics["candidate_live_observation_profile"]=candidate_observer_state["observation_profile"]
-            observer_state_path=state/"candidate_observer_state.json"
-            metrics_state_path=state/"metrics.json"
-            observer_runtime_is_newer=(observer_state_path.exists() and
-                (not metrics_state_path.exists() or
-                 observer_state_path.stat().st_mtime_ns>metrics_state_path.stat().st_mtime_ns))
-            if observer_runtime_is_newer and candidate_observer_state.get("learning_live_priority_enabled"):
-                metrics["learning_priority"]=candidate_observer_state.get("gpu_scheduler",{}).get(
-                    "policy","live_inference_first_then_complete_replay_coverage")
-                for field in ("learning_wait_reason","candidate_training","champion_training","gpu_scheduler"):
-                    if field in candidate_observer_state:
-                        metrics[field]=candidate_observer_state[field]
-            candidate_observer_books = summarize_account(candidate_observer_account)["books"]
-            candidate_live_account = {
-                "available": (bool(candidate_observer_books) and
-                    candidate_observer_state.get("status") in
-                    ("observing", "training_and_observing", "context_only", "judgment_paused")),
-                "status": candidate_observer_state.get("status", "waiting_for_candidate_update"),
-                "last_timestamp": candidate_observer_state.get("last_timestamp",
-                    candidate_observer_account.get("last_timestamp")),
-                "last_observation_timestamp": candidate_observer_state.get("last_timestamp",
-                    candidate_observer_account.get("last_timestamp")),
-                "last_full_decision_timestamp": candidate_observer_state.get("last_full_decision_timestamp"),
-                "candidate_version": candidate_observer_state.get("candidate_version"),
-                "candidate_training": bool(metrics.get("candidate_training")),
-                "last_inference_seconds": candidate_observer_state.get("last_inference_seconds"),
-                "inference_count": int(metrics.get("candidate_live_inference_count", 0)),
-                "inference_seconds_total": float(metrics.get(
-                    "candidate_live_inference_seconds_total", 0.0)),
-                "queue_drops": int(metrics.get("candidate_live_queue_drops", 0)),
-                "policy_mode": candidate_observer_state.get(
-                    "policy_mode", "same_epsilon_sampling_and_random_draws_as_champion"),
-                "error": candidate_observer_state.get("error",
-                    metrics.get("candidate_live_error")),
-                "decisions": candidate_observer_state.get("last_decisions", []),
-                "recent_fills": list(candidate_observer_account.get("fills", []))[-12:],
-                "books": candidate_observer_books,
-            }
-            validation_state = _json(state / "candidate_validation.json")
-            validation_books = {}
-            validation_accounts_available = True
-            validation_initial_cash = {}
-            validation_last_timestamps = {}
-            validation_cost_signatures = {}
-            for model_name, account_file in (
-                    ("champion", "candidate_validation_champion.json"),
-                    ("candidate", "candidate_validation_candidate.json")):
-                account_path = state / account_file
-                account = _json(account_path)
-                try:
-                    validation_cost_signatures[model_name] = (
-                        str(account["execution"]),
-                        float(account["kr_sell_tax_assumption"]),
-                        float(metrics.get("fee_rate", self.fee)),
-                        float(metrics.get("slippage_bps", 1.0)))
-                except (KeyError, TypeError, ValueError):
-                    validation_cost_signatures[model_name] = None
-                validation_last_timestamps[model_name] = account.get("last_timestamp")
-                validation_initial_cash[model_name] = {
-                    currency: float(book.get("initial_cash", 0.0))
-                    for currency, book in account.get("books", {}).items()
-                }
-                validation_accounts_available = (
-                    validation_accounts_available and account_path.is_file()
-                    and bool(account.get("books")))
-                model_books = {}
-                for currency, book in account.get("books", {}).items():
-                    positions = book.get("positions", {})
-                    marks = book.get("marks", {})
-                    holdings_value = sum(
-                        float(position.get("quantity", 0.0)) * float(
-                            marks.get(symbol, position.get("average_cost", 0.0)))
-                        for symbol, position in positions.items())
-                    initial_cash = float(book.get("initial_cash", 0.0))
-                    cash = float(book.get("cash", 0.0))
-                    equity = cash + holdings_value
-                    unrealized = sum(
-                        float(position.get("quantity", 0.0)) * (
-                            float(marks.get(symbol, position.get("average_cost", 0.0)))
-                            - float(position.get("average_cost", 0.0)))
-                        for symbol, position in positions.items())
-                    model_books[currency] = {
-                        "initial_cash": initial_cash,
-                        "cash": cash,
-                        "equity": equity,
-                        "holdings_value": holdings_value,
-                        "net_pnl": equity - initial_cash,
-                        "net_return_rate": ((equity - initial_cash) / initial_cash
-                                            if initial_cash else 0.0),
-                        "realized_pnl": float(book.get("realized_pnl", 0.0)),
-                        "unrealized_pnl": unrealized,
-                        "costs": sum(float(book.get(key, 0.0)) for key in
-                                     ("fees", "sell_tax", "spread", "slippage")),
-                        "trade_count": int(book.get("trade_count", 0)),
-                        "position_count": sum(
-                            1 for position in positions.values()
-                            if float(position.get("quantity", 0.0)) != 0.0),
-                        "positions": [
-                            {"symbol": symbol,
-                             "quantity": float(position.get("quantity", 0.0))}
-                            for symbol, position in sorted(positions.items())
-                            if float(position.get("quantity", 0.0)) != 0.0
-                        ],
-                        "recent_fills": list(account.get("fills", []))[-12:],
-                    }
-                validation_books[model_name] = model_books
-            validation_comparison = {
-                "status": validation_state.get("status", "not_started"),
-                "active": bool(metrics.get("candidate_validation_active")) and
-                          validation_state.get("status") == "collecting",
-                "bars_current": int(metrics.get("candidate_validation_bars",
-                                                 validation_state.get("bars", 0)) or 0),
-                "bars_required": int(self.operating_rules["validation_min_market_minutes"]),
-                "snapshot_version": metrics.get("candidate_validation_snapshot_version",
-                                                 validation_state.get("source_candidate_version")),
-                "champion_snapshot_version":validation_state.get("source_champion_version"),
-                "started_utc":validation_state.get("started_utc"),
-                "promotion_schedule":self.operating_rules["promotion_schedule"],
-                "accounts_available": validation_accounts_available,
-                "last_timestamp": (validation_state.get("last_timestamp") or
-                                   validation_last_timestamps.get("champion")),
-                "start_after": validation_state.get("start_after"),
-                "same_market_timeline": bool(
-                    validation_state.get("same_market_timeline", False) and
-                    validation_last_timestamps.get("champion") is not None and
-                    validation_last_timestamps.get("champion") ==
-                    validation_last_timestamps.get("candidate")),
-                "same_market_input": bool(
-                    validation_state.get("same_market_input", False)),
-                "same_last_bar": bool(
-                    validation_last_timestamps.get("champion") is not None and
-                    validation_last_timestamps.get("champion") ==
-                    validation_last_timestamps.get("candidate")),
-                "same_starting_cash": bool(validation_accounts_available and
-                    validation_initial_cash.get("champion") ==
-                    validation_initial_cash.get("candidate") == SEED_CASH),
-                "fee_rate": float(metrics.get("fee_rate", self.fee)),
-                "slippage_bps": float(metrics.get("slippage_bps", 1.0)),
-                "krw_sell_tax_rate": KR_SELL_TAX_ASSUMPTION,
-                "same_cost_rules": bool(validation_accounts_available and
-                    validation_cost_signatures.get("champion") is not None and
-                    validation_cost_signatures.get("champion") ==
-                    validation_cost_signatures.get("candidate")),
-                "action_rule": "same highest-probability action; no exploration draw",
-                "same_action_rule": bool(validation_state.get("same_action_rule", False)),
-                "comparison_valid": bool(validation_state.get("comparison_valid", False)),
-                "reason": validation_state.get("reason"),
-                "last_decisions": validation_state.get("last_decisions", {}),
-                "champion": validation_books["champion"],
-                "candidate": validation_books["candidate"],
-            }
-            live_seed = {name: {
-                currency: float(book.get("initial_cash", 0.0))
-                for currency, book in account.get("books", {}).items()
-            } for name, account in (("champion", paper_account),
-                                    ("candidate", candidate_observer_account))}
-            live_account_comparison = {
-                "score_is_promotion_gate": False,
-                "same_seed_cash": live_seed["champion"] == live_seed["candidate"] == SEED_CASH,
-                "same_fee_rate": float(metrics.get("fee_rate", self.fee)),
-                "same_slippage_bps": float(metrics.get("slippage_bps", 1.0)),
-                "same_krw_sell_tax_rate": KR_SELL_TAX_ASSUMPTION,
-                "same_action_sampling": "same exploration probability and random draws for each queued market observation",
-                "candidate_snapshot_version": candidate_observer_state.get("candidate_version"),
-                "candidate_skipped_observations": int(metrics.get("candidate_live_queue_drops", 0)),
-                "shared_observation":metrics.get("shared_observation",{}),
-                "last_bar_timestamps_equal": (
-                    bool(paper_account.get("last_timestamp")) and
-                    paper_account.get("last_timestamp") ==
-                    candidate_observer_account.get("last_timestamp")),
-                "reason_not_a_fair_score": (
-                    "운영 계좌는 계속 학습하며 바뀐 여러 모델 버전의 결과를 누적합니다. "
-                    "승급 점수는 별도 고정본의 하루 승급전만 사용합니다."),
-            }
-            champion_summary=summarize_account(paper_account)
-            paper_financials=champion_summary["books"]
-            paper_positions={f"{currency}:{position['symbol']}":{**position,"currency":currency}
-                for currency,book in paper_financials.items() for position in book["positions"]}
-            probability_counts = {}
-            for row in latest_decisions.values():
-                try:
-                    signature = tuple(round(float(row[key]), 6) for key in ("p_sell", "p_hold", "p_buy"))
-                except (KeyError, TypeError, ValueError):
-                    continue
-                probability_counts[signature] = probability_counts.get(signature, 0) + 1
-            repeated = max(probability_counts.values(), default=0)
-            output_diagnostics = {
-                "symbols_with_probabilities": sum(probability_counts.values()),
-                "unique_probability_vectors": len(probability_counts),
-                "largest_identical_group": repeated,
-                "warning": repeated >= 3,
-                "note": ("확률이 같은 종목이 반복됩니다. 입력·중간 출력 원인은 별도 진단이 필요하며 행동은 자동 차단하지 않습니다."
-                         if repeated >= 3 else None),
-            }
-            learning_candidate_every = int(metrics.get("candidate_every", self.candidate_every))
-            learning_min_replay = int(metrics.get("candidate_min_replay", 8))
-            learning_min_holdout = int(self.operating_rules["validation_min_market_minutes"])
-            learning_replay = int(metrics.get("candidate_eligible_replay_count",
-                metrics.get("trainable_replay_count", metrics.get("replay_count", 0))))
-            learning_holdout = int(metrics.get("candidate_validation_bars", metrics.get("validation_window_dates", 0)))
-            learning_skip = metrics.get("candidate_skip_reason")
-            if metrics.get("candidate_training"):
-                learning_skip = (f"Candidate 학습 중 · optimizer "
-                    f"{metrics.get('candidate_optimizer_steps_current',0)}/"
-                    f"{metrics.get('candidate_optimizer_steps_target',0)}회")
-            elif not learning_skip:
-                learning_skip = (f"학습 가능한 replay {learning_replay}건 · 다음 batch 조건 확인 중")
-            learning_blocker = metrics.get("promotion_blocked_reason")
-            rows = self._market_row_count(data)
-            checkpoint = self.model_dir / "champion.pt"
-            gpu = metrics.get("cuda_device", metrics.get("device", "CPU"))
-            if metrics.get("cuda_total_memory_bytes"):
-                gpu += f" VRAM {metrics.get('cuda_memory_allocated_bytes',0)/1024**3:.1f}/{metrics['cuda_total_memory_bytes']/1024**3:.1f} GB"
-            provider_status=__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime)
+            profile=self.profile or self.runtime/self.mode
+            data=profile/"market.csv"
+            quotes=self._latest_by_symbol(data,"quotes")["latest"]
+            settings=_json(self.config)
+            instruments=settings.get("instruments",[])
+            feed=_json(profile/("live_feed_metrics.json" if self.mode=="live" else "mock_feed_metrics.json"))
+            fresh=set(feed.get("fresh_symbols_5m",[]))
+            provider=__import__("stockrl.provider_credentials",fromlist=["public_status"]).public_status(self.runtime)
             feed_running=bool(self.children.get("feed") and self.children["feed"].poll() is None)
-            agent_process_running=bool(self.children.get("agent") and self.children["agent"].poll() is None)
-            model_runtime={}
-            states=metrics.get("models",{}) if agent_process_running else {}
-            agent=self.children.get("agent")
-            # An old snapshot must never report a newly spawned worker as loaded.
-            fresh=bool(agent and metrics.get("runtime_pid")==agent.pid)
-            if agent_process_running and not fresh:
-                import psutil
-                try:fresh=agent.pid in [p.pid for p in psutil.Process(metrics.get("runtime_pid",0)).parents()]
-                except (psutil.Error,ValueError):fresh=False
+            runtime={}; accounts={}; ledgers={}; health={}; metrics={}; decisions=[]
             for role,requested in self.model_enabled.items():
-                item=dict(states.get(role,{})) if fresh else {}
-                item.setdefault("loaded",False)
-                item.setdefault("status","stopped")
-                item.update(requested=requested,checkpoint=str(self.model_dir/(role+".pt")))
-                if requested and item["status"]=="stopped":item["status"]="loading"
-                if not requested and item["loaded"]:item["status"]="saving"
-                if self.model_families.get(role)=="trading_moe":
-                    worker=self._moe_model_worker(role)
-                    native=worker.status()
-                    live=native.get("alive",False)
-                    loaded=live and native.get("load_count",0)>0
-                    item.update(status=native["status"],loaded=loaded,
-                        error=native.get("error"),device=native.get("compute",{}).get("learning_device") if loaded else None,
-                        ram_weight_bytes=native.get("worker_ram_bytes",0),
-                        gpu_weight_bytes=native.get("compute",{}).get("allocated_bytes",0) if live else 0,
-                        compute_device=native.get("compute",{}).get("inference_device"),
-                        last_decision=native.get("decision",{}).get("as_of"),
-                        source_kind="historical_paper",updated_at=native.get("updated_at"),
-                        learning_active=bool(live and native.get("learning_active")),
-                        learning=native.get("learning",{}),optimizer_updates=native.get("optimizer_updates",0),
-                        replay=native.get("replay",{}),books=native.get("books",{}),
-                        decision_seconds=native.get("decision",{}).get("seconds"),
-                        memory_scope="worker",source="TradingMoE · 공식 ETHUSDT 과거 가상매매 · 기존 주식계좌 보존")
-                    if native.get("stop_requested"):item["status"]="saving"
-                model_runtime[role]=item
-            if self.mode == "live":
-                agent_health=_agent_progress_health(data,state,agent_process_running)
-            else:
-                agent_health={"status":"healthy" if agent_process_running else "stopped",
-                              "reason":"mock agent process status" if agent_process_running else "agent process is stopped",
-                              "latest_feed_timestamp_utc":None,"agent_cursor_timestamp_utc":None,
-                              "lag_seconds":None,"lag_bars":None,"threshold_seconds":300}
-            agent_health["candidate"]=_candidate_progress_health(agent_health,metrics,agent_process_running,candidate_observer_state)
-            for role,item in model_runtime.items():
-                health=agent_health if role=="champion" else agent_health["candidate"]
-                if item["status"]!="running":
-                    health.update(status=item["status"],reason="Model lifecycle: "+item["status"],lag_seconds=None)
-                elif item.get("memory_scope")=="worker":
-                    health.update(status="healthy",reason=item["source"],lag_seconds=None,
-                                  agent_cursor_timestamp_utc=item.get("last_decision"))
-            agent_running=(agent_process_running and agent_health["status"]=="healthy")
-            candidate_summary=summarize_account(candidate_observer_account)
-            # Compatibility fields and the new view share exactly one ledger formula.
-            paper_financials=champion_summary["books"]
-            candidate_live_account["books"]=candidate_summary["books"]
-            account_observability={
-                "champion":{**champion_summary,
-                    "training":bool(agent_process_running and metrics.get("champion_training")),
-                    "version":metrics.get("champion_training_version",0),
-                    "inference_count":metrics.get("champion_live_inference_count",0),
-                    "last_inference_seconds":metrics.get("champion_live_last_inference_seconds"),
-                    "last_full_decision_timestamp":metrics.get("champion_last_full_decision_timestamp"),
-                    "skipped_observations":0,
-                    "policy":metrics.get("champion_policy_diagnostics",{}),
-                    "last_tradable_policy":metrics.get("champion_last_tradable_policy_diagnostics",{})},
-                "candidate":{**candidate_summary,
-                    "training":bool(agent_process_running and metrics.get("candidate_training")),
-                    "version":candidate_observer_state.get("candidate_version"),
-                    "inference_count":metrics.get("candidate_live_inference_count",0),
-                    "last_inference_seconds":candidate_observer_state.get("last_inference_seconds"),
-                    "inference_profile":candidate_observer_state.get("inference_profile",{}),
-                    "skipped_observations":metrics.get("candidate_live_queue_drops",0),
-                    "observer_status":candidate_observer_state.get("status"),
-                    "observer_error":candidate_live_account["error"],
-                    "last_full_decision_timestamp":candidate_observer_state.get("last_full_decision_timestamp"),
-                    "policy":candidate_observer_state.get("policy_diagnostics",{}),
-                    "last_tradable_policy":candidate_observer_state.get(
-                        "last_tradable_policy_diagnostics",{})},
-                "fee_rate":float(metrics.get("fee_rate",self.fee)),
-                "slippage_bps":float(metrics.get("slippage_bps",1.0)),
-                "krw_sell_tax_assumption":KR_SELL_TAX_ASSUMPTION,
-                "usd_round_trip_cost_rate_before_spread":2*(
-                    float(metrics.get("fee_rate",self.fee))+
-                    float(metrics.get("slippage_bps",1.0))/10000),
-                "quoted_bid_ask_symbols":valid_bid_ask_count(latest_quotes.values()),
-                "quoted_bid_ask_scope":"latest stored quotes; not necessarily fresh",
-                "minute_bar_input":True,"full_orderbook_available":False,
-                "training_experience_source":"both_independent_paper_accounts",
-                "shared_observation":metrics.get("shared_observation",{}),
-                "live_policy_mode":"probability_sampling",
-                "validation_policy_mode":"highest_probability_no_exploration",
-                "reward_horizon":self.horizon,
-                "reward_credit":metrics.get("reward_credit"),
-                "reward_horizon_scope":"legacy_short_outcomes_only_when_future_credit_enabled",
-                "real_orders_enabled":False}
-            feed_metrics["broker_provider"]=provider_status["provider"]
-            for role in ("champion","candidate"):
-                if self.model_families.get(role)!="trading_moe":continue
                 worker=self._moe_model_worker(role)
+                native=worker.status()
+                live=bool(native.get("alive")); compute=native.get("compute",{})
+                decision=native.get("decision",{}); learning=native.get("learning",{})
+                loaded=live and native.get("load_count",0)>0
+                status="saving" if native.get("stop_requested") and live else native["status"]
                 ledger=_json(worker.state/"paper_account.json")
-                if not ledger:continue
+                # Assembly publishes trial books, not the Candidate long-term ledger.
+                trial=worker.runner_script=="run_assembly_trial.py"
                 summary=summarize_account(ledger)
-                for book in summary["books"].values():
-                    for position in book["positions"]:
-                        if position["symbol"]=="ETHUSDT":
-                            position.update(quantity=position["quantity"]*.001,quantity_unit="ETH",
-                                average_cost=position["average_cost"]*1000,mark=position["mark"]*1000)
-                native=worker.status();decision=native.get("decision",{})
-                account_observability[role]={**summary,"training":bool(native.get("alive") and native.get("learning_active")),
+                books=summary["books"]
+                if trial:
+                    trial_id=native.get("assembly_candidate_id")
+                    phase=native.get("evaluation_stage")
+                    if phase not in ("replay","paper"):phase="paper"
+                    trial_root=worker.state/"assembly"/str(trial_id)/"candidate"
+                    trial_ledger=_json(trial_root/phase/"paper_account.json")
+                    if not trial_ledger:trial_ledger=_json(trial_root/"replay/paper_account.json")
+                    books=summarize_account(trial_ledger)["books"]
+                runtime[role]={"status":status,"requested":requested,"loaded":loaded,"pid":native.get("pid"),
+                    "family":"trading_moe","checkpoint":str(worker.checkpoint),"error":native.get("error"),
+                    "device":compute.get("learning_device") if loaded else None,
+                    "compute_device":compute.get("inference_device") if live else None,
+                    "ram_weight_bytes":native.get("worker_ram_bytes",0),
+                    "gpu_weight_bytes":compute.get("allocated_bytes",0) if live else 0,
+                    "last_decision":decision.get("as_of"),"decision_seconds":decision.get("seconds"),
+                    "updated_at":native.get("updated_at"),"source_kind":"historical_paper",
+                    "source":"TradingMoE · 공식 ETHUSDT 과거 가상매매" if not trial else "TradingMoE · 조립 Candidate 시험",
+                    "memory_scope":"worker","account_scope":"trial" if trial else "long_term",
+                    "learning_active":live and bool(native.get("learning_active")),"learning":learning,
+                    "optimizer_updates":native.get("optimizer_updates",0),"replay":native.get("replay",{}),"books":books}
+                accounts[role]={**summary,"books":books,"training":runtime[role]["learning_active"],
                     "version":native.get("optimizer_updates",0),"last_inference_seconds":decision.get("seconds"),
-                    "last_full_decision_timestamp":decision.get("as_of"),"policy":{},"last_tradable_policy":{}}
-            feed_metrics["provider_environment"]=provider_status["environment"]
-            if not feed_running:
-                feed_metrics["broker_connected"]=False
-            status_logs=self.log_tail[-8:]
-            if agent_health["status"] in ("stale","unknown"):
-                alert=f"AGENT ALERT: process {'alive' if agent_process_running else 'stopped'}, progress {agent_health['status']}: {agent_health['reason']}"
-                status_logs=[alert]+status_logs[-7:]
-            return {"status_updated_at":datetime.now().astimezone().isoformat(),
-                    "running": self.run_requested, "stopping": self.stopping,
-                    "restarting": self.restart_request is not None,
-                    "agent_reload_pending": self.agent_reload_pending,
-                    "mode": self.mode, "horizon": self.horizon,
-                    "feed_running": feed_running,
-                    "agent_running": agent_running,
-                    "agent_process_running": agent_process_running,
-                    "model_runtime":model_runtime,
-                    "agent_health": agent_health,
-                    "feed_rows": max(0, rows),
-                    "configured_instruments": len(instruments),
-                    "markets": _market_overview(instruments,list(latest_decisions.values()),
-                        fresh_symbols),
-                    "instruments": instrument_status,
-                    "provider":provider_status,
-                    "feed_metrics": feed_metrics, "metrics": metrics,
-                    "backtest": _json(state / "backtest.json"),
-                    "autonomy_enabled":self.autonomy_enabled,
-                    "paper_enabled":self.autonomy_enabled,
-                    "observe_enabled":self.observe_enabled,
-                    "learning_enabled":self.learning_enabled,
-                    "learning": {
-                        "candidate_learning_enabled": metrics.get("candidate_learning_enabled", True),
-                        "champion_learning_enabled":metrics.get("champion_learning_enabled",False),
-                        "dual_learning_enabled":metrics.get("dual_learning_enabled",False),
-                        "champion_training":metrics.get("champion_training",False),
-                        "champion_model_version":metrics.get("champion_training_version",0),
-                        "champion_remaining":metrics.get("champion_eligible_replay_count",0),
-                        "eligible_backlog":metrics.get("replay_eligible_backlog",learning_replay),
-                        "replay_pending_count":metrics.get("replay_pending_count",0),
-                        "replay_passes_per_model":metrics.get("candidate_replay_passes"),
-                        "reward_credit":metrics.get("reward_credit"),
-                        "multiscale_input_status":metrics.get("multiscale_input_status",{}),
-                        "blocked_replay":int(metrics.get("replay_quarantined_count",0))+int(metrics.get("replay_unsupported_count",0)),
-                        "candidate_stage": metrics.get("candidate_stage",
-                            "training" if metrics.get("candidate_training") else "waiting"),
-                        "candidate_every": learning_candidate_every,
-                        "replay_current": learning_replay,
-                        "daily_learning": metrics.get("daily_learning", []),
-                        "daily_learning_timezone": "Asia/Seoul",
-                        "replay_untrained_count": metrics.get("replay_untrained_count"),
-                        "replay_quarantined_count": metrics.get("replay_quarantined_count", 0),
-                        "replay_unsupported_count": metrics.get("replay_unsupported_count", 0),
-                        "replay_oldest_unfinished_timestamp": metrics.get("replay_oldest_unfinished_timestamp"),
-                        "replay_size_limit_enabled": metrics.get("replay_size_limit_enabled", False),
-                        "candidate_window_forwards": metrics.get("last_candidate_window_forwards"),
-                        "candidate_min_replay": learning_min_replay,
-                        "holdout_timestamps_current": learning_holdout,
-                        "holdout_timestamps_required": learning_min_holdout,
-                        "candidate_skip_reason": learning_skip,
-                        "promotion_gate_ready": metrics.get("promotion_gate_ready", False),
-                        "promotion_blocked_reason": learning_blocker,
-                        "validation_bars_current": learning_holdout,
-                        "validation_bars_required": learning_min_holdout,
-                        "candidate_training_samples": metrics.get("last_candidate_samples_trained"),
-                        "candidate_training_unique_samples": metrics.get("last_candidate_unique_samples_trained"),
-                        "candidate_training_samples_target": metrics.get("candidate_samples_target"),
-                        "candidate_optimizer_steps": metrics.get("last_candidate_optimizer_steps"),
-                        "candidate_optimizer_steps_target": metrics.get("candidate_optimizer_steps_target"),
-                        "candidate_update_seconds": metrics.get("last_candidate_update_seconds"),
-                        "candidate_peak_allocated_bytes": metrics.get("last_candidate_peak_allocated_bytes"),
-                        "candidate_baseline_allocated_bytes": metrics.get("last_candidate_baseline_allocated_bytes"),
-                        "candidate_peak_reserved_bytes": metrics.get("last_candidate_peak_reserved_bytes"),
-                        "candidate_validation_score": metrics.get("last_candidate_validation_score"),
-                        "champion_validation_score": metrics.get("last_champion_validation_score"),
-                        "candidate_score_unit": "net_return_rate",
-                        "paper_trade_count": sum(int(book.get("trade_count", 0))
-                                                  for book in paper_account.get("books", {}).values()),
-                        "paper_trade_counts_by_currency": {
-                            currency: int(book.get("trade_count", 0))
-                            for currency, book in paper_account.get("books", {}).items()},
-                        "gpu_device": metrics.get("cuda_device", metrics.get("device", "CPU")),
-                        "gpu_allocated_bytes": metrics.get("cuda_memory_allocated_bytes"),
-                        "gpu_reserved_bytes": metrics.get("cuda_memory_reserved_bytes"),
-                        "gpu_total_bytes": metrics.get("cuda_total_memory_bytes"),
-                    },
-                    "output_diagnostics": output_diagnostics,
-                    "champion_version": datetime.fromtimestamp(checkpoint.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S") if checkpoint.exists() else "seed pending",
-                    "decisions": decisions, "model_directions": model_directions,
-                    "positions": paper_positions, "paper_positions": paper_positions,
-                    "paper_financials": paper_financials, "paper_account": paper_account, "gpu": gpu,
-                    "validation_comparison": validation_comparison,
-                    "live_account_comparison": live_account_comparison,
-                    "candidate_live_account": candidate_live_account,
-                    "daily_cycle":self._daily_cycle_status(),
-                    "universe_expansion":instrument_settings.get("universe_expansion",{}),
-                    "account_observability":account_observability,
-                    "input_availability":{
-                        "configured":len(instruments),"fresh":len(fresh_symbols),
-                        "model_input":metrics.get("model_input_symbol_count"),
-                        "configured_tradable":sum(item.get("asset_class") in ("equity","etf") for item in instruments),
-                        "context_only":sum(item.get("asset_class") not in ("equity","etf") for item in instruments),
-                        "stored":input_availability(row for symbol,row in latest_quotes.items()
-                                                     if symbol in configured_symbols),
-                        "fresh_quotes":input_availability(row for symbol,row in latest_quotes.items() if symbol in fresh_symbols),
-                        "second_resolution":{"1s":False,"15s":False,"30s":False}},
-                    "real_orders_enabled": False,
-                    "physical_gpu": self._physical_gpu(),
-                    "logs": "\n".join(status_logs) or "Broker API is not connected; orders remain OFF."}
+                    "last_full_decision_timestamp":decision.get("as_of"),"account_scope":runtime[role]["account_scope"]}
+                ledgers[role]=ledger
+                health[role]={"status":"healthy" if status=="running" else status,
+                    "reason":runtime[role]["source"],"lag_seconds":None,"lag_bars":None,
+                    "agent_cursor_timestamp_utc":decision.get("as_of"),"latest_feed_timestamp_utc":None}
+                metrics[role+"_training"]=runtime[role]["learning_active"]
+                metrics[role+"_training_version"]=native.get("optimizer_updates",0)
+                metrics[role+"_update_error"]=native.get("error")
+                metrics[role+"_last_completed_round"]={"samples":learning.get("samples"),"loss":learning.get("loss"),
+                    "optimizer_updates":native.get("optimizer_updates",0)}
+                if decision:
+                    decisions.append({"symbol":"ETHUSDT","date":decision.get("as_of"),"action":decision.get("action"),
+                        "target_weight":decision.get("target_weight"),"value":decision.get("value"),"role":role})
+            assembly=getattr(self,"assembly_orchestrator",None)
+            experiment=assembly.status() if assembly else {}
+            candidate=experiment.get("candidate",{}); scores=candidate.get("scores",{})
+            paper=scores.get("paper",{}); replay_score=scores.get("replay",{})
+            evaluation=paper or replay_score
+            stage=candidate.get("evaluation_state","not_started")
+            trial={"status":stage,"active":bool(experiment.get("worker",{}).get("alive")),
+                "bars_current":evaluation.get("candidate",{}).get("decisions",0),
+                "bars_required":evaluation.get("champion",{}).get("decisions",0),
+                "snapshot_version":candidate.get("candidate_id"),
+                "champion_snapshot_version":experiment.get("champion",{}).get("candidate_id"),
+                "comparison_valid":bool(evaluation),"reason":candidate.get("reason"),
+                "champion":{},"candidate":{},"scores":scores,"source":"assembly",
+                "long_term_accounts_preserved":True}
+            latest={row["symbol"]:row for row in decisions if row["role"]=="champion"}
+            instrument_status=[]
+            for instrument in instruments:
+                symbol=instrument.get("symbol","")
+                instrument_status.append({**instrument,"group":_market_group(instrument),"fresh":symbol in fresh,
+                    "quote":quotes.get(symbol),"decision":latest.get(symbol)})
+            cr=runtime["candidate"]; ch=runtime["champion"]
+            remaining=sum(item["replay"].get("remaining_for_update",item["replay"].get("untrained",0)) for item in runtime.values())
+            learning={"candidate_learning_enabled":self.learning_enabled,"champion_learning_enabled":self.learning_enabled,
+                "dual_learning_enabled":True,"champion_training":ch["learning_active"],"candidate_training":cr["learning_active"],
+                "candidate_stage":"training" if cr["learning_active"] else cr["status"],
+                "champion_model_version":ch["optimizer_updates"],"candidate_optimizer_steps":cr["optimizer_updates"],
+                "candidate_training_samples":cr["learning"].get("samples"),"candidate_update_seconds":cr["learning"].get("seconds"),
+                "candidate_skip_reason":cr["learning"].get("reason"),"replay_current":remaining,"eligible_backlog":remaining,
+                "replay_pending_count":sum(item["replay"].get("pending",0) for item in runtime.values()),
+                "replay_quarantined_count":0,"replay_unsupported_count":0,
+                "daily_learning":ch["replay"].get("daily",[]),"multiscale_input_status":{},
+                "reward_credit":{"source":"TradingMoE paper account","definition":"cost-adjusted NAV change"},
+                "gpu_device":ch.get("compute_device") or cr.get("compute_device"),
+                "gpu_allocated_bytes":sum(item["gpu_weight_bytes"] for item in runtime.values())}
+            books=accounts["champion"]["books"]
+            positions={f"{currency}:{position['symbol']}":{**position,"currency":currency}
+                for currency,book in books.items() for position in book.get("positions",[])}
+            feed.update(broker_provider=provider["provider"],provider_environment=provider["environment"])
+            if not feed_running:feed["broker_connected"]=False
+            live=any(item.get("pid") for item in runtime.values())
+            return {"status_updated_at":datetime.now().astimezone().isoformat(),"running":self.run_requested,
+                "stopping":self.stopping,"restarting":self.restart_request is not None,"agent_reload_pending":False,
+                "mode":self.mode,"horizon":self.horizon,"feed_running":feed_running,
+                "agent_process_running":live,"agent_running":any(item["status"]=="running" for item in runtime.values()),
+                "model_runtime":runtime,"agent_health":{**health["champion"],"candidate":health["candidate"]},
+                "feed_rows":self._market_row_count(data),"configured_instruments":len(instruments),
+                "markets":_market_overview(instruments,list(latest.values()),fresh),"instruments":instrument_status,
+                "provider":provider,"feed_metrics":feed,"metrics":metrics,"backtest":{},
+                "autonomy_enabled":self.autonomy_enabled,"paper_enabled":self.autonomy_enabled,
+                "observe_enabled":self.observe_enabled,"learning_enabled":self.learning_enabled,"learning":learning,
+                "decisions":decisions,"model_directions":{s:{"BUY":1,"HOLD":0,"SELL":-1}.get(d["action"],0) for s,d in latest.items()},
+                "positions":positions,"paper_positions":positions,"paper_financials":books,"paper_account":ledgers["champion"],
+                "candidate_live_account":{**accounts["candidate"],"available":bool(accounts["candidate"]["books"]),"status":cr["status"]},
+                "account_observability":{**accounts,"fee_rate":self.fee,"real_orders_enabled":False},
+                "live_account_comparison":{"score_is_promotion_gate":False,"reason_not_a_fair_score":"승급은 조립 시험의 같은 시장·비용 구간으로 비교합니다."},
+                "validation_comparison":trial,"daily_cycle":{"automatic_account_reset":False,"history":experiment.get("history",[])},
+                "universe_expansion":settings.get("universe_expansion",{}),"output_diagnostics":{},
+                "input_availability":{"configured":len(instruments),"fresh":len(fresh),
+                    "stored":input_availability(quotes.values()),"fresh_quotes":input_availability(q for s,q in quotes.items() if s in fresh)},
+                "champion_version":ch["optimizer_updates"],"gpu":learning["gpu_device"] or "모델 정지",
+                "physical_gpu":self._physical_gpu(),"real_orders_enabled":False,"logs":"\n".join(self.log_tail[-8:])}

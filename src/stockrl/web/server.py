@@ -69,13 +69,10 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             if route == "/api/runtime":
                 state=(supervisor.profile or supervisor.runtime/supervisor.mode)/"agent"
                 from .health import _json
-                metrics=_json(state/"metrics.json")
+                current=supervisor.status()
                 return self._send({"modes":_json(state/"autonomy.json"),
-                    "runtime_updates":metrics.get("runtime_updates"),
-                    "gpu_scheduler":metrics.get("gpu_scheduler"),
-                    "learning_active_role":metrics.get("learning_active_role"),
-                    "champion_training":metrics.get("champion_training"),
-                    "candidate_training":metrics.get("candidate_training")})
+                    "models":current["model_runtime"],"champion_training":current["metrics"]["champion_training"],
+                    "candidate_training":current["metrics"]["candidate_training"]})
             if route == "/api/status":
                 return self._send(supervisor.status())
             if route == "/api/trading-moe/status":

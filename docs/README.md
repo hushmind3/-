@@ -31,3 +31,5 @@
 - [Python 코드 정리 · 호출 경로·보존 범위·검증](reports/python-code-cleanup.md)
 
 - [TradingMoE 공용 부품 분리](reports/shared-infrastructure.md)
+
+- [구형 0.5B 퇴역 · MoE 운영 역할 유지](reports/transformer-retirement.md)

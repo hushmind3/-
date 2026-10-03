@@ -102,7 +102,7 @@ def evaluate(args,model,recipe,phase,rows,native,panel,state_file):
         used.update(p["expert"] for p in packets)
         save_progress()
         publish_worker(args.state,model,bridge,decision=decision,status="running",evaluation_stage=phase,
-            assembly_candidate_id=args.candidate_id,message=phase+" · "+recipe["candidate_id"],learning_active=False,
+            evaluation_role=side,assembly_candidate_id=args.candidate_id,message=phase+" · "+recipe["candidate_id"],learning_active=False,
             selected_experts=decision["used_experts"])
         with (directory/"decisions.jsonl").open("a",encoding="utf-8") as handle:
             handle.write(json.dumps({"timestamp":stamp,"trading_output":decision["trading_output"],"NAV":book["equity"],

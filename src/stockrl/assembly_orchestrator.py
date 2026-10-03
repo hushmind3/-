@@ -501,8 +501,6 @@ class AssemblyOrchestrator:
             worker.checkpoint=self.checkpoint
             self.worker=worker
             return worker
-        if self.supervisor.model_enabled.get("candidate") and self.supervisor.model_families.get("candidate") != "trading_moe":
-            raise ValueError("기존 Candidate가 실행 중입니다. 자동실험과 동시에 사용하지 않습니다.")
         worker.checkpoint = self.checkpoint
         worker.runner_script = "run_assembly_trial.py"
         worker.extra_args = ["--assembly-root",str(self.directory)]
@@ -518,6 +516,9 @@ class AssemblyOrchestrator:
             if not enabled:
                 self.state["trial_paused"] = True
                 if self.worker:self.worker.stop()
+                if self.supervisor is not None:
+                    self.supervisor.model_enabled["candidate"]=False
+                    self.supervisor._write_autonomy()
                 self._persist()
                 return {"ok":True,"message":"현재 시험 정지 요청 · 성적과 작은 state 저장"}
             if not self.current:self.generate()

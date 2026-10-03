@@ -21,10 +21,8 @@ class SharedInfrastructureTests(unittest.TestCase):
         return json.loads(result.stdout.splitlines()[-1])
 
     def test_compatibility_paths_reference_the_same_shared_objects(self):
-        from stockrl import experience, market_panel, rewards, global_transformer
+        from stockrl import experience, market_panel, rewards
         from stockrl.online import data, rewards as old_rewards
-        self.assertIs(global_transformer.GlobalMarketPanel, market_panel.GlobalMarketPanel)
-        self.assertIs(global_transformer.GLOBAL_FEATURES, market_panel.GLOBAL_FEATURES)
         self.assertIs(data.Experience, experience.Experience)
         self.assertIs(data.MarketObservation, experience.MarketObservation)
         self.assertIs(data.parse_horizon, experience.parse_horizon)
@@ -73,7 +71,7 @@ try: cli.main()
 except SystemExit as error: assert error.code == 0
 sys.argv = ['stockrl', 'train']
 try: cli.main()
-except SystemExit as error: assert 'archived research command' in str(error)
+except SystemExit as error: assert error.code == 2
 print(json.dumps({'torch': 'torch' in sys.modules, 'legacy': 'stockrl.global_online' in sys.modules,
     'numpy': 'numpy' in sys.modules}))
 """)

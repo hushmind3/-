@@ -49,3 +49,6 @@ __pycache__/
 /frontend/node_modules/
 /frontend/coverage/
 *.tsbuildinfo
+
+# Generated UI proof images are not model inputs or source assets.
+/artifacts/experts/verification/*.png
