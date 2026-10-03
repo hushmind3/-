@@ -36,7 +36,7 @@ CPU inference: the calculation device is displayed separately.
 - Model residency and safe save/unload: `online/model_lifecycle.py`
 - Supervisor requests, feed and role process ownership: `web/runtime.py`
 - Existing TradingMoE resident worker: `web/trading_moe.py`
-- Operator buttons/state: `web/assets/controls.js`, `web/assets/accounts.js`
+- Operator buttons/state: `frontend/src/pages/Operations.tsx`, `frontend/src/components/operations.tsx`
 - Status and account projection: `web/status.py`
 
 Actual brief operations observed: feed ON with both models unloaded; Candidate

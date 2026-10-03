@@ -102,7 +102,7 @@ Official sources: [MacroHFT](https://github.com/ZongweiLiang/MacroHFT),
 | Controller update from paper reward | `moe_training.py` |
 | Consecutive run and registry publishing | `scripts/run_native_vertical_trading.py` |
 | Dedicated worker lifecycle/API | `web/trading_moe.py`, `web/server.py` |
-| Dedicated operating screen | `web/assets/trading-moe.js`, `web_dashboard.html` |
+| Dedicated operating screen | `frontend/src/pages/TradingMoE.tsx` |
 
 Local logs: `cycles.jsonl` and `report.json` under the chosen state path. The
 tracked result summary records actual numbers. No additional long validation or
