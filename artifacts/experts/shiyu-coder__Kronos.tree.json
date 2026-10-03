@@ -1,0 +1,962 @@
+{
+  "repo": {
+    "id": 1011567289,
+    "node_id": "R_kgDOPEtKuQ",
+    "name": "Kronos",
+    "full_name": "shiyu-coder/Kronos",
+    "private": false,
+    "owner": {
+      "login": "shiyu-coder",
+      "id": 65760973,
+      "node_id": "MDQ6VXNlcjY1NzYwOTcz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/65760973?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/shiyu-coder",
+      "html_url": "https://github.com/shiyu-coder",
+      "followers_url": "https://api.github.com/users/shiyu-coder/followers",
+      "following_url": "https://api.github.com/users/shiyu-coder/following{/other_user}",
+      "gists_url": "https://api.github.com/users/shiyu-coder/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/shiyu-coder/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/shiyu-coder/subscriptions",
+      "organizations_url": "https://api.github.com/users/shiyu-coder/orgs",
+      "repos_url": "https://api.github.com/users/shiyu-coder/repos",
+      "events_url": "https://api.github.com/users/shiyu-coder/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/shiyu-coder/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/shiyu-coder/Kronos",
+    "description": "Kronos: A Foundation Model for the Language of Financial Markets",
+    "fork": false,
+    "url": "https://api.github.com/repos/shiyu-coder/Kronos",
+    "forks_url": "https://api.github.com/repos/shiyu-coder/Kronos/forks",
+    "keys_url": "https://api.github.com/repos/shiyu-coder/Kronos/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/shiyu-coder/Kronos/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/shiyu-coder/Kronos/teams",
+    "hooks_url": "https://api.github.com/repos/shiyu-coder/Kronos/hooks",
+    "issue_events_url": "https://api.github.com/repos/shiyu-coder/Kronos/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/shiyu-coder/Kronos/events",
+    "assignees_url": "https://api.github.com/repos/shiyu-coder/Kronos/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/shiyu-coder/Kronos/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/shiyu-coder/Kronos/tags",
+    "blobs_url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/shiyu-coder/Kronos/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/shiyu-coder/Kronos/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/shiyu-coder/Kronos/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/shiyu-coder/Kronos/languages",
+    "stargazers_url": "https://api.github.com/repos/shiyu-coder/Kronos/stargazers",
+    "contributors_url": "https://api.github.com/repos/shiyu-coder/Kronos/contributors",
+    "subscribers_url": "https://api.github.com/repos/shiyu-coder/Kronos/subscribers",
+    "subscription_url": "https://api.github.com/repos/shiyu-coder/Kronos/subscription",
+    "commits_url": "https://api.github.com/repos/shiyu-coder/Kronos/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/shiyu-coder/Kronos/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/shiyu-coder/Kronos/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/shiyu-coder/Kronos/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/shiyu-coder/Kronos/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/shiyu-coder/Kronos/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/shiyu-coder/Kronos/merges",
+    "archive_url": "https://api.github.com/repos/shiyu-coder/Kronos/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/shiyu-coder/Kronos/downloads",
+    "issues_url": "https://api.github.com/repos/shiyu-coder/Kronos/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/shiyu-coder/Kronos/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/shiyu-coder/Kronos/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/shiyu-coder/Kronos/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/shiyu-coder/Kronos/labels{/name}",
+    "releases_url": "https://api.github.com/repos/shiyu-coder/Kronos/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/shiyu-coder/Kronos/deployments",
+    "created_at": "2025-07-01T02:54:32Z",
+    "updated_at": "2026-10-02T11:27:05Z",
+    "pushed_at": "2026-04-13T12:38:49Z",
+    "git_url": "git://github.com/shiyu-coder/Kronos.git",
+    "ssh_url": "git@github.com:shiyu-coder/Kronos.git",
+    "clone_url": "https://github.com/shiyu-coder/Kronos.git",
+    "svn_url": "https://github.com/shiyu-coder/Kronos",
+    "homepage": null,
+    "size": 9539,
+    "stargazers_count": 39822,
+    "watchers_count": 39822,
+    "language": "Python",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 6629,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 281,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [],
+    "visibility": "public",
+    "forks": 6629,
+    "open_issues": 281,
+    "watchers": 39822,
+    "default_branch": "master",
+    "temp_clone_token": null,
+    "network_count": 6629,
+    "subscribers_count": 349
+  },
+  "tree": {
+    "sha": "67b630e67f6a18c9e9be918d9b4337c960db1e9a",
+    "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/67b630e67f6a18c9e9be918d9b4337c960db1e9a",
+    "tree": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "68871c9720b677547ba8d4e3110b0a35d2a5e7f0",
+        "size": 619,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/68871c9720b677547ba8d4e3110b0a35d2a5e7f0"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "88b04125e828241d8aada64bfe7f700bb03bcef8",
+        "size": 1062,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/88b04125e828241d8aada64bfe7f700bb03bcef8"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "faffa1578cf0172f6b88f5db8a9b1205668ffef1",
+        "size": 16657,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/faffa1578cf0172f6b88f5db8a9b1205668ffef1"
+      },
+      {
+        "path": "examples",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "54202d4de01f3ed0de6046b3c9fede46bcb53226",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/54202d4de01f3ed0de6046b3c9fede46bcb53226"
+      },
+      {
+        "path": "examples/get_akshare_date_2024-2025_x.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "070ecf891cf08e21f7b7ade018db6cb8ac80fbad",
+        "size": 22761,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/070ecf891cf08e21f7b7ade018db6cb8ac80fbad"
+      },
+      {
+        "path": "examples/get_date_new.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "28199609516e2ed7f6cbb1b36289a04cfd652637",
+        "size": 24268,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/28199609516e2ed7f6cbb1b36289a04cfd652637"
+      },
+      {
+        "path": "examples/prediction_akshare_2024-2025.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6b83eb2b53d02ad24fb5d0b52fc852b1b209b5f4",
+        "size": 22647,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/6b83eb2b53d02ad24fb5d0b52fc852b1b209b5f4"
+      },
+      {
+        "path": "examples/prediction_batch_example.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "29a74334b52d654558d6c9ad9c119fc8aabacf22",
+        "size": 2312,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/29a74334b52d654558d6c9ad9c119fc8aabacf22"
+      },
+      {
+        "path": "examples/prediction_cn_markets_day.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "93b28f9f1962a5a7ebfdf074c96ede3ca9470ee0",
+        "size": 6514,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/93b28f9f1962a5a7ebfdf074c96ede3ca9470ee0"
+      },
+      {
+        "path": "examples/prediction_example.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "880f22b86343c0fb776efa46d183d7a8c5089061",
+        "size": 2457,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/880f22b86343c0fb776efa46d183d7a8c5089061"
+      },
+      {
+        "path": "examples/prediction_new.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3646d9802803f5f96420eaa66a8aaab50cbb9bdb",
+        "size": 52593,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/3646d9802803f5f96420eaa66a8aaab50cbb9bdb"
+      },
+      {
+        "path": "examples/prediction_new_GUI.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2eab61811ffd91b4eebd1d3b54ba02561b9088ca",
+        "size": 65400,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/2eab61811ffd91b4eebd1d3b54ba02561b9088ca"
+      },
+      {
+        "path": "examples/prediction_wo_vol_example.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3e5624e121aff62b7bf901a1699ff227c4ccd267",
+        "size": 1918,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/3e5624e121aff62b7bf901a1699ff227c4ccd267"
+      },
+      {
+        "path": "examples/run_backtest_kronos.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2e34157f6e5c79cb25d564e6df2ad50e599d7230",
+        "size": 16811,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/2e34157f6e5c79cb25d564e6df2ad50e599d7230"
+      },
+      {
+        "path": "examples/yuce",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7d6d56d1145f71327a5918d275fa22262819ea03",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/7d6d56d1145f71327a5918d275fa22262819ea03"
+      },
+      {
+        "path": "examples/yuce/000021_comprehensive_analysis_report.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "956297b01d27f718773820802426ef2c3465ad01",
+        "size": 1793,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/956297b01d27f718773820802426ef2c3465ad01"
+      },
+      {
+        "path": "examples/yuce/000021_optimized_prediction.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1599c3e3730d1ac97034230c705d25fafef20638",
+        "size": 877297,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1599c3e3730d1ac97034230c705d25fafef20638"
+      },
+      {
+        "path": "examples/yuce/002354_comprehensive_analysis_report.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6b4c3c9bfe39139bc6e4d1740d6be6b7eefc0b3b",
+        "size": 1796,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/6b4c3c9bfe39139bc6e4d1740d6be6b7eefc0b3b"
+      },
+      {
+        "path": "examples/yuce/002354_optimized_prediction.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5d1120db7d497a0110d070f9a906315ed93c11e9",
+        "size": 962962,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/5d1120db7d497a0110d070f9a906315ed93c11e9"
+      },
+      {
+        "path": "examples/yuce/300207_comprehensive_analysis_report.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2e028ef69e33615c0be04630180b058969db76ad",
+        "size": 2022,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/2e028ef69e33615c0be04630180b058969db76ad"
+      },
+      {
+        "path": "examples/yuce/300207_optimized_prediction.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "53b33cae1e6c5cf05be9a8a15faa06916a227479",
+        "size": 794966,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/53b33cae1e6c5cf05be9a8a15faa06916a227479"
+      },
+      {
+        "path": "examples/yuce/600580_comprehensive_analysis_report.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b153ba0fde8857ebfbb7bd244bbffea1ea31cf5f",
+        "size": 2937,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/b153ba0fde8857ebfbb7bd244bbffea1ea31cf5f"
+      },
+      {
+        "path": "examples/yuce/600580_optimized_prediction.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2b18657648d873e764eaeb09d436779be23268a5",
+        "size": 910964,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/2b18657648d873e764eaeb09d436779be23268a5"
+      },
+      {
+        "path": "examples/yuce/historical_backtest.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "72bb53432c07a45e132440420eca4b4ba349d5a5",
+        "size": 14807,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/72bb53432c07a45e132440420eca4b4ba349d5a5"
+      },
+      {
+        "path": "examples/yuce/market_analysis_report.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a1f14841beadd29542162b326d669658334d2148",
+        "size": 1084,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/a1f14841beadd29542162b326d669658334d2148"
+      },
+      {
+        "path": "figures",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d6fb87e8ffa0b0571829af40cc8c274151eadc3f",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/d6fb87e8ffa0b0571829af40cc8c274151eadc3f"
+      },
+      {
+        "path": "figures/backtest_result_example.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "055a2e47f752a9a866e3eaefe2a51f33f055b867",
+        "size": 499292,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/055a2e47f752a9a866e3eaefe2a51f33f055b867"
+      },
+      {
+        "path": "figures/logo.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "12851cea19bb548e94a87ea44499848d0c4e1923",
+        "size": 871803,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/12851cea19bb548e94a87ea44499848d0c4e1923"
+      },
+      {
+        "path": "figures/overview.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "afc0b523c05e5b6e1b6a962608032cd460289a96",
+        "size": 1254487,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/afc0b523c05e5b6e1b6a962608032cd460289a96"
+      },
+      {
+        "path": "figures/prediction_example.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9d000e093feab78ae53892d969e5435a1d0f2b97",
+        "size": 193945,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/9d000e093feab78ae53892d969e5435a1d0f2b97"
+      },
+      {
+        "path": "finetune",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "57e9d9effad2fd3c40051fe52450d67675ad3c50",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/57e9d9effad2fd3c40051fe52450d67675ad3c50"
+      },
+      {
+        "path": "finetune/config.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "04cc3ee312ef4bc4f77d13e02cb8a8be6bf5a2e0",
+        "size": 6247,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/04cc3ee312ef4bc4f77d13e02cb8a8be6bf5a2e0"
+      },
+      {
+        "path": "finetune/dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ae4f7242b4f36e3eb74c744714c2815422028d7f",
+        "size": 5434,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/ae4f7242b4f36e3eb74c744714c2815422028d7f"
+      },
+      {
+        "path": "finetune/qlib_data_preprocess.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7fe6147be522302dd3e85aa80a71f0047df72402",
+        "size": 5645,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/7fe6147be522302dd3e85aa80a71f0047df72402"
+      },
+      {
+        "path": "finetune/qlib_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "97aebe419d67f9b884fbd508d0685174fa487946",
+        "size": 15140,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/97aebe419d67f9b884fbd508d0685174fa487946"
+      },
+      {
+        "path": "finetune/train_predictor.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "47eddc91f58fd72db97ecc65da5372997b56e04a",
+        "size": 10026,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/47eddc91f58fd72db97ecc65da5372997b56e04a"
+      },
+      {
+        "path": "finetune/train_tokenizer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "60186e1ea7e6af179648a10af3ba507b1d7addca",
+        "size": 11455,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/60186e1ea7e6af179648a10af3ba507b1d7addca"
+      },
+      {
+        "path": "finetune/utils",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ee410cd7884e6c2f4d46c848f29037344abe2ebf",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/ee410cd7884e6c2f4d46c848f29037344abe2ebf"
+      },
+      {
+        "path": "finetune/utils/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "finetune/utils/training_utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8756322adc2784445aedb4063be56e16e92bed18",
+        "size": 3830,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/8756322adc2784445aedb4063be56e16e92bed18"
+      },
+      {
+        "path": "finetune_csv",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "51da5534243b443e321355cfd103f45905480d80",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/51da5534243b443e321355cfd103f45905480d80"
+      },
+      {
+        "path": "finetune_csv/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f9e58a900c38b6e9796137474d1f072b9b7e773b",
+        "size": 3959,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/f9e58a900c38b6e9796137474d1f072b9b7e773b"
+      },
+      {
+        "path": "finetune_csv/README_CN.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4f70653bece67181ce313ac514aa9c056f9e4bda",
+        "size": 3650,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/4f70653bece67181ce313ac514aa9c056f9e4bda"
+      },
+      {
+        "path": "finetune_csv/config_loader.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6bddcaeea0de0fdcbbe826c3d1d669d1232ac351",
+        "size": 11688,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/6bddcaeea0de0fdcbbe826c3d1d669d1232ac351"
+      },
+      {
+        "path": "finetune_csv/configs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "64f5abd8dca9ba6d02fc1723e82050b5549ea56b",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/64f5abd8dca9ba6d02fc1723e82050b5549ea56b"
+      },
+      {
+        "path": "finetune_csv/configs/config_ali09988_candle-5min.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "14774d2c67e98d11a741d2d7f66696a1a81b4c90",
+        "size": 2132,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/14774d2c67e98d11a741d2d7f66696a1a81b4c90"
+      },
+      {
+        "path": "finetune_csv/data",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5822ab41581091cba03a5196b14be51c6933a17b",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/5822ab41581091cba03a5196b14be51c6933a17b"
+      },
+      {
+        "path": "finetune_csv/data/HK_ali_09988_kline_5min_all.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "00eaebdd4863fa3749c986570554ad5a03bf49dc",
+        "size": 5852037,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/00eaebdd4863fa3749c986570554ad5a03bf49dc"
+      },
+      {
+        "path": "finetune_csv/examples",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b65bb14bb349a9dae1e3f52c7bb63aa9b7a722b3",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/b65bb14bb349a9dae1e3f52c7bb63aa9b7a722b3"
+      },
+      {
+        "path": "finetune_csv/examples/HK_ali_09988_kline_5min_all_historical_20250919_073929.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f5bc0e3ccaafacc9132ce5ed95c486caf5421790",
+        "size": 485286,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/f5bc0e3ccaafacc9132ce5ed95c486caf5421790"
+      },
+      {
+        "path": "finetune_csv/examples/HK_ali_09988_kline_5min_all_historical_20250919_073944.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "199d9806ec71deb2d546c0b719871652d19e8abd",
+        "size": 484003,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/199d9806ec71deb2d546c0b719871652d19e8abd"
+      },
+      {
+        "path": "finetune_csv/examples/HK_ali_09988_kline_5min_all_historical_20250919_074012.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "41c571aa67fea10336d87e674d5fe5ebb2463a78",
+        "size": 339080,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/41c571aa67fea10336d87e674d5fe5ebb2463a78"
+      },
+      {
+        "path": "finetune_csv/examples/HK_ali_09988_kline_5min_all_historical_20250919_074042.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "67f2e14ba01855eada7d076ad427e8af3f61d68f",
+        "size": 459975,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/67f2e14ba01855eada7d076ad427e8af3f61d68f"
+      },
+      {
+        "path": "finetune_csv/examples/HK_ali_09988_kline_5min_all_historical_20250919_074251.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b6f88499947d15b45f693e70c9884c3e444288fb",
+        "size": 543005,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/b6f88499947d15b45f693e70c9884c3e444288fb"
+      },
+      {
+        "path": "finetune_csv/finetune_base_model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d21c22dbf6f5c9b21256ee419ad6f69c1ece64c3",
+        "size": 19127,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/d21c22dbf6f5c9b21256ee419ad6f69c1ece64c3"
+      },
+      {
+        "path": "finetune_csv/finetune_tokenizer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e160f12e4d23f141938d2a7ca5959d24a117e24d",
+        "size": 13741,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/e160f12e4d23f141938d2a7ca5959d24a117e24d"
+      },
+      {
+        "path": "finetune_csv/train_sequential.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "533f66a137622cdcba1f4eb5b652de3659c18a70",
+        "size": 15358,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/533f66a137622cdcba1f4eb5b652de3659c18a70"
+      },
+      {
+        "path": "model",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "19c44fb3011ec39cdc13b93586255276921024d8",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/19c44fb3011ec39cdc13b93586255276921024d8"
+      },
+      {
+        "path": "model/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "718d07a21b53b7eff4a6564e6dfcae8ee7e8c6b1",
+        "size": 412,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/718d07a21b53b7eff4a6564e6dfcae8ee7e8c6b1"
+      },
+      {
+        "path": "model/kronos.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ce4494ee0b3ec8751b09d5488c93bde995e008e0",
+        "size": 30133,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/ce4494ee0b3ec8751b09d5488c93bde995e008e0"
+      },
+      {
+        "path": "model/module.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f2a05158b48a56e9235426f6583e384360d761f9",
+        "size": 23426,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/f2a05158b48a56e9235426f6583e384360d761f9"
+      },
+      {
+        "path": "requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "598a3dedc6fd70f9fe9e5a79c706b4f891569fb3",
+        "size": 129,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/598a3dedc6fd70f9fe9e5a79c706b4f891569fb3"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ab824b9647e89378859479d1d76b8b881f6b8f21",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/ab824b9647e89378859479d1d76b8b881f6b8f21"
+      },
+      {
+        "path": "tests/data",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7f836de97f527d07be316b4f7c35a82e30aac667",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/7f836de97f527d07be316b4f7c35a82e30aac667"
+      },
+      {
+        "path": "tests/data/generate_regression_output.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3a2e7e82d3d3e7bb49a511bf5f17511c1489a642",
+        "size": 2814,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/3a2e7e82d3d3e7bb49a511bf5f17511c1489a642"
+      },
+      {
+        "path": "tests/data/regression_input.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "37ed89da1dd39adce345694521ea93adc16266bb",
+        "size": 147854,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/37ed89da1dd39adce345694521ea93adc16266bb"
+      },
+      {
+        "path": "tests/data/regression_output_256.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f2d726fd7bb1a6603ecaf90e50ecd60b1df6844b",
+        "size": 674,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/f2d726fd7bb1a6603ecaf90e50ecd60b1df6844b"
+      },
+      {
+        "path": "tests/data/regression_output_512.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cdeebf176b2a4ca53a744cff6672896f51619cad",
+        "size": 673,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/cdeebf176b2a4ca53a744cff6672896f51619cad"
+      },
+      {
+        "path": "tests/test_kronos_regression.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7fccbffd79ddbbc014dadeac9d63f829a87ae944",
+        "size": 5326,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/7fccbffd79ddbbc014dadeac9d63f829a87ae944"
+      },
+      {
+        "path": "webui",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d9be1228938300c007ed4b6add885978cc5e0489",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/d9be1228938300c007ed4b6add885978cc5e0489"
+      },
+      {
+        "path": "webui/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "571d93eb51b188e206206c4fec688be1a648159d",
+        "size": 4120,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/571d93eb51b188e206206c4fec688be1a648159d"
+      },
+      {
+        "path": "webui/app.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d240a3729d324799bef30f48cfbcdb436a453fff",
+        "size": 30464,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/d240a3729d324799bef30f48cfbcdb436a453fff"
+      },
+      {
+        "path": "webui/prediction_results",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7e04a2cc7a4e3bf29a138b26838c0897414a29b2",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/7e04a2cc7a4e3bf29a138b26838c0897414a29b2"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_163800.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5c3f7badb2b9d2234f5e8d94fab525b209a2a10d",
+        "size": 53680,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/5c3f7badb2b9d2234f5e8d94fab525b209a2a10d"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_164030.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1f5433659052c0eedc0e9f66be9fbfe0d5b9c007",
+        "size": 53423,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1f5433659052c0eedc0e9f66be9fbfe0d5b9c007"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_164422.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cc55ba7dfd4750fc12a8d3ba0552f7a100bea796",
+        "size": 53885,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/cc55ba7dfd4750fc12a8d3ba0552f7a100bea796"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_170831.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "72f74f21dd36a0950c7530085f91ed7339a6044d",
+        "size": 54467,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/72f74f21dd36a0950c7530085f91ed7339a6044d"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_171720.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c4e1bfb5d4b440cc5d091ef862318d146c1b23ac",
+        "size": 54467,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/c4e1bfb5d4b440cc5d091ef862318d146c1b23ac"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_171913.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6c7873a06cb4f3c9d8b3278006a7c8136888c453",
+        "size": 54467,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/6c7873a06cb4f3c9d8b3278006a7c8136888c453"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_172031.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "671b155269de0e5bb982c8150e21b985227ad119",
+        "size": 54357,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/671b155269de0e5bb982c8150e21b985227ad119"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_172153.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e94ba88ced4981feb04f09342fd3104d983b8e0e",
+        "size": 54647,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/e94ba88ced4981feb04f09342fd3104d983b8e0e"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_172740.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4be2fef6a61850a05d443560d564d52e312b16b1",
+        "size": 54979,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/4be2fef6a61850a05d443560d564d52e312b16b1"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_173322.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3b4e3198f5ecd3ec62d790d73a59915b9d0b132d",
+        "size": 54983,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/3b4e3198f5ecd3ec62d790d73a59915b9d0b132d"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_173455.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1ae7835b36be30bae2bf6d3ba5014dc98bea2cde",
+        "size": 54937,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1ae7835b36be30bae2bf6d3ba5014dc98bea2cde"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_174410.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1c53b1e27aac1d0b970d0bfec6a3d24e2810c208",
+        "size": 54826,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1c53b1e27aac1d0b970d0bfec6a3d24e2810c208"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_174809.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "88c7bccb045694a1e78073aadfdce96324c2cce7",
+        "size": 54826,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/88c7bccb045694a1e78073aadfdce96324c2cce7"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_175057.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "db15fdc3819db126e84432d5ee9a17fb30ad44ea",
+        "size": 54821,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/db15fdc3819db126e84432d5ee9a17fb30ad44ea"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_175135.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d2097d1a864a1dcd17c3f93b5b4b55bcb2682b68",
+        "size": 54636,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/d2097d1a864a1dcd17c3f93b5b4b55bcb2682b68"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_175909.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bfdb7916ab095a0f5aba01520e37a623cfd628f3",
+        "size": 53086,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/bfdb7916ab095a0f5aba01520e37a623cfd628f3"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_180308.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1ef1dc3b8558caf585368d8b61d1cd22332d84ba",
+        "size": 53086,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1ef1dc3b8558caf585368d8b61d1cd22332d84ba"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_180632.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "71095bf9d57f03f7e12e49edcd25be742c0337cb",
+        "size": 53810,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/71095bf9d57f03f7e12e49edcd25be742c0337cb"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_180745.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0025d1e32a0b8571e891305c6c0f565562d6a84b",
+        "size": 53701,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/0025d1e32a0b8571e891305c6c0f565562d6a84b"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_180806.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1e42b136627e23dc743af5f6d778af19bfec1183",
+        "size": 53488,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/1e42b136627e23dc743af5f6d778af19bfec1183"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181012.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48dacc20c25d483326ea9645c7affd95af22c573",
+        "size": 53498,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/48dacc20c25d483326ea9645c7affd95af22c573"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181139.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "590c834ebe65fcf66dd2890bfc60a73cfcc1deab",
+        "size": 53617,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/590c834ebe65fcf66dd2890bfc60a73cfcc1deab"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181240.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "337c03bca75cf0b285b34d5d08202b373cc0d244",
+        "size": 53765,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/337c03bca75cf0b285b34d5d08202b373cc0d244"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181434.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0b370d85136a4489b69aeb953113d2b169205149",
+        "size": 52890,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/0b370d85136a4489b69aeb953113d2b169205149"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181513.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e2b098dd66eec153cf0e25901d3d9d0d923e6315",
+        "size": 53442,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/e2b098dd66eec153cf0e25901d3d9d0d923e6315"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181612.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5e1305643534f94dbb61848d84ae22b6c5321725",
+        "size": 53591,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/5e1305643534f94dbb61848d84ae22b6c5321725"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181648.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e3eea8ddc2e5371598e1a11f3a5430b27a09aa9e",
+        "size": 53650,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/e3eea8ddc2e5371598e1a11f3a5430b27a09aa9e"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181800.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "27569fd4a6546ea8a9ce8d5963563967d949dbf2",
+        "size": 53657,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/27569fd4a6546ea8a9ce8d5963563967d949dbf2"
+      },
+      {
+        "path": "webui/prediction_results/prediction_20250826_181932.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "84d0d1d2ce77d1eb4c642a6582180c770017bf7e",
+        "size": 53459,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/84d0d1d2ce77d1eb4c642a6582180c770017bf7e"
+      },
+      {
+        "path": "webui/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8a47f81c615820f67b05b145e7d1a1efee152cf3",
+        "size": 111,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/8a47f81c615820f67b05b145e7d1a1efee152cf3"
+      },
+      {
+        "path": "webui/run.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "64a7b1670991c8d14ede78362aafdc5b2d895a0e",
+        "size": 2608,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/64a7b1670991c8d14ede78362aafdc5b2d895a0e"
+      },
+      {
+        "path": "webui/start.sh",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "0d832b3729072269ea598a0f3b52907a97f5faf2",
+        "size": 1007,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/0d832b3729072269ea598a0f3b52907a97f5faf2"
+      },
+      {
+        "path": "webui/templates",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b8d821f3d6ea528ba840377400bb9e8b138ee459",
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/trees/b8d821f3d6ea528ba840377400bb9e8b138ee459"
+      },
+      {
+        "path": "webui/templates/index.html",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dd24a49e5d347cf68d6d2f57af5f02c75e5be519",
+        "size": 45997,
+        "url": "https://api.github.com/repos/shiyu-coder/Kronos/git/blobs/dd24a49e5d347cf68d6d2f57af5f02c75e5be519"
+      }
+    ],
+    "truncated": false
+  }
+}

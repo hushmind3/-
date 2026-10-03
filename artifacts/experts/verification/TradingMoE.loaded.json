@@ -1,0 +1,86 @@
+{
+  "checkpoint": "C:\\Users\\hushm\\Desktop\\모델\\TradingMoE.pt",
+  "bytes": 8014038019,
+  "seconds": 25.365915399997903,
+  "experts": {
+    "fincast": {
+      "parameters": 991436960,
+      "hash": null,
+      "frozen": true
+    },
+    "exaone": {
+      "parameters": 202319520,
+      "hash": null,
+      "frozen": true
+    },
+    "kronos": {
+      "parameters": 106268634,
+      "hash": null,
+      "frozen": true
+    },
+    "marketgpt": {
+      "parameters": 94292736,
+      "hash": null,
+      "frozen": true
+    },
+    "chronos": {
+      "parameters": 46154240,
+      "hash": null,
+      "frozen": true
+    },
+    "timesfm": {
+      "parameters": 19809304,
+      "hash": null,
+      "frozen": true
+    },
+    "timemoe": {
+      "parameters": 453196800,
+      "hash": null,
+      "frozen": true
+    },
+    "toto": {
+      "parameters": 312684608,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_slope_1": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_slope_2": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_slope_3": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_vol_1": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_vol_2": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    },
+    "macrophft_vol_3": {
+      "parameters": 45507,
+      "hash": null,
+      "frozen": true
+    }
+  },
+  "parameters": 2227295521,
+  "expert_count": 14,
+  "controller_parameters": 835119,
+  "max_gpu_experts": 1,
+  "expert_probes_rerun": 0,
+  "load_from_one_checkpoint": true,
+  "optimizer_updates": 40,
+  "controller_hash": "3bc85f70d7d7d46dfcc19980c386e39925a047decda00ca7ca1c13ca0eda8f3d",
+  "optimizer_restored": true
+}

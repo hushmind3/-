@@ -1,0 +1,145 @@
+[
+  {
+    "repo": "TradeMaster-NTU/EarnHFT",
+    "releases": []
+  },
+  {
+    "repo": "ZONG0004/MacroHFT",
+    "releases": []
+  },
+  {
+    "repo": "DVampire/EarnMore",
+    "releases": []
+  },
+  {
+    "repo": "TradeMaster-NTU/TradeMaster",
+    "releases": [
+      {
+        "url": "https://api.github.com/repos/TradeMaster-NTU/TradeMaster/releases/94541663",
+        "assets_url": "https://api.github.com/repos/TradeMaster-NTU/TradeMaster/releases/94541663/assets",
+        "upload_url": "https://uploads.github.com/repos/TradeMaster-NTU/TradeMaster/releases/94541663/assets{?name,label}",
+        "html_url": "https://github.com/TradeMaster-NTU/TradeMaster/releases/tag/v1.0.0",
+        "id": 94541663,
+        "author": {
+          "login": "DVampire",
+          "id": 14372011,
+          "node_id": "MDQ6VXNlcjE0MzcyMDEx",
+          "avatar_url": "https://avatars.githubusercontent.com/u/14372011?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/DVampire",
+          "html_url": "https://github.com/DVampire",
+          "followers_url": "https://api.github.com/users/DVampire/followers",
+          "following_url": "https://api.github.com/users/DVampire/following{/other_user}",
+          "gists_url": "https://api.github.com/users/DVampire/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/DVampire/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/DVampire/subscriptions",
+          "organizations_url": "https://api.github.com/users/DVampire/orgs",
+          "repos_url": "https://api.github.com/users/DVampire/repos",
+          "events_url": "https://api.github.com/users/DVampire/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/DVampire/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "node_id": "RE_kwDOH3iLGM4Fopdf",
+        "tag_name": "v1.0.0",
+        "target_commitish": "1.0.0",
+        "name": "v1.0.0",
+        "draft": false,
+        "immutable": false,
+        "prerelease": false,
+        "created_at": "2023-03-05T07:23:53Z",
+        "updated_at": "2023-03-05T07:27:33Z",
+        "published_at": "2023-03-05T07:24:06Z",
+        "assets": [],
+        "tarball_url": "https://api.github.com/repos/TradeMaster-NTU/TradeMaster/tarball/v1.0.0",
+        "zipball_url": "https://api.github.com/repos/TradeMaster-NTU/TradeMaster/zipball/v1.0.0",
+        "body": "We released the first stable version of TradeMaster v1.0.0"
+      }
+    ]
+  },
+  {
+    "repo": "ZhengyaoJiang/PGPortfolio",
+    "releases": [
+      {
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/releases/8698047",
+        "assets_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/releases/8698047/assets",
+        "upload_url": "https://uploads.github.com/repos/ZhengyaoJiang/PGPortfolio/releases/8698047/assets{?name,label}",
+        "html_url": "https://github.com/ZhengyaoJiang/PGPortfolio/releases/tag/v1.0",
+        "id": 8698047,
+        "author": {
+          "login": "ZhengyaoJiang",
+          "id": 15139574,
+          "node_id": "MDQ6VXNlcjE1MTM5NTc0",
+          "avatar_url": "https://avatars.githubusercontent.com/u/15139574?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/ZhengyaoJiang",
+          "html_url": "https://github.com/ZhengyaoJiang",
+          "followers_url": "https://api.github.com/users/ZhengyaoJiang/followers",
+          "following_url": "https://api.github.com/users/ZhengyaoJiang/following{/other_user}",
+          "gists_url": "https://api.github.com/users/ZhengyaoJiang/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/ZhengyaoJiang/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/ZhengyaoJiang/subscriptions",
+          "organizations_url": "https://api.github.com/users/ZhengyaoJiang/orgs",
+          "repos_url": "https://api.github.com/users/ZhengyaoJiang/repos",
+          "events_url": "https://api.github.com/users/ZhengyaoJiang/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/ZhengyaoJiang/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "node_id": "MDc6UmVsZWFzZTg2OTgwNDc=",
+        "tag_name": "v1.0",
+        "target_commitish": "master",
+        "name": "First release.",
+        "draft": false,
+        "immutable": false,
+        "prerelease": true,
+        "created_at": "2017-11-28T14:35:20Z",
+        "updated_at": "2017-11-29T10:30:06Z",
+        "published_at": "2017-11-29T10:29:38Z",
+        "assets": [
+          {
+            "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/releases/assets/5476405",
+            "id": 5476405,
+            "node_id": "MDEyOlJlbGVhc2VBc3NldDU0NzY0MDU=",
+            "name": "Data.db",
+            "label": null,
+            "uploader": {
+              "login": "ZhengyaoJiang",
+              "id": 15139574,
+              "node_id": "MDQ6VXNlcjE1MTM5NTc0",
+              "avatar_url": "https://avatars.githubusercontent.com/u/15139574?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/ZhengyaoJiang",
+              "html_url": "https://github.com/ZhengyaoJiang",
+              "followers_url": "https://api.github.com/users/ZhengyaoJiang/followers",
+              "following_url": "https://api.github.com/users/ZhengyaoJiang/following{/other_user}",
+              "gists_url": "https://api.github.com/users/ZhengyaoJiang/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/ZhengyaoJiang/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/ZhengyaoJiang/subscriptions",
+              "organizations_url": "https://api.github.com/users/ZhengyaoJiang/orgs",
+              "repos_url": "https://api.github.com/users/ZhengyaoJiang/repos",
+              "events_url": "https://api.github.com/users/ZhengyaoJiang/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/ZhengyaoJiang/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "content_type": "application/octet-stream",
+            "state": "uploaded",
+            "size": 191281152,
+            "digest": null,
+            "download_count": 1206,
+            "created_at": "2017-11-29T10:26:19Z",
+            "updated_at": "2017-11-29T10:29:18Z",
+            "browser_download_url": "https://github.com/ZhengyaoJiang/PGPortfolio/releases/download/v1.0/Data.db"
+          }
+        ],
+        "tarball_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/tarball/v1.0",
+        "zipball_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/zipball/v1.0",
+        "body": "For those who had problems in downloading data, please just download the Data.db and put it in the database folder."
+      }
+    ]
+  }
+]

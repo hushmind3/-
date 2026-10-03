@@ -2,6 +2,8 @@
 
 저장소 이름은 **Continual Trading Agent**입니다.
 
+Windows 새 설치: `설치.cmd` → 바탕화면 `모델` 폴더 복사 → `서버켜기.cmd`. [다른 컴퓨터 설치와 DB 생성](docs/windows-install.md)
+
 운영 모델과 전문가 원본 가중치는 바탕화면 `모델`에 두고, 소스·설정·데이터·Python 환경은 이 프로젝트의 `artifacts/experts`에서 관리합니다. [저장 위치와 실행 경로](docs/project-storage.md)
 
 Transformer + Actor-Critic + Continual/Online RL + Portfolio Allocation 구조로, 시장을 관찰하고 현금 포함 자금 배분·진입·유지·청산을 결정하며 비용을 뺀 순자산 결과로 정책을 계속 학습합니다.

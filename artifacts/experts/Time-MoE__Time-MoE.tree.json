@@ -1,0 +1,431 @@
+{
+  "repo": {
+    "id": 861259190,
+    "node_id": "R_kgDOM1XFtg",
+    "name": "Time-MoE",
+    "full_name": "Time-MoE/Time-MoE",
+    "private": false,
+    "owner": {
+      "login": "Time-MoE",
+      "id": 182418101,
+      "node_id": "O_kgDOCt96tQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/182418101?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Time-MoE",
+      "html_url": "https://github.com/Time-MoE",
+      "followers_url": "https://api.github.com/users/Time-MoE/followers",
+      "following_url": "https://api.github.com/users/Time-MoE/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Time-MoE/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Time-MoE/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Time-MoE/subscriptions",
+      "organizations_url": "https://api.github.com/users/Time-MoE/orgs",
+      "repos_url": "https://api.github.com/users/Time-MoE/repos",
+      "events_url": "https://api.github.com/users/Time-MoE/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Time-MoE/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/Time-MoE/Time-MoE",
+    "description": "[ICLR 2025 Spotlight] Official implementation of \"Time-MoE: Billion-Scale Time Series Foundation Models with Mixture of Experts\"",
+    "fork": false,
+    "url": "https://api.github.com/repos/Time-MoE/Time-MoE",
+    "forks_url": "https://api.github.com/repos/Time-MoE/Time-MoE/forks",
+    "keys_url": "https://api.github.com/repos/Time-MoE/Time-MoE/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/Time-MoE/Time-MoE/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/Time-MoE/Time-MoE/teams",
+    "hooks_url": "https://api.github.com/repos/Time-MoE/Time-MoE/hooks",
+    "issue_events_url": "https://api.github.com/repos/Time-MoE/Time-MoE/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/Time-MoE/Time-MoE/events",
+    "assignees_url": "https://api.github.com/repos/Time-MoE/Time-MoE/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/Time-MoE/Time-MoE/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/Time-MoE/Time-MoE/tags",
+    "blobs_url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/Time-MoE/Time-MoE/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/Time-MoE/Time-MoE/languages",
+    "stargazers_url": "https://api.github.com/repos/Time-MoE/Time-MoE/stargazers",
+    "contributors_url": "https://api.github.com/repos/Time-MoE/Time-MoE/contributors",
+    "subscribers_url": "https://api.github.com/repos/Time-MoE/Time-MoE/subscribers",
+    "subscription_url": "https://api.github.com/repos/Time-MoE/Time-MoE/subscription",
+    "commits_url": "https://api.github.com/repos/Time-MoE/Time-MoE/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/Time-MoE/Time-MoE/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/Time-MoE/Time-MoE/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/Time-MoE/Time-MoE/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/Time-MoE/Time-MoE/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/Time-MoE/Time-MoE/merges",
+    "archive_url": "https://api.github.com/repos/Time-MoE/Time-MoE/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/Time-MoE/Time-MoE/downloads",
+    "issues_url": "https://api.github.com/repos/Time-MoE/Time-MoE/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/Time-MoE/Time-MoE/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/Time-MoE/Time-MoE/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/Time-MoE/Time-MoE/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/Time-MoE/Time-MoE/labels{/name}",
+    "releases_url": "https://api.github.com/repos/Time-MoE/Time-MoE/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/Time-MoE/Time-MoE/deployments",
+    "created_at": "2024-09-22T12:34:41Z",
+    "updated_at": "2026-09-27T08:47:21Z",
+    "pushed_at": "2026-03-21T16:00:55Z",
+    "git_url": "git://github.com/Time-MoE/Time-MoE.git",
+    "ssh_url": "git@github.com:Time-MoE/Time-MoE.git",
+    "clone_url": "https://github.com/Time-MoE/Time-MoE.git",
+    "svn_url": "https://github.com/Time-MoE/Time-MoE",
+    "homepage": "https://arxiv.org/abs/2409.16040",
+    "size": 712,
+    "stargazers_count": 1002,
+    "watchers_count": 1002,
+    "language": "Python",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": false,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 116,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 15,
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [
+      "deep-learning",
+      "large-model",
+      "machine-learning",
+      "time-series",
+      "time-series-forecasting",
+      "time-series-foundation-model"
+    ],
+    "visibility": "public",
+    "forks": 116,
+    "open_issues": 15,
+    "watchers": 1002,
+    "default_branch": "main",
+    "temp_clone_token": null,
+    "custom_properties": {},
+    "organization": {
+      "login": "Time-MoE",
+      "id": 182418101,
+      "node_id": "O_kgDOCt96tQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/182418101?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Time-MoE",
+      "html_url": "https://github.com/Time-MoE",
+      "followers_url": "https://api.github.com/users/Time-MoE/followers",
+      "following_url": "https://api.github.com/users/Time-MoE/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Time-MoE/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Time-MoE/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Time-MoE/subscriptions",
+      "organizations_url": "https://api.github.com/users/Time-MoE/orgs",
+      "repos_url": "https://api.github.com/users/Time-MoE/repos",
+      "events_url": "https://api.github.com/users/Time-MoE/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Time-MoE/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "network_count": 116,
+    "subscribers_count": 18
+  },
+  "tree": {
+    "sha": "915bfda4c78a544d62a2bec6ab22948423059236",
+    "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/915bfda4c78a544d62a2bec6ab22948423059236",
+    "tree": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7b6caf340d6a4549dd90748b8699469eacb569c5",
+        "size": 3138,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/7b6caf340d6a4549dd90748b8699469eacb569c5"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b73ad030f2d42e0801e0d1cb84d8a90cdce30633",
+        "size": 11410,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/b73ad030f2d42e0801e0d1cb84d8a90cdce30633"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "726bd78f4a06fb93d7bab6eb3b764055fe4fff44",
+        "size": 10462,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/726bd78f4a06fb93d7bab6eb3b764055fe4fff44"
+      },
+      {
+        "path": "figures",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "f2ab58459f279115e20d3f274582e8770600f1f2",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/f2ab58459f279115e20d3f274582e8770600f1f2"
+      },
+      {
+        "path": "figures/time_moe_framework.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3d74773126fd666553cad7588b0f44360dc9f26e",
+        "size": 432210,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/3d74773126fd666553cad7588b0f44360dc9f26e"
+      },
+      {
+        "path": "figures/timemoe-logo.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9911f4b7fb10080215f5959c23416579e34b65f4",
+        "size": 229862,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/9911f4b7fb10080215f5959c23416579e34b65f4"
+      },
+      {
+        "path": "main.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dce77f1f7d4325e265d73e76cfa8f1a23d4f0276",
+        "size": 6224,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/dce77f1f7d4325e265d73e76cfa8f1a23d4f0276"
+      },
+      {
+        "path": "requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "913258536516f032347224b276472c9aa12d2728",
+        "size": 97,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/913258536516f032347224b276472c9aa12d2728"
+      },
+      {
+        "path": "run_eval.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "75662cbd89a8b4e453fe72eaf6278bb864ff558e",
+        "size": 7118,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/75662cbd89a8b4e453fe72eaf6278bb864ff558e"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6d109012ebb638e68a0dbb39734713bdbb221aa2",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/6d109012ebb638e68a0dbb39734713bdbb221aa2"
+      },
+      {
+        "path": "scripts/convert_dataset_to_bin.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "57bd82b6451568ea255583b68db8984393e5e282",
+        "size": 4239,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/57bd82b6451568ea255583b68db8984393e5e282"
+      },
+      {
+        "path": "time_moe",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5b1b7e86ecf9f83b326cac9d29ead189a826f459",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/5b1b7e86ecf9f83b326cac9d29ead189a826f459"
+      },
+      {
+        "path": "time_moe/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b4e66d102b823164b166777b9f3cd891c9210c52",
+        "size": 45,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/b4e66d102b823164b166777b9f3cd891c9210c52"
+      },
+      {
+        "path": "time_moe/datasets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "055b702fe30cec7ce626c4a57ca8a7273d20425a",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/055b702fe30cec7ce626c4a57ca8a7273d20425a"
+      },
+      {
+        "path": "time_moe/datasets/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "328b194f7782794cd9cc63e7d27a4039a07b4dba",
+        "size": 131,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/328b194f7782794cd9cc63e7d27a4039a07b4dba"
+      },
+      {
+        "path": "time_moe/datasets/benchmark_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "63e5ad4f7333c9b5c8bb2031c0741cf6e8e337aa",
+        "size": 4925,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/63e5ad4f7333c9b5c8bb2031c0741cf6e8e337aa"
+      },
+      {
+        "path": "time_moe/datasets/binary_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4074c78d37be5ded888b5d64368fd9162a7e366f",
+        "size": 3844,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/4074c78d37be5ded888b5d64368fd9162a7e366f"
+      },
+      {
+        "path": "time_moe/datasets/general_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cdc4ef8e2b273d35cf205fb9cd5f1517ae7f10c7",
+        "size": 2705,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/cdc4ef8e2b273d35cf205fb9cd5f1517ae7f10c7"
+      },
+      {
+        "path": "time_moe/datasets/time_moe_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "91af2c506ab03530fd2ba38babae3c7917e571de",
+        "size": 4815,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/91af2c506ab03530fd2ba38babae3c7917e571de"
+      },
+      {
+        "path": "time_moe/datasets/time_moe_window_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b9e965708a1d999607ff240ccf5ecfeb69935aab",
+        "size": 6516,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/b9e965708a1d999607ff240ccf5ecfeb69935aab"
+      },
+      {
+        "path": "time_moe/datasets/ts_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "50aed5d7f182ba6bd7b416ea32990c1c1288a7b7",
+        "size": 560,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/50aed5d7f182ba6bd7b416ea32990c1c1288a7b7"
+      },
+      {
+        "path": "time_moe/models",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cd41bda774f394060f0adda421eaf5664ba19fb0",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/cd41bda774f394060f0adda421eaf5664ba19fb0"
+      },
+      {
+        "path": "time_moe/models/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "time_moe/models/configuration_time_moe.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1fa6c0b26ea3e638ca590a60b56c72680f1bf390",
+        "size": 2503,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/1fa6c0b26ea3e638ca590a60b56c72680f1bf390"
+      },
+      {
+        "path": "time_moe/models/modeling_time_moe.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "99bee8f777f31238d11e1a3021eeb7c014b14144",
+        "size": 51693,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/99bee8f777f31238d11e1a3021eeb7c014b14144"
+      },
+      {
+        "path": "time_moe/models/ts_generation_mixin.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0f687710dc8a8242d07c636df8bd9ba2006a1402",
+        "size": 8532,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/0f687710dc8a8242d07c636df8bd9ba2006a1402"
+      },
+      {
+        "path": "time_moe/runner.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f9d0993ef85af5cd66bad5585c2dd3171070e5b4",
+        "size": 10162,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/f9d0993ef85af5cd66bad5585c2dd3171070e5b4"
+      },
+      {
+        "path": "time_moe/trainer",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1d7025b64277b818abaeeac617cef0c485a95a88",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/1d7025b64277b818abaeeac617cef0c485a95a88"
+      },
+      {
+        "path": "time_moe/trainer/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "time_moe/trainer/hf_trainer.py",
+        "mode": "100755",
+        "type": "blob",
+        "sha": "291e8c986d077f5e2a4eda5db3f1a96bcd56200c",
+        "size": 3691,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/291e8c986d077f5e2a4eda5db3f1a96bcd56200c"
+      },
+      {
+        "path": "time_moe/utils",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fa794607d0075ed91712a2a2a554388f7a746891",
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/trees/fa794607d0075ed91712a2a2a554388f7a746891"
+      },
+      {
+        "path": "time_moe/utils/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "time_moe/utils/dist_util.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "39946a4986466191b2f206b40f1ee043ef1a670e",
+        "size": 1023,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/39946a4986466191b2f206b40f1ee043ef1a670e"
+      },
+      {
+        "path": "time_moe/utils/io_util.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0ce23123e7625098a1e62fd2334a0f2cbfa7b03d",
+        "size": 3088,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/0ce23123e7625098a1e62fd2334a0f2cbfa7b03d"
+      },
+      {
+        "path": "time_moe/utils/log_util.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6c02b083d24e5674378fe1583cba073fed3b06dd",
+        "size": 1461,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/6c02b083d24e5674378fe1583cba073fed3b06dd"
+      },
+      {
+        "path": "torch_dist_run.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "958413f1f7e27799eb2940a6405c837b193e374e",
+        "size": 2871,
+        "url": "https://api.github.com/repos/Time-MoE/Time-MoE/git/blobs/958413f1f7e27799eb2940a6405c837b193e374e"
+      }
+    ],
+    "truncated": false
+  }
+}

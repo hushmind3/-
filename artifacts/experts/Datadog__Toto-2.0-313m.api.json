@@ -1,0 +1,294 @@
+{
+  "_id": "69dea60b64bf953efc06abdd",
+  "id": "Datadog/Toto-2.0-313m",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "pytorch",
+  "tags": [
+    "pytorch",
+    "safetensors",
+    "time-series-forecasting",
+    "foundation-models",
+    "pretrained-models",
+    "time-series",
+    "timeseries",
+    "forecasting",
+    "observability",
+    "pytorch_model_hub_mixin",
+    "arxiv:2602.12147",
+    "arxiv:2605.20119",
+    "license:apache-2.0",
+    "model-index",
+    "region:us"
+  ],
+  "downloads": 89069,
+  "likes": 25,
+  "modelId": "Datadog/Toto-2.0-313m",
+  "author": "Datadog",
+  "sha": "a7bab288f5e95f8606f8306f86659357e1c001ef",
+  "lastModified": "2026-06-04T11:42:22.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": [
+    {
+      "name": "Toto-2.0-313m",
+      "results": [
+        {
+          "task": {
+            "type": "time-series-forecasting"
+          },
+          "dataset": {
+            "name": "BOOM",
+            "type": "BOOM"
+          },
+          "metrics": [
+            {
+              "type": "CRPS",
+              "value": 0.351,
+              "name": "CRPS",
+              "verified": false
+            },
+            {
+              "type": "MASE",
+              "value": 0.585,
+              "name": "MASE",
+              "verified": false
+            }
+          ],
+          "source": {
+            "url": "https://huggingface.co/spaces/Datadog/BOOM",
+            "name": "BOOM \ud83d\udca5 Observability Time-Series Forecasting Leaderboard"
+          }
+        },
+        {
+          "task": {
+            "type": "time-series-forecasting"
+          },
+          "dataset": {
+            "name": "GIFT-Eval",
+            "type": "GIFT-Eval"
+          },
+          "metrics": [
+            {
+              "type": "CRPS",
+              "value": 0.481,
+              "name": "CRPS",
+              "verified": false
+            },
+            {
+              "type": "MASE",
+              "value": 0.703,
+              "name": "MASE",
+              "verified": false
+            }
+          ],
+          "source": {
+            "url": "https://huggingface.co/spaces/Salesforce/GIFT-Eval",
+            "name": "GIFT-Eval Time Series Forecasting Leaderboard"
+          }
+        },
+        {
+          "task": {
+            "type": "time-series-forecasting"
+          },
+          "dataset": {
+            "name": "TIME",
+            "type": "TIME"
+          },
+          "metrics": [
+            {
+              "type": "CRPS",
+              "value": 0.535,
+              "name": "CRPS",
+              "verified": false
+            },
+            {
+              "type": "MASE",
+              "value": 0.642,
+              "name": "MASE",
+              "verified": false
+            }
+          ],
+          "source": {
+            "url": "https://huggingface.co/spaces/Real-TSF/TIME-leaderboard",
+            "name": "TIME Benchmark Leaderboard"
+          }
+        }
+      ]
+    }
+  ],
+  "config": {},
+  "cardData": {
+    "license": "apache-2.0",
+    "pipeline_tag": "time-series-forecasting",
+    "library_name": "pytorch",
+    "tags": [
+      "time-series-forecasting",
+      "foundation-models",
+      "pretrained-models",
+      "time-series",
+      "timeseries",
+      "forecasting",
+      "observability",
+      "safetensors",
+      "pytorch_model_hub_mixin"
+    ],
+    "thumbnail": "https://web-assets.dd-static.net/42588/1778691695-toto-2-hero.png",
+    "model-index": [
+      {
+        "name": "Toto-2.0-313m",
+        "results": [
+          {
+            "task": {
+              "type": "time-series-forecasting"
+            },
+            "dataset": {
+              "name": "BOOM",
+              "type": "BOOM"
+            },
+            "metrics": [
+              {
+                "type": "CRPS",
+                "value": 0.351,
+                "name": "CRPS",
+                "verified": false
+              },
+              {
+                "type": "MASE",
+                "value": 0.585,
+                "name": "MASE",
+                "verified": false
+              }
+            ],
+            "source": {
+              "url": "https://huggingface.co/spaces/Datadog/BOOM",
+              "name": "BOOM \ud83d\udca5 Observability Time-Series Forecasting Leaderboard"
+            }
+          },
+          {
+            "task": {
+              "type": "time-series-forecasting"
+            },
+            "dataset": {
+              "name": "GIFT-Eval",
+              "type": "GIFT-Eval"
+            },
+            "metrics": [
+              {
+                "type": "CRPS",
+                "value": 0.481,
+                "name": "CRPS",
+                "verified": false
+              },
+              {
+                "type": "MASE",
+                "value": 0.703,
+                "name": "MASE",
+                "verified": false
+              }
+            ],
+            "source": {
+              "url": "https://huggingface.co/spaces/Salesforce/GIFT-Eval",
+              "name": "GIFT-Eval Time Series Forecasting Leaderboard"
+            }
+          },
+          {
+            "task": {
+              "type": "time-series-forecasting"
+            },
+            "dataset": {
+              "name": "TIME",
+              "type": "TIME"
+            },
+            "metrics": [
+              {
+                "type": "CRPS",
+                "value": 0.535,
+                "name": "CRPS",
+                "verified": false
+              },
+              {
+                "type": "MASE",
+                "value": 0.642,
+                "name": "MASE",
+                "verified": false
+              }
+            ],
+            "source": {
+              "url": "https://huggingface.co/spaces/Real-TSF/TIME-leaderboard",
+              "name": "TIME Benchmark Leaderboard"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "efad3886b28ee94b31be6af731825e606bdbbbc9",
+      "size": 1694
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "785c40131c5eee9e9f5485a97394af20ee8c1b9a",
+      "size": 7197
+    },
+    {
+      "rfilename": "assets/architecture.png",
+      "blobId": "0e10a0fafe6a49a30295ca53f9a365c2372efb15",
+      "size": 436711,
+      "lfs": {
+        "sha256": "973196289f6036b880ec7fdb00fe0b1078215232bf58f0bdd6a27eeebfca46ef",
+        "size": 436711,
+        "pointerSize": 131
+      }
+    },
+    {
+      "rfilename": "assets/pareto.png",
+      "blobId": "c6bd5218d5e68c273622ce6c6ec4c00e337b5ec3",
+      "size": 302199,
+      "lfs": {
+        "sha256": "756a059027357cf224effc92995755b2c50ca8396b68918135ef0e5226798294",
+        "size": 302199,
+        "pointerSize": 131
+      }
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "d42434ce0a8e2f4c790a950ac39d9c3b015247f9",
+      "size": 598
+    },
+    {
+      "rfilename": "figures/architecture.png",
+      "blobId": "38d12e81b2fa5da332abadf7c0a9926cf71b4c98",
+      "size": 396113,
+      "lfs": {
+        "sha256": "d17a304f234cc65a426a83c6a8ea9c6e03c3e7f5230860146834063999ced76d",
+        "size": 396113,
+        "pointerSize": 131
+      }
+    },
+    {
+      "rfilename": "model.safetensors",
+      "blobId": "e498bcd70e7ab4690fb439f8a0c03000b4311058",
+      "size": 1250763568,
+      "lfs": {
+        "sha256": "5ee6066497963cb904bf1324ab850661c3201bbb3406052459f1f792386aa2f9",
+        "size": 1250763568,
+        "pointerSize": 135
+      }
+    }
+  ],
+  "spaces": [
+    "TSFM-ai/future-ts"
+  ],
+  "createdAt": "2026-04-14T20:39:39.000Z",
+  "safetensors": {
+    "parameters": {
+      "F32": 312684608
+    },
+    "total": 312684608
+  },
+  "usedStorage": 2503040259
+}

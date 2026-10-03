@@ -1,0 +1,139 @@
+{
+  "expert": "toto",
+  "native_output": [
+    [
+      [
+        [
+          -0.018721241503953934
+        ],
+        [
+          -0.014488428831100464
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          -0.01199125126004219
+        ],
+        [
+          -0.008758985437452793
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          -0.007544620428234339
+        ],
+        [
+          -0.005210426636040211
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          -0.003886633552610874
+        ],
+        [
+          -0.0023835301399230957
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          -0.0006957019213587046
+        ],
+        [
+          0.00022473791614174843
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          0.0021723408717662096
+        ],
+        [
+          0.0027622804045677185
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          0.005299718584865332
+        ],
+        [
+          0.005420686677098274
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          0.009502971544861794
+        ],
+        [
+          0.008739380165934563
+        ]
+      ]
+    ],
+    [
+      [
+        [
+          0.01743207685649395
+        ],
+        [
+          0.014100492000579834
+        ]
+      ]
+    ]
+  ],
+  "layout": "nine_quantiles,batch,variate,horizon",
+  "units": "daily_excess_return",
+  "symbols": [
+    "AAPL",
+    "MSFT"
+  ],
+  "as_of": "2025-10-31",
+  "horizon": 1,
+  "sampling_seconds": 86400,
+  "parameters": 312684608,
+  "native_modules": [
+    {
+      "type": "Toto2Model",
+      "parameters": 312684608,
+      "buffer_elements": 24118768,
+      "buffer_bytes": 96475072
+    }
+  ],
+  "parameter_bytes": 1250738432,
+  "parameter_dtypes": [
+    "torch.float32"
+  ],
+  "frozen": true,
+  "output_shape": [
+    9,
+    1,
+    2,
+    1
+  ],
+  "load_seconds": 4.889027900000656,
+  "input_shapes": {
+    "series": [
+      2,
+      128
+    ]
+  },
+  "rss_start_bytes": 552402944,
+  "rss_loaded_bytes": 1389899776,
+  "rss_end_bytes": 1942388736,
+  "peak_ram_bytes": 3228897280,
+  "ram_measurement": "Windows process peak working set",
+  "forward_seconds": 0.5316561000017828,
+  "peak_allocated_bytes": 1395540992,
+  "peak_reserved_bytes": 1453326336
+}

@@ -1,0 +1,433 @@
+This file contains the output (first 400 lines) of 'python3 -m cProfile scripts/simulate.py'
+ran on Thursday March 7th, 2024.
+This simulation trial utilized the following parameters:
+- Dataset: 'dataset/proc/ITCH/full_view/03272019.NASDAQ_ITCH50_AAPL_message_proc.npy'
+- Number of model parameters: 94.57M
+- Simulation start time: 34224465960326
+- Number of initial context messages: 100
+- Number of generation steps: 500
+- Seed: 42
+
+Brief overview of cProfile output column headings:
+- ncalls: the number of calls
+- tottime: for the total time spent in the given function (and excluding time made
+            in calls to sub-functions)
+- percall: the quotient of tottime divided by ncalls
+- cumtime: the cumulative time spent in this and all subfunctions (from invocation
+            till exit). This figure is accurate even for recursive functions
+- percall: the quotient of cumtime divided by primitive calls
+- filename:lineno(function): provides the respective data of each function
+
+When there are two numbers in the first column (for example 3/1), it means that the
+function recursed. The second value is the number of primitive calls and the former
+is the total number of calls. Note that when the function does not recurse, these
+two values are the same, and only the single figure is printed.
+
+
+████████████████████████████████████████████████████████████████████████████████████
+
+         21349809 function calls (17745819 primitive calls) in 259.458 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      500    0.003    0.000  254.376    0.509 _contextlib.py:112(decorate_context)
+      500    1.197    0.002  254.370    0.509 model.py:308(generate)
+1800000/12000    0.573    0.000  251.529    0.021 module.py:1507(_wrapped_call_impl)
+1800000/12000    1.185    0.000  251.521    0.021 module.py:1513(_call_impl)
+    12000  228.090    0.019  251.471    0.021 model.py:172(forward)
+   144000    1.806    0.000   22.293    0.000 model.py:105(forward)
+   144000    0.928    0.000   10.512    0.000 model.py:54(forward)
+   588000    0.240    0.000    8.994    0.000 linear.py:115(forward)
+   588000    8.611    0.000    8.611    0.000 {built-in method torch._C._nn.linear}
+   144000    0.397    0.000    6.463    0.000 model.py:89(forward)
+      5/4    0.961    0.192    3.301    0.825 serialization.py:1390(persistent_load)
+   300000    0.240    0.000    2.793    0.000 model.py:28(forward)
+   300000    0.216    0.000    2.481    0.000 functional.py:2558(layer_norm)
+   300000    2.140    0.000    2.140    0.000 {built-in method torch.layer_norm}
+   144000    1.972    0.000    1.972    0.000 {built-in method torch._C._nn.scaled_dot_product_attention}
+      207    0.003    0.000    1.279    0.006 __init__.py:1(<module>)
+   144000    0.263    0.000    0.952    0.000 _tensor.py:875(split)
+   300000    0.104    0.000    0.925    0.000 dropout.py:58(forward)
+    12000    0.918    0.000    0.918    0.000 {built-in method torch.multinomial}
+   300000    0.469    0.000    0.821    0.000 functional.py:1279(dropout)
+        1    0.000    0.000    0.744    0.744 model.py:122(__init__)
+      301    0.269    0.001    0.727    0.002 serialization.py:1366(load_tensor)
+  3516350    0.676    0.000    0.676    0.000 module.py:1675(__getattr__)
+   144000    0.041    0.000    0.666    0.000 activation.py:695(forward)
+   144000    0.625    0.000    0.625    0.000 {built-in method torch._C._nn.gelu}
+   144000    0.584    0.000    0.584    0.000 {built-in method torch.split}
+        1    0.000    0.000    0.527    0.527 itch_preproc.py:52(load_message_df)
+        1    0.000    0.000    0.527    0.527 readers.py:866(read_csv)
+        1    0.006    0.006    0.527    0.527 readers.py:581(_read)
+        1    0.000    0.000    0.520    0.520 readers.py:1905(read)
+   576000    0.512    0.000    0.512    0.000 {method 'view' of 'torch._C.TensorBase' objects}
+      301    0.000    0.000    0.455    0.002 serialization.py:1306(restore_location)
+      301    0.000    0.000    0.455    0.002 serialization.py:388(default_restore_location)
+      301    0.000    0.000    0.455    0.002 serialization.py:263(_cuda_deserialize)
+      301    0.071    0.000    0.450    0.001 _utils.py:84(_cuda)
+   576000    0.435    0.000    0.435    0.000 {method 'transpose' of 'torch._C.TensorBase' objects}
+       77    0.000    0.000    0.435    0.006 init.py:151(normal_)
+       77    0.000    0.000    0.435    0.006 init.py:18(_no_grad_normal_)
+       77    0.434    0.006    0.434    0.006 {method 'normal_' of 'torch._C.TensorBase' objects}
+        1    0.392    0.392    0.431    0.431 c_parser_wrapper.py:222(read)
+      301    0.378    0.001    0.378    0.001 {method 'copy_' of 'torch._C.StorageBase' objects}
+  1800000    0.366    0.000    0.366    0.000 {built-in method torch._C._get_tracing_state}
+    24000    0.016    0.000    0.361    0.000 sparse.py:162(forward)
+    26/25    0.000    0.000    0.357    0.014 threading.py:637(wait)
+    26/25    0.000    0.000    0.356    0.014 threading.py:323(wait)
+  110/104    0.308    0.003    0.356    0.003 {method 'acquire' of '_thread.lock' objects}
+       12    0.000    0.000    0.352    0.029 _jit_internal.py:890(_overload)
+    24000    0.011    0.000    0.341    0.000 functional.py:2154(embedding)
+    24000    0.327    0.000    0.327    0.000 {built-in method torch.embedding}
+       49    0.000    0.000    0.303    0.006 linear.py:92(__init__)
+       49    0.000    0.000    0.302    0.006 linear.py:105(reset_parameters)
+       49    0.000    0.000    0.302    0.006 init.py:406(kaiming_uniform_)
+       49    0.301    0.006    0.301    0.006 {method 'uniform_' of 'torch._C.TensorBase' objects}
+ 1561/587    0.001    0.000    0.290    0.000 <frozen importlib._bootstrap>:1390(_handle_fromlist)
+     9076    0.025    0.000    0.286    0.000 order_book.py:75(handle_limit_order)
+    164/1    0.000    0.000    0.286    0.286 module.py:853(apply)
+      164    0.000    0.000    0.285    0.002 model.py:164(_init_weights)
+       12    0.000    0.000    0.269    0.022 model.py:98(__init__)
+1314/1310    0.001    0.000    0.260    0.000 <frozen importlib._bootstrap>:806(module_from_spec)
+    96/95    0.000    0.000    0.247    0.003 <frozen importlib._bootstrap_external>:1286(create_module)
+    96/95    0.245    0.003    0.246    0.003 {built-in method _imp.create_dynamic}
+   1438/4    0.004    0.000    0.238    0.060 <frozen importlib._bootstrap>:1349(_find_and_load)
+   1438/4    0.003    0.000    0.238    0.060 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+   1303/4    0.002    0.000    0.238    0.060 <frozen importlib._bootstrap>:911(_load_unlocked)
+   1202/4    0.001    0.000    0.238    0.059 <frozen importlib._bootstrap_external>:988(exec_module)
+   3211/9    0.003    0.000    0.238    0.026 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
+   300000    0.216    0.000    0.216    0.000 {built-in method torch.dropout}
+      502    0.006    0.000    0.206    0.000 itch_encoding.py:156(decode_msg)
+       12    0.000    0.000    0.196    0.016 model.py:82(__init__)
+     7287    0.008    0.000    0.196    0.000 itch_encoding.py:22(is_special_val)
+     7287    0.007    0.000    0.175    0.000 arraysetops.py:766(isin)
+     7287    0.079    0.000    0.163    0.000 arraysetops.py:524(in1d)
+      539    0.004    0.000    0.163    0.000 itch_encoding.py:81(encode_msg)
+     3514    0.007    0.000    0.150    0.000 itch_encoding.py:64(combine_field)
+   444013    0.097    0.000    0.145    0.000 _VF.py:26(__getattr__)
+        9    0.000    0.000    0.145    0.016 api.py:1(<module>)
+        1    0.000    0.000    0.139    0.139 module.py:2067(load_state_dict)
+    164/1    0.000    0.000    0.139    0.139 module.py:2117(load)
+      164    0.001    0.000    0.138    0.001 module.py:1953(_load_from_state_dict)
+       76    0.137    0.002    0.137    0.002 {method 'copy_' of 'torch._C.TensorBase' objects}
+     9075    0.048    0.000    0.131    0.000 order_book.py:329(enter_order)
+        1    0.000    0.000    0.130    0.130 module.py:1047(to)
+    164/1    0.002    0.000    0.130    0.130 module.py:799(_apply)
+       76    0.000    0.000    0.127    0.002 module.py:1146(convert)
+    12000    0.127    0.000    0.127    0.000 {built-in method torch.topk}
+       76    0.127    0.002    0.127    0.002 {method 'to' of 'torch._C.TensorBase' objects}
+     3773    0.002    0.000    0.127    0.000 itch_encoding.py:52(split_field)
+    12000    0.008    0.000    0.125    0.000 functional.py:1855(softmax)
+     1211    0.004    0.000    0.124    0.000 <frozen importlib._bootstrap_external>:1061(get_code)
+    12000    0.115    0.000    0.115    0.000 {method 'softmax' of 'torch._C.TensorBase' objects}
+   703/60    0.001    0.000    0.115    0.002 {built-in method builtins.__import__}
+    84801    0.027    0.000    0.114    0.000 {built-in method builtins.sum}
+    83107    0.018    0.000    0.108    0.000 price_level.py:260(total_quantity)
+    30/25    0.033    0.001    0.105    0.004 _ops.py:269(py_impl)
+    12439    0.101    0.000    0.101    0.000 {built-in method torch.cat}
+     1004    0.002    0.000    0.096    0.000 itch_encoding.py:195(decode_time)
+2501/2459    0.017    0.000    0.092    0.000 {built-in method builtins.__build_class__}
+     1078    0.002    0.000    0.091    0.000 itch_encoding.py:135(encode_time)
+        1    0.000    0.000    0.088    0.088 frame.py:683(__init__)
+        1    0.000    0.000    0.088    0.088 construction.py:423(dict_to_mgr)
+       36    0.000    0.000    0.088    0.002 _ops.py:278(fallthrough)
+        1    0.003    0.003    0.088    0.088 construction.py:96(arrays_to_mgr)
+     1211    0.027    0.000    0.085    0.000 <frozen importlib._bootstrap_external>:750(_compile_bytecode)
+   300000    0.047    0.000    0.085    0.000 __init__.py:36(__get__)
+        1    0.000    0.000    0.083    0.083 managers.py:2120(create_block_manager_from_column_arrays)
+    12000    0.077    0.000    0.077    0.000 {built-in method torch.arange}
+     91/7    0.002    0.000    0.075    0.011 library.py:113(impl)
+   511336    0.056    0.000    0.074    0.000 {built-in method builtins.getattr}
+       12    0.000    0.000    0.072    0.006 model.py:33(__init__)
+        3    0.000    0.000    0.071    0.024 generic.py:1(<module>)
+   194568    0.068    0.000    0.068    0.000 price_level.py:265(<genexpr>)
+   180537    0.066    0.000    0.066    0.000 {method 'size' of 'torch._C.TensorBase' objects}
+       27    0.000    0.000    0.064    0.002 inspect.py:1067(findsource)
+        2    0.000    0.000    0.064    0.032 library.py:376(wrap)
+      127    0.001    0.000    0.063    0.000 inspect.py:985(getmodule)
+        1    0.000    0.000    0.063    0.063 impl.py:213(_register_impl)
+        1    0.000    0.000    0.063    0.063 inspect.py:1681(getframeinfo)
+        2    0.000    0.000    0.061    0.030 sparse.py:124(__init__)
+        2    0.000    0.000    0.060    0.030 sparse.py:153(reset_parameters)
+      510    0.001    0.000    0.058    0.000 std.py:1161(__iter__)
+   456000    0.057    0.000    0.057    0.000 {built-in method torch._C._has_torch_function_unary}
+     1211    0.057    0.000    0.057    0.000 {built-in method marshal.loads}
+      501    0.002    0.000    0.057    0.000 std.py:1199(update)
+   174540    0.039    0.000    0.056    0.000 price_level.py:200(order_has_better_price)
+    12492    0.011    0.000    0.055    0.000 itch_encoding.py:13(encode)
+      503    0.001    0.000    0.054    0.000 std.py:1326(refresh)
+434575/433638    0.052    0.000    0.053    0.000 {built-in method builtins.isinstance}
+     1432    0.005    0.000    0.053    0.000 <frozen importlib._bootstrap>:1240(_find_spec)
+      505    0.001    0.000    0.052    0.000 std.py:1465(display)
+     1243    0.001    0.000    0.050    0.000 <frozen posixpath>:431(realpath)
+    31980    0.019    0.000    0.048    0.000 fromnumeric.py:71(_wrapreduction)
+1244/1243    0.008    0.000    0.047    0.000 <frozen posixpath>:440(_joinrealpath)
+        1    0.000    0.000    0.046    0.046 managers.py:1781(_consolidate_inplace)
+        1    0.000    0.000    0.046    0.046 managers.py:2258(_consolidate)
+        3    0.024    0.008    0.046    0.015 managers.py:2275(_merge_blocks)
+     1427    0.001    0.000    0.043    0.000 <frozen importlib._bootstrap_external>:1516(find_spec)
+    12492    0.004    0.000    0.043    0.000 fromnumeric.py:1332(searchsorted)
+     1427    0.002    0.000    0.042    0.000 <frozen importlib._bootstrap_external>:1487(_get_spec)
+   324126    0.042    0.000    0.042    0.000 {built-in method torch._C._has_torch_function_variadic}
+   300000    0.039    0.000    0.039    0.000 {built-in method torch._C._get_cudnn_enabled}
+ 2931/396    0.001    0.000    0.039    0.000 {built-in method builtins.any}
+14335/10746    0.013    0.000    0.039    0.000 copy.py:118(deepcopy)
+     6822    0.019    0.000    0.039    0.000 order_book.py:408(cancel_order)
+        2    0.000    0.000    0.039    0.019 __init__.py:260(_make_prim)
+    12496    0.004    0.000    0.038    0.000 fromnumeric.py:53(_wrapfunc)
+     6024    0.001    0.000    0.038    0.000 itch_encoding.py:19(decode)
+        1    0.000    0.000    0.037    0.037 frame.py:1(<module>)
+     2830    0.015    0.000    0.037    0.000 itch_encoding.py:45(combine_int)
+        1    0.000    0.000    0.037    0.037 managers.py:2189(_form_blocks)
+     2546    0.008    0.000    0.037    0.000 <frozen importlib._bootstrap_external>:1589(find_spec)
+        5    0.028    0.006    0.037    0.007 managers.py:2245(_stack_arrays)
+      606    0.000    0.000    0.037    0.000 __init__.py:130(is_available)
+    96/55    0.000    0.000    0.036    0.001 <frozen importlib._bootstrap_external>:1294(exec_module)
+    96/55    0.011    0.000    0.036    0.001 {built-in method _imp.exec_dynamic}
+5241/4894    0.003    0.000    0.036    0.000 typing.py:378(inner)
+        4    0.000    0.000    0.036    0.009 functional.py:1(<module>)
+      505    0.001    0.000    0.036    0.000 std.py:1151(__str__)
+        1    0.001    0.001    0.035    0.035 c_parser_wrapper.py:355(_concatenate_chunks)
+      606    0.035    0.000    0.035    0.000 {built-in method torch._C._cuda_getDeviceCount}
+       12    0.034    0.003    0.034    0.003 concat.py:52(concat_compat)
+       10    0.000    0.000    0.033    0.003 linear.py:1(<module>)
+      505    0.007    0.000    0.033    0.000 std.py:467(format_meter)
+    39268    0.033    0.000    0.033    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+    12492    0.033    0.000    0.033    0.000 {method 'searchsorted' of 'numpy.ndarray' objects}
+        2    0.000    0.000    0.032    0.016 accessors.py:1(<module>)
+        1    0.000    0.000    0.032    0.032 compute.py:1(<module>)
+    14574    0.006    0.000    0.031    0.000 fromnumeric.py:2836(min)
+        1    0.000    0.000    0.030    0.030 graph_drawer.py:1(<module>)
+      101    0.000    0.000    0.030    0.000 dataclasses.py:1255(wrap)
+      101    0.002    0.000    0.030    0.000 dataclasses.py:921(_process_class)
+        1    0.000    0.000    0.030    0.030 shape_prop.py:1(<module>)
+     3891    0.003    0.000    0.028    0.000 <frozen importlib._bootstrap>:463(_lock_unlock_module)
+     5341    0.009    0.000    0.027    0.000 <frozen importlib._bootstrap>:304(acquire)
+        1    0.000    0.000    0.026    0.026 itch_encoding.py:132(encode_msgs)
+    16239    0.006    0.000    0.026    0.000 order_book.py:643(get_l1_bid_data)
+     1509    0.001    0.000    0.026    0.000 utils.py:377(disp_len)
+   144000    0.026    0.000    0.026    0.000 {method 'contiguous' of 'torch._C.TensorBase' objects}
+        1    0.000    0.000    0.026    0.026 compute.py:306(_make_global_functions)
+      261    0.000    0.000    0.025    0.000 compute.py:290(_wrap_function)
+    16239    0.006    0.000    0.025    0.000 order_book.py:653(get_l1_ask_data)
+        1    0.000    0.000    0.025    0.025 _jit_internal.py:1(<module>)
+     1509    0.001    0.000    0.025    0.000 utils.py:373(_text_width)
+      723    0.001    0.000    0.024    0.000 _pytree.py:901(tree_map_)
+    14574    0.005    0.000    0.024    0.000 fromnumeric.py:2692(max)
+     2914    0.009    0.000    0.024    0.000 shape_base.py:292(hstack)
+      268    0.000    0.000    0.023    0.000 order_book.py:591(replace_order)
+     1712    0.003    0.000    0.023    0.000 textwrap.py:419(dedent)
+     2924    0.016    0.000    0.023    0.000 itch_encoding.py:28(split_int)
+      500    0.001    0.000    0.023    0.000 simulate.py:400(process_message)
+     1211    0.001    0.000    0.022    0.000 <frozen importlib._bootstrap_external>:1182(get_data)
+        6    0.000    0.000    0.022    0.004 _ops.py:248(__init__)
+      885    0.002    0.000    0.022    0.000 __init__.py:34(_add_op_to_registry)
+        2    0.022    0.011    0.022    0.011 shape_base.py:219(vstack)
+    13735    0.021    0.000    0.021    0.000 {built-in method posix.lstat}
+        1    0.000    0.000    0.020    0.020 pyarrow.py:1(<module>)
+     1934    0.003    0.000    0.020    0.000 _ops.py:771(__getattr__)
+       87    0.000    0.000    0.020    0.000 _pytree.py:159(register_pytree_node)
+      511    0.000    0.000    0.019    0.000 __init__.py:173(decomposition_decorator)
+        2    0.000    0.000    0.019    0.010 quantize.py:1(<module>)
+        1    0.000    0.000    0.019    0.019 return_types.py:1(<module>)
+        1    0.000    0.000    0.019    0.019 __init__.py:440(_make_elementwise_unary_prim)
+       84    0.000    0.000    0.019    0.000 return_types.py:11(pytree_register_structseq)
+       20    0.000    0.000    0.019    0.001 utils.py:1(<module>)
+        1    0.000    0.000    0.018    0.018 server_process_global_profiler.py:1(<module>)
+      421    0.001    0.000    0.018    0.000 dataclasses.py:449(_create_fn)
+        1    0.003    0.003    0.018    0.018 {built-in method torch._C._initExtension}
+   120427    0.012    0.000    0.018    0.000 utils.py:374(<genexpr>)
+     9674    0.007    0.000    0.018    0.000 order_book.py:194(execute_order)
+      261    0.001    0.000    0.018    0.000 compute.py:120(_decorate_compute_function)
+        1    0.000    0.000    0.017    0.017 rng_prims.py:1(<module>)
+        1    0.000    0.000    0.017    0.017 rng_prims.py:206(register_run_with_rng_state_op)
+        2    0.000    0.000    0.017    0.009 __config__.py:1(<module>)
+     7293    0.017    0.000    0.017    0.000 {built-in method posix.stat}
+      849    0.000    0.000    0.017    0.000 inspect.py:3325(signature)
+      520    0.000    0.000    0.017    0.000 __init__.py:181(register)
+      849    0.000    0.000    0.016    0.000 inspect.py:3067(from_callable)
+        1    0.000    0.000    0.016    0.016 rng_prims.py:161(register_run_and_save_rng_state_op)
+ 1021/849    0.003    0.000    0.016    0.000 inspect.py:2463(_signature_from_callable)
+  833/587    0.000    0.000    0.016    0.000 typing.py:494(__getitem__)
+     1440    0.003    0.000    0.016    0.000 typing.py:1223(__init__)
+      742    0.015    0.000    0.015    0.000 {built-in method torch.tensor}
+     6077    0.001    0.000    0.015    0.000 <frozen importlib._bootstrap_external>:140(_path_stat)
+        1    0.000    0.000    0.015    0.015 debug_prims.py:1(<module>)
+      101    0.000    0.000    0.015    0.000 dataclasses.py:1238(dataclass)
+      505    0.001    0.000    0.015    0.000 std.py:460(print_status)
+     2184    0.001    0.000    0.015    0.000 __init__.py:280(_compile)
+        1    0.000    0.000    0.015    0.015 impl.py:1(<module>)
+   223765    0.015    0.000    0.015    0.000 price_level.py:244(order_has_equal_price)
+        2    0.000    0.000    0.015    0.007 fake_quantize.py:1(<module>)
+     2914    0.007    0.000    0.014    0.000 shape_base.py:23(atleast_1d)
+    13772    0.008    0.000    0.014    0.000 <frozen posixpath>:71(join)
+        2    0.000    0.000    0.014    0.007 observer.py:1(<module>)
+      584    0.001    0.000    0.014    0.000 typing.py:673(Union)
+    25187    0.010    0.000    0.014    0.000 orders.py:102(__init__)
+        2    0.000    0.000    0.014    0.007 model.py:1(<module>)
+    23965    0.012    0.000    0.013    0.000 {method 'format' of 'str' objects}
+       97    0.000    0.000    0.013    0.000 compute.py:113(_scrape_options_class_doc)
+       97    0.000    0.000    0.013    0.000 docscrape.py:146(__init__)
+      396    0.002    0.000    0.013    0.000 wrappers.py:221(_out_wrapper)
+       96    0.000    0.000    0.013    0.000 _compiler.py:740(compile)
+      222    0.000    0.000    0.013    0.000 __init__.py:226(compile)
+     5341    0.003    0.000    0.013    0.000 <frozen importlib._bootstrap>:162(__enter__)
+      974    0.002    0.000    0.013    0.000 _ops.py:876(__getattr__)
+     1450    0.001    0.000    0.012    0.000 <frozen importlib._bootstrap>:416(__enter__)
+   219732    0.012    0.000    0.012    0.000 orders.py:17(is_bid)
+      304    0.000    0.000    0.012    0.000 __init__.py:801(current_device)
+  310/307    0.000    0.000    0.012    0.000 __init__.py:288(_lazy_init)
+     9466    0.006    0.000    0.011    0.000 orders.py:153(__deepcopy__)
+        2    0.000    0.000    0.011    0.006 __init__.py:146(is_bf16_supported)
+     1314    0.002    0.000    0.011    0.000 <frozen importlib._bootstrap>:733(_init_module_attrs)
+   123470    0.011    0.000    0.011    0.000 {method 'append' of 'list' objects}
+        1    0.000    0.000    0.011    0.011 __init__.py:182(_check_capability)
+     4738    0.011    0.000    0.011    0.000 {method 'sub' of 're.Pattern' objects}
+        1    0.000    0.000    0.011    0.011 python.py:1(<module>)
+        1    0.000    0.000    0.011    0.011 __init__.py:767(device_count)
+        1    0.000    0.000    0.011    0.011 __init__.py:714(_device_count_nvml)
+        1    0.011    0.011    0.011    0.011 __init__.py:637(_raw_device_count_nvml)
+        1    0.000    0.000    0.011    0.011 hub.py:1(<module>)
+    12000    0.007    0.000    0.011    0.000 container.py:315(__iter__)
+     1242    0.001    0.000    0.011    0.000 inspect.py:973(getabsfile)
+        3    0.000    0.000    0.011    0.004 graph.py:1(<module>)
+163178/162501    0.010    0.000    0.010    0.000 {built-in method builtins.len}
+      502    0.000    0.000    0.010    0.000 utils.py:385(disp_trim)
+     2830    0.005    0.000    0.010    0.000 shape_base.py:512(expand_dims)
+     2422    0.003    0.000    0.010    0.000 <frozen importlib._bootstrap_external>:481(cache_from_source)
+    13789    0.006    0.000    0.010    0.000 <frozen importlib._bootstrap_external>:126(_path_join)
+      500    0.001    0.000    0.010    0.000 autocast_mode.py:370(__exit__)
+     1221    0.010    0.000    0.010    0.000 {method 'read' of '_io.BufferedReader' objects}
+     7288    0.002    0.000    0.010    0.000 {method 'any' of 'numpy.ndarray' objects}
+      974    0.010    0.000    0.010    0.000 {built-in method torch._C._jit_get_operation}
+        1    0.000    0.000    0.010    0.010 index_tricks.py:1(<module>)
+        2    0.000    0.000    0.010    0.005 indexing.py:1(<module>)
+   189536    0.010    0.000    0.010    0.000 orders.py:20(is_ask)
+        1    0.000    0.000    0.009    0.009 graph_module.py:1(<module>)
+      598    0.003    0.000    0.009    0.000 inspect.py:2368(_signature_from_function)
+        2    0.000    0.000    0.009    0.005 array.py:1(<module>)
+    21879    0.009    0.000    0.009    0.000 getlimits.py:685(__init__)
+       19    0.009    0.000    0.009    0.000 {built-in method numpy.empty}
+     5341    0.004    0.000    0.009    0.000 <frozen importlib._bootstrap>:124(setdefault)
+        1    0.000    0.000    0.009    0.009 request.py:1(<module>)
+      585    0.000    0.000    0.009    0.000 order_book.py:168(handle_market_order)
+     1934    0.008    0.000    0.009    0.000 _ops.py:524(__init__)
+     1211    0.009    0.000    0.009    0.000 {built-in method _io.open_code}
+        1    0.006    0.006    0.009    0.009 _distributor_init.py:1(<module>)
+        1    0.000    0.000    0.008    0.008 defmatrix.py:1(<module>)
+      500    0.008    0.000    0.008    0.000 {built-in method torch.clear_autocast_cache}
+     2941    0.004    0.000    0.008    0.000 typing.py:175(_type_check)
+     1295    0.001    0.000    0.008    0.000 inspect.py:948(getsourcefile)
+      270    0.001    0.000    0.008    0.000 _decorators.py:363(decorator)
+        1    0.000    0.000    0.008    0.008 mock.py:1(<module>)
+        1    0.000    0.000    0.008    0.008 linalg.py:1(<module>)
+12047/11631    0.005    0.000    0.008    0.000 {built-in method __new__ of type object at 0x944040}
+     9218    0.004    0.000    0.008    0.000 typing.py:1169(__setattr__)
+        1    0.000    0.000    0.008    0.008 reinplace.py:1(<module>)
+     7288    0.001    0.000    0.008    0.000 _methods.py:55(_any)
+    21294    0.008    0.000    0.008    0.000 {built-in method builtins.min}
+    33208    0.005    0.000    0.008    0.000 __init__.py:1517(debug)
+       96    0.000    0.000    0.007    0.000 _parser.py:969(parse)
+        1    0.000    0.000    0.007    0.007 eval.py:1(<module>)
+     2518    0.001    0.000    0.007    0.000 <frozen importlib._bootstrap>:632(cached)
+        1    0.000    0.000    0.007    0.007 client.py:1(<module>)
+     9218    0.007    0.000    0.007    0.000 {built-in method numpy.array}
+     1713    0.007    0.000    0.007    0.000 {method 'findall' of 're.Pattern' objects}
+       19    0.000    0.000    0.007    0.000 traceback.py:221(extract_stack)
+15871/15870    0.004    0.000    0.007    0.000 {built-in method builtins.all}
+       19    0.000    0.000    0.007    0.000 traceback.py:377(extract)
+   275/96    0.000    0.000    0.007    0.000 _parser.py:452(_parse_sub)
+       19    0.000    0.000    0.007    0.000 traceback.py:399(_extract_from_extended_frame_gen)
+       97    0.000    0.000    0.007    0.000 docscrape.py:384(_parse)
+      500    0.007    0.000    0.007    0.000 {method 'tolist' of 'torch._C.TensorBase' objects}
+      101    0.000    0.000    0.007    0.000 dataclasses.py:568(_init_fn)
+      138    0.000    0.000    0.007    0.000 linecache.py:36(getlines)
+     2834    0.002    0.000    0.007    0.000 fromnumeric.py:2177(sum)
+       64    0.000    0.000    0.007    0.000 linecache.py:80(updatecache)
+  337/103    0.003    0.000    0.007    0.000 _parser.py:512(_parse)
+     5341    0.004    0.000    0.007    0.000 <frozen importlib._bootstrap>:372(release)
+      143    0.000    0.000    0.007    0.000 _decorators.py:484(__call__)
+     1307    0.001    0.000    0.007    0.000 <frozen importlib._bootstrap_external>:610(_get_cached)
+      246    0.000    0.000    0.007    0.000 typing.py:726(Optional)
+    65814    0.007    0.000    0.007    0.000 {method 'startswith' of 'str' objects}
+        1    0.000    0.000    0.007    0.007 node.py:1(<module>)
+     6653    0.003    0.000    0.007    0.000 price_level.py:24(__init__)
+      374    0.001    0.000    0.007    0.000 typing.py:1430(__getitem__)
+        1    0.000    0.000    0.007    0.007 dynamic_shapes.py:1(<module>)
+     1961    0.001    0.000    0.007    0.000 <frozen importlib._bootstrap_external>:159(_path_isfile)
+      269    0.004    0.000    0.007    0.000 simulate.py:352(find_matching_order)
+        1    0.000    0.000    0.006    0.006 fake_tensor.py:1(<module>)
+      103    0.002    0.000    0.006    0.000 __init__.py:355(namedtuple)
+     2142    0.001    0.000    0.006    0.000 <frozen importlib._bootstrap_external>:150(_path_is_mode_type)
+      255    0.000    0.000    0.006    0.000 traceback.py:318(line)
+    12201    0.005    0.000    0.006    0.000 copy.py:231(_keep_alive)
+    27576    0.006    0.000    0.006    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+      111    0.000    0.000    0.006    0.000 linecache.py:26(getline)
+   118918    0.006    0.000    0.006    0.000 {built-in method unicodedata.east_asian_width}
+        1    0.000    0.000    0.006    0.006 engines.py:1(<module>)
+     1505    0.001    0.000    0.006    0.000 __init__.py:179(sub)
+      261    0.001    0.000    0.006    0.000 compute.py:267(_make_signature)
+        5    0.000    0.000    0.006    0.001 __init__.py:246(_lazy_call)
+        1    0.000    0.000    0.006    0.006 _pickle.py:1(<module>)
+        3    0.000    0.000    0.006    0.002 traceback.py:214(format_stack)
+        2    0.000    0.000    0.006    0.003 function.py:1(<module>)
+      530    0.000    0.000    0.006    0.000 typing.py:1439(copy_with)
+     1440    0.001    0.000    0.006    0.000 typing.py:1130(__init__)
+        1    0.000    0.000    0.006    0.006 exported_program.py:1(<module>)
+      849    0.001    0.000    0.006    0.000 itch_encoding.py:25(expand_special_val)
+     1934    0.006    0.000    0.006    0.000 {built-in method torch._C._get_operation_overload}
+     1910    0.003    0.000    0.006    0.000 functools.py:35(update_wrapper)
+        7    0.000    0.000    0.006    0.001 base.py:1(<module>)
+       57    0.000    0.000    0.005    0.000 __init__.py:455(inner)
+        6    0.000    0.000    0.005    0.001 rnn.py:1(<module>)
+     5341    0.003    0.000    0.005    0.000 <frozen importlib._bootstrap>:426(_get_module_lock)
+        1    0.000    0.000    0.005    0.005 numerictypes.py:1(<module>)
+     2942    0.005    0.000    0.005    0.000 {built-in method torch._C._dispatch_has_kernel_for_dispatch_key}
+       14    0.000    0.000    0.005    0.000 tokenize.py:406(open)
+       96    0.000    0.000    0.005    0.000 _compiler.py:573(_code)
+    25583    0.004    0.000    0.005    0.000 {built-in method builtins.hasattr}
+       77    0.001    0.000    0.005    0.000 enum.py:515(__new__)
+        1    0.000    0.000    0.005    0.005 _type_aliases.py:1(<module>)
+     3433    0.003    0.000    0.005    0.000 inspect.py:2729(__init__)
+       15    0.000    0.000    0.005    0.000 tokenize.py:313(detect_encoding)
+      210    0.000    0.000    0.005    0.000 _meta_registrations.py:44(wrapper)
+       18    0.000    0.000    0.005    0.000 tokenize.py:337(read_or_stop)
+       17    0.005    0.000    0.005    0.000 {method 'readline' of '_io.BufferedReader' objects}
+       26    0.000    0.000    0.005    0.000 _jit_internal.py:862(_check_overload_body)
+      849    0.003    0.000    0.005    0.000 shape_base.py:1185(tile)
+       26    0.000    0.000    0.005    0.000 _sources.py:119(parse_def)
+        4    0.000    0.000    0.005    0.001 profiler.py:1(<module>)
+     5754    0.004    0.000    0.005    0.000 function_base.py:254(flip)
+       26    0.000    0.000    0.005    0.000 _sources.py:102(make_source_context)
+       37    0.000    0.000    0.005    0.000 __init__.py:1004(inner)
+        1    0.000    0.000    0.005    0.005 series.py:1(<module>)
+        1    0.000    0.000    0.005    0.005 base_events.py:1(<module>)
+        9    0.000    0.000    0.005    0.001 common.py:1(<module>)
+      301    0.000    0.000    0.005    0.000 serialization.py:245(validate_cuda_device)
+   194/97    0.001    0.000    0.005    0.000 copy.py:217(_deepcopy_dict)
+        1    0.000    0.000    0.005    0.005 describe.py:1(<module>)
+    16833    0.005    0.000    0.005    0.000 message.py:25(__post_init__)
+        3    0.000    0.000    0.005    0.002 __init__.py:343(__init__)
+    10461    0.002    0.000    0.005    0.000 typing.py:1117(_is_dunder)
+        3    0.004    0.001    0.004    0.001 {built-in method _ctypes.dlopen}
+        1    0.000    0.000    0.004    0.004 py3k.py:1(<module>)
+      505    0.000    0.000    0.004    0.000 std.py:454(fp_write)
+     9075    0.003    0.000    0.004    0.000 price_level.py:45(add_order)
+        1    0.000    0.000    0.004    0.004 rnn.py:897(GRU)
+        1    0.000    0.000    0.004    0.004 __init__.py:167(_load_global_deps)
+    42222    0.004    0.000    0.004    0.000 {method 'get' of 'dict' objects}
+    16833    0.003    0.000    0.004    0.000 simulate.py:75(send_message)
+     9075    0.003    0.000    0.004    0.000 price_level.py:168(order_is_match)
+     2493    0.001    0.000    0.004    0.000 <frozen posixpath>:416(abspath)
+       59    0.000    0.000    0.004    0.000 typing.py:2726(_make_nmtuple)
+     6800    0.003    0.000    0.004    0.000 price_level.py:116(remove_order)
+     9073    0.003    0.000    0.004    0.000 price_level.py:222(order_has_worse_price)
+        1    0.000    0.000    0.004    0.004 graphs.py:1(<module>)
+      507    0.000    0.000    0.004    0.000 <frozen codecs>:319(decode)
+      127    0.003    0.000    0.004    0.000 library.py:80(define)
+    26955    0.004    0.000    0.004    0.000 orders.py:33(__init__)
+     1014    0.000    0.000    0.004    0.000 utils.py:193(inner)
+        6    0.000    0.000    0.004    0.001 conv.py:1(<module>)
+       38    0.000    0.000    0.004    0.000 dataclasses.py:638(_frozen_get_del_attr)
+   603/96    0.001    0.000    0.004    0.000 _compiler.py:37(_compile)

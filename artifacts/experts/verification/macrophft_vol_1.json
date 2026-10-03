@@ -1,0 +1,59 @@
+{
+  "expert": "macrophft",
+  "native_output": [
+    [
+      5.681945323944092,
+      4.579216480255127
+    ]
+  ],
+  "layout": "batch,Q_flat_long",
+  "units": "native_ETHUSDT_policy_Q",
+  "symbols": [
+    "ETHUSDT"
+  ],
+  "as_of": null,
+  "horizon": 1,
+  "sampling_seconds": null,
+  "parameters": 45507,
+  "native_modules": [
+    {
+      "type": "subagent",
+      "parameters": 45507,
+      "buffer_elements": 1,
+      "buffer_bytes": 4
+    }
+  ],
+  "parameter_bytes": 182028,
+  "parameter_dtypes": [
+    "torch.float32"
+  ],
+  "frozen": true,
+  "output_shape": [
+    1,
+    2
+  ],
+  "load_seconds": 0.870625999999902,
+  "input_shapes": {
+    "single_state": [
+      1,
+      36
+    ],
+    "trend_state": [
+      1,
+      9
+    ],
+    "previous_action": [
+      1
+    ]
+  },
+  "rss_start_bytes": 552181760,
+  "rss_loaded_bytes": 708112384,
+  "rss_end_bytes": 937652224,
+  "peak_ram_bytes": 937652224,
+  "ram_measurement": "Windows process peak working set",
+  "forward_seconds": 0.12357220000012603,
+  "peak_allocated_bytes": 8711168,
+  "peak_reserved_bytes": 23068672,
+  "variant": "vol/1",
+  "input_authenticity": "synthetic_schema_probe_not_market_validation"
+}

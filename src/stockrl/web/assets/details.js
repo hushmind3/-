@@ -405,7 +405,7 @@ function renderRuntimeUpdates(d) {
     r = u && u.applied_rules;
   const lines = [
     "화면(JS/CSS): 새로고침 · 학습 규칙·loss/learner: 현재 회차 저장 후 hot apply",
-    "모델 판단·관찰 Python: ‘모델 코드 적용’ 버튼으로 모델만 저장 후 재시작 · 시세 수집/웹 유지",
+    "모델 Python 변경: 해당 모델 저장 후 정지 → 시작 · 시세 수집/웹 유지",
     "웹 API/server Python: 웹서버 재시작만 · feed/agent 유지",
   ];
   if (r) {
@@ -510,7 +510,7 @@ function renderProcessingHistory(d) {
   text("replayCount", whole(m.replay_count));
   text("maturedCount", whole(m.matured));
   text("updateCount", whole(m.updates));
-  text("lastUpdate", "마지막 " + timeOf(m.last_update_utc));
+  text("lastUpdate", "상태 확인 " + timeOf(d.status_updated_at));
   text(
     "gateCount",
     "새 모델 적용 " +

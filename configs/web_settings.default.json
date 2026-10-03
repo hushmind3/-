@@ -1,0 +1,9 @@
+{
+  "mode": "live",
+  "horizon": "1m",
+  "observe_enabled": true,
+  "paper_enabled": true,
+  "learning_enabled": true,
+  "champion_enabled": false,
+  "candidate_enabled": false
+}

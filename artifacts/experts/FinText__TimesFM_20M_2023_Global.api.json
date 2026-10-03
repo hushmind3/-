@@ -1,0 +1,86 @@
+{
+  "_id": "6910ef6b08e298f54fa518db",
+  "id": "FinText/TimesFM_20M_2023_Global",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "transformers",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "timesfm",
+    "TSFM",
+    "Finance",
+    "Financial Forecasting",
+    "FinText",
+    "time-series-forecasting",
+    "license:apache-2.0",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "downloads": 42,
+  "likes": 0,
+  "modelId": "FinText/TimesFM_20M_2023_Global",
+  "author": "FinText",
+  "sha": "22801e12efb5a6f11df5dad5f8886fb0b478c3a1",
+  "lastModified": "2025-11-13T17:51:55.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {
+    "architectures": [
+      "TimesFMForHF"
+    ],
+    "model_type": "timesfm"
+  },
+  "cardData": {
+    "pipeline_tag": "time-series-forecasting",
+    "license": "apache-2.0",
+    "tags": [
+      "TSFM",
+      "Finance",
+      "Financial Forecasting",
+      "FinText"
+    ],
+    "library_name": "transformers"
+  },
+  "transformersInfo": {
+    "auto_model": "TimesFMForHF",
+    "processor": "AutoTokenizer"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "279ed54b50840fc7db83ba48fb918a5b21e7ced7",
+      "size": 54
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "111df4e351d8676238a1d96e522769bfbb4ff9ee",
+      "size": 653
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "a4792753ea910529ee59c260621a633472fd4e35",
+      "size": 326
+    },
+    {
+      "rfilename": "model.safetensors",
+      "blobId": "751079145bd8e67c1d426cc0b4c9ffc1f87ecb89",
+      "size": 79252192,
+      "lfs": {
+        "sha256": "ce3e71d2e0e016258582febf890a6f0dcdefb4995c64c018a12222dc8cc52399",
+        "size": 79252192,
+        "pointerSize": 133
+      }
+    }
+  ],
+  "spaces": [],
+  "createdAt": "2025-11-09T19:45:47.000Z",
+  "safetensors": {
+    "parameters": {
+      "F32": 19809304
+    },
+    "total": 19809304
+  },
+  "usedStorage": 79252192
+}

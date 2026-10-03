@@ -1,0 +1,47 @@
+{
+  "_id": "67366b2ae858c8206f39230a",
+  "id": "aaronwheeler/MarketGPT-100m",
+  "private": false,
+  "tags": [
+    "license:mit",
+    "region:us"
+  ],
+  "downloads": 0,
+  "likes": 1,
+  "modelId": "aaronwheeler/MarketGPT-100m",
+  "author": "aaronwheeler",
+  "sha": "f80057ebcacbd43dbf72c2d7acd804e58eeaccd4",
+  "lastModified": "2024-11-14T21:31:32.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {},
+  "cardData": {
+    "license": "mit"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "size": 1519
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "7be5fc7f47d5db027d120b8024982df93db95b74",
+      "size": 24
+    },
+    {
+      "rfilename": "ckpt_finetune_AAPL_v3.zip",
+      "blobId": "e879f9416534aada189f24ee90d040de293e9f26",
+      "size": 1054913634,
+      "lfs": {
+        "sha256": "420f549e818e4d1c71c77689bad261197b0d23300751c8e816e5b725158ec0c6",
+        "size": 1054913634,
+        "pointerSize": 135
+      }
+    }
+  ],
+  "spaces": [],
+  "createdAt": "2024-11-14T21:27:06.000Z",
+  "usedStorage": 1054913634
+}

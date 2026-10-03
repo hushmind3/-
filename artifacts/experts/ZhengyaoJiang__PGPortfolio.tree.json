@@ -1,0 +1,704 @@
+{
+  "repo": {
+    "id": 110447112,
+    "node_id": "MDEwOlJlcG9zaXRvcnkxMTA0NDcxMTI=",
+    "name": "PGPortfolio",
+    "full_name": "ZhengyaoJiang/PGPortfolio",
+    "private": false,
+    "owner": {
+      "login": "ZhengyaoJiang",
+      "id": 15139574,
+      "node_id": "MDQ6VXNlcjE1MTM5NTc0",
+      "avatar_url": "https://avatars.githubusercontent.com/u/15139574?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ZhengyaoJiang",
+      "html_url": "https://github.com/ZhengyaoJiang",
+      "followers_url": "https://api.github.com/users/ZhengyaoJiang/followers",
+      "following_url": "https://api.github.com/users/ZhengyaoJiang/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ZhengyaoJiang/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ZhengyaoJiang/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ZhengyaoJiang/subscriptions",
+      "organizations_url": "https://api.github.com/users/ZhengyaoJiang/orgs",
+      "repos_url": "https://api.github.com/users/ZhengyaoJiang/repos",
+      "events_url": "https://api.github.com/users/ZhengyaoJiang/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ZhengyaoJiang/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/ZhengyaoJiang/PGPortfolio",
+    "description": "PGPortfolio: Policy Gradient Portfolio, the source code of \"A Deep Reinforcement Learning Framework for the Financial Portfolio Management Problem\"(https://arxiv.org/pdf/1706.10059.pdf).",
+    "fork": false,
+    "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio",
+    "forks_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/forks",
+    "keys_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/teams",
+    "hooks_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/hooks",
+    "issue_events_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/events",
+    "assignees_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/tags",
+    "blobs_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/languages",
+    "stargazers_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/stargazers",
+    "contributors_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/contributors",
+    "subscribers_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/subscribers",
+    "subscription_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/subscription",
+    "commits_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/merges",
+    "archive_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/downloads",
+    "issues_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/labels{/name}",
+    "releases_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/deployments",
+    "created_at": "2017-11-12T16:08:44Z",
+    "updated_at": "2026-09-23T07:54:55Z",
+    "pushed_at": "2021-10-09T19:16:40Z",
+    "git_url": "git://github.com/ZhengyaoJiang/PGPortfolio.git",
+    "ssh_url": "git@github.com:ZhengyaoJiang/PGPortfolio.git",
+    "clone_url": "https://github.com/ZhengyaoJiang/PGPortfolio.git",
+    "svn_url": "https://github.com/ZhengyaoJiang/PGPortfolio",
+    "homepage": "",
+    "size": 270,
+    "stargazers_count": 1851,
+    "watchers_count": 1851,
+    "language": "Python",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 756,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 56,
+    "license": {
+      "key": "gpl-3.0",
+      "name": "GNU General Public License v3.0",
+      "spdx_id": "GPL-3.0",
+      "url": "https://api.github.com/licenses/gpl-3.0",
+      "node_id": "MDc6TGljZW5zZTk="
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [],
+    "visibility": "public",
+    "forks": 756,
+    "open_issues": 56,
+    "watchers": 1851,
+    "default_branch": "master",
+    "temp_clone_token": null,
+    "network_count": 756,
+    "subscribers_count": 128
+  },
+  "tree": {
+    "sha": "48cc5a4af5edefd298e7801b95b0d4696f5175dd",
+    "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/48cc5a4af5edefd298e7801b95b0d4696f5175dd",
+    "tree": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6216a39211f7a22f37064abec55b8f8555db46e3",
+        "size": 1217,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/6216a39211f7a22f37064abec55b8f8555db46e3"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "size": 35147,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/94a9ed024d3859793618152ea559a168bbcbb5e2"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "093aaedb9a576dc1d45efa062f40b8330b884492",
+        "size": 3427,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/093aaedb9a576dc1d45efa062f40b8330b884492"
+      },
+      {
+        "path": "main.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f09d1061c64e7020d4cc2dbd607f2d854f9fd1db",
+        "size": 5614,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/f09d1061c64e7020d4cc2dbd607f2d854f9fd1db"
+      },
+      {
+        "path": "pgportfolio",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3f55049f3cb437135dac86250d234157e7ed06b6",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/3f55049f3cb437135dac86250d234157e7ed06b6"
+      },
+      {
+        "path": "pgportfolio/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c3961685ab8defd1a28f2a2a7bb3b74fcafa4d6b",
+        "size": 39,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/c3961685ab8defd1a28f2a2a7bb3b74fcafa4d6b"
+      },
+      {
+        "path": "pgportfolio/autotrain",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a7a551ccf05796126f67abb65587eb24b9b004d1",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/a7a551ccf05796126f67abb65587eb24b9b004d1"
+      },
+      {
+        "path": "pgportfolio/autotrain/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "pgportfolio/autotrain/generate.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6a232a6fe9998c4f8556011da58c119933900c57",
+        "size": 1118,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/6a232a6fe9998c4f8556011da58c119933900c57"
+      },
+      {
+        "path": "pgportfolio/autotrain/training.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73131a5c6243d9e2f360acbb6546c949fcab4ee4",
+        "size": 3272,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/73131a5c6243d9e2f360acbb6546c949fcab4ee4"
+      },
+      {
+        "path": "pgportfolio/constants.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3221a3117c8d47c8629e776aef2387fa04077bca",
+        "size": 702,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/3221a3117c8d47c8629e776aef2387fa04077bca"
+      },
+      {
+        "path": "pgportfolio/learn",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e2405eb0081ad75a21972d9bc0111dc974b2d796",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/e2405eb0081ad75a21972d9bc0111dc974b2d796"
+      },
+      {
+        "path": "pgportfolio/learn/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "pgportfolio/learn/network.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1f72bab2dd0db4c428fd74eca4a4c1691c5617d2",
+        "size": 8638,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/1f72bab2dd0db4c428fd74eca4a4c1691c5617d2"
+      },
+      {
+        "path": "pgportfolio/learn/nnagent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5581bc2892f9ffb344c9b975883afd7ed0595210",
+        "size": 9580,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/5581bc2892f9ffb344c9b975883afd7ed0595210"
+      },
+      {
+        "path": "pgportfolio/learn/rollingtrainer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d88d6ba98ef6b9aa831f6d46bc68c4ff2cb11991",
+        "size": 2301,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/d88d6ba98ef6b9aa831f6d46bc68c4ff2cb11991"
+      },
+      {
+        "path": "pgportfolio/learn/tradertrainer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "39a399cec37d39e01cb52288e76f07cf32a4ef0b",
+        "size": 10432,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/39a399cec37d39e01cb52288e76f07cf32a4ef0b"
+      },
+      {
+        "path": "pgportfolio/marketdata",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "8852690767e581bbeaf8bf907a35085a55cac624",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/8852690767e581bbeaf8bf907a35085a55cac624"
+      },
+      {
+        "path": "pgportfolio/marketdata/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "953db36d484f8182db01126d46901e4acfe8f759",
+        "size": 66,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/953db36d484f8182db01126d46901e4acfe8f759"
+      },
+      {
+        "path": "pgportfolio/marketdata/coinlist.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a5b396fd98610a7a3dc49242450a0b6103d768a8",
+        "size": 3357,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/a5b396fd98610a7a3dc49242450a0b6103d768a8"
+      },
+      {
+        "path": "pgportfolio/marketdata/datamatrices.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "889e83ba772dd71fcc49008350bdddb3e05cca44",
+        "size": 8758,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/889e83ba772dd71fcc49008350bdddb3e05cca44"
+      },
+      {
+        "path": "pgportfolio/marketdata/globaldatamatrix.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c85be338292b9c7f4ac1083e17e189174d545525",
+        "size": 10762,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/c85be338292b9c7f4ac1083e17e189174d545525"
+      },
+      {
+        "path": "pgportfolio/marketdata/poloniex.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2cd9c314bc13e39b6f18fd4feda80d80602ece25",
+        "size": 2440,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/2cd9c314bc13e39b6f18fd4feda80d80602ece25"
+      },
+      {
+        "path": "pgportfolio/marketdata/replaybuffer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ad776ba6d55a0f468da1468f2e1e20ee81eeabdb",
+        "size": 2140,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/ad776ba6d55a0f468da1468f2e1e20ee81eeabdb"
+      },
+      {
+        "path": "pgportfolio/net_config.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "18fcc840ba4628e1e16dc9557864705171208947",
+        "size": 879,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/18fcc840ba4628e1e16dc9557864705171208947"
+      },
+      {
+        "path": "pgportfolio/resultprocess",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b55f58a45e10a351e6f625736f67f140894ed27e",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/b55f58a45e10a351e6f625736f67f140894ed27e"
+      },
+      {
+        "path": "pgportfolio/resultprocess/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "pgportfolio/resultprocess/plot.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0711bbaec993cc2413046c1f8fefac181e087f98",
+        "size": 6349,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/0711bbaec993cc2413046c1f8fefac181e087f98"
+      },
+      {
+        "path": "pgportfolio/resultprocess/table.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5c998efeb71197972e4033f40bbd1cc35e30632d",
+        "size": 86,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/5c998efeb71197972e4033f40bbd1cc35e30632d"
+      },
+      {
+        "path": "pgportfolio/tdagent",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ab42bd55ed37db29174db960e6789029b5d519c8",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/ab42bd55ed37db29174db960e6789029b5d519c8"
+      },
+      {
+        "path": "pgportfolio/tdagent/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9a1afb4a2828c1882673dea7af42572bc38d4002",
+        "size": 63,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/9a1afb4a2828c1882673dea7af42572bc38d4002"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6181a8e30e2f4eadf76d16a3e9ee87ef0cb40c81",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/6181a8e30e2f4eadf76d16a3e9ee87ef0cb40c81"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cb5876f4ce93f07210cac3f01e4a4e634015eeaa",
+        "size": 97,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/cb5876f4ce93f07210cac3f01e4a4e634015eeaa"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/anticor1.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "056c3cd2c24e408ba56b067336e454bfb9f491a3",
+        "size": 3356,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/056c3cd2c24e408ba56b067336e454bfb9f491a3"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/anticor2.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c9b46a15b80704e029f8a7d35398ef6181f67716",
+        "size": 3894,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/c9b46a15b80704e029f8a7d35398ef6181f67716"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/anticor_deprecated.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "07483dc8a3489b8a2c2e31429cb547e20060bde8",
+        "size": 5576,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/07483dc8a3489b8a2c2e31429cb547e20060bde8"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/bcrp.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "35695f9112e61ea9397f6551be457bb6156392f9",
+        "size": 1958,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/35695f9112e61ea9397f6551be457bb6156392f9"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/best.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a97f6f2731b3ae2378abc787ce787cae60045a3c",
+        "size": 924,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/a97f6f2731b3ae2378abc787ce787cae60045a3c"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/bk.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "10772ad90e058d065e67fd16ba78b7b9b0a13007",
+        "size": 3382,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/10772ad90e058d065e67fd16ba78b7b9b0a13007"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/bk_deprecated.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "22ea674898db2d7deb8361b21f1b8547b1b84436",
+        "size": 2592,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/22ea674898db2d7deb8361b21f1b8547b1b84436"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/bnn.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "581823e412aecf23dd21dc28c8d9a01c6793d72d",
+        "size": 3249,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/581823e412aecf23dd21dc28c8d9a01c6793d72d"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/corn_deprecated.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "db2167d1491530f2e1fd86f1fcb56f1f46f6e334",
+        "size": 3116,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/db2167d1491530f2e1fd86f1fcb56f1f46f6e334"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/cornk.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bc7b2692df228777db33e2d2df8a085cdf0b34e8",
+        "size": 2776,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/bc7b2692df228777db33e2d2df8a085cdf0b34e8"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/cornu.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8d1e74b90eef030516a791b68cebe59e7340d081",
+        "size": 2383,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/8d1e74b90eef030516a791b68cebe59e7340d081"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/crp.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a56596360eaee3e93e30a776075d34cea7a9d7cd",
+        "size": 731,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/a56596360eaee3e93e30a776075d34cea7a9d7cd"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/cwmr_std.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7b23a1e09dcafcc907ee16e6e72c3d04d8edf390",
+        "size": 3263,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/7b23a1e09dcafcc907ee16e6e72c3d04d8edf390"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/cwmr_var.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "66133e946df611e69972b434e526db01033604f7",
+        "size": 2004,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/66133e946df611e69972b434e526db01033604f7"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/eg.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "62527772035ffaf8eb571e0100c0c0c4a30ba677",
+        "size": 1142,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/62527772035ffaf8eb571e0100c0c0c4a30ba677"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/m0.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "24b8d912f94f911638f6f4af6d1cecad98081f76",
+        "size": 876,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/24b8d912f94f911638f6f4af6d1cecad98081f76"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/olmar.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "568b13a064edab2af93fc7ecd351cd1b00d0552b",
+        "size": 2787,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/568b13a064edab2af93fc7ecd351cd1b00d0552b"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/olmar2.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6862b1f9afa77d29a9217640399d5b0f9eb00a26",
+        "size": 1402,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/6862b1f9afa77d29a9217640399d5b0f9eb00a26"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/ons.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d0e8940b8a8ceb2cf04e0c57088fb3b3fdfeaf79",
+        "size": 1888,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/d0e8940b8a8ceb2cf04e0c57088fb3b3fdfeaf79"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/pamr.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9a90ef5e46195f86342c530bb074a57651f7ec88",
+        "size": 2507,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/9a90ef5e46195f86342c530bb074a57651f7ec88"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/rmr.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "46d46446395a172a996c6133f758dff34d7a0116",
+        "size": 1273,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/46d46446395a172a996c6133f758dff34d7a0116"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/rmr_deprecated.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c89f6347f144b92baece35016cf6e8f29a2550a",
+        "size": 833,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/8c89f6347f144b92baece35016cf6e8f29a2550a"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/sp.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eaed38032cc276d8d15cd7327a85621026109853",
+        "size": 585,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/eaed38032cc276d8d15cd7327a85621026109853"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/ubah.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2c5da927826d9e81e962698f1199c5737571d89a",
+        "size": 470,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/2c5da927826d9e81e962698f1199c5737571d89a"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/up.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "68ad1a05296122256c7ec61732af0b4c0951eb46",
+        "size": 2236,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/68ad1a05296122256c7ec61732af0b4c0951eb46"
+      },
+      {
+        "path": "pgportfolio/tdagent/algorithms/wmamr.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7bdb8e296f510974f2c03492da3576febaba9a1",
+        "size": 1034,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/f7bdb8e296f510974f2c03492da3576febaba9a1"
+      },
+      {
+        "path": "pgportfolio/tdagent/tdagent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "37af47d74bb6a55f4f97a0593227771e38dd51d6",
+        "size": 7788,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/37af47d74bb6a55f4f97a0593227771e38dd51d6"
+      },
+      {
+        "path": "pgportfolio/tools",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3eadff09ef9def76eadc98a74a38e42b0c49ae56",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/3eadff09ef9def76eadc98a74a38e42b0c49ae56"
+      },
+      {
+        "path": "pgportfolio/tools/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "pgportfolio/tools/configprocess.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "27d7b72bb2c65546135f0f04e270c3af82aaec39",
+        "size": 3983,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/27d7b72bb2c65546135f0f04e270c3af82aaec39"
+      },
+      {
+        "path": "pgportfolio/tools/data.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9f6306dd62935914ef699bd283c7f5337c7a5efb",
+        "size": 4469,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/9f6306dd62935914ef699bd283c7f5337c7a5efb"
+      },
+      {
+        "path": "pgportfolio/tools/indicator.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "03ba71501a81912d45fbfc713ec1967b0e692471",
+        "size": 1302,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/03ba71501a81912d45fbfc713ec1967b0e692471"
+      },
+      {
+        "path": "pgportfolio/tools/shortcut.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "160d0ed1162f5616592e4c3388a1a6fb57f3a0ea",
+        "size": 1595,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/160d0ed1162f5616592e4c3388a1a6fb57f3a0ea"
+      },
+      {
+        "path": "pgportfolio/tools/trade.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "28a07e5d8329e976aaf00a050d64d82f5f5adae0",
+        "size": 3272,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/28a07e5d8329e976aaf00a050d64d82f5f5adae0"
+      },
+      {
+        "path": "pgportfolio/trade",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "67e8e4325ba14b076d56a4886f5da7311a1e7ad0",
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/trees/67e8e4325ba14b076d56a4886f5da7311a1e7ad0"
+      },
+      {
+        "path": "pgportfolio/trade/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "pgportfolio/trade/backtest.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3141e7bd35b531d513fed48ca937a554fcf16898",
+        "size": 3018,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/3141e7bd35b531d513fed48ca937a554fcf16898"
+      },
+      {
+        "path": "pgportfolio/trade/trader.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0502b0e6ebb5f340055676b0741b1836e785a294",
+        "size": 4861,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/0502b0e6ebb5f340055676b0741b1836e785a294"
+      },
+      {
+        "path": "requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e8b92aeefa539d415d5e4ef25d0937ffbb35cd1f",
+        "size": 90,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/e8b92aeefa539d415d5e4ef25d0937ffbb35cd1f"
+      },
+      {
+        "path": "setup.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f1ad5a4d9517fc62552e02f221243416a1b58b45",
+        "size": 478,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/f1ad5a4d9517fc62552e02f221243416a1b58b45"
+      },
+      {
+        "path": "user_guide.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "173962fc81af78a8c298191a3ce5ef32b9050483",
+        "size": 7169,
+        "url": "https://api.github.com/repos/ZhengyaoJiang/PGPortfolio/git/blobs/173962fc81af78a8c298191a3ce5ef32b9050483"
+      }
+    ],
+    "truncated": false
+  }
+}

@@ -331,12 +331,12 @@ section {
   gap: 7px;
 }
 .status-card .topline span:first-child {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 850;
 }
 .status-card .big {
   display: block;
-  font-size: 23px;
+  font-size: clamp(24px, 2vw, 32px);
   letter-spacing: -0.045em;
   line-height: 1.25;
   margin: 12px 0 3px;
@@ -344,7 +344,7 @@ section {
 }
 .status-card .detail {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   min-height: 32px;
 }
 .meter {
@@ -1329,12 +1329,25 @@ section {
   line-height: 1.7;
 }
 .status-grid {
-  gap: 10px;
+  gap: 16px;
   margin-top: 12px;
 }
 .status-card {
-  padding: 15px;
+  padding: 18px;
 }
+.runtime-board { margin-top: 20px; }
+.runtime-board-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.runtime-board-heading h2 { margin: 0; font-size: 20px; }
+.runtime-board-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 8px 0 16px; }
+.runtime-board-summary strong { font-size: 20px; }
+.runtime-board-summary span { color: var(--muted); }
+.runtime-board .status-card { min-width: 0; }
+.runtime-board .detail { overflow-wrap: anywhere; line-height: 1.55; }
+.optimizer-values { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0; font-size: 14px; }
+.optimizer-values b { font-variant-numeric: tabular-nums; }
+.value-updated { animation: value-update 1.5s ease-out; }
+@keyframes value-update { from { color: #008563; background: #def7ec; } to { color: inherit; background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .value-updated { animation: none; } }
 .action-overview {
   margin-top: 12px;
 }

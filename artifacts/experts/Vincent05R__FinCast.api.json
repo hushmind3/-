@@ -1,0 +1,52 @@
+{
+  "_id": "68a53a56ac6a3130f052463f",
+  "id": "Vincent05R/FinCast",
+  "private": false,
+  "tags": [
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "downloads": 0,
+  "likes": 8,
+  "modelId": "Vincent05R/FinCast",
+  "author": "Vincent05R",
+  "sha": "2d7d90b159db8961d27c2cf165d51195902ef92b",
+  "lastModified": "2025-08-26T07:45:49.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {},
+  "cardData": {
+    "license": "apache-2.0"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "size": 1519
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "5651fa64908083185389fd0166b6081d709ccb31",
+      "size": 2040
+    },
+    {
+      "rfilename": "checksum_f.txt",
+      "blobId": "d83d7be6f33e8d73e0067dd8eee88dddc001fde7",
+      "size": 73
+    },
+    {
+      "rfilename": "v1.pth",
+      "blobId": "fbca709b1381a57dd6f4429103a95695018892c8",
+      "size": 3966703063,
+      "lfs": {
+        "sha256": "d5ca999b02c944effa60d2b94174dc4d5a0cd2c0543ae289b2e36f37431492a8",
+        "size": 3966703063,
+        "pointerSize": 135
+      }
+    }
+  ],
+  "spaces": [],
+  "createdAt": "2025-08-20T03:00:38.000Z",
+  "usedStorage": 7932690487
+}

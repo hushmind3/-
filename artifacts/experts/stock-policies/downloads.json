@@ -1,0 +1,282 @@
+{
+  "revisions": {
+    "dapo": {
+      "repo": "Ruijian-Zha/FinRL-DAPO-SR",
+      "revision": "02bdc24912c740183bfb9a0af11078d207ecba8b"
+    },
+    "msft": {
+      "repo": "maksimprivalov/RLTradingAgent",
+      "revision": "4cb10fa1d127014184bfea6912a2d01b981bff86"
+    },
+    "finrl": {
+      "repo": "tpeiqi/FinRL_trading_bot",
+      "revision": "9094922335f26fce6a4dd3bd9c3d58601819ea03"
+    },
+    "adilbai_weights": {
+      "repo": "Adilbai/stock-trading-rl-agent",
+      "revision": "a317fec1939eda44d04088b47b48ca3ee158bc1f"
+    },
+    "dapo_weights": {
+      "repo": "rz2689/finrl-dapo-grpo-sentiment-risk",
+      "revision": "c8510f5efffc6074cba6958990ef603d2742152f"
+    },
+    "dapo_data": {
+      "repo": "benstaf/nasdaq_2013_2023",
+      "revision": "b80bc15e4320eac68f53cfdd2fff3365e55dfedd"
+    }
+  },
+  "files": [
+    {
+      "path": "dapo\\FinRL_DeepSeek_backtest.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/FinRL_DeepSeek_backtest.py",
+      "bytes": 52872,
+      "sha256": "69b25c4202f96c5f2fabbc9bbefc4f69439f7f963a8a3dedb493bf2f85a0e765"
+    },
+    {
+      "path": "dapo\\README.md",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/README.md",
+      "bytes": 3272,
+      "sha256": "209a44ef08386bdc5b0bf5c3f7b8e96157076a4c0b5b25d49117a6b187b55ead"
+    },
+    {
+      "path": "dapo\\backtest_main_dapo.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/backtest_main_dapo.py",
+      "bytes": 64392,
+      "sha256": "e8b9900bf358065823b287bf82bb2de7f7452c7c4ac378f570fb8bfdf506d69d"
+    },
+    {
+      "path": "dapo\\dapo_algorithm.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/dapo_algorithm.py",
+      "bytes": 28234,
+      "sha256": "22260677a92827999f32b1539612b09ca4f8aa80c6d22f3e794d58df2fe8ec1c"
+    },
+    {
+      "path": "dapo\\download_data.sh",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/download_data.sh",
+      "bytes": 839,
+      "sha256": "35f5bf920f3d617811ec9bd3da111b690d1af8d21a89d06adabc75a007d688af"
+    },
+    {
+      "path": "dapo\\env_stocktrading.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/env_stocktrading.py",
+      "bytes": 21573,
+      "sha256": "f978ec22cf5bf1080f5aa9ceeec2aa24fe66ef5cb6ed6eac1de1ca0ef3bbb300"
+    },
+    {
+      "path": "dapo\\env_stocktrading_llm_risk.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/env_stocktrading_llm_risk.py",
+      "bytes": 27116,
+      "sha256": "9156ab7a6e9cec1b58a362b569aece1cafd2c1e74bf034ff3bc2d34cb21e0e86"
+    },
+    {
+      "path": "dapo\\installation_script.sh",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/installation_script.sh",
+      "bytes": 941,
+      "sha256": "403787db210d62e0620a66eda8b5778c7e12a0f4cd42aaa81affed776d6e54f2"
+    },
+    {
+      "path": "dapo\\train_dapo_llm_risk.py",
+      "url": "https://raw.githubusercontent.com/Ruijian-Zha/FinRL-DAPO-SR/02bdc24912c740183bfb9a0af11078d207ecba8b/train_dapo_llm_risk.py",
+      "bytes": 6465,
+      "sha256": "1bc78360416f018d68b22e61c717d394d92854f90aca929ae945a86295412b96"
+    },
+    {
+      "path": "msft\\README.md",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/README.md",
+      "bytes": 8249,
+      "sha256": "70bc51ac47602a39198aae27b8d355d6c268fcd2c7a6bef83806e0813b1331bc"
+    },
+    {
+      "path": "msft\\agent\\env.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/agent/env.py",
+      "bytes": 4476,
+      "sha256": "b2ac59bec9a768ed7671e36d8c90d88fdede418b9de75d18abc5d4111dc3eb27"
+    },
+    {
+      "path": "msft\\agent\\eval.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/agent/eval.py",
+      "bytes": 1619,
+      "sha256": "d2658e2aff2e910a527816a1536a821b5c8a1455ff6a9c0094ed3496e6e517ed"
+    },
+    {
+      "path": "msft\\agent\\features.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/agent/features.py",
+      "bytes": 1647,
+      "sha256": "f69afbd392d326b76094c7c1ebb7fb28282bea4d02373a5da967f0fd3690092c"
+    },
+    {
+      "path": "msft\\agent\\prepare_data.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/agent/prepare_data.py",
+      "bytes": 667,
+      "sha256": "853f8f9123162db59b4279c03b45220c9fb8eea75012264a1a051e2ed65c1715"
+    },
+    {
+      "path": "msft\\agent\\train.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/agent/train.py",
+      "bytes": 814,
+      "sha256": "a4fd7b0bc05f3b696d55115a33e470eb02076d732b94208143f2466d1d8ebc81"
+    },
+    {
+      "path": "msft\\data\\msft_test.csv",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/data/msft_test.csv",
+      "bytes": 157522,
+      "sha256": "828bf09ae93a991e78bf0cfe690298bc96109e36d402cf4f26aaea2397acd69d"
+    },
+    {
+      "path": "msft\\data\\msft_train.csv",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/data/msft_train.csv",
+      "bytes": 305289,
+      "sha256": "0c1a6c7a5d2f536d7662d4e1fcde620c68b134531003cee7643d0fee81be8828"
+    },
+    {
+      "path": "msft\\data\\msft_val.csv",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/data/msft_val.csv",
+      "bytes": 52617,
+      "sha256": "b973cca5cb133a1bebb8249e5ac83a07495f98a6fac65d363d6b8a8384212277"
+    },
+    {
+      "path": "msft\\documentation.ipynb",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/documentation.ipynb",
+      "bytes": 71384,
+      "sha256": "41994481bd931582933093dd8c11572613b9260f98f5d77ec47cc273a2bfd0ae"
+    },
+    {
+      "path": "msft\\main.py",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/main.py",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\msft\\ppo_trader.zip",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/ppo_trader.zip",
+      "bytes": 276393,
+      "sha256": "03868b4c7fc5554ab9fc043f2a29aaf3a58a0c52584580c2bc829fbac8d7d007"
+    },
+    {
+      "path": "msft\\requirements.txt",
+      "url": "https://raw.githubusercontent.com/maksimprivalov/RLTradingAgent/4cb10fa1d127014184bfea6912a2d01b981bff86/requirements.txt",
+      "bytes": 72,
+      "sha256": "807979af45efc9968a3e4c08b45da2e4b50b28ad0047341ef72d4e27f0144c8a"
+    },
+    {
+      "path": "finrl\\FinRL_models.ipynb",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/FinRL_models.ipynb",
+      "bytes": 2504525,
+      "sha256": "fb187f457be3b751506c4e122861cf82e6585a1e92c70d630ef103bce32cbb51"
+    },
+    {
+      "path": "finrl\\FinRL_trading_bot.ipynb",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/FinRL_trading_bot.ipynb",
+      "bytes": 113578,
+      "sha256": "9f44a6f8a0f3c494b2c464823c8ab9a50fe1be8c296017b99ef4af60f8363c80"
+    },
+    {
+      "path": "finrl\\FinRL_trading_bot_demo.ipynb",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/FinRL_trading_bot_demo.ipynb",
+      "bytes": 121751,
+      "sha256": "5af93e5d02cf3db4a5ace6e81016a94b7b5e3fd3966baea11c359c84b735b0a4"
+    },
+    {
+      "path": "finrl\\README.md",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/README.md",
+      "bytes": 2668,
+      "sha256": "572f421f1daaef1fb612377487b350aebeff98c821227909f422e1276093483f"
+    },
+    {
+      "path": "finrl\\data\\account_value_yesterday.txt",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/data/account_value_yesterday.txt",
+      "bytes": 10,
+      "sha256": "ab51f93fe7345b32cebe12b6534378d4255bde2f57b0d55a8068e9f4200ecab5"
+    },
+    {
+      "path": "finrl\\data\\trade_data.csv",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/data/trade_data.csv",
+      "bytes": 297167,
+      "sha256": "c72d0caf49c83fc56a333f401684cf5bdf87365898096d2c185a5d1072242074"
+    },
+    {
+      "path": "finrl\\data\\train_data.csv",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/data/train_data.csv",
+      "bytes": 6210913,
+      "sha256": "b779db536b8a9f7c5a23ff534b91e4419c7ab2ace142d22443513588362e6dd8"
+    },
+    {
+      "path": "finrl\\requirements.txt",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/requirements.txt",
+      "bytes": 202,
+      "sha256": "2584dadfc541b6e67f5be4d62b60864d9ca4520f71d17f03629403e757f60b6c"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\finrl\\trained_models\\agent_a2c.zip",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/trained_models/agent_a2c.zip",
+      "bytes": 283439,
+      "sha256": "570d90087e665dd8f16160373b5e9f6d9e5615b09f83382d75828d07d82f2ca5"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\finrl\\trained_models\\agent_ppo.zip",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/trained_models/agent_ppo.zip",
+      "bytes": 412897,
+      "sha256": "b268b5acd1dff3c3afe8614af0c3eff977d2493395719134b4fd525cf4fb42f1"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\finrl\\trained_models\\agent_sac.zip",
+      "url": "https://raw.githubusercontent.com/tpeiqi/FinRL_trading_bot/9094922335f26fce6a4dd3bd9c3d58601819ea03/trained_models/agent_sac.zip",
+      "bytes": 5135576,
+      "sha256": "59f7156e5ee8c51e4ac6dd59fc320e570865ac101a6525c5e448d328c7177fc9"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\adilbai\\final_model.zip",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/final_model.zip",
+      "bytes": 4875406,
+      "sha256": "d714969844c671a04cecbe64c428a23919dbcae35bfcc3078e32d0f0b8fdf366"
+    },
+    {
+      "path": "adilbai\\scaler.pkl",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/scaler.pkl",
+      "bytes": 2423,
+      "sha256": "cd514054432a4391237c70c9e98479a137aaf4dffbf28b768f78d648e1e7451c"
+    },
+    {
+      "path": "adilbai\\config.json",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/config.json",
+      "bytes": 602,
+      "sha256": "d50d1b5386a5f26dfcb1e6ff9b17fb9826dcdd5b0e95945056109f398464cac8"
+    },
+    {
+      "path": "adilbai\\dataprocessor.py",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/dataprocessor.py",
+      "bytes": 18201,
+      "sha256": "d6edc2342025ff972b31918de6dc5da31268f7179a0f307bed77ef4d90001046"
+    },
+    {
+      "path": "adilbai\\enviromentcreator.py",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/enviromentcreator.py",
+      "bytes": 19427,
+      "sha256": "012585c3c646290751cf690d63f695a189219605ad63f554b0fe88c4ed790551"
+    },
+    {
+      "path": "adilbai\\README.md",
+      "url": "https://huggingface.co/Adilbai/stock-trading-rl-agent/resolve/a317fec1939eda44d04088b47b48ca3ee158bc1f/README.md",
+      "bytes": 11294,
+      "sha256": "cbfce93e82f7177b39bac86b15850a09366c420702eab820ad5844cb46b25140"
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\stock\\dapo\\model_rl.pth",
+      "url": "https://huggingface.co/rz2689/finrl-dapo-grpo-sentiment-risk/resolve/c8510f5efffc6074cba6958990ef603d2742152f/model_rl.pth",
+      "bytes": 3295286,
+      "sha256": "c516e4c36461abe9f73f1248d1c7135f022d34c3610c55c1dfe1c3163576e70a"
+    },
+    {
+      "path": "dapo\\trade_data_deepseek_risk_2019_2023.csv",
+      "url": "https://huggingface.co/datasets/benstaf/nasdaq_2013_2023/resolve/b80bc15e4320eac68f53cfdd2fff3365e55dfedd/trade_data_deepseek_risk_2019_2023.csv",
+      "bytes": 31198826,
+      "sha256": "e5f510b815f7e6d05dba9307b71f2ca738f7370c77a4206b17b5fbd5dd23898d"
+    },
+    {
+      "path": "dapo\\trade_data_deepseek_sentiment_2019_2023.csv",
+      "url": "https://huggingface.co/datasets/benstaf/nasdaq_2013_2023/resolve/b80bc15e4320eac68f53cfdd2fff3365e55dfedd/trade_data_deepseek_sentiment_2019_2023.csv",
+      "bytes": 30953286,
+      "sha256": "1d827b3685e914bdbb4ee6270e556ba1a4490976a717bc85dc729f26ff980fef"
+    }
+  ]
+}

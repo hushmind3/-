@@ -1,0 +1,1145 @@
+{
+  "schema": "trading_moe_registry_v1",
+  "generated_at": "2026-10-02T12:25:55.016478+00:00",
+  "artifact_root": ".",
+  "experts": [
+    {
+      "id": "fincast",
+      "backend": "fincast",
+      "variant": null,
+      "name": "FinCast 1.0B",
+      "role": "수치 시계열 · 분위수 예측",
+      "parameters": 991436960,
+      "weight_bytes": 3965747840,
+      "dtype": "FP32",
+      "checkpoint_bytes": 3966703063,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/FinCast/v1.pth",
+          "bytes": 3966703063,
+          "sha256": "d5ca999b02c944effa60d2b94174dc4d5a0cd2c0543ae289b2e36f37431492a8",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "Vincent05R/FinCast",
+          "revision": "2d7d90b159db8961d27c2cf165d51195902ef92b"
+        }
+      ],
+      "source": {
+        "repo": "vincent05r/FinCast-fts",
+        "revision": "488b19d1d85fa2b3d4b93469530cefdcf1cc97a4"
+      },
+      "auxiliary_sources": [],
+      "license": "Apache-2.0",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "fincast",
+        "layout": "symbol,horizon,point_and_nine_quantiles",
+        "units": "price",
+        "symbols": [
+          "AAPL"
+        ],
+        "as_of": "2026-09-25",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 991436960,
+        "parameter_bytes": 3965747840,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          1,
+          10
+        ],
+        "load_seconds": 10.655294299998786,
+        "input_shapes": {
+          "series": [
+            1,
+            128
+          ]
+        },
+        "rss_start_bytes": 552628224,
+        "rss_loaded_bytes": 846462976,
+        "rss_end_bytes": 1548738560,
+        "peak_ram_bytes": 8586969088,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.9355207999997219,
+        "peak_allocated_bytes": 3974743552,
+        "peak_reserved_bytes": 4244635648
+      }
+    },
+    {
+      "id": "exaone",
+      "backend": "exaone",
+      "variant": null,
+      "name": "EXAONE Finance",
+      "role": "수치 시계열 · 장기 분위수 예측",
+      "parameters": 202319520,
+      "weight_bytes": 809278080,
+      "dtype": "FP32",
+      "checkpoint_bytes": 809297128,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/EXAONE-Forecast-for-Finance-1.0/exaone-finance-1.0.safetensors",
+          "bytes": 809297128,
+          "sha256": "b08305e586fff0c540293c22ba38651277cb331b142e760e819feccb8ad71572",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "LG-AI-Research/EXAONE-Forecast-for-Finance-1.0",
+          "revision": "e9d7c4e8dcbbb5d0b559c41fddeb409dac152c53"
+        }
+      ],
+      "source": {
+        "repo": "LGAI-Research/EXAONE-Forecast",
+        "revision": "5e6e5224f2a0205f146bc772082d7fa4f59bd7c5"
+      },
+      "auxiliary_sources": [],
+      "license": "EXAONE research license",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "exaone",
+        "layout": "symbol,21_quantiles,horizon",
+        "units": "price",
+        "symbols": [
+          "AAPL"
+        ],
+        "as_of": "2026-09-25",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 202319520,
+        "parameter_bytes": 809278080,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          21,
+          1
+        ],
+        "load_seconds": 6.459757800001171,
+        "input_shapes": {
+          "series": [
+            1,
+            128
+          ]
+        },
+        "rss_start_bytes": 569724928,
+        "rss_loaded_bytes": 963514368,
+        "rss_end_bytes": 1466261504,
+        "peak_ram_bytes": 2363334656,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.29443069999979343,
+        "peak_allocated_bytes": 823684096,
+        "peak_reserved_bytes": 845152256
+      }
+    },
+    {
+      "id": "kronos",
+      "backend": "kronos",
+      "variant": null,
+      "name": "Kronos Base + Tokenizer",
+      "role": "OHLCV · 다음 봉 생성",
+      "parameters": 106268634,
+      "weight_bytes": 425074536,
+      "dtype": "FP32",
+      "checkpoint_bytes": 425106376,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/Kronos-base/model.safetensors",
+          "bytes": 409264008,
+          "sha256": "abff193acab6db1a0368e9773e75799d11403b6d054ee6d5f0a11aeabc5f4b83",
+          "archive": false
+        },
+        {
+          "path": "checkpoints/Kronos-Tokenizer-base/model.safetensors",
+          "bytes": 15842368,
+          "sha256": "59d85f6af76a2c3b8240ea06cb21db4213b4eeca053f246b23e29cf832fc6bee",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "NeoQuasar/Kronos-base",
+          "revision": "2b554741eca47781b64468546e77fef3e85130e6"
+        },
+        {
+          "model": "NeoQuasar/Kronos-Tokenizer-base",
+          "revision": "0e0117387f39004a9016484a186a908917e22426"
+        }
+      ],
+      "source": {
+        "repo": "shiyu-coder/Kronos",
+        "revision": "67b630e67f6a18c9e9be918d9b4337c960db1e9a"
+      },
+      "auxiliary_sources": [],
+      "license": "MIT",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "kronos",
+        "layout": "symbol,horizon,OHLCV_amount",
+        "units": "native_OHLCV_amount",
+        "symbols": [
+          "AAPL"
+        ],
+        "as_of": "2026-09-25",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 106268634,
+        "native_modules": [
+          {
+            "type": "Kronos",
+            "parameters": 102310592,
+            "buffer_elements": 416,
+            "buffer_bytes": 1664
+          },
+          {
+            "type": "KronosTokenizer",
+            "parameters": 3958042,
+            "buffer_elements": 280,
+            "buffer_bytes": 1216
+          }
+        ],
+        "parameter_bytes": 425074536,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          1,
+          6
+        ],
+        "load_seconds": 2.96476470000016,
+        "input_shapes": {
+          "OHLCV_amount": [
+            1,
+            128,
+            6
+          ]
+        },
+        "rss_start_bytes": 552570880,
+        "rss_loaded_bytes": 789250048,
+        "rss_end_bytes": 1446707200,
+        "peak_ram_bytes": 1446707200,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.41792899999927613,
+        "peak_allocated_bytes": 444876800,
+        "peak_reserved_bytes": 465567744
+      }
+    },
+    {
+      "id": "marketgpt",
+      "backend": "marketgpt",
+      "variant": null,
+      "name": "MarketGPT",
+      "role": "ITCH 주문 메시지 토큰 예측",
+      "parameters": 94292736,
+      "weight_bytes": 377170944,
+      "dtype": "FP32",
+      "checkpoint_bytes": 6291444790,
+      "original_archive_bytes": 1054913634,
+      "files": [
+        {
+          "path": "checkpoints/MarketGPT-100m/ckpt_finetune_AAPL_v3.zip",
+          "bytes": 1054913634,
+          "sha256": "420f549e818e4d1c71c77689bad261197b0d23300751c8e816e5b725158ec0c6",
+          "archive": true
+        },
+        {
+          "path": "checkpoints/MarketGPT-100m/ckpt_finetune_AAPL_v3.pt",
+          "bytes": 6291444790,
+          "sha256": "da39c3e1a44bb38bb4d3f8e4b243bd166630e87a594bdf2db21b05b88d8660f3",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "aaronwheeler/MarketGPT-100m",
+          "revision": "f80057ebcacbd43dbf72c2d7acd804e58eeaccd4"
+        }
+      ],
+      "source": {
+        "repo": "aaron-wheeler/MarketGPT",
+        "revision": "070c3ad6d10877fcb9651ba9f7affefdbf68320c"
+      },
+      "auxiliary_sources": [],
+      "license": "MIT",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "marketgpt",
+        "layout": "batch,last_token,vocabulary",
+        "units": "next_message_token_logits",
+        "symbols": [
+          "AAPL"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 94292736,
+        "native_modules": [
+          {
+            "type": "Transformer",
+            "parameters": 94292736,
+            "buffer_elements": 14336,
+            "buffer_bytes": 57344
+          }
+        ],
+        "parameter_bytes": 377170944,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          1,
+          12160
+        ],
+        "load_seconds": 1.6340622999996413,
+        "input_shapes": {
+          "itch_tokens": [
+            1,
+            32
+          ]
+        },
+        "rss_start_bytes": 552173568,
+        "rss_loaded_bytes": 976269312,
+        "rss_end_bytes": 1267015680,
+        "peak_ram_bytes": 1349849088,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.19050390000120387,
+        "peak_allocated_bytes": 388795904,
+        "peak_reserved_bytes": 417333248,
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "chronos",
+      "backend": "chronos",
+      "variant": null,
+      "name": "FinText Chronos Global",
+      "role": "일별 초과수익률 · 확률 예측",
+      "parameters": 46154240,
+      "weight_bytes": 184616960,
+      "dtype": "FP32",
+      "checkpoint_bytes": 184632360,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/Chronos_Small_2023_Global/model.safetensors",
+          "bytes": 184632360,
+          "sha256": "fc772ec5799c0bd7c11322dc8731dfda60c17e66d6b12d780e0011a5a7550402",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "FinText/Chronos_Small_2023_Global",
+          "revision": "74a9ce6eb66854cf406c8642ab18ec9aea7ae468"
+        }
+      ],
+      "source": {
+        "repo": "DeepIntoStreams/TSFM_Finance",
+        "revision": "7a377ee8e9a0f6bb49af6c79252839d0efeebe4c"
+      },
+      "auxiliary_sources": [],
+      "license": "Apache-2.0",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "chronos",
+        "layout": "symbol,sample,horizon",
+        "units": "daily_excess_return",
+        "symbols": [
+          "AAPL",
+          "MSFT"
+        ],
+        "as_of": "2025-10-31",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 46154240,
+        "parameter_bytes": 184616960,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          2,
+          8,
+          1
+        ],
+        "load_seconds": 7.1845104999993055,
+        "input_shapes": {
+          "series": [
+            2,
+            128
+          ]
+        },
+        "rss_start_bytes": 569458688,
+        "rss_loaded_bytes": 879038464,
+        "rss_end_bytes": 1542008832,
+        "peak_ram_bytes": 1542008832,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.3998463999996602,
+        "peak_allocated_bytes": 253123584,
+        "peak_reserved_bytes": 291504128
+      }
+    },
+    {
+      "id": "timesfm",
+      "backend": "timesfm",
+      "variant": null,
+      "name": "FinText TimesFM Global",
+      "role": "일별 초과수익률 · 분위수 예측",
+      "parameters": 19809304,
+      "weight_bytes": 79237216,
+      "dtype": "FP32",
+      "checkpoint_bytes": 79252192,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/TimesFM_20M_2023_Global/model.safetensors",
+          "bytes": 79252192,
+          "sha256": "ce3e71d2e0e016258582febf890a6f0dcdefb4995c64c018a12222dc8cc52399",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "FinText/TimesFM_20M_2023_Global",
+          "revision": "22801e12efb5a6f11df5dad5f8886fb0b478c3a1"
+        }
+      ],
+      "source": {
+        "repo": "DeepIntoStreams/TSFM_Finance",
+        "revision": "7a377ee8e9a0f6bb49af6c79252839d0efeebe4c"
+      },
+      "auxiliary_sources": [
+        {
+          "repo": "google-research/timesfm",
+          "revision": "e77303c5513c84aa8b32639851c3f7f92f59645e",
+          "tag": "v1.2.6"
+        }
+      ],
+      "license": "Apache-2.0",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "timesfm",
+        "layout": "symbol,horizon,point_and_nine_quantiles",
+        "units": "daily_excess_return",
+        "symbols": [
+          "AAPL",
+          "MSFT"
+        ],
+        "as_of": "2025-10-31",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 19809304,
+        "parameter_bytes": 79237216,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          2,
+          1,
+          10
+        ],
+        "load_seconds": 0.2278785999988031,
+        "input_shapes": {
+          "series": [
+            2,
+            128
+          ]
+        },
+        "rss_start_bytes": 552984576,
+        "rss_loaded_bytes": 743202816,
+        "rss_end_bytes": 1342001152,
+        "peak_ram_bytes": 1342001152,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.3332661000004009,
+        "peak_allocated_bytes": 87979520,
+        "peak_reserved_bytes": 115343360
+      }
+    },
+    {
+      "id": "timemoe",
+      "backend": "timemoe",
+      "variant": null,
+      "name": "Time-MoE Large",
+      "role": "수치 시계열 · sparse MoE 예측",
+      "parameters": 453196800,
+      "weight_bytes": 906393600,
+      "dtype": "BF16",
+      "checkpoint_bytes": 906450104,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/TimeMoE-200M/model.safetensors",
+          "bytes": 906450104,
+          "sha256": "28d1cbf480c1f63d4ad56d8b7649d9860b9afa9f31abeedff9decea48d9aee57",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "Maple728/TimeMoE-200M",
+          "revision": "794591bfeb1225fdf742cec0f4c71f20c3f3b87e"
+        }
+      ],
+      "source": {
+        "repo": "Time-MoE/Time-MoE",
+        "revision": "915bfda4c78a544d62a2bec6ab22948423059236"
+      },
+      "auxiliary_sources": [],
+      "license": "Apache-2.0",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "timemoe",
+        "layout": "symbol,horizon",
+        "units": "price",
+        "symbols": [
+          "AAPL"
+        ],
+        "as_of": "2026-09-25",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 453196800,
+        "parameter_bytes": 906393600,
+        "parameter_dtypes": [
+          "torch.bfloat16"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          1
+        ],
+        "load_seconds": 9.548738299999968,
+        "input_shapes": {
+          "series": [
+            1,
+            128
+          ]
+        },
+        "rss_start_bytes": 568860672,
+        "rss_loaded_bytes": 1471270912,
+        "rss_end_bytes": 2177495040,
+        "peak_ram_bytes": 3524087808,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.3926783000006253,
+        "peak_allocated_bytes": 967892480,
+        "peak_reserved_bytes": 983564288
+      }
+    },
+    {
+      "id": "toto",
+      "backend": "toto",
+      "variant": null,
+      "name": "Toto 2.0",
+      "role": "다변량 시계열 · 분위수 예측",
+      "parameters": 312684608,
+      "weight_bytes": 1250738432,
+      "dtype": "FP32",
+      "checkpoint_bytes": 1250763568,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "checkpoints/Toto-2.0-313m/model.safetensors",
+          "bytes": 1250763568,
+          "sha256": "5ee6066497963cb904bf1324ab850661c3201bbb3406052459f1f792386aa2f9",
+          "archive": false
+        }
+      ],
+      "pinned_models": [
+        {
+          "model": "Datadog/Toto-2.0-313m",
+          "revision": "a7bab288f5e95f8606f8306f86659357e1c001ef"
+        }
+      ],
+      "source": {
+        "repo": "DataDog/toto",
+        "revision": "9213d2c86f716c43010a0a3b2b6a0e3f440e6743"
+      },
+      "auxiliary_sources": [],
+      "license": "Apache-2.0",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "toto",
+        "layout": "nine_quantiles,batch,variate,horizon",
+        "units": "daily_excess_return",
+        "symbols": [
+          "AAPL",
+          "MSFT"
+        ],
+        "as_of": "2025-10-31",
+        "horizon": 1,
+        "sampling_seconds": 86400,
+        "parameters": 312684608,
+        "native_modules": [
+          {
+            "type": "Toto2Model",
+            "parameters": 312684608,
+            "buffer_elements": 24118768,
+            "buffer_bytes": 96475072
+          }
+        ],
+        "parameter_bytes": 1250738432,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          9,
+          1,
+          2,
+          1
+        ],
+        "load_seconds": 4.889027900000656,
+        "input_shapes": {
+          "series": [
+            2,
+            128
+          ]
+        },
+        "rss_start_bytes": 552402944,
+        "rss_loaded_bytes": 1389899776,
+        "rss_end_bytes": 1942388736,
+        "peak_ram_bytes": 3228897280,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.5316561000017828,
+        "peak_allocated_bytes": 1395540992,
+        "peak_reserved_bytes": 1453326336
+      }
+    },
+    {
+      "id": "macrophft_slope_1",
+      "backend": "macrophft",
+      "variant": "slope/1",
+      "name": "MacroHFT slope/1",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/slope/1/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "5b6edb6095d1c8a595e0152365ab6ba1f7ce9eae166ae6c805f3611cbe3b9810",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.877477899999576,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 552599552,
+        "rss_loaded_bytes": 707825664,
+        "rss_end_bytes": 937340928,
+        "peak_ram_bytes": 937340928,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.12587639999946987,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "slope/1",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "macrophft_slope_2",
+      "backend": "macrophft",
+      "variant": "slope/2",
+      "name": "MacroHFT slope/2",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/slope/2/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "111bcdb7512699016745b79f58b6f4c66f8fa384f8a1cfff6c73e2281438708a",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.8879873999994743,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 552648704,
+        "rss_loaded_bytes": 707878912,
+        "rss_end_bytes": 937037824,
+        "peak_ram_bytes": 937037824,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.12798380000094767,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "slope/2",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "macrophft_slope_3",
+      "backend": "macrophft",
+      "variant": "slope/3",
+      "name": "MacroHFT slope/3",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/slope/3/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "3a35ff84913c1c5b4598a5a41c066b505ec16fc5d5b8f49ecfe18098165a242b",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.8759628000007069,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 552923136,
+        "rss_loaded_bytes": 708464640,
+        "rss_end_bytes": 937566208,
+        "peak_ram_bytes": 937566208,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.1252449000003253,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "slope/3",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "macrophft_vol_1",
+      "backend": "macrophft",
+      "variant": "vol/1",
+      "name": "MacroHFT vol/1",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/vol/1/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "8123553407dca732500d90b55e1eb1e336e517038c5fb3e7360be1acf88bfae5",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.870625999999902,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 552181760,
+        "rss_loaded_bytes": 708112384,
+        "rss_end_bytes": 937652224,
+        "peak_ram_bytes": 937652224,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.12357220000012603,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "vol/1",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "macrophft_vol_2",
+      "backend": "macrophft",
+      "variant": "vol/2",
+      "name": "MacroHFT vol/2",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/vol/2/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "eace24ae14dd997cb4120ad6f074d887b2c9b8f9e7cefb512a5fd16a6ad40a58",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.8714330000002519,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 551944192,
+        "rss_loaded_bytes": 707829760,
+        "rss_end_bytes": 937558016,
+        "peak_ram_bytes": 937558016,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.11747939999986556,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "vol/2",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    },
+    {
+      "id": "macrophft_vol_3",
+      "backend": "macrophft",
+      "variant": "vol/3",
+      "name": "MacroHFT vol/3",
+      "role": "ETHUSDT · 현금/롱 Q 정책",
+      "parameters": 45507,
+      "weight_bytes": 182028,
+      "dtype": "FP32",
+      "checkpoint_bytes": 187425,
+      "original_archive_bytes": 0,
+      "files": [
+        {
+          "path": "sources/MacroHFT/result/low_level/ETHUSDT/best_model/vol/3/best_model.pkl",
+          "bytes": 187425,
+          "sha256": "61897d57e41ac496231da6d3874a19097f3d13d829e4d2196c35e026c114dcb6",
+          "archive": false
+        }
+      ],
+      "pinned_models": [],
+      "source": {
+        "repo": "ZONG0004/MacroHFT",
+        "revision": "31e5ef41f93b2aea6e63e6ae2267675c997a8e54"
+      },
+      "auxiliary_sources": [],
+      "license": "No LICENSE found",
+      "verified": true,
+      "frozen": true,
+      "probe": {
+        "expert": "macrophft",
+        "layout": "batch,Q_flat_long",
+        "units": "native_ETHUSDT_policy_Q",
+        "symbols": [
+          "ETHUSDT"
+        ],
+        "as_of": null,
+        "horizon": 1,
+        "sampling_seconds": null,
+        "parameters": 45507,
+        "native_modules": [
+          {
+            "type": "subagent",
+            "parameters": 45507,
+            "buffer_elements": 1,
+            "buffer_bytes": 4
+          }
+        ],
+        "parameter_bytes": 182028,
+        "parameter_dtypes": [
+          "torch.float32"
+        ],
+        "frozen": true,
+        "output_shape": [
+          1,
+          2
+        ],
+        "load_seconds": 0.9607739000002766,
+        "input_shapes": {
+          "single_state": [
+            1,
+            36
+          ],
+          "trend_state": [
+            1,
+            9
+          ],
+          "previous_action": [
+            1
+          ]
+        },
+        "rss_start_bytes": 552484864,
+        "rss_loaded_bytes": 707715072,
+        "rss_end_bytes": 937230336,
+        "peak_ram_bytes": 937230336,
+        "ram_measurement": "Windows process peak working set",
+        "forward_seconds": 0.12518009999985225,
+        "peak_allocated_bytes": 8711168,
+        "peak_reserved_bytes": 23068672,
+        "variant": "vol/3",
+        "input_authenticity": "synthetic_schema_probe_not_market_validation"
+      }
+    }
+  ],
+  "unavailable": [
+    {
+      "name": "EarnHFT",
+      "reason": "No trained checkpoint found in audited official repository/readme/releases"
+    },
+    {
+      "name": "EarnMore",
+      "reason": "No trained checkpoint found in audited official repository/readme/releases"
+    },
+    {
+      "name": "DeepScalper",
+      "reason": "No trained checkpoint found in audited official repository/readme/releases"
+    },
+    {
+      "name": "EIIE",
+      "reason": "No trained checkpoint found in audited official repository/readme/releases"
+    }
+  ],
+  "training_performed": false,
+  "weights_merged": false,
+  "artifact_directory_bytes": 16444239644
+}

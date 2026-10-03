@@ -1,0 +1,1432 @@
+{
+  "repo": {
+    "id": 749946531,
+    "node_id": "R_kgDOLLNGow",
+    "name": "MarketGPT",
+    "full_name": "aaron-wheeler/MarketGPT",
+    "private": false,
+    "owner": {
+      "login": "aaron-wheeler",
+      "id": 77795743,
+      "node_id": "MDQ6VXNlcjc3Nzk1NzQz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77795743?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/aaron-wheeler",
+      "html_url": "https://github.com/aaron-wheeler",
+      "followers_url": "https://api.github.com/users/aaron-wheeler/followers",
+      "following_url": "https://api.github.com/users/aaron-wheeler/following{/other_user}",
+      "gists_url": "https://api.github.com/users/aaron-wheeler/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/aaron-wheeler/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/aaron-wheeler/subscriptions",
+      "organizations_url": "https://api.github.com/users/aaron-wheeler/orgs",
+      "repos_url": "https://api.github.com/users/aaron-wheeler/repos",
+      "events_url": "https://api.github.com/users/aaron-wheeler/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/aaron-wheeler/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/aaron-wheeler/MarketGPT",
+    "description": "MarketGPT: Developing a Pre-trained transformer (GPT) for Modeling Financial Time Series",
+    "fork": false,
+    "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT",
+    "forks_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/forks",
+    "keys_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/teams",
+    "hooks_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/hooks",
+    "issue_events_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/events",
+    "assignees_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/tags",
+    "blobs_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/languages",
+    "stargazers_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/stargazers",
+    "contributors_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/contributors",
+    "subscribers_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/subscribers",
+    "subscription_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/subscription",
+    "commits_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/merges",
+    "archive_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/downloads",
+    "issues_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/labels{/name}",
+    "releases_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/deployments",
+    "created_at": "2024-01-29T17:46:53Z",
+    "updated_at": "2026-08-31T12:17:55Z",
+    "pushed_at": "2025-09-05T15:42:04Z",
+    "git_url": "git://github.com/aaron-wheeler/MarketGPT.git",
+    "ssh_url": "git@github.com:aaron-wheeler/MarketGPT.git",
+    "clone_url": "https://github.com/aaron-wheeler/MarketGPT.git",
+    "svn_url": "https://github.com/aaron-wheeler/MarketGPT",
+    "homepage": "https://arxiv.org/abs/2411.16585",
+    "size": 55963,
+    "stargazers_count": 19,
+    "watchers_count": 19,
+    "language": "Jupyter Notebook",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 8,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 0,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT",
+      "url": "https://api.github.com/licenses/mit",
+      "node_id": "MDc6TGljZW5zZTEz"
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [
+      "deep-learning",
+      "financial-data",
+      "financial-time-series",
+      "gpt",
+      "limit-order-book",
+      "market-simulation",
+      "order-flow",
+      "synthetic-data-generation"
+    ],
+    "visibility": "public",
+    "forks": 8,
+    "open_issues": 0,
+    "watchers": 19,
+    "default_branch": "main",
+    "temp_clone_token": null,
+    "network_count": 8,
+    "subscribers_count": 1
+  },
+  "tree": {
+    "sha": "070c3ad6d10877fcb9651ba9f7affefdbf68320c",
+    "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/070c3ad6d10877fcb9651ba9f7affefdbf68320c",
+    "tree": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "42607caeeae5e40943d40c388b879ffb36e50dcf",
+        "size": 244,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/42607caeeae5e40943d40c388b879ffb36e50dcf"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c42fdb5aedbfbe0e4455afeeccb968fdc71a7d46",
+        "size": 1070,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/c42fdb5aedbfbe0e4455afeeccb968fdc71a7d46"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aa6533fdb0d66c6d229383e247332959bf5213af",
+        "size": 5741,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/aa6533fdb0d66c6d229383e247332959bf5213af"
+      },
+      {
+        "path": "assets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "71f8c6cce9e5c71c55c14d1f0d56e7499e5ef546",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/71f8c6cce9e5c71c55c14d1f0d56e7499e5ef546"
+      },
+      {
+        "path": "assets/MGPT_platform_schematic_edit.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ee1e6aa4286836d43b18d278ab301dec1846488d",
+        "size": 665010,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/ee1e6aa4286836d43b18d278ab301dec1846488d"
+      },
+      {
+        "path": "benchmark",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "75b6140d0f7bba9bea4dbeab2829a66eaac1f38e",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/75b6140d0f7bba9bea4dbeab2829a66eaac1f38e"
+      },
+      {
+        "path": "benchmark/profiling",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0e3d528b9f0529da180c5ac88983ae6750699dd9",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/0e3d528b9f0529da180c5ac88983ae6750699dd9"
+      },
+      {
+        "path": "benchmark/profiling/sample_profile.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6013b26072d9a56f23fa174c79e5de944625fdb5",
+        "size": 27403,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/6013b26072d9a56f23fa174c79e5de944625fdb5"
+      },
+      {
+        "path": "benchmark/profiling/simulate_profile.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32142f18cc0ffe238a2fbaaa485462f7b9c12be7",
+        "size": 33144,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/32142f18cc0ffe238a2fbaaa485462f7b9c12be7"
+      },
+      {
+        "path": "config",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a29ed97c7feec6c05cd98cc70ba5d6671fadcdd4",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/a29ed97c7feec6c05cd98cc70ba5d6671fadcdd4"
+      },
+      {
+        "path": "config/fast_model.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "82e73f8ce276e81f88029d6685b5c9aaa19693b8",
+        "size": 2152,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/82e73f8ce276e81f88029d6685b5c9aaa19693b8"
+      },
+      {
+        "path": "dataset",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "69621cf324f9f4e6f0d31eaf4bf5ce51423bc6a1",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/69621cf324f9f4e6f0d31eaf4bf5ce51423bc6a1"
+      },
+      {
+        "path": "dataset/symbols",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "222d4006f5bf8d4d780805b36bce74f3d65c7c77",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/222d4006f5bf8d4d780805b36bce74f3d65c7c77"
+      },
+      {
+        "path": "dataset/symbols/custom_symbols.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "de4bf96fa87780b818d27ad4b1d53f28bdfd6b7a",
+        "size": 1178,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/de4bf96fa87780b818d27ad4b1d53f28bdfd6b7a"
+      },
+      {
+        "path": "dataset/symbols/sp500_constituents_symbols_3_06_2023.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b4a7ff00b459872bbebae64b786cf1175f1e2c97",
+        "size": 2094,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b4a7ff00b459872bbebae64b786cf1175f1e2c97"
+      },
+      {
+        "path": "equities",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "66d355a325e4c75007a43e81818d73dd9145f83a",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/66d355a325e4c75007a43e81818d73dd9145f83a"
+      },
+      {
+        "path": "equities/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "equities/configurator.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "954c9c85ab71d3df687ebc2632ce84ac3780c2b6",
+        "size": 1839,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/954c9c85ab71d3df687ebc2632ce84ac3780c2b6"
+      },
+      {
+        "path": "equities/data_processing",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6b561e68c0f912a3e9d9f63b74b81a28ed052038",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/6b561e68c0f912a3e9d9f63b74b81a28ed052038"
+      },
+      {
+        "path": "equities/data_processing/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "equities/data_processing/itch_encoding.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7e2f526ee956e319cf65415eea7b9b2eaf95f38c",
+        "size": 25253,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/7e2f526ee956e319cf65415eea7b9b2eaf95f38c"
+      },
+      {
+        "path": "equities/data_processing/itch_multi_preproc.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "22cf00f385fa437b74d0a517630a54f0575b10ed",
+        "size": 17607,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/22cf00f385fa437b74d0a517630a54f0575b10ed"
+      },
+      {
+        "path": "equities/data_processing/itch_preproc.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b1aff87fa7504abe47e69e98b84c66cfcc1eee9c",
+        "size": 11930,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b1aff87fa7504abe47e69e98b84c66cfcc1eee9c"
+      },
+      {
+        "path": "equities/fast_model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32f4665d220e10094ff4811c44997111de150586",
+        "size": 27107,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/32f4665d220e10094ff4811c44997111de150586"
+      },
+      {
+        "path": "equities/fast_train.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e003d5adf9280b84dd0fb7609aa3519854e24c1b",
+        "size": 20575,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e003d5adf9280b84dd0fb7609aa3519854e24c1b"
+      },
+      {
+        "path": "equities/model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "036c161abc1df4268831e107ae2855f9b391938b",
+        "size": 16714,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/036c161abc1df4268831e107ae2855f9b391938b"
+      },
+      {
+        "path": "equities/train.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6b878103934fed1bcdd6e267eaf99639c4772205",
+        "size": 16450,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/6b878103934fed1bcdd6e267eaf99639c4772205"
+      },
+      {
+        "path": "equities/train_sweep.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "02217def4654d6c7c99c2e5b929ce115c2ccfa06",
+        "size": 13620,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/02217def4654d6c7c99c2e5b929ce115c2ccfa06"
+      },
+      {
+        "path": "eval",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7cea2d69276c19e4b5c637d7778312bb86cc7c61",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/7cea2d69276c19e4b5c637d7778312bb86cc7c61"
+      },
+      {
+        "path": "eval/MarketGPT_plots.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9d5682c0b19fa38b9e4ae43f84c27e9341c3f096",
+        "size": 3166436,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9d5682c0b19fa38b9e4ae43f84c27e9341c3f096"
+      },
+      {
+        "path": "eval/plot_utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e1983a322e57e7bd2381dfd4af9c92735cd69854",
+        "size": 4815,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e1983a322e57e7bd2381dfd4af9c92735cd69854"
+      },
+      {
+        "path": "eval/simulated",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a2ba53c86b1899b8169851b0fc0d5d3638c48192",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/a2ba53c86b1899b8169851b0fc0d5d3638c48192"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0af5207ca8ad95f6e44fa7592886a24e385be01a",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/0af5207ca8ad95f6e44fa7592886a24e385be01a"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_09_17_55_16.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9fef38e28f6b4b6e351517e79ba1f15d14e0043e",
+        "size": 10143293,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9fef38e28f6b4b6e351517e79ba1f15d14e0043e"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16/L2_state_12302019_AAPL_36090577799764_150000_2024_06_09_17_55_16.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f90141b861e950b7ee3bd267258acf334851a008",
+        "size": 188037,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f90141b861e950b7ee3bd267258acf334851a008"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16/gen_data_12302019_AAPL_36090577799764_150000_2024_06_09_17_55_16.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "552d72f64d2c6eefd25003febf9d800ee041e3a9",
+        "size": 12049907,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/552d72f64d2c6eefd25003febf9d800ee041e3a9"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_09_17_55_16.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "15dd6a8dd111c6bed27df70f4796ca0ddd93af33",
+        "size": 164767,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/15dd6a8dd111c6bed27df70f4796ca0ddd93af33"
+      },
+      {
+        "path": "eval/simulated/2024_06_09_17_55_16/metadata_12302019_AAPL_36090577799764_149999_2024_06_09_17_55_16.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2152c52fdc1ca3585a7cca9987e3d4851996ec7d",
+        "size": 985,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/2152c52fdc1ca3585a7cca9987e3d4851996ec7d"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9fd2f6a2066cee98940151a6678ae8a0b5f7dc17",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/9fd2f6a2066cee98940151a6678ae8a0b5f7dc17"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53/L1_gen_12302019_AAPL_36090577799764_297489_2024_06_10_11_36_53.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fa493d447c2cc0042f3819a62d8df50d9a1adc4c",
+        "size": 20211785,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/fa493d447c2cc0042f3819a62d8df50d9a1adc4c"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53/L2_state_12302019_AAPL_36090577799764_297489_2024_06_10_11_36_53.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73c8abf3b4362a403ef907f1c91427e0b5e3a884",
+        "size": 193357,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/73c8abf3b4362a403ef907f1c91427e0b5e3a884"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53/gen_data_12302019_AAPL_36090577799764_297489_2024_06_10_11_36_53.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3bf019d3e530019ee53ece0a5fa232274eb10903",
+        "size": 24107843,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3bf019d3e530019ee53ece0a5fa232274eb10903"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53/last_prices_gen_12302019_AAPL_36090577799764_297489_2024_06_10_11_36_53.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c6db931d82d9bf2c0fc377c697531ba0fc472751",
+        "size": 369884,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/c6db931d82d9bf2c0fc377c697531ba0fc472751"
+      },
+      {
+        "path": "eval/simulated/2024_06_10_11_36_53/metadata_12302019_AAPL_36090577799764_297488_2024_06_10_11_36_53.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3739ad1cc4643b860106018013eb9e27ee3c737e",
+        "size": 1047,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3739ad1cc4643b860106018013eb9e27ee3c737e"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ba73c28da4dd5bf913a09abe8e394ca54ae24a7f",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/ba73c28da4dd5bf913a09abe8e394ca54ae24a7f"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32/L1_gen_12302019_AAPL_36090577799764_360000_2024_06_11_10_49_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f0d01ea2d9eb3c27e00f3e965a2efe7a50ea568d",
+        "size": 24119670,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f0d01ea2d9eb3c27e00f3e965a2efe7a50ea568d"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32/L2_state_12302019_AAPL_36090577799764_360000_2024_06_11_10_49_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fe772a7bcea3d3039512ce4aed78b5b0aef4642c",
+        "size": 197526,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/fe772a7bcea3d3039512ce4aed78b5b0aef4642c"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32/gen_data_12302019_AAPL_36090577799764_360000_2024_06_11_10_49_32.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b1f0623afc00745df8fd1e8d4d0e8b7abd0fcf90",
+        "size": 29027631,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b1f0623afc00745df8fd1e8d4d0e8b7abd0fcf90"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32/last_prices_gen_12302019_AAPL_36090577799764_360000_2024_06_11_10_49_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a726b7839a35c1e116baa16c1064c5612a99accc",
+        "size": 342002,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/a726b7839a35c1e116baa16c1064c5612a99accc"
+      },
+      {
+        "path": "eval/simulated/2024_06_11_10_49_32/metadata_12302019_AAPL_36090577799764_359999_2024_06_11_10_49_32.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3eb44ce9d5ee2fe6c829905c566a1484255bfe8e",
+        "size": 1319,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3eb44ce9d5ee2fe6c829905c566a1484255bfe8e"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d4456d095c4a5a4fd89f28ebb3f75cfda0c51a47",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/d4456d095c4a5a4fd89f28ebb3f75cfda0c51a47"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04/L1_gen_12302019_AAPL_36090577799764_360000_2024_06_21_14_07_04.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2e5617f31fffc1c86fea870814e7909316c616b9",
+        "size": 24454140,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/2e5617f31fffc1c86fea870814e7909316c616b9"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04/L2_state_12302019_AAPL_36090577799764_360000_2024_06_21_14_07_04.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0e2f6df46aeaa95e2e083ecafdc2e5f8ac7e7c22",
+        "size": 193357,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/0e2f6df46aeaa95e2e083ecafdc2e5f8ac7e7c22"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04/gen_data_12302019_AAPL_36090577799764_360000_2024_06_21_14_07_04.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "825b1a91f8bb9310f18022388d65a0ad18315abc",
+        "size": 29237386,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/825b1a91f8bb9310f18022388d65a0ad18315abc"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04/last_prices_gen_12302019_AAPL_36090577799764_360000_2024_06_21_14_07_04.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "79990394977080cb3961826aef870d8b03f0276f",
+        "size": 399013,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/79990394977080cb3961826aef870d8b03f0276f"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_14_07_04/metadata_12302019_AAPL_36090577799764_359999_2024_06_21_14_07_04.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "991f8f93cc95d458259c85c56dfae5a10de95aa1",
+        "size": 1383,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/991f8f93cc95d458259c85c56dfae5a10de95aa1"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d58d524e4589fba9f8a12069b66707799a0ab7dd",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/d58d524e4589fba9f8a12069b66707799a0ab7dd"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_21_19_58_50.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f35a637576656334b72dd38ed2a66a34135fb0b2",
+        "size": 10209298,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f35a637576656334b72dd38ed2a66a34135fb0b2"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50/L2_state_12302019_AAPL_36090577799764_150000_2024_06_21_19_58_50.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "956140d1db2203b9a3d6494fcf70b206f678382c",
+        "size": 190477,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/956140d1db2203b9a3d6494fcf70b206f678382c"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50/gen_data_12302019_AAPL_36090577799764_150000_2024_06_21_19_58_50.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a533ea62e355202063ba67f0fa03c60713265710",
+        "size": 12090725,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/a533ea62e355202063ba67f0fa03c60713265710"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_21_19_58_50.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3a732be34ad92718e93226f66eafb7fae3a3ef33",
+        "size": 184087,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3a732be34ad92718e93226f66eafb7fae3a3ef33"
+      },
+      {
+        "path": "eval/simulated/2024_06_21_19_58_50/metadata_12302019_AAPL_36090577799764_149999_2024_06_21_19_58_50.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3dcb7385262b2a469b93b16f4752d1c5d3cb7fcd",
+        "size": 1377,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3dcb7385262b2a469b93b16f4752d1c5d3cb7fcd"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3ae000fb110de9bf642940dc1a0a9c9f2706d9ee",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/3ae000fb110de9bf642940dc1a0a9c9f2706d9ee"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_22_13_37_43.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "468d334152da2a86ea868b4b8124739866eb1561",
+        "size": 10090261,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/468d334152da2a86ea868b4b8124739866eb1561"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43/L2_state_12302019_AAPL_36090577799764_150000_2024_06_22_13_37_43.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "330c597a6d2ae7d10993b0c3649201b0ac223a1a",
+        "size": 195197,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/330c597a6d2ae7d10993b0c3649201b0ac223a1a"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43/gen_data_12302019_AAPL_36090577799764_150000_2024_06_22_13_37_43.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "346b73b9e133bda7528017dbf0ec63b029c65038",
+        "size": 12047661,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/346b73b9e133bda7528017dbf0ec63b029c65038"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_22_13_37_43.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "77979aca8941b8a8faf98c1747a76459d2b1afeb",
+        "size": 171167,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/77979aca8941b8a8faf98c1747a76459d2b1afeb"
+      },
+      {
+        "path": "eval/simulated/2024_06_22_13_37_43/metadata_12302019_AAPL_36090577799764_149999_2024_06_22_13_37_43.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7474f0c8faf7510420bc2894f5f4204122970b7a",
+        "size": 1376,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/7474f0c8faf7510420bc2894f5f4204122970b7a"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "02b60eadca7bbf08c1dfe14fef20f19c61e445ce",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/02b60eadca7bbf08c1dfe14fef20f19c61e445ce"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_24_11_16_37.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3b6feb46a3613660f36d5f99b4d519e34ac9e53d",
+        "size": 10237850,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3b6feb46a3613660f36d5f99b4d519e34ac9e53d"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37/L2_state_12302019_AAPL_36090577799764_150000_2024_06_24_11_16_37.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d7137d000a9ae6de67125b2de84cc474fa597dfe",
+        "size": 187877,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d7137d000a9ae6de67125b2de84cc474fa597dfe"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37/gen_data_12302019_AAPL_36090577799764_150000_2024_06_24_11_16_37.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e07831f7188492b76c0e9da00e992d06ad6c8fe6",
+        "size": 12127348,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e07831f7188492b76c0e9da00e992d06ad6c8fe6"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_24_11_16_37.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "10ba1acbd2402540db09411c89faf4f77027d815",
+        "size": 178967,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/10ba1acbd2402540db09411c89faf4f77027d815"
+      },
+      {
+        "path": "eval/simulated/2024_06_24_11_16_37/metadata_12302019_AAPL_36090577799764_149999_2024_06_24_11_16_37.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "93115966240c70621f6cc17b2e2aa8e2d01c9c9f",
+        "size": 1372,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/93115966240c70621f6cc17b2e2aa8e2d01c9c9f"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "015c4c90955e7e92933e6db53c64845525b4bcb8",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/015c4c90955e7e92933e6db53c64845525b4bcb8"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_25_21_01_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9e2cffc50c790a700e18c02000978854389c35c3",
+        "size": 9977531,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9e2cffc50c790a700e18c02000978854389c35c3"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32/L2_state_12302019_AAPL_36090577799764_150000_2024_06_25_21_01_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f485c1cc4d8bfc14b61c92a2923ca0e611b6e349",
+        "size": 193837,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f485c1cc4d8bfc14b61c92a2923ca0e611b6e349"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32/gen_data_12302019_AAPL_36090577799764_150000_2024_06_25_21_01_32.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a6faa8ba5ccf4a52b87956e4db538f79ae1b257b",
+        "size": 11978534,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/a6faa8ba5ccf4a52b87956e4db538f79ae1b257b"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_25_21_01_32.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b85d123547ebf7762475ab88dd16dca132b00fe2",
+        "size": 159405,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b85d123547ebf7762475ab88dd16dca132b00fe2"
+      },
+      {
+        "path": "eval/simulated/2024_06_25_21_01_32/metadata_12302019_AAPL_36090577799764_149999_2024_06_25_21_01_32.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2ce176fa2b55b05bb924bbf16bb7bf80cebb1794",
+        "size": 1374,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/2ce176fa2b55b05bb924bbf16bb7bf80cebb1794"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "642049a3c367dfbdc77c050354d4ef9dd41972d8",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/642049a3c367dfbdc77c050354d4ef9dd41972d8"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_26_22_16_51.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d05efbc7fcd361b145cf5e3e52cf9669073e7ba2",
+        "size": 10195191,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d05efbc7fcd361b145cf5e3e52cf9669073e7ba2"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51/L2_state_12302019_AAPL_36090577799764_150000_2024_06_26_22_16_51.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b914520fc3cf887560d7bdcc4f39dc8984648171",
+        "size": 187117,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b914520fc3cf887560d7bdcc4f39dc8984648171"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51/gen_data_12302019_AAPL_36090577799764_150000_2024_06_26_22_16_51.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c5d661cc4859254699e9e5eb9737f681b85a8b8",
+        "size": 12097728,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8c5d661cc4859254699e9e5eb9737f681b85a8b8"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_26_22_16_51.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c79911e9cdf35d0f27edc7576a7b291ed63ad24",
+        "size": 171127,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8c79911e9cdf35d0f27edc7576a7b291ed63ad24"
+      },
+      {
+        "path": "eval/simulated/2024_06_26_22_16_51/metadata_12302019_AAPL_36090577799764_149999_2024_06_26_22_16_51.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0c83399f25a8cc71e44920e4890e3ab33296c846",
+        "size": 1377,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/0c83399f25a8cc71e44920e4890e3ab33296c846"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "22213b70bf3efec917d574acbc283c10dd566b51",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/22213b70bf3efec917d574acbc283c10dd566b51"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47/L1_gen_12302019_AAPL_36090577799764_150000_2024_06_29_12_20_47.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "463d4a7528498c5d180f7e5734ae0bafa5d87e28",
+        "size": 10138564,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/463d4a7528498c5d180f7e5734ae0bafa5d87e28"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47/L2_state_12302019_AAPL_36090577799764_150000_2024_06_29_12_20_47.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bd2ed08ab3ecbf9e38bdd1e75c9c3e00e997c39e",
+        "size": 189357,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/bd2ed08ab3ecbf9e38bdd1e75c9c3e00e997c39e"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47/gen_data_12302019_AAPL_36090577799764_150000_2024_06_29_12_20_47.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8e4a5701eff193e7a16c1505b9d029d1fa9ff9cd",
+        "size": 12063249,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8e4a5701eff193e7a16c1505b9d029d1fa9ff9cd"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47/last_prices_gen_12302019_AAPL_36090577799764_150000_2024_06_29_12_20_47.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "236b79eb9b160903f3e680b4d07ddd125cc3a455",
+        "size": 181047,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/236b79eb9b160903f3e680b4d07ddd125cc3a455"
+      },
+      {
+        "path": "eval/simulated/2024_06_29_12_20_47/metadata_12302019_AAPL_36090577799764_149999_2024_06_29_12_20_47.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a237e4504d6ae5f5f520557dcf85f217afeea982",
+        "size": 1373,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/a237e4504d6ae5f5f520557dcf85f217afeea982"
+      },
+      {
+        "path": "eval/stylized_facts.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e54e3d9dc257dc211673689a4d25dbe12ef0294d",
+        "size": 7982,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e54e3d9dc257dc211673689a4d25dbe12ef0294d"
+      },
+      {
+        "path": "log",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d924ec4ba8cdda0847fa20e63d42024b97e0001f",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/d924ec4ba8cdda0847fa20e63d42024b97e0001f"
+      },
+      {
+        "path": "log/data_price_trunc_metrics.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8d9a385884471fd6bdc3c81c886358ee55eb7fed",
+        "size": 13235,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8d9a385884471fd6bdc3c81c886358ee55eb7fed"
+      },
+      {
+        "path": "notebooks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "770f300dba23a6d3d6a3ea1fd47d03308c9de3f2",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/770f300dba23a6d3d6a3ea1fd47d03308c9de3f2"
+      },
+      {
+        "path": "notebooks/MarketSimT.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "645c229cebebaeda6610115951e74630b8f4d36c",
+        "size": 385426,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/645c229cebebaeda6610115951e74630b8f4d36c"
+      },
+      {
+        "path": "notebooks/batch_simulate.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "46ac14b9a63a6d2cd5b180bb89c0d759f30d2b45",
+        "size": 263184,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/46ac14b9a63a6d2cd5b180bb89c0d759f30d2b45"
+      },
+      {
+        "path": "notebooks/book_validation.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4b9d3447c41593a686186d38534093a08b7e61d1",
+        "size": 238589,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/4b9d3447c41593a686186d38534093a08b7e61d1"
+      },
+      {
+        "path": "notebooks/multi_simulate.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1beb17ab95944dc43ff614b5f42b48626e3298cc",
+        "size": 262851,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/1beb17ab95944dc43ff614b5f42b48626e3298cc"
+      },
+      {
+        "path": "notebooks/simulate.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ec4e7800fefa80215e88c5feb8216a5120b31deb",
+        "size": 562665,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/ec4e7800fefa80215e88c5feb8216a5120b31deb"
+      },
+      {
+        "path": "notebooks/simulate_ssm.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "87361a01415643eeca104002831cc2a81fd5c16e",
+        "size": 376715,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/87361a01415643eeca104002831cc2a81fd5c16e"
+      },
+      {
+        "path": "notebooks/transformer_sizing.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d8fe50ed4809c118b1172df4ce6c4ced67d87436",
+        "size": 18914,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d8fe50ed4809c118b1172df4ce6c4ced67d87436"
+      },
+      {
+        "path": "out",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5f93ae43f834469d39884e251f1467b18aed8706",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/5f93ae43f834469d39884e251f1467b18aed8706"
+      },
+      {
+        "path": "out/LogBook.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "88a4ddead576adab5ec880ee80b2a94d0c889a4a",
+        "size": 15105,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/88a4ddead576adab5ec880ee80b2a94d0c889a4a"
+      },
+      {
+        "path": "requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d8de1911281e5681695a991345a5a485544ae442",
+        "size": 1532,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d8de1911281e5681695a991345a5a485544ae442"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "440a68150b27ea1a42142e00b7119e286fa6160c",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/440a68150b27ea1a42142e00b7119e286fa6160c"
+      },
+      {
+        "path": "scripts/simulate.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a7d609c4cc3010873a30130212acfb2bac4df2fa",
+        "size": 27925,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/a7d609c4cc3010873a30130212acfb2bac4df2fa"
+      },
+      {
+        "path": "simulator",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9649c0e0eccc21b354b34e8ee48e376a49d60339",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/9649c0e0eccc21b354b34e8ee48e376a49d60339"
+      },
+      {
+        "path": "simulator/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ccde03341ec5f04a0a8093a0348a36e14d427263",
+        "size": 1053,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/ccde03341ec5f04a0a8093a0348a36e14d427263"
+      },
+      {
+        "path": "simulator/core",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4536e771b18d3750fc68e38ac740c096f31df872",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/4536e771b18d3750fc68e38ac740c096f31df872"
+      },
+      {
+        "path": "simulator/core/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "09284a6d69d8efeddf6bf9a4918af52e895c506f",
+        "size": 205,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/09284a6d69d8efeddf6bf9a4918af52e895c506f"
+      },
+      {
+        "path": "simulator/core/agent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9dfdc51dc8c492f68c2ce306763da975167fc18f",
+        "size": 13939,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9dfdc51dc8c492f68c2ce306763da975167fc18f"
+      },
+      {
+        "path": "simulator/core/kernel.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4df13318cdd72a0b06b07ab6f4cd67709ef0d6a0",
+        "size": 36173,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/4df13318cdd72a0b06b07ab6f4cd67709ef0d6a0"
+      },
+      {
+        "path": "simulator/core/latency_model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cc91c87a56d3c6fcaa30247b18d4de97d3cf81ae",
+        "size": 8247,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/cc91c87a56d3c6fcaa30247b18d4de97d3cf81ae"
+      },
+      {
+        "path": "simulator/core/message.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0c0f05031193978f2d00629286a77d758434e3cf",
+        "size": 1916,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/0c0f05031193978f2d00629286a77d758434e3cf"
+      },
+      {
+        "path": "simulator/core/sim.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "57ec237b75eeba8ba1615e389af1f5a8d1080191",
+        "size": 1802,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/57ec237b75eeba8ba1615e389af1f5a8d1080191"
+      },
+      {
+        "path": "simulator/core/tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7b8fdfb20af55c8d4d5d1baac17babb64d6ac1ed",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/7b8fdfb20af55c8d4d5d1baac17babb64d6ac1ed"
+      },
+      {
+        "path": "simulator/core/tests/test_timestamps.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b7fe91b1e8f912381168b59c8f2a7f3744c589d6",
+        "size": 1055,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b7fe91b1e8f912381168b59c8f2a7f3744c589d6"
+      },
+      {
+        "path": "simulator/core/utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "da51abe5b1da36b4305ebfb5b79d190f9dfd256b",
+        "size": 4845,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/da51abe5b1da36b4305ebfb5b79d190f9dfd256b"
+      },
+      {
+        "path": "simulator/markets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6582bce5d521f8eb9bb54f3c39d5e7cb9846571a",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/6582bce5d521f8eb9bb54f3c39d5e7cb9846571a"
+      },
+      {
+        "path": "simulator/markets/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "simulator/markets/agents",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "64e0abe41dc72d6b0b298041153636ea784deb2c",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/64e0abe41dc72d6b0b298041153636ea784deb2c"
+      },
+      {
+        "path": "simulator/markets/agents/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7e63709fc567e87c55ed45cc344ba0111709589b",
+        "size": 85,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/7e63709fc567e87c55ed45cc344ba0111709589b"
+      },
+      {
+        "path": "simulator/markets/agents/exchange_agent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d1c9711264bc5074bf330d5f005b10789f9754bc",
+        "size": 36049,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d1c9711264bc5074bf330d5f005b10789f9754bc"
+      },
+      {
+        "path": "simulator/markets/agents/financial_agent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bad8780562ee574b5945fa985f9147becfbb8094",
+        "size": 1210,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/bad8780562ee574b5945fa985f9147becfbb8094"
+      },
+      {
+        "path": "simulator/markets/agents/trading_agent.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d4a846232daf81d8b04529bc94902836884f2db0",
+        "size": 43750,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d4a846232daf81d8b04529bc94902836884f2db0"
+      },
+      {
+        "path": "simulator/markets/agents/utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d29b8a5220a08c7b3eabdb11de761d94474af51e",
+        "size": 6458,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d29b8a5220a08c7b3eabdb11de761d94474af51e"
+      },
+      {
+        "path": "simulator/markets/messages",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "19987d0ddf404fc7a7a32837c74a830d948255ea",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/19987d0ddf404fc7a7a32837c74a830d948255ea"
+      },
+      {
+        "path": "simulator/markets/messages/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "simulator/markets/messages/market.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "986e45cd1750dd507dc45494427363c1cef597a1",
+        "size": 1833,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/986e45cd1750dd507dc45494427363c1cef597a1"
+      },
+      {
+        "path": "simulator/markets/messages/marketdata.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "380895b50df38af3ff5cd7f0a26728114d3304eb",
+        "size": 10630,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/380895b50df38af3ff5cd7f0a26728114d3304eb"
+      },
+      {
+        "path": "simulator/markets/messages/order.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "383585709b5484ab6de613572bc766d1ebb895c6",
+        "size": 836,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/383585709b5484ab6de613572bc766d1ebb895c6"
+      },
+      {
+        "path": "simulator/markets/messages/orderbook.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8d4b80bf6845a66b98bc131e16b8aebb64278b8e",
+        "size": 744,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8d4b80bf6845a66b98bc131e16b8aebb64278b8e"
+      },
+      {
+        "path": "simulator/markets/messages/query.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9ba7459aa82ac6339655180040be01a43cc9d073",
+        "size": 1542,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9ba7459aa82ac6339655180040be01a43cc9d073"
+      },
+      {
+        "path": "simulator/markets/order_book.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d087976f8e6fc195b729b5a1195eee1d99f31079",
+        "size": 38276,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/d087976f8e6fc195b729b5a1195eee1d99f31079"
+      },
+      {
+        "path": "simulator/markets/orders.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8512253c7fbad154592c8006f2e2bdffdec10fdc",
+        "size": 6726,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/8512253c7fbad154592c8006f2e2bdffdec10fdc"
+      },
+      {
+        "path": "simulator/markets/price_level.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "06aafbc35fa3264a6bd9e33ff3f921bc266039f3",
+        "size": 9743,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/06aafbc35fa3264a6bd9e33ff3f921bc266039f3"
+      },
+      {
+        "path": "simulator/markets/tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "dca4b36028c77c4433f74b814cfddda325126f36",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/dca4b36028c77c4433f74b814cfddda325126f36"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "bbeb42bc84f2863f3ed1c820174dfdd73e975709",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/bbeb42bc84f2863f3ed1c820174dfdd73e975709"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1fcdb0d800ad5e496440e8a1c936a8edfad1ca8a",
+        "size": 1520,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/1fcdb0d800ad5e496440e8a1c936a8edfad1ca8a"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/context.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f1e64875bac66e4d2ec382a50db431ce06e39f2f",
+        "size": 2022,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f1e64875bac66e4d2ec382a50db431ce06e39f2f"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_cancel_order.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3c7819327ff995d09027fd518d7b9acaba14d588",
+        "size": 1449,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/3c7819327ff995d09027fd518d7b9acaba14d588"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_data_methods.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f2b5678395404ab5b6a3f40937449754da50e4fd",
+        "size": 4088,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f2b5678395404ab5b6a3f40937449754da50e4fd"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_limit_orders.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ad7930ed22bcd1557e77e5f6ef2c28e46d49e8f4",
+        "size": 8559,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/ad7930ed22bcd1557e77e5f6ef2c28e46d49e8f4"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_market_orders.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "496af781a93e6bcd361bdc51d1a590ade84e7c24",
+        "size": 11233,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/496af781a93e6bcd361bdc51d1a590ade84e7c24"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_modify_order.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1ca9660203f17124aba2c585f0dab6f0ea8262d8",
+        "size": 2302,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/1ca9660203f17124aba2c585f0dab6f0ea8262d8"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_orderbook.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e190b604cab77f1bbe23cf966ec1e81598cd1e34",
+        "size": 612,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e190b604cab77f1bbe23cf966ec1e81598cd1e34"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_price_level.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "14773ce3d0a20ba49868ec28da5c799541e24871",
+        "size": 7548,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/14773ce3d0a20ba49868ec28da5c799541e24871"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_price_to_comply.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2377c51ecad7343f5499dd3c8d3e59ee229d50d2",
+        "size": 4294,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/2377c51ecad7343f5499dd3c8d3e59ee229d50d2"
+      },
+      {
+        "path": "simulator/markets/tests/orderbook/test_replace_order.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2627b6dd670710fb15627dfd69317201d1306e41",
+        "size": 1645,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/2627b6dd670710fb15627dfd69317201d1306e41"
+      },
+      {
+        "path": "simulator/markets/tests/test_orders.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "59e45ff7304362fc5ff37ab36aafba68db9bb4fa",
+        "size": 1966,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/59e45ff7304362fc5ff37ab36aafba68db9bb4fa"
+      },
+      {
+        "path": "simulator/markets/utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0894b4baa9f788a849a6863dfa4af2ea60bc2328",
+        "size": 5777,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/0894b4baa9f788a849a6863dfa4af2ea60bc2328"
+      },
+      {
+        "path": "ssm",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "f11751e91a65b2a793651611c7d96f22831d7db4",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/f11751e91a65b2a793651611c7d96f22831d7db4"
+      },
+      {
+        "path": "ssm/jamba.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b4fcbb7642d6f5e5f48eb9a0341e13d063ad1087",
+        "size": 22534,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/b4fcbb7642d6f5e5f48eb9a0341e13d063ad1087"
+      },
+      {
+        "path": "ssm/lm.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f9036f22651ef450f6cbe50d6e918ede73d0d671",
+        "size": 12368,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/f9036f22651ef450f6cbe50d6e918ede73d0d671"
+      },
+      {
+        "path": "ssm/mamba.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9bb5b78b481eb97e14277951ee1f0be861cb22c1",
+        "size": 14803,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9bb5b78b481eb97e14277951ee1f0be861cb22c1"
+      },
+      {
+        "path": "ssm/mamba_lm.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "da786694d82c85dd97a881c3858341d7fd7a11ae",
+        "size": 6734,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/da786694d82c85dd97a881c3858341d7fd7a11ae"
+      },
+      {
+        "path": "ssm/orig_train_ssm.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "014fda0a63599383f74e209f41d8af2eeba6d4d8",
+        "size": 13415,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/014fda0a63599383f74e209f41d8af2eeba6d4d8"
+      },
+      {
+        "path": "ssm/pscan.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "962e1532280b22f42b9bbb032e968cb0b324cf9f",
+        "size": 6983,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/962e1532280b22f42b9bbb032e968cb0b324cf9f"
+      },
+      {
+        "path": "ssm/train_ssm.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "382516c67e2413d8fff595afb043b61acdc8c6e3",
+        "size": 16433,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/382516c67e2413d8fff595afb043b61acdc8c6e3"
+      },
+      {
+        "path": "tokenizer",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "780c53ca9e411fc2f600bb96dc5d423b9cbb1839",
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/trees/780c53ca9e411fc2f600bb96dc5d423b9cbb1839"
+      },
+      {
+        "path": "tokenizer/bpe.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e8dcfd7805c8597468ea9e22d05b1d03813e671e",
+        "size": 885750,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/e8dcfd7805c8597468ea9e22d05b1d03813e671e"
+      },
+      {
+        "path": "tokenizer/bpe_base.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9d95eb08340daed63ae0fdcbc0d31d89db1d36bf",
+        "size": 6288,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/9d95eb08340daed63ae0fdcbc0d31d89db1d36bf"
+      },
+      {
+        "path": "tokenizer/bpe_basic.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "af1cf45510b0ab5d1940580fb679f63ce48c9524",
+        "size": 3744,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/af1cf45510b0ab5d1940580fb679f63ce48c9524"
+      },
+      {
+        "path": "tokenizer/bpe_tokenizer.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "da1c8d38ac51c9d2ef59485b3c985a84483c048e",
+        "size": 2627,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/da1c8d38ac51c9d2ef59485b3c985a84483c048e"
+      },
+      {
+        "path": "tokenizer/bpe_tokenizer_pretrain.pkl",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eb8af45f3957d585845d8917e699fb93d5cb4e68",
+        "size": 3199,
+        "url": "https://api.github.com/repos/aaron-wheeler/MarketGPT/git/blobs/eb8af45f3957d585845d8917e699fb93d5cb4e68"
+      }
+    ],
+    "truncated": false
+  }
+}

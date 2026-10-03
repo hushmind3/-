@@ -1,0 +1,94 @@
+{
+  "_id": "6910e0f98eedc8084429f3aa",
+  "id": "FinText/Chronos_Small_2023_Global",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "transformers",
+  "tags": [
+    "transformers",
+    "safetensors",
+    "t5",
+    "text2text-generation",
+    "TSFM",
+    "Finance",
+    "Financial Forecasting",
+    "FinText",
+    "time-series-forecasting",
+    "license:apache-2.0",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "region:us"
+  ],
+  "downloads": 244,
+  "likes": 0,
+  "modelId": "FinText/Chronos_Small_2023_Global",
+  "author": "FinText",
+  "sha": "74a9ce6eb66854cf406c8642ab18ec9aea7ae468",
+  "lastModified": "2025-11-13T17:22:49.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {
+    "architectures": [
+      "T5ForConditionalGeneration"
+    ],
+    "model_type": "t5"
+  },
+  "cardData": {
+    "pipeline_tag": "time-series-forecasting",
+    "license": "apache-2.0",
+    "tags": [
+      "TSFM",
+      "Finance",
+      "Financial Forecasting",
+      "FinText"
+    ],
+    "library_name": "transformers"
+  },
+  "transformersInfo": {
+    "auto_model": "AutoModelForSeq2SeqLM",
+    "pipeline_tag": "text2text-generation",
+    "processor": "AutoTokenizer"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "279ed54b50840fc7db83ba48fb918a5b21e7ced7",
+      "size": 54
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "44154a000507f3d983627d0341b9327d07125892",
+      "size": 668
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "a88db940b1df4c6a42d3ceb754c82921e4ada9a6",
+      "size": 1204
+    },
+    {
+      "rfilename": "generation_config.json",
+      "blobId": "1e4a299bd8178f9b032d3f4df289f3a702460eaf",
+      "size": 147
+    },
+    {
+      "rfilename": "model.safetensors",
+      "blobId": "8fe82450edda61ef9c165e917c3d491b47f06c1c",
+      "size": 184632360,
+      "lfs": {
+        "sha256": "fc772ec5799c0bd7c11322dc8731dfda60c17e66d6b12d780e0011a5a7550402",
+        "size": 184632360,
+        "pointerSize": 134
+      }
+    }
+  ],
+  "spaces": [],
+  "createdAt": "2025-11-09T18:44:09.000Z",
+  "safetensors": {
+    "parameters": {
+      "F32": 46154240
+    },
+    "total": 46154240
+  },
+  "usedStorage": 184632360
+}

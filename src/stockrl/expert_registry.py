@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 from .state_io import atomic_json as _atomic_json
+from .paths import EXPERT_ASSETS_DIR, expert_weight_path
 
 
 def atomic_json(path, payload):
@@ -15,6 +16,19 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+def ensure_registry(path):
+    """Seed portable expert metadata without carrying process state or loading PT."""
+    path=Path(path)
+    template=EXPERT_ASSETS_DIR/"registry.template.json"
+    if path.exists() or not template.exists():return
+    document=json.loads(template.read_text(encoding="utf-8"))
+    document["artifact_root"]=str(EXPERT_ASSETS_DIR)
+    for entry in document["experts"]:
+        entry["raw_output_path"]=str(EXPERT_ASSETS_DIR/entry["raw_output_path"])
+    path.parent.mkdir(parents=True,exist_ok=True)
+    atomic_json(path,document)
+
+
 def read_registry(path):
     """Current residency comes from a matching live worker, never historical peaks.
 
@@ -22,6 +36,7 @@ def read_registry(path):
     API download or checkpoint hashing occurs in a dashboard request.
     """
     import psutil
+    ensure_registry(path)
     try:
         document = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -33,7 +48,7 @@ def read_registry(path):
         row["output_shape"] = entry.get("last_output_shape", entry["probe"]["output_shape"])
         row["input_shapes"] = entry.get("last_input_shapes", entry["probe"]["input_shapes"])
         row["verified_forward_seconds"] = entry["probe"]["forward_seconds"]
-        files = [root / f["path"] for f in entry["files"] if not f.get("archive")]
+        files = [expert_weight_path(root / f["path"]) for f in entry["files"] if not f.get("archive")]
         row["checkpoint_bytes"] = sum(p.stat().st_size for p in files if p.is_file())
         row["checkpoint_present"] = bool(files) and all(p.is_file() for p in files)
         row.update(loaded=False, active=False, location="disk", ram_bytes=0, vram_bytes=0)

@@ -58,6 +58,10 @@ def publish_worker(state,model=None,bridge=None,row=None,decision=None,learning=
     if bridge is not None:
         data.update(books=bridge.paper_account.snapshot()["books"],fills=bridge.paper_account.state["fills"][-20:],
             pending_orders=bridge.paper_account.state["pending"],reward_points=bridge.paper_account.reward_points(),replay=bridge.replay.stats())
+        if model is not None:
+            applied=bridge.replay.retained_row_count(model.config.get("applied_replay_rows",{}))
+            data["replay"].update(awaiting_checkpoint=applied,
+                remaining_for_update=max(0,data["replay"]["untrained"]-applied))
     if row:data.update(market_timestamp=row["timestamp"],cycle_seconds=row["seconds"])
     if decision:
         output=decision["trading_output"];symbols=list(output["actions"])
@@ -143,7 +147,8 @@ def runtime_modes(state):
 
 
 def learn_saved_contexts(model,optimizer,bridge,contexts):
-    batch=bridge.replay.pending_batch(256,exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})})
+    batch=bridge.replay.pending_batch(256,
+        exclude_row_ids={int(k) for k in model.config.get("applied_replay_rows",{})},timestamps=contexts)
     ack={};latest=None;logs=[]
     for exp in batch:
         if exp.source!="paper_account_portfolio" or not exp.portfolio_value_transition:continue

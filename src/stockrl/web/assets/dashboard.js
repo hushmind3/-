@@ -1,6 +1,46 @@
 "use strict";
 
 // Operating overview and market screen. Account/learning/trial renderers live with their screen.
+const optimizerObservations = new Map();
+
+function renderOptimizerBoard(d, prefix = "overview") {
+  const roles = moeModelRoles(d);
+  const updates = roles.map((role) => d.model_runtime[role]);
+  if (!updates.length || d.status_unavailable) {
+    badge(prefix + "OptimizerBadge", d.status_unavailable ? "연결 끊김" : "MoE 정지", "");
+    text(prefix + "OptimizerCount", "—");
+    text(prefix + "OptimizerChange", "등록된 MoE 학습 기록 없음");
+    text(prefix + "OptimizerLoss", "—"); text(prefix + "OptimizerReward", "—");
+    text(prefix + "OptimizerTime", "모델 시작 후 실제 업데이트 표시");
+    optimizerObservations.clear();
+    return;
+  }
+  let changed = false;
+  const deltas = roles.map((role) => {
+    const count = d.model_runtime[role].optimizer_updates;
+    if (count == null) return "업데이트 수 미확인";
+    let previous = optimizerObservations.get(role);
+    if (!previous || count < previous.count) previous = {baseline:count,count};
+    changed ||= count > previous.count;
+    optimizerObservations.set(role,{baseline:previous.baseline,count});
+    return (role === "champion" ? "Champion" : "Candidate") + " +" + whole(count - previous.baseline);
+  });
+  badge(prefix + "OptimizerBadge", !roles.some((role) => modelIsRunning(d,role)) ? "모델 정지 · 마지막 기록" : d.learning_enabled === false ? "학습 중지"
+    : roles.some((role) => modelIsLearning(d,role)) ? "최근 사이클 학습" : "학습 대기", changed ? "good" : "");
+  text(prefix + "OptimizerCount", updates.every((r) => r.optimizer_updates != null)
+    ? whole(updates.reduce((n,r) => n + r.optimizer_updates,0)) + "회 누적" : "미확인");
+  text(prefix + "OptimizerChange", "이 화면 확인 이후 · " + deltas.join(" / "));
+  const latest = updates.filter((r) => r.learning?.updated_at)
+    .sort((a,b) => String(b.learning.updated_at).localeCompare(String(a.learning.updated_at)))[0];
+  text(prefix + "OptimizerLoss", decimal(latest?.learning?.loss,6));
+  text(prefix + "OptimizerReward", decimal(latest?.learning?.reward_points,4));
+  text(prefix + "OptimizerTime", latest ? "마지막 학습 완료 " + timeOf(latest.learning.updated_at)
+    + " · " + ageOf(latest.learning.updated_at) : "아직 완료된 학습 기록 없음");
+  if (changed) {
+    const node = $(prefix + "OptimizerCount");
+    if (node) { node.classList.remove("value-updated"); requestAnimationFrame(() => node.classList.add("value-updated")); }
+  }
+}
 
 function marketFor(symbol, markets) {
   return (markets || []).find((g) => (g.symbols || []).includes(symbol));
@@ -47,20 +87,18 @@ function renderStatus(d) {
           ageOf(f.updated_at_utc)
       : "시세 수집기가 정지돼 있습니다.",
   );
-  badge(
-    "agentBadge",
-    d.agent_running
-      ? recent(m.last_market_timestamp)
-        ? "추론 실행"
-        : "모델 대기"
-      : "모델 정지",
-    d.agent_running
-      ? recent(m.last_market_timestamp)
-        ? "good"
-        : "warn"
-      : "bad",
-  );
-  text("decisionCount", whole(m.decisions) + "건");
+  const roles = runningModelRoles(d);
+  const transition = Object.values(d.model_runtime || {}).find((r) => ["loading", "saving"].includes(r.status));
+  badge("agentBadge", transition ? modelStateLabel(transition)
+    : roles.length ? (d.observe_enabled === false ? "실행 중 · 판단 중지" : "실행 중") : "모델 정지",
+    transition ? "warn" : roles.length ? "good" : "");
+  text("decisionCount", roles.length + " / 2개 실행");
+  text("agentDetail", roles.length ? roles.map((role) => {
+    const r = d.model_runtime?.[role] || {};
+    return (role === "champion" ? "Champion" : "Candidate") + " · "
+      + (modelUsesHistoricalData(d, role) ? "ETHUSDT 과거 가상매매 · 데이터 " + marketDataTime(r.last_decision)
+        : "실시간 시세 판단 · " + timeOf(r.last_decision || m.last_market_timestamp));
+  }).join(" / ") : "모델 미실행 · 시세 수집과 별도 제어");
 
   const p = d.provider || {},
     last = f.broker_last_message_utc,
@@ -91,8 +129,8 @@ function renderStatus(d) {
   }
   badge(
     "brokerBadge",
-    connected ? "소켓 연결" : "소켓 미연결",
-    connected ? "good" : "warn",
+    connected ? (recent(last) ? "체결 수신" : "연결 · 체결 대기") : "소켓 미연결",
+    btone,
   );
   text("brokerState", btitle);
   text("brokerDetail", bdetail);
@@ -524,23 +562,7 @@ function renderObservationStatus(d) {
       " · 실제 판단 " +
       timeOf(candidateDecision),
   );
-  text(
-    "agentDetail",
-    "시세 " +
-      timeOf(health.latest_feed_timestamp_utc) +
-      " / 관찰 처리 " +
-      timeOf(health.agent_cursor_timestamp_utc) +
-      " / 실제 모델 판단 " +
-      timeOf(championDecision),
-  );
-  if (d.agent_process_running && health.status === "healthy")
-    badge("agentBadge", "관찰 처리 정상", "good");
   if (d.observe_enabled === false) {
-    badge("agentBadge", "판단 OFF", "");
-    text(
-      "agentDetail",
-      "새 판단 중지 · 시세 수집은 계속 · 저장 경험 학습은 학습 설정에 따릅니다.",
-    );
     for (const role of runningModelRoles(d)) {
       badge(role + "LiveBadge", "실행 중 · 새 판단 중지", "");
       text(
@@ -561,19 +583,35 @@ function renderObservationStatus(d) {
   for (const role of runningModelRoles(d)) {
     const runtime = d.model_runtime?.[role];
     if (runtime?.memory_scope !== "worker") continue;
-    text(role === "champion" ? "opChampionTime" : "opCandidateQueue", "공식 ETHUSDT 과거 구간 · 최근 판단 " + timeOf(runtime.last_decision));
-    text(role === "champion" ? "opChampionLag" : "opCandidateLag", "과거 구간 · 실시간 지연 비교 없음");
-    if (role === "champion") text("agentDetail", runtime.source + " · " + timeOf(runtime.last_decision));
+    text(role === "champion" ? "opChampionTime" : "opCandidateQueue", "ETHUSDT 데이터 시점 " + marketDataTime(runtime.last_decision));
+    text(role === "champion" ? "opChampionLag" : "opCandidateLag", d.observe_enabled === false ? "판단 중지" : "과거 구간 실행");
   }
 
 }
 
 // Shared safe row builder; cached html() keeps table nodes on unchanged data.
 
+// The overview owns one ledger scope. Never mix a MoE worker with legacy counters.
+function overviewExperience(d) {
+  const roles = moeModelRoles(d);
+  if (roles.length && runningModelRoles(d).every((role) => modelUsesHistoricalData(d, role))) {
+    const replays = roles.map((role) => d.model_runtime[role].replay || {});
+    const sum = (key) => replays.every((r) => r[key] != null)
+      ? replays.reduce((total, r) => total + num(r[key]), 0) : null;
+    return {pending:sum("pending"), eligible:replays.every((r) => r.remaining_for_update != null) ? sum("remaining_for_update") : sum("untrained"), bytes:sum("bytes"),
+      saving:sum("awaiting_checkpoint"),
+      completed:replays.every((r) => Array.isArray(r.daily))
+        ? replays.reduce((total,r) => total + r.daily.reduce((n,day) => n + num(day.completed),0),0) : null,
+      held:sum("quarantined"), scope:"TradingMoE 전용 DB"};
+  }
+  const m = d.metrics || {};
+  return {pending:m.replay_pending_count ?? m.pending_experiences, eligible:m.replay_eligible_backlog,
+    completed:(m.daily_learning || []).reduce((n,r) => n + num(r.completed),0), bytes:m.replay_file_bytes,
+    held:num(m.replay_quarantined_count)+num(m.replay_unsupported_count), scope:"기존 공통 DB"};
+}
+
 function operatorMetrics(d) {
   const m = d.metrics || {},
-    h = d.agent_health || {},
-    c = h.candidate || {},
     v = d.validation_comparison || {};
   const known = (x) => x != null && Number.isFinite(Number(x));
   const count = (x) => (known(x) ? whole(x) : "—");
@@ -581,12 +619,6 @@ function operatorMetrics(d) {
     ["KRW", "USD"].every((k) => known(books?.[k]?.trade_count))
       ? Number(books.KRW.trade_count) + Number(books.USD.trade_count)
       : null;
-  const fresh = Array.isArray(d.feed_metrics?.fresh_symbols_5m)
-    ? d.feed_metrics.fresh_symbols_5m.length
-    : null;
-  const configured = known(d.configured_instruments)
-    ? Number(d.configured_instruments)
-    : null;
   const todayKey = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Seoul",
     year: "numeric",
@@ -596,54 +628,12 @@ function operatorMetrics(d) {
   const today = (m.daily_learning || []).find((row) => row.day === todayKey);
   const champion = sumTrades(d.paper_financials),
     candidate = sumTrades(d.candidate_live_account?.books);
-  const lag =
-    known(h.lag_seconds) && known(c.lag_seconds)
-      ? Math.max(Number(h.lag_seconds), Number(c.lag_seconds))
-      : null;
-  const threshold =
-    known(h.threshold_seconds) && Number(h.threshold_seconds) > 0
-      ? Number(h.threshold_seconds)
-      : null;
   const ratio = (n, total) =>
     known(n) && known(total) && Number(total) > 0
       ? Math.max(0, Math.min(100, (100 * Number(n)) / Number(total)))
       : null;
   const state = learningSituation(d);
   const cards = {
-    Feed: {
-      number: count(fresh) + " / " + count(configured) + "종목",
-      status:
-        d.feed_running == null ? "미확인" : d.feed_running ? "수집 중" : "정지",
-      detail:
-        "최근 5분 수신 · 판단 입력 " +
-        count(m.model_input_symbol_count) +
-        "종목",
-      ratio: ratio(fresh, configured),
-      tone: d.feed_running ? "good" : "",
-    },
-    Inference: {
-      number: count(lag) + "초",
-      status: !runningModelRoles(d).length
-        ? "정지"
-        : d.observe_enabled === false
-          ? "판단 중지"
-          : h.status === "error" || c.status === "error"
-            ? "오류"
-            : lag == null
-              ? "미측정"
-              : h.status === "stale" || c.status === "stale"
-                ? "시세 처리 지연"
-                : "판단 허용",
-      detail:
-        "Champion " +
-        count(h.lag_seconds) +
-        "초 · Candidate " +
-        count(c.lag_seconds) +
-        "초" +
-        (threshold == null ? "" : " · 경고 기준 " + count(threshold) + "초"),
-      ratio: ratio(lag, threshold),
-      tone: lag != null && threshold != null && lag >= threshold ? "warn" : "",
-    },
     Paper: {
       number:
         champion == null || candidate == null
@@ -705,18 +695,17 @@ function operatorMetrics(d) {
       tone: v.active ? "blue" : "",
     },
   };
-  const runningRoles = runningModelRoles(d);
-  if (runningRoles.length && runningRoles.every((role) => d.model_runtime?.[role]?.memory_scope === "worker")) {
-    Object.assign(cards.Inference, {number:"과거 구간", status:"TradingMoE 실행", detail:"공식 ETHUSDT 과거 시세 · 실시간 시세 지연과 비교하지 않음", ratio:null, tone:"good"});
-    cards.Learning.detail = "TradingMoE는 별도 replay 사용 · 아래 완료 건수는 기존 공통 replay 기록";
-  } else if (d.model_runtime && runningRoles.length) {
-    const activeLags = runningRoles.map((role) => (role === "champion" ? h : c).lag_seconds);
-    if (activeLags.every(known)) {
-      const actualLag = Math.max(...activeLags.map(Number));
-      cards.Inference.number = count(actualLag) + "초";
-      cards.Inference.ratio = ratio(actualLag, threshold);
-      cards.Inference.detail = runningRoles.map((role) => (role === "champion" ? "Champion" : "Candidate") + " " + count((role === "champion" ? h : c).lag_seconds) + "초").join(" · ");
+  const runningRoles = moeModelRoles(d);
+  if (runningRoles.length && runningModelRoles(d).every((role) => modelUsesHistoricalData(d,role))) {
+    const experience = overviewExperience(d);
+    Object.assign(cards.Learning, {number:count(experience.eligible)+"건 학습 대기",
+      detail:"MoE DB · 저장 완료 "+count(experience.completed)+"건 · 학습 후 저장 대기 "+count(experience.saving)+"건 · 결과 대기 "+count(experience.pending)+"건", ratio:null});
+    if (runningModelRoles(d).length) {
+      const nativeTrades = runningRoles.map((role) => Object.values(d.model_runtime[role].books || {}).reduce((n,b) => n + num(b.trade_count),0));
+      Object.assign(cards.Paper, {number:whole(nativeTrades.reduce((n,v) => n+v,0))+"건",
+        detail:runningRoles.map((role,i) => (role === "champion" ? "Champion" : "Candidate")+" MoE "+whole(nativeTrades[i])+"건").join(" · ")});
     }
+    Object.assign(cards.Trial, {number:"미실행",status:"기존 모델 승급전",detail:"MoE 가상매매와 별도 · 시험계좌 미실행",ratio:null,tone:""});
   }
   if (d.status_unavailable)
     for (const card of Object.values(cards))
@@ -732,6 +721,7 @@ function operatorMetrics(d) {
 
 function renderWorkflowStatus(d) {
   const cards = operatorMetrics(d);
+  renderOptimizerBoard(d);
   if (d.status_unavailable) {
     badge("gpuBadge", "연결 끊김", "bad");
     text("gpuMemory", "—");
@@ -763,12 +753,11 @@ function renderWorkflowStatus(d) {
 }
 
 function renderOverviewExperience(d) {
-  const m = d.metrics || {},
-    rows = m.daily_learning || [];
+  const experience = overviewExperience(d);
   const counts = {
-    Pending: m.replay_pending_count ?? m.pending_experiences,
-    Eligible: m.replay_eligible_backlog,
-    Completed: rows.reduce((sum, row) => sum + num(row.completed), 0),
+    Pending: experience.pending,
+    Eligible: experience.eligible,
+    Completed: experience.completed,
   };
   for (const [stage, count] of Object.entries(counts))
     text(
@@ -797,6 +786,7 @@ function renderProcessHealth(d) {
   const transitioning = Object.values(d.model_runtime || {}).some((item) => ["loading", "saving"].includes(item.status));
   const problem = Object.values(d.model_runtime || {}).some((item) => item.error || item.requested && ["stopped", "error"].includes(item.status));
   const ready = d.feed_running && roles.length > 0 && !problem && !transitioning;
+  const historical = roles.length && roles.every((role) => modelUsesHistoricalData(d,role));
   badge(
     "processHealthBadge",
     problem ? "모델 오류" : transitioning ? "모델 전환 중" : ready ? "실행 중" : d.feed_running ? "시세 수집 중" : "정지",
@@ -804,14 +794,13 @@ function renderProcessHealth(d) {
   );
   text(
     "processHealthValue",
-    problem ? "모델 오류 확인" : transitioning ? "모델 로딩·저장 중" : ready ? "운영 정상" : d.feed_running ? "시세 수집 · 모델 정지" : "시스템 정지",
+    problem ? "모델 오류 확인" : transitioning ? "모델 로딩·저장 중" : roles.length ? d.observe_enabled === false ? "모델 판단 중지" : historical ? "MoE 과거 가상매매" : "실시간 모델 실행" : d.feed_running ? "시세 수집 · 모델 정지" : "시스템 정지",
   );
   text(
     "processHealthDetail",
-    parts.map(([name, on]) => name + " " + (on ? "연결" : "정지")).join(" · "),
+    parts.map(([name, on]) => name + " " + (on ? "실행" : "정지")).join(" · "),
   );
-  const m = d.metrics || {},
-    bytes = m.replay_file_bytes;
+  const experience = overviewExperience(d), bytes = experience.bytes;
   text(
     "overviewReplaySize",
     bytes == null ? "—" : (Number(bytes) / 1048576).toFixed(1) + " MiB",
@@ -819,11 +808,7 @@ function renderProcessHealth(d) {
   badge("overviewReplayBadge", bytes == null ? "미측정" : "DB 보존", "");
   text(
     "overviewReplayDetail",
-    "학습 가능 " +
-      whole(m.replay_eligible_backlog) +
-      "건 · 보류 " +
-      whole(num(m.replay_quarantined_count) + num(m.replay_unsupported_count)) +
-      "건",
+    experience.scope + " · 학습 대기 " + whole(experience.eligible) + "건 · 보류 " + whole(experience.held) + "건",
   );
 }
 

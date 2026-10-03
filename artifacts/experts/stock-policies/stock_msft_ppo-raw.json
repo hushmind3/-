@@ -1,0 +1,29 @@
+{
+  "native_output": [
+    1
+  ],
+  "raw_policy_output": [
+    1
+  ],
+  "common_output": [
+    {
+      "symbol_id": "MSFT",
+      "buy_score": 0.06069319695234299,
+      "hold_score": 0.9357272982597351,
+      "sell_score": 0.0035795096773654222,
+      "target_weight": 0.0,
+      "confidence": 0.9357272982597351
+    }
+  ],
+  "output_shape": [
+    1
+  ],
+  "input_shapes": {
+    "observation": [
+      1,
+      90
+    ]
+  },
+  "as_of": "2023-12-29 00:00:00",
+  "units": "native_policy_action"
+}

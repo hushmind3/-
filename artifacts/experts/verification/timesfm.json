@@ -1,0 +1,68 @@
+{
+  "expert": "timesfm",
+  "native_output": [
+    [
+      [
+        -0.01088643353432417,
+        0.066646508872509,
+        1.186401128768921,
+        0.49087071418762207,
+        0.8925682902336121,
+        -0.11969713121652603,
+        0.053142692893743515,
+        -0.24188022315502167,
+        -0.3029518723487854,
+        0.9568277597427368
+      ]
+    ],
+    [
+      [
+        -0.009103450924158096,
+        -0.079766646027565,
+        -0.1672564297914505,
+        -0.012016275897622108,
+        0.2822471857070923,
+        -0.14285947382450104,
+        -0.005945645272731781,
+        -0.07356268167495728,
+        -0.028227370232343674,
+        0.044621095061302185
+      ]
+    ]
+  ],
+  "layout": "symbol,horizon,point_and_nine_quantiles",
+  "units": "daily_excess_return",
+  "symbols": [
+    "AAPL",
+    "MSFT"
+  ],
+  "as_of": "2025-10-31",
+  "horizon": 1,
+  "sampling_seconds": 86400,
+  "parameters": 19809304,
+  "parameter_bytes": 79237216,
+  "parameter_dtypes": [
+    "torch.float32"
+  ],
+  "frozen": true,
+  "output_shape": [
+    2,
+    1,
+    10
+  ],
+  "load_seconds": 0.2278785999988031,
+  "input_shapes": {
+    "series": [
+      2,
+      128
+    ]
+  },
+  "rss_start_bytes": 552984576,
+  "rss_loaded_bytes": 743202816,
+  "rss_end_bytes": 1342001152,
+  "peak_ram_bytes": 1342001152,
+  "ram_measurement": "Windows process peak working set",
+  "forward_seconds": 0.3332661000004009,
+  "peak_allocated_bytes": 87979520,
+  "peak_reserved_bytes": 115343360
+}

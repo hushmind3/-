@@ -1,0 +1,19 @@
+{
+  "cards": 14,
+  "frozen": 14,
+  "unloaded": 14,
+  "stable_card_nodes": true,
+  "raw_timesfm_shape": [
+    2,
+    1,
+    10
+  ],
+  "raw_outputs_verified": 14,
+  "timing_fields_verified": 56,
+  "integrated_result_verified": true,
+  "registry_names_dynamic": true,
+  "screens_checked": 7,
+  "mobile_overflow": false,
+  "console_errors": [],
+  "post_requests": []
+}

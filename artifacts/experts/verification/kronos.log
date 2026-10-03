@@ -1,0 +1,4 @@
+Loading weights from local directory
+Loading weights from local directory
+{"expert": "kronos", "layout": "symbol,horizon,OHLCV_amount", "units": "native_OHLCV_amount", "symbols": ["AAPL"], "as_of": "2026-09-25", "horizon": 1, "sampling_seconds": 86400, "parameters": 106268634, "native_modules": [{"type": "Kronos", "parameters": 102310592, "buffer_elements": 416, "buffer_bytes": 1664}, {"type": "KronosTokenizer", "parameters": 3958042, "buffer_elements": 280, "buffer_bytes": 1216}], "parameter_bytes": 425074536, "parameter_dtypes": ["torch.float32"], "frozen": true, "output_shape": [1, 1, 6], "load_seconds": 2.96476470000016, "input_shapes": {"OHLCV_amount": [1, 128, 6]}, "rss_start_bytes": 552570880, "rss_loaded_bytes": 789250048, "rss_end_bytes": 1446707200, "peak_ram_bytes": 1446707200, "ram_measurement": "Windows process peak working set", "forward_seconds": 0.41792899999927613, "peak_allocated_bytes": 444876800, "peak_reserved_bytes": 465567744}
+

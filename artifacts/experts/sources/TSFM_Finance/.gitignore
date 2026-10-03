@@ -1,0 +1,8 @@
+PROJECT_STYLE.md
+.venv/
+*.pyc.*
+*pyc
+checkpoints/
+*.egg-info/
+.vscode/
+FinText_extra_models/

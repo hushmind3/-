@@ -1,0 +1,39 @@
+Number of generation steps: 150000
+Checkpoint: /home/aaron/Documents/Github/MarketSimT/out/ckpt_finetune_AAPL_v3.pt
+Use BPE: False
+msgs_to_load_LOB: 287500
+num_context_msgs: 100
+Temperature: 1.02
+Top-k: None
+Top-p: 0.98
+Seed: 3
+Block size: 2688
+Number of sampling errors: 0
+Number of symbol errors: 0
+Number of time errors: 0
+Number of price reference errors: 1
+Number of order placement errors: 11201
+Total number of errors: 11202
+Error percentage: 7.47%
+Add order percentage: 50.1% (count: 69539) 
+Execute order percentage: 3.22% (count: 4471) 
+Execute modified order percentage: 0.0% (count: 0) 
+Full cancel order percentage: 43.71% (count: 60675) 
+Partial cancel order percentage: 0.03% (count: 42) 
+Replace order percentage: 2.93% (count: 4071) 
+Number of add order placement errors: 0
+Number of exec order placement errors: 0
+Number of execmod order placement errors: 0
+Number of cancel order placement errors: 7108
+Number of replace order placement errors: 4093
+Exact match: 0 (0.0 %)
+Size only match: 183333 (94.6 %)
+Time only match: 0 (0.0 %)
+No match: 10462 (5.4 %)
+gen_start_time: 36090577799764
+gen_end_time: 37162854928164
+Simulation time elapsed (nanoseconds): 1072277128400
+Simulation time elapsed (seconds): 1072.2771284
+Simulation time elapsed (minutes): 17.871285473333334
+Simulated messages per second: 129.44228345810905
+Wallclock time elapsed: 259.73

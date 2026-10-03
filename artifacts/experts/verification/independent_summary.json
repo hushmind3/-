@@ -1,0 +1,679 @@
+[
+  {
+    "expert": "fincast",
+    "layout": "symbol,horizon,point_and_nine_quantiles",
+    "units": "price",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 991436960,
+    "parameter_bytes": 3965747840,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      1,
+      10
+    ],
+    "load_seconds": 10.655294299998786,
+    "input_shapes": {
+      "series": [
+        1,
+        128
+      ]
+    },
+    "rss_start_bytes": 552628224,
+    "rss_loaded_bytes": 846462976,
+    "rss_end_bytes": 1548738560,
+    "peak_ram_bytes": 8586969088,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.9355207999997219,
+    "peak_allocated_bytes": 3974743552,
+    "peak_reserved_bytes": 4244635648,
+    "name": "fincast",
+    "status": "ok"
+  },
+  {
+    "expert": "exaone",
+    "layout": "symbol,21_quantiles,horizon",
+    "units": "price",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 202319520,
+    "parameter_bytes": 809278080,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      21,
+      1
+    ],
+    "load_seconds": 6.459757800001171,
+    "input_shapes": {
+      "series": [
+        1,
+        128
+      ]
+    },
+    "rss_start_bytes": 569724928,
+    "rss_loaded_bytes": 963514368,
+    "rss_end_bytes": 1466261504,
+    "peak_ram_bytes": 2363334656,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.29443069999979343,
+    "peak_allocated_bytes": 823684096,
+    "peak_reserved_bytes": 845152256,
+    "name": "exaone",
+    "status": "ok"
+  },
+  {
+    "expert": "kronos",
+    "layout": "symbol,horizon,OHLCV_amount",
+    "units": "native_OHLCV_amount",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 106268634,
+    "native_modules": [
+      {
+        "type": "Kronos",
+        "parameters": 102310592,
+        "buffer_elements": 416,
+        "buffer_bytes": 1664
+      },
+      {
+        "type": "KronosTokenizer",
+        "parameters": 3958042,
+        "buffer_elements": 280,
+        "buffer_bytes": 1216
+      }
+    ],
+    "parameter_bytes": 425074536,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      1,
+      6
+    ],
+    "load_seconds": 2.96476470000016,
+    "input_shapes": {
+      "OHLCV_amount": [
+        1,
+        128,
+        6
+      ]
+    },
+    "rss_start_bytes": 552570880,
+    "rss_loaded_bytes": 789250048,
+    "rss_end_bytes": 1446707200,
+    "peak_ram_bytes": 1446707200,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.41792899999927613,
+    "peak_allocated_bytes": 444876800,
+    "peak_reserved_bytes": 465567744,
+    "name": "kronos",
+    "status": "ok"
+  },
+  {
+    "expert": "marketgpt",
+    "layout": "batch,last_token,vocabulary",
+    "units": "next_message_token_logits",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 94292736,
+    "native_modules": [
+      {
+        "type": "Transformer",
+        "parameters": 94292736,
+        "buffer_elements": 14336,
+        "buffer_bytes": 57344
+      }
+    ],
+    "parameter_bytes": 377170944,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      1,
+      12160
+    ],
+    "load_seconds": 1.6340622999996413,
+    "input_shapes": {
+      "itch_tokens": [
+        1,
+        32
+      ]
+    },
+    "rss_start_bytes": 552173568,
+    "rss_loaded_bytes": 976269312,
+    "rss_end_bytes": 1267015680,
+    "peak_ram_bytes": 1349849088,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.19050390000120387,
+    "peak_allocated_bytes": 388795904,
+    "peak_reserved_bytes": 417333248,
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "marketgpt",
+    "status": "ok"
+  },
+  {
+    "expert": "chronos",
+    "layout": "symbol,sample,horizon",
+    "units": "daily_excess_return",
+    "symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "as_of": "2025-10-31",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 46154240,
+    "parameter_bytes": 184616960,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      2,
+      8,
+      1
+    ],
+    "load_seconds": 7.1845104999993055,
+    "input_shapes": {
+      "series": [
+        2,
+        128
+      ]
+    },
+    "rss_start_bytes": 569458688,
+    "rss_loaded_bytes": 879038464,
+    "rss_end_bytes": 1542008832,
+    "peak_ram_bytes": 1542008832,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.3998463999996602,
+    "peak_allocated_bytes": 253123584,
+    "peak_reserved_bytes": 291504128,
+    "name": "chronos",
+    "status": "ok"
+  },
+  {
+    "expert": "timesfm",
+    "layout": "symbol,horizon,point_and_nine_quantiles",
+    "units": "daily_excess_return",
+    "symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "as_of": "2025-10-31",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 19809304,
+    "parameter_bytes": 79237216,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      2,
+      1,
+      10
+    ],
+    "load_seconds": 0.2278785999988031,
+    "input_shapes": {
+      "series": [
+        2,
+        128
+      ]
+    },
+    "rss_start_bytes": 552984576,
+    "rss_loaded_bytes": 743202816,
+    "rss_end_bytes": 1342001152,
+    "peak_ram_bytes": 1342001152,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.3332661000004009,
+    "peak_allocated_bytes": 87979520,
+    "peak_reserved_bytes": 115343360,
+    "name": "timesfm",
+    "status": "ok"
+  },
+  {
+    "expert": "timemoe",
+    "layout": "symbol,horizon",
+    "units": "price",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 453196800,
+    "parameter_bytes": 906393600,
+    "parameter_dtypes": [
+      "torch.bfloat16"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      1
+    ],
+    "load_seconds": 9.548738299999968,
+    "input_shapes": {
+      "series": [
+        1,
+        128
+      ]
+    },
+    "rss_start_bytes": 568860672,
+    "rss_loaded_bytes": 1471270912,
+    "rss_end_bytes": 2177495040,
+    "peak_ram_bytes": 3524087808,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.3926783000006253,
+    "peak_allocated_bytes": 967892480,
+    "peak_reserved_bytes": 983564288,
+    "name": "timemoe",
+    "status": "ok"
+  },
+  {
+    "expert": "toto",
+    "layout": "nine_quantiles,batch,variate,horizon",
+    "units": "daily_excess_return",
+    "symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "as_of": "2025-10-31",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 312684608,
+    "native_modules": [
+      {
+        "type": "Toto2Model",
+        "parameters": 312684608,
+        "buffer_elements": 24118768,
+        "buffer_bytes": 96475072
+      }
+    ],
+    "parameter_bytes": 1250738432,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      9,
+      1,
+      2,
+      1
+    ],
+    "load_seconds": 4.889027900000656,
+    "input_shapes": {
+      "series": [
+        2,
+        128
+      ]
+    },
+    "rss_start_bytes": 552402944,
+    "rss_loaded_bytes": 1389899776,
+    "rss_end_bytes": 1942388736,
+    "peak_ram_bytes": 3228897280,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.5316561000017828,
+    "peak_allocated_bytes": 1395540992,
+    "peak_reserved_bytes": 1453326336,
+    "name": "toto",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.877477899999576,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 552599552,
+    "rss_loaded_bytes": 707825664,
+    "rss_end_bytes": 937340928,
+    "peak_ram_bytes": 937340928,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.12587639999946987,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "slope/1",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_slope_1",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.8879873999994743,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 552648704,
+    "rss_loaded_bytes": 707878912,
+    "rss_end_bytes": 937037824,
+    "peak_ram_bytes": 937037824,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.12798380000094767,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "slope/2",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_slope_2",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.8759628000007069,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 552923136,
+    "rss_loaded_bytes": 708464640,
+    "rss_end_bytes": 937566208,
+    "peak_ram_bytes": 937566208,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.1252449000003253,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "slope/3",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_slope_3",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.870625999999902,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 552181760,
+    "rss_loaded_bytes": 708112384,
+    "rss_end_bytes": 937652224,
+    "peak_ram_bytes": 937652224,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.12357220000012603,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "vol/1",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_vol_1",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.8714330000002519,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 551944192,
+    "rss_loaded_bytes": 707829760,
+    "rss_end_bytes": 937558016,
+    "peak_ram_bytes": 937558016,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.11747939999986556,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "vol/2",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_vol_2",
+    "status": "ok"
+  },
+  {
+    "expert": "macrophft",
+    "layout": "batch,Q_flat_long",
+    "units": "native_ETHUSDT_policy_Q",
+    "symbols": [
+      "ETHUSDT"
+    ],
+    "as_of": null,
+    "horizon": 1,
+    "sampling_seconds": null,
+    "parameters": 45507,
+    "native_modules": [
+      {
+        "type": "subagent",
+        "parameters": 45507,
+        "buffer_elements": 1,
+        "buffer_bytes": 4
+      }
+    ],
+    "parameter_bytes": 182028,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      2
+    ],
+    "load_seconds": 0.9607739000002766,
+    "input_shapes": {
+      "single_state": [
+        1,
+        36
+      ],
+      "trend_state": [
+        1,
+        9
+      ],
+      "previous_action": [
+        1
+      ]
+    },
+    "rss_start_bytes": 552484864,
+    "rss_loaded_bytes": 707715072,
+    "rss_end_bytes": 937230336,
+    "peak_ram_bytes": 937230336,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.12518009999985225,
+    "peak_allocated_bytes": 8711168,
+    "peak_reserved_bytes": 23068672,
+    "variant": "vol/3",
+    "input_authenticity": "synthetic_schema_probe_not_market_validation",
+    "name": "macrophft_vol_3",
+    "status": "ok"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "model": "aaronwheeler/MarketGPT-100m",
+  "revision": "f80057ebcacbd43dbf72c2d7acd804e58eeaccd4",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\MarketGPT-100m\\README.md",
+      "bytes": 24,
+      "sha256": "d8d7a46d41a1a37fe4f0a5f637bf55c649310185329127d8a2204632e480be17",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\MarketGPT-100m\\ckpt_finetune_AAPL_v3.zip",
+      "bytes": 1054913634,
+      "sha256": "420f549e818e4d1c71c77689bad261197b0d23300751c8e816e5b725158ec0c6",
+      "upstream_sha256": "420f549e818e4d1c71c77689bad261197b0d23300751c8e816e5b725158ec0c6"
+    }
+  ]
+}

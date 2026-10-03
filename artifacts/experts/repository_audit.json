@@ -1,0 +1,2758 @@
+[
+  {
+    "path": "CODEX_HANDOFF.md",
+    "bytes": 23097,
+    "lines": 213,
+    "sha256": "8859bbe42030722b33833ffc74c1ef2fc271fd68f3a7a55c8a16676b5b446759"
+  },
+  {
+    "path": "README.md",
+    "bytes": 45290,
+    "lines": 216,
+    "sha256": "9ac78db2be3bc53780c709a2c50c6f44959860528ae34d854f03f0b5346a3141"
+  },
+  {
+    "path": "README_MAC_TRANSFER.md",
+    "bytes": 1623,
+    "lines": 24,
+    "sha256": "36bcc35a10af0f61feb1191810de42be64509ae3f6cc1554700b06cddc254766"
+  },
+  {
+    "path": "StockRL Start.bat",
+    "bytes": 1176,
+    "lines": 41,
+    "sha256": "89315265c02ff4da79e1d6e3ead81161b347512940d7610d049c0e4d485d091a"
+  },
+  {
+    "path": "backups/dashboard/pre-edit-20260930-201239.html",
+    "bytes": 88560,
+    "lines": 217,
+    "sha256": "9110c64f3048db1aa9fa9e713dbcad80c993be9d2f62223fe03ba9d384c3a2dd"
+  },
+  {
+    "path": "backups/dashboard/pre-edit-20260930-202113.html",
+    "bytes": 88913,
+    "lines": 217,
+    "sha256": "8f1f51013fe7f455cef9c343a4c8e21919e094e860fd397de519386c52b33a06"
+  },
+  {
+    "path": "backups/dashboard/pre-edit-20260930-202617.html",
+    "bytes": 88327,
+    "lines": 216,
+    "sha256": "e84594ced6a4945e93e6532e52b2bf258529319c63b7fe078e10fba7f13ddb6a"
+  },
+  {
+    "path": "configs/checkpoint-history/epoch1-compact-validation_config.json",
+    "bytes": 62,
+    "lines": 4,
+    "sha256": "7afa6f13e014c33eb421b842b228300f47a1d14ea96324d7099b95ef9dec4a28"
+  },
+  {
+    "path": "configs/checkpoint-history/epoch1-validation_config.json",
+    "bytes": 62,
+    "lines": 4,
+    "sha256": "7afa6f13e014c33eb421b842b228300f47a1d14ea96324d7099b95ef9dec4a28"
+  },
+  {
+    "path": "configs/live_symbols.json",
+    "bytes": 5485,
+    "lines": 41,
+    "sha256": "66affe6815020c6380f55d43e33c2696bc3b170c8271a1be02a58ec6d68fa279"
+  },
+  {
+    "path": "configs/live_symbols_korea.json",
+    "bytes": 57778,
+    "lines": 2316,
+    "sha256": "f412aad96c2de5ef0237951c46620acc543af28cbd1d9054f649bb43717a5b22"
+  },
+  {
+    "path": "configs/local/provider_settings.json",
+    "bytes": 274,
+    "lines": 10,
+    "sha256": "20cc71b4b7d5edf29878f4d89c7a426eeefc9258fa06a275bcf53444777cfbdc"
+  },
+  {
+    "path": "configs/local/web_settings.json",
+    "bytes": 154,
+    "lines": 8,
+    "sha256": "8c5c6f09b7314032b909907d4718cca3e3d55cf9feacc0faf7a9ca97de6193d4"
+  },
+  {
+    "path": "configs/online_learning.json",
+    "bytes": 859,
+    "lines": 41,
+    "sha256": "481f8549dfd92f0cb7988c3c7898931c814d1597faceb12a21a32834f5813722"
+  },
+  {
+    "path": "configs/teachers.json",
+    "bytes": 823,
+    "lines": 8,
+    "sha256": "4c37eed360e46500c2602d8bf11e98ffe215ce40129f49b46212c0463022ce46"
+  },
+  {
+    "path": "docs/KOREA_PAPER_WEB.md",
+    "bytes": 1796,
+    "lines": 17,
+    "sha256": "66b05513b03a142cf7b78e18356a01120432e4399da34f6687c5d3009b9b761f"
+  },
+  {
+    "path": "docs/SIDE_REVIEW_HANDOFF.md",
+    "bytes": 44539,
+    "lines": 303,
+    "sha256": "6ba800dcb333ea1ad02f28d5209d0dd045ead1b2b4323ce430b2cff75ae7e41b"
+  },
+  {
+    "path": "docs/diagnostics/dashboard-check.js",
+    "bytes": 8022,
+    "lines": 13,
+    "sha256": "3ff73ba15fa97d244de004b2eae83a9b27d3b787442f2b7915a0adaeceb675b0"
+  },
+  {
+    "path": "docs/frontend.md",
+    "bytes": 6316,
+    "lines": 71,
+    "sha256": "1425d1aa553fdc7b637366ca11e89398082e4f880cead463986369991621bfdc"
+  },
+  {
+    "path": "pyproject.toml",
+    "bytes": 733,
+    "lines": 20,
+    "sha256": "2cf7a7ed319a178d1351ebdc88315b13054db59828bc501b80b56018071bf891"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/autonomy.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/candidate_validation.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/candidate_validation_candidate.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/candidate_validation_champion.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/live_cursor.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/live_positions.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/paper_account.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/agent/validation_config.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/archive/localcache-runtime-2026-09-29/live/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/autonomy.json",
+    "bytes": 91,
+    "lines": 1,
+    "sha256": "581fbdd50437fc40bfcebeebd07c7fb636f24de7788bd8859893182992273b3a"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/backtest.json",
+    "bytes": 3627,
+    "lines": 133,
+    "sha256": "9c75a9eeaf604c95e16dccba98066ac80f96f203daea7a61b7794d289035b323"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_lineage.json",
+    "bytes": 107,
+    "lines": 6,
+    "sha256": "eed21eb81a44166f3a8c19627161cc4c861c9be5427f81001c123e2c280f3c1f"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_observer_account.json",
+    "bytes": 130374,
+    "lines": 3955,
+    "sha256": "eee5b116eafc4f5a9d4ad3100f61a7ccd60535e757cbaecfbf9d338fca4588ae"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_observer_state.json",
+    "bytes": 55053,
+    "lines": 1764,
+    "sha256": "9221e9356170818565ef488f041b7b7dcb836abcd735115c2dfbdcac01ca484c"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_validation.json",
+    "bytes": 608,
+    "lines": 19,
+    "sha256": "1c877f847d6421e4a8cdce046581ab128b444a1b339f28b35688b2b3a5e63336"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_validation_candidate.json",
+    "bytes": 1239,
+    "lines": 49,
+    "sha256": "e56ca3dcc6132d45ccf40e872f7625032c76617e085462f65706697a8f63a464"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/candidate_validation_champion.json",
+    "bytes": 1239,
+    "lines": 49,
+    "sha256": "467a5bf0091afd1b648f6bc9c6a5c9882b3bac1b42c20d18a0cf49e46400d009"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/daily_account_summary.json",
+    "bytes": 1989,
+    "lines": 63,
+    "sha256": "8f0ff832a0a2c28e6d9a1e7f2b1f1b4c78379ae747dc39f18357dfa04f3f6959"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/live_cursor.json",
+    "bytes": 57,
+    "lines": 3,
+    "sha256": "2a2213b705b490d70531ee7f09cac2f3c32992c2c3b8b0d3f35fa14fc6618315"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/live_positions.json",
+    "bytes": 3646,
+    "lines": 224,
+    "sha256": "3112a202e75b2b7e1cdd45b2d8930bb901438f5a8c2db3ab7da41bc7db3e9f60"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/metrics.json",
+    "bytes": 357550,
+    "lines": 13238,
+    "sha256": "c9f0052cec334e2b2c90e7cffcccaa33305575fa2713d609a10331959704e208"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/paper_account.json",
+    "bytes": 131182,
+    "lines": 3962,
+    "sha256": "f95dfb8401fae75ef8aeca777b84e349cb057f7e963b47b2d7c0ccb3bf4f0b1f"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/promotion_baseline.json",
+    "bytes": 156,
+    "lines": 4,
+    "sha256": "78abb5ed92e6cfe253a2370554edb5a489ad44bd4c8c5ae2caea79c37e060a84"
+  },
+  {
+    "path": "runtime/markets/korea/live/agent/validation_config.json",
+    "bytes": 71,
+    "lines": 4,
+    "sha256": "2635386eb94c08d1cc07a97614b90699360a5d23205f449c7c6f8ab34972f2d7"
+  },
+  {
+    "path": "runtime/markets/korea/live/live_feed_metrics.json",
+    "bytes": 1624,
+    "lines": 63,
+    "sha256": "476a653a98359b6d1bd5643f77c46cf262ed9081c9bbe7e031e0b8c22bd68d10"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T110703Z/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T110703Z/snapshot_manifest.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/autonomy.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/candidate_validation.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/candidate_validation_candidate.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/candidate_validation_champion.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/live_cursor.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/live_positions.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/paper_account.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/agent/validation_config.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112509Z/snapshot_manifest.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/autonomy.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/candidate_validation.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/candidate_validation_candidate.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/candidate_validation_champion.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/live_cursor.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/live_positions.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/paper_account.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/agent/validation_config.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T112728Z/snapshot_manifest.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/autonomy.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/candidate_validation.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/candidate_validation_candidate.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/candidate_validation_champion.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/live_cursor.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/live_positions.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/paper_account.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/agent/validation_config.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113451Z/snapshot_manifest.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/autonomy.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/candidate_validation.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/candidate_validation_candidate.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/candidate_validation_champion.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/live_cursor.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/live_positions.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/paper_account.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/agent/validation_config.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/live_feed_metrics.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "runtime/markets/korea/snapshots/20260929T113540Z/snapshot_manifest.json",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "scripts/bench_market_training_loader.py",
+    "bytes": 19165,
+    "lines": 359,
+    "sha256": "fefa7fb6a1491cf1f037c7d850498a2c566f53497a5b6fdc38770045b386ec65",
+    "definitions": [
+      "sha256",
+      "peak_rss_bytes",
+      "RSSHighWater",
+      "load_expanded_candidate",
+      "batch_tensors",
+      "utility",
+      "estimate_compute",
+      "checkpoint_delta_l1",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from dataclasses import asdict, replace",
+      "import gc",
+      "import hashlib",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import threading",
+      "import time",
+      "import numpy as np",
+      "import psutil",
+      "import torch",
+      "from torch import nn",
+      "from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, parameter_count, stable_id",
+      "from stockrl.market_training import CONTEXT_FEATURES, CommonMarketTrainingLoader, ContextConditionedTransformer, ITCHSnapshotAdapter, load_market_candidate_checkpoint"
+    ]
+  },
+  {
+    "path": "scripts/benchmark_attention.py",
+    "bytes": 4640,
+    "lines": 89,
+    "sha256": "6985da040dc23002c9547a37321c1db7ef83b92388c9a36ad341bf3192bbea92",
+    "definitions": [
+      "run"
+    ],
+    "imports": [
+      "import argparse",
+      "import json",
+      "from pathlib import Path",
+      "import statistics",
+      "import time",
+      "import torch"
+    ]
+  },
+  {
+    "path": "scripts/build_public_teacher_replay.py",
+    "bytes": 5424,
+    "lines": 115,
+    "sha256": "cc7ec229376c9f2c96165bd0c26632f89cffc960ddfe10d4badfc45e6c4c9374",
+    "definitions": [
+      "build_finrl",
+      "build_fi2010",
+      "build_macro_replay",
+      "build_trademaster_panels",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import json",
+      "import numpy as np",
+      "import pandas as pd",
+      "from stockrl.global_online import Experience, GlobalReplayBuffer",
+      "from stockrl.global_transformer import GlobalMarketPanel",
+      "from stockrl.research_ingest import fi2010_book_to_features, fi2010_file_to_arrays, trademaster_csv_to_global"
+    ]
+  },
+  {
+    "path": "scripts/distill_fincast_offline.py",
+    "bytes": 30779,
+    "lines": 590,
+    "sha256": "228445bfa6f540965feabb7d554dcd71ae15e67914cc0eb321b4fa014b9daf62",
+    "definitions": [
+      "sha256",
+      "report_json",
+      "eligible_times",
+      "open_loader",
+      "load_teacher",
+      "quantile_action_targets",
+      "create_teacher_cache",
+      "make_batch",
+      "evaluate",
+      "save_student",
+      "student_phase",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from dataclasses import asdict",
+      "import hashlib",
+      "import json",
+      "import math",
+      "import os",
+      "from pathlib import Path",
+      "import shutil",
+      "import sys",
+      "import time",
+      "import numpy as np",
+      "import torch",
+      "from torch import nn",
+      "import torch.nn.functional as F",
+      "from stockrl.global_transformer import TransformerConfig, parameter_count",
+      "from stockrl.market_training import CONTEXT_FEATURES, CommonMarketTrainingLoader, ContextConditionedTransformer, ITCHSnapshotAdapter, MarketBatch, load_market_candidate_checkpoint",
+      "from bench_market_training_loader import DEFAULT_CHAMPION, DEFAULT_SOURCE, batch_tensors, utility"
+    ]
+  },
+  {
+    "path": "scripts/distill_fincast_temporal.py",
+    "bytes": 29527,
+    "lines": 531,
+    "sha256": "7184205b30d18e7a455f7192d2a6594b7065de8c034385bbf92c5ff3124dabc7",
+    "definitions": [
+      "sha256",
+      "save_jsonl",
+      "scale_symbol_map",
+      "make_candidate",
+      "get_loader",
+      "choose_ends",
+      "assemble_examples",
+      "forecast_cache",
+      "save_scale_cache",
+      "make_batch",
+      "row_from_cache",
+      "evaluate",
+      "save_candidate",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from dataclasses import asdict, replace",
+      "import hashlib",
+      "import json",
+      "import sys",
+      "import time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "from torch import nn",
+      "import torch.nn.functional as F",
+      "import distill_fincast_offline as base",
+      "from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, TIME_SCALE_NAMES, load_compatible_state_dict, parameter_count",
+      "from stockrl.market_training import CommonMarketTrainingLoader, ContextConditionedTransformer, ITCHSnapshotAdapter, NormalizedBarAdapter, load_market_candidate_checkpoint",
+      "from bench_market_training_loader import batch_tensors, utility"
+    ]
+  },
+  {
+    "path": "scripts/distill_macrophft_experts.py",
+    "bytes": 8785,
+    "lines": 82,
+    "sha256": "c0d91541ee2025a46a066b045eafa628c602afb015cd403559bd1d5ff83c0ee1",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse, gc, json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from torch import nn",
+      "import distill_fincast_temporal as temporal",
+      "from bench_market_training_loader import batch_tensors, utility",
+      "from stockrl.global_transformer import parameter_count",
+      "from stockrl.market_training import load_market_candidate_checkpoint, CommonMarketTrainingLoader, NormalizedBarAdapter",
+      "from stockrl.research_ingest import MacroHFTSubagent, macrophft_features"
+    ]
+  },
+  {
+    "path": "scripts/distill_marketgpt_orderflow.py",
+    "bytes": 12929,
+    "lines": 139,
+    "sha256": "f2474b872382400855c20dafea757274951ed9bb8be8ed87df8740899f13e6df",
+    "definitions": [
+      "make_bars",
+      "build_features",
+      "batch_at",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse, gc, json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from torch import nn",
+      "import distill_fincast_temporal as temporal",
+      "from bench_market_training_loader import utility",
+      "from stockrl.global_transformer import parameter_count, stable_id",
+      "from stockrl.market_training import load_market_candidate_checkpoint"
+    ]
+  },
+  {
+    "path": "scripts/distill_moment_representation.py",
+    "bytes": 6486,
+    "lines": 71,
+    "sha256": "fb1b2fa92676ae8982fbf7ba88cab0239034357db598f97c4e0b2060f28aff22",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse, gc, json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from torch import nn",
+      "import distill_fincast_temporal as temporal",
+      "from bench_market_training_loader import batch_tensors, utility",
+      "from stockrl.global_transformer import parameter_count",
+      "from stockrl.market_training import load_market_candidate_checkpoint"
+    ]
+  },
+  {
+    "path": "scripts/distill_public_forecast_ensemble.py",
+    "bytes": 16475,
+    "lines": 266,
+    "sha256": "0161f2e1fdf9ac354c7d22be2a3c13a67dc4a2df217fc1dd476a447328757108",
+    "definitions": [
+      "digest",
+      "returns_for",
+      "distill_quantiles",
+      "run_chronos",
+      "run_timesfm",
+      "run_exaone",
+      "run_moirai",
+      "run_timemoe",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import gc",
+      "import hashlib",
+      "import json",
+      "import sys",
+      "import time",
+      "import types",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from torch import nn",
+      "import distill_fincast_offline as base",
+      "import distill_fincast_temporal as temporal",
+      "from bench_market_training_loader import batch_tensors, utility",
+      "from stockrl.global_transformer import TIME_SCALE_NAMES, parameter_count",
+      "from stockrl.market_training import load_market_candidate_checkpoint"
+    ]
+  },
+  {
+    "path": "scripts/download_finrl_dow30.py",
+    "bytes": 1961,
+    "lines": 36,
+    "sha256": "9de8c705ffca9bc2230dd5b1b516e2752c611158d4242c2c90940f8af8a01fdd",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from concurrent.futures import ThreadPoolExecutor, as_completed",
+      "from datetime import date, datetime, timedelta, timezone",
+      "import json",
+      "from pathlib import Path",
+      "import sys",
+      "from download_global_data import fetch"
+    ]
+  },
+  {
+    "path": "scripts/download_global_data.py",
+    "bytes": 5091,
+    "lines": 76,
+    "sha256": "4c22d70be3b2505cde820c308d68920fa8874533c998ba1c2e005eea7bc7429e",
+    "definitions": [
+      "fetch",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse, datetime as dt, json, time, urllib.parse, urllib.request",
+      "from zoneinfo import ZoneInfo",
+      "from concurrent.futures import ThreadPoolExecutor, as_completed",
+      "from pathlib import Path",
+      "import pandas as pd"
+    ]
+  },
+  {
+    "path": "scripts/download_http_file.py",
+    "bytes": 2363,
+    "lines": 64,
+    "sha256": "c875e87304e0a08d6467c49420ad7344a7fe228222fe04369b0c4932b9e28b0f",
+    "definitions": [
+      "download",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import os",
+      "from pathlib import Path",
+      "import sys",
+      "import time",
+      "from urllib.request import Request, urlopen"
+    ]
+  },
+  {
+    "path": "scripts/fetch_fi2010.py",
+    "bytes": 1664,
+    "lines": 43,
+    "sha256": "3bf5760676e570fcb034605a939c2af4d5bd51edfcc6d145efa6b32c9e283996",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import hashlib",
+      "import json",
+      "import requests",
+      "from download_http_file import download"
+    ]
+  },
+  {
+    "path": "scripts/ingest_dart_financials.py",
+    "bytes": 7614,
+    "lines": 154,
+    "sha256": "db01f5b2ad4e2c08491227e5e9815ebb35c28e40a84a0c10d45964b45de2ec77",
+    "definitions": [
+      "parse_corp_zip",
+      "api_json",
+      "main",
+      "write_rows"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import csv",
+      "import io",
+      "import json",
+      "import os",
+      "import sys",
+      "import time",
+      "import zipfile",
+      "from datetime import datetime",
+      "from pathlib import Path",
+      "import xml.etree.ElementTree as ET",
+      "import requests"
+    ]
+  },
+  {
+    "path": "scripts/ingest_data_go_kr_stock.py",
+    "bytes": 8832,
+    "lines": 167,
+    "sha256": "51a4bc20fb886397a488e1ba8049029b542f868b1230b8f80b99d0358108990a",
+    "definitions": [
+      "extract_rows",
+      "clean",
+      "safe_get",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import csv",
+      "import getpass",
+      "import json",
+      "import os",
+      "import re",
+      "import sqlite3",
+      "import sys",
+      "import time",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import requests"
+    ]
+  },
+  {
+    "path": "scripts/ingest_krx_openapi.py",
+    "bytes": 10269,
+    "lines": 215,
+    "sha256": "45adab7c205fa626e5596c1ac53815a601cf9a1471d187296938a6db992e3fe1",
+    "definitions": [
+      "ymd",
+      "number",
+      "data_rows",
+      "normalize_row",
+      "KRXClient",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import csv",
+      "import hashlib",
+      "import json",
+      "import os",
+      "import re",
+      "import sys",
+      "import time",
+      "from datetime import date, datetime, timedelta, timezone",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import requests"
+    ]
+  },
+  {
+    "path": "scripts/launch_global_agent.bat",
+    "bytes": 87,
+    "lines": 5,
+    "sha256": "7dc358ae00905a61526f1d3cb095bfd3182d6fd3989ed660b4d848367e105f9d"
+  },
+  {
+    "path": "scripts/launch_global_web.bat",
+    "bytes": 84,
+    "lines": 5,
+    "sha256": "062830ecf8cf9ae95e5d92007c17ef00911375c406067069964d72063a6b344c"
+  },
+  {
+    "path": "scripts/measure_learning_runtime.py",
+    "bytes": 4546,
+    "lines": 88,
+    "sha256": "6f7f39fb250732d3e542074f72d0eb43d9419f9775fcd29d2f0ab359b217ca08",
+    "definitions": [
+      "measure"
+    ],
+    "imports": [
+      "import argparse",
+      "import json",
+      "from pathlib import Path",
+      "import statistics",
+      "import time",
+      "from datetime import datetime, timezone"
+    ]
+  },
+  {
+    "path": "scripts/merge_krx_auxiliary_signals.py",
+    "bytes": 8407,
+    "lines": 145,
+    "sha256": "625039d8fafc90a285b47db13bfe7e1c53b6a7d9be7e6df27513918964a7545b",
+    "definitions": [
+      "num",
+      "make_fundamental_snapshots",
+      "attach_asof",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import json",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd"
+    ]
+  },
+  {
+    "path": "scripts/parse_nasdaq_itch_sample.py",
+    "bytes": 9944,
+    "lines": 211,
+    "sha256": "1edfc58d6c89f323281bf85ccc997e302f0de5a48f20bd32f3842acb84f4a0a7",
+    "definitions": [
+      "u",
+      "decode",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from collections import Counter, defaultdict",
+      "from datetime import datetime, timedelta, timezone",
+      "import gzip",
+      "from pathlib import Path",
+      "import json",
+      "import os",
+      "import time",
+      "from zoneinfo import ZoneInfo",
+      "import pandas as pd"
+    ]
+  },
+  {
+    "path": "scripts/pretrain_portfolio_agent.py",
+    "bytes": 50103,
+    "lines": 855,
+    "sha256": "b0afe5f571a2b7a505c11406adfe984d0924feab4fc7ed3007ca983b58954c23",
+    "definitions": [
+      "NumpyJSONEncoder",
+      "instrument_map_for_daily",
+      "create_candidate",
+      "file_sha256",
+      "load_economic_panels",
+      "Portfolio",
+      "smoke_environment",
+      "make_context",
+      "mask_allocations",
+      "run_episode",
+      "run_joint_training",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from dataclasses import asdict, replace",
+      "import json",
+      "import math",
+      "import sys",
+      "import time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "from torch import nn",
+      "import torch.nn.functional as F",
+      "import pandas as pd",
+      "from stockrl.global_transformer import GlobalMarketTransformer, TransformerConfig, TIME_SCALE_NAMES, load_compatible_state_dict",
+      "from stockrl.market_training import CommonMarketTrainingLoader, ContextConditionedTransformer, NormalizedBarAdapter, CONTEXT_FEATURES",
+      "from stockrl.global_transformer import GLOBAL_FEATURES",
+      "from stockrl.global_transformer import parameter_count",
+      "from stockrl.market_training import stable_id"
+    ]
+  },
+  {
+    "path": "scripts/promote_market_candidate.py",
+    "bytes": 4007,
+    "lines": 87,
+    "sha256": "b91a70d155bfe3df568849b3b7f4fae4751dc6e75d59d8365eed4f971c6f6331",
+    "definitions": [
+      "sha256",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import hashlib",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import shutil",
+      "import tempfile",
+      "import torch"
+    ]
+  },
+  {
+    "path": "scripts/run_global_paper.ps1",
+    "bytes": 5334,
+    "lines": 111,
+    "sha256": "8bb9995d04d2e590bbf12fcc486c7e661e7b29eef6b8e3d1c394df64d681be2a"
+  },
+  {
+    "path": "scripts/run_korea_paper_web.command",
+    "bytes": 663,
+    "lines": 21,
+    "sha256": "75a9a8c5856d7c55087a07e108b0d7042c6e4fa47359d8013c49dd7206525ead"
+  },
+  {
+    "path": "scripts/run_korea_paper_web.ps1",
+    "bytes": 743,
+    "lines": 25,
+    "sha256": "c6ef1f7864b95d50ccab8a2abefcfe946a4678a7f88fd87c52ec969c877964f0"
+  },
+  {
+    "path": "scripts/run_learning_checks.py",
+    "bytes": 1429,
+    "lines": 32,
+    "sha256": "a8611eab558013a70446aebc3035918ff474146436e9a0631427c86be640c01a",
+    "definitions": [],
+    "imports": [
+      "import argparse",
+      "from datetime import datetime, timezone",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import re",
+      "import subprocess",
+      "import sys",
+      "import time"
+    ]
+  },
+  {
+    "path": "scripts/run_macrophft_teachers.py",
+    "bytes": 5011,
+    "lines": 98,
+    "sha256": "abe4dd2a4134f640ebca2f4a84b8acf4f733c228f9e7223f1d93a62005a93b2b",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import json",
+      "import time",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from stockrl.research_ingest import MacroHFTSubagent, macrophft_features"
+    ]
+  },
+  {
+    "path": "scripts/shadow_trade_candidate.py",
+    "bytes": 15456,
+    "lines": 271,
+    "sha256": "bd0c9d65ce95653ab983f9c194a02577e2c71c5d62c0c968e9de62f032389638",
+    "definitions": [
+      "write_json",
+      "build_open_panel",
+      "run",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import json",
+      "import math",
+      "import sys",
+      "import time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from stockrl.market_training import CommonMarketTrainingLoader, NormalizedBarAdapter, load_market_candidate_checkpoint",
+      "from stockrl.global_transformer import ACTION_NAMES, TransformerConfig",
+      "from pretrain_portfolio_agent import Portfolio, instrument_map_for_daily, load_economic_panels, make_context, SLIPPAGE_RATE"
+    ]
+  },
+  {
+    "path": "scripts/snapshot_runtime.py",
+    "bytes": 519,
+    "lines": 18,
+    "sha256": "21801f00c152267cc806ebf1608514fdd8a491d12c55924322ea135dddc197e7",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse"
+    ]
+  },
+  {
+    "path": "scripts/start_mac.command",
+    "bytes": 96,
+    "lines": 3,
+    "sha256": "78a3eb3c1321aeb6923b927c588db93195bf5c02be002604c962cebe6ae32759"
+  },
+  {
+    "path": "scripts/start_mac.sh",
+    "bytes": 953,
+    "lines": 31,
+    "sha256": "2bf86f1cfbdc6fc7b4cb13b91ee50dde2774d14ffd7124770d68ac8496c976ed"
+  },
+  {
+    "path": "scripts/teacher_preflight_chronos2.py",
+    "bytes": 4077,
+    "lines": 54,
+    "sha256": "5bb1d456c4b2c4675a0d2f4c91091a88a1511cc6cf01d7e18e966f7039eabb1c",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "import transformers.utils.import_utils as iu",
+      "from chronos import BaseChronosPipeline"
+    ]
+  },
+  {
+    "path": "scripts/teacher_preflight_exaone.py",
+    "bytes": 4359,
+    "lines": 58,
+    "sha256": "5554954d09e9bc28539c28ef878f2eb6f690d58dc3e096110ca05a66a2268377",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "import transformers.utils.import_utils as iu",
+      "from exaone_forecast.finance.forecaster import EXAONEFinanceForecaster"
+    ]
+  },
+  {
+    "path": "scripts/teacher_preflight_moirai2.py",
+    "bytes": 4795,
+    "lines": 65,
+    "sha256": "30f127298bbca560a796daaee9d65e529d00ff9feaa55847c76d18daeb2a9fcb",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json, sys, time, types",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from uni2ts.model.moirai2.module import Moirai2Module"
+    ]
+  },
+  {
+    "path": "scripts/teacher_preflight_timesfm.py",
+    "bytes": 3580,
+    "lines": 68,
+    "sha256": "93831b8beb292302caccc0274d6e82886b3dd971b122ee198fe00786595a70e0",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json, sys, time",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from timesfm import ForecastConfig",
+      "from timesfm.timesfm_2p5.timesfm_2p5_torch import TimesFM_2p5_200M_torch"
+    ]
+  },
+  {
+    "path": "scripts/teacher_preflight_timesmoe.py",
+    "bytes": 3970,
+    "lines": 76,
+    "sha256": "0c3953ec3f510186dfdfc62ee4f817c89b96c3acccb05e9ef1c08feefc4ea555",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json, sys, time, types",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "import transformers.utils.import_utils as iu",
+      "from timemoe_teacher.modeling_time_moe import TimeMoeForPrediction"
+    ]
+  },
+  {
+    "path": "scripts/train_itch_one_epoch.py",
+    "bytes": 15893,
+    "lines": 282,
+    "sha256": "1af21724eee763ef5b451c7d15dc8cc6620c3a0c3d4ed1ac3a043fb6f8eac9c9",
+    "definitions": [
+      "save_candidate",
+      "make_time_indices",
+      "evaluate",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "from copy import deepcopy",
+      "from dataclasses import asdict",
+      "import json",
+      "from pathlib import Path",
+      "import time",
+      "import numpy as np",
+      "import torch",
+      "from torch import nn",
+      "from bench_market_training_loader import DEFAULT_CHAMPION, DEFAULT_RUNTIME, DEFAULT_SOURCE, batch_tensors, load_expanded_candidate, sha256, utility",
+      "from stockrl.market_training import CONTEXT_FEATURES, CommonMarketTrainingLoader, ContextConditionedTransformer, ITCHSnapshotAdapter",
+      "from stockrl.global_transformer import parameter_count"
+    ]
+  },
+  {
+    "path": "scripts/tune_learning_throughput.py",
+    "bytes": 10272,
+    "lines": 191,
+    "sha256": "47c6e94f04b749026e7dc1d099a63182c093705ebd99bef1c70ba86cd51df430",
+    "definitions": [
+      "now",
+      "read",
+      "write",
+      "change_steps",
+      "summarize",
+      "run"
+    ],
+    "imports": [
+      "import argparse",
+      "from datetime import datetime, timezone",
+      "import json",
+      "from pathlib import Path",
+      "import signal",
+      "import statistics",
+      "import time",
+      "from measure_learning_runtime import FIELDS"
+    ]
+  },
+  {
+    "path": "scripts/validate_nasdaq_itch_output.py",
+    "bytes": 2355,
+    "lines": 32,
+    "sha256": "81e2e55b1acab44af71884a08537b9b74ff5325ff110a029158de3d1eb77b3e0",
+    "definitions": [],
+    "imports": [
+      "from pathlib import Path",
+      "import json, time",
+      "import pandas as pd"
+    ]
+  },
+  {
+    "path": "scripts/verify_public_source_inference.py",
+    "bytes": 3656,
+    "lines": 71,
+    "sha256": "f014f049dfac10c79a4961796124cef4c67f8bb7dc8c93fab956a22e728e3ed9",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import json",
+      "import time",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from stockrl.global_online import load_model",
+      "from stockrl.global_transformer import ACTION_NAMES, GlobalMarketPanel, parameter_count"
+    ]
+  },
+  {
+    "path": "scripts/warmstart_fi2010_candidate.py",
+    "bytes": 5627,
+    "lines": 118,
+    "sha256": "0389c98eed5f3c05a6e51689c5a604112eba4aa69ae5b4c2c124814d9542183c",
+    "definitions": [
+      "sha256",
+      "load_features",
+      "pack",
+      "score",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import hashlib",
+      "import json",
+      "import time",
+      "import numpy as np",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from stockrl.global_online import load_model, save_model",
+      "from stockrl.global_transformer import stable_id, parameter_count",
+      "from stockrl.research_ingest import fi2010_book_to_features, fi2010_file_to_arrays"
+    ]
+  },
+  {
+    "path": "scripts/warmstart_macrophft_candidate.py",
+    "bytes": 3120,
+    "lines": 52,
+    "sha256": "1700f21a7352fba5745033e56142f7f78b3fcb3787c287e4d6f8ecb7c651b16d",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import hashlib, json, time",
+      "import torch",
+      "import torch.nn.functional as F",
+      "from stockrl.global_online import GlobalReplayBuffer, load_model, save_model",
+      "from stockrl.global_transformer import parameter_count"
+    ]
+  },
+  {
+    "path": "scripts/write_public_sources_manifest.py",
+    "bytes": 1856,
+    "lines": 40,
+    "sha256": "7f4055ed780da6b4b7373b6f727a339cd4e22851b80ab5d45d260741e2c7fcfd",
+    "definitions": [
+      "digest"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "import hashlib, json"
+    ]
+  },
+  {
+    "path": "src/stockrl/__main__.py",
+    "bytes": 30,
+    "lines": 3,
+    "sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+    "definitions": [],
+    "imports": [
+      "from .cli import main"
+    ]
+  },
+  {
+    "path": "src/stockrl/account_diagnostics.py",
+    "bytes": 8054,
+    "lines": 149,
+    "sha256": "99f8892f1257124d846cdfbfd46e3b60cc2474720a237423a51d40434bc7d75f",
+    "definitions": [
+      "valid_bid_ask_count",
+      "input_availability",
+      "summarize_account",
+      "summarize_policy"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import math",
+      "import numpy as np",
+      "from .paper_account import _currency"
+    ]
+  },
+  {
+    "path": "src/stockrl/broker.py",
+    "bytes": 4708,
+    "lines": 130,
+    "sha256": "4e1b9796a11d4493c891621bfd2aa65a8e6e7163951eedcc2f12a4cf319463e6",
+    "definitions": [
+      "OrderRequest",
+      "BrokerAdapter",
+      "MockBroker",
+      "BrokerWorker"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from abc import ABC, abstractmethod",
+      "from dataclasses import dataclass",
+      "from queue import Queue, Empty",
+      "from threading import Event, Thread",
+      "from typing import Any"
+    ]
+  },
+  {
+    "path": "src/stockrl/cli.py",
+    "bytes": 21887,
+    "lines": 290,
+    "sha256": "73948a9364681beb0ab81bf11f02d48d99b0556b34008a3b8bf4b227ff80903d",
+    "definitions": [
+      "legacy_checkpoint_command",
+      "train",
+      "predict",
+      "public_teacher_dataset",
+      "global_info",
+      "global_online",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import json",
+      "import os",
+      "from dataclasses import asdict",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from .core import Config, TemporalActorCritic, device_for, evaluate, infer, load_checkpoint, load_market, make_teachers, observations, ppo_finetune, save_checkpoint, seed_all, split_indices, teacher_targets, train_distill",
+      "from .global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig, parameter_count",
+      "from .global_online import OnlineGlobalAgent, benchmark_model, load_model",
+      "from .paths import default_runtime_dir"
+    ]
+  },
+  {
+    "path": "src/stockrl/continuous.py",
+    "bytes": 13920,
+    "lines": 242,
+    "sha256": "7cdc439fd048e6680dcf52acd9d87b889246aa609846a3dbf27443d5e68e77ed",
+    "definitions": [
+      "ReplayBuffer",
+      "_decision",
+      "_paper_result",
+      "_replay_supervised_update",
+      "_score",
+      "_promote_if_better",
+      "run_continuous",
+      "run_replay"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import shutil",
+      "import time",
+      "from copy import deepcopy",
+      "from collections import deque",
+      "from dataclasses import asdict",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from .core import Config, TemporalActorCritic, device_for, evaluate, infer, load_checkpoint, load_market, observations, save_checkpoint, seed_all"
+    ]
+  },
+  {
+    "path": "src/stockrl/core.py",
+    "bytes": 15339,
+    "lines": 271,
+    "sha256": "9afd880a87ec89fb98c2d5a6a5b8473741474ecf0fb1d847636a8152841a9b3c",
+    "definitions": [
+      "device_for",
+      "seed_all",
+      "load_market",
+      "Config",
+      "Teacher",
+      "HeuristicTeacher",
+      "SB3Teacher",
+      "make_teachers",
+      "teacher_targets",
+      "TemporalActorCritic",
+      "observations",
+      "split_indices",
+      "train_distill",
+      "save_checkpoint",
+      "load_checkpoint",
+      "ppo_finetune",
+      "evaluate",
+      "infer"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import random",
+      "from dataclasses import asdict, dataclass",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from torch import nn"
+    ]
+  },
+  {
+    "path": "src/stockrl/daily_encoder.py",
+    "bytes": 1881,
+    "lines": 44,
+    "sha256": "e909e0b0c0782f900537135009fe4da011c952a4aa930866da9d7e10eb20a46e",
+    "definitions": [
+      "DailyHistoryEncoder"
+    ],
+    "imports": [
+      "import hashlib",
+      "import torch",
+      "from torch import nn"
+    ]
+  },
+  {
+    "path": "src/stockrl/desktop.py",
+    "bytes": 29091,
+    "lines": 464,
+    "sha256": "3bc69db65645307031c2d240bc30f2b032c56d2d9237303c182e2c27f6442ff8",
+    "definitions": [
+      "_read_json",
+      "_load_broker_plugin",
+      "StatCard",
+      "GlobalAgentWindow",
+      "run_desktop_app"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import csv",
+      "import importlib",
+      "import json",
+      "import os",
+      "import sys",
+      "import time",
+      "from collections import deque",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from queue import Queue, Empty",
+      "from PySide6.QtCore import QProcess, QTimer, Qt",
+      "from PySide6.QtGui import QCloseEvent, QColor, QFontDatabase",
+      "from PySide6.QtWidgets import QApplication, QCheckBox, QComboBox, QDoubleSpinBox, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QMainWindow, QMessageBox, QPushButton, QSpinBox, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QInputDialog",
+      "from .broker import BrokerAdapter, BrokerWorker, OrderRequest",
+      "from .paths import default_runtime_dir, ensure_project_path, validate_model_dir"
+    ]
+  },
+  {
+    "path": "src/stockrl/global_online.py",
+    "bytes": 31458,
+    "lines": 465,
+    "sha256": "acbc44035b764c68205a2f19966392f9bfc7e2143f18f7b6acd7128d7a1a70a3",
+    "definitions": [
+      "OnlineGlobalAgent"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from collections import deque, OrderedDict",
+      "from contextlib import closing, nullcontext, contextmanager",
+      "from dataclasses import asdict, dataclass",
+      "from pathlib import Path",
+      "import json, os, random, shutil, threading, time, pickle, sqlite3, zlib, queue, io, gc, math",
+      "import re",
+      "import hashlib",
+      "import numpy as np",
+      "import psutil",
+      "import torch",
+      "from torch import nn",
+      "from torch.distributions import Categorical",
+      "from .global_transformer import ACTION_NAMES, GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig, parameter_count, load_compatible_state_dict",
+      "from .paper_account import PaperAccount, _currency",
+      "from .account_diagnostics import summarize_policy",
+      "from .operating_rules import operating_rules",
+      "from .state_io import atomic_json",
+      "from .multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, MULTISCALE_FEATURE_ORDER, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES",
+      "from .replay_store import GlobalReplayBuffer, ReplayStorageFull",
+      "from .online.checkpoint import _atomic_json, _atomic_save, load_model, save_model",
+      "from .online.data import Experience, IncrementalMarketCSV, MarketObservation, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, REWARD_DEFINITION, REWARD_VERSION, TrainingMetrics, parse_horizon",
+      "from .online.evaluation import benchmark_model",
+      "from .online.rewards import net_action_reward",
+      "from .online.validation import should_promote",
+      "from .online.observation import _ObservationMixin",
+      "from .online.rewards import _RewardMixin",
+      "from .online.learning import _LearningMixin",
+      "from .online.validation import _ValidationMixin",
+      "from .online.evaluation import _EvaluationMixin"
+    ]
+  },
+  {
+    "path": "src/stockrl/global_transformer.py",
+    "bytes": 30637,
+    "lines": 536,
+    "sha256": "446a2f7bdfc91fde67007d86aadf4b85d90a97fbc6192011ceea42edde72a92e",
+    "definitions": [
+      "TransformerConfig",
+      "small_config",
+      "TransformerBlock",
+      "GlobalMarketTransformer",
+      "parameter_count",
+      "load_compatible_state_dict",
+      "stable_id",
+      "_feature_panel",
+      "GlobalMarketPanel"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import asdict, dataclass",
+      "from pathlib import Path",
+      "import hashlib",
+      "import math",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from torch import nn",
+      "from torch.utils.checkpoint import checkpoint"
+    ]
+  },
+  {
+    "path": "src/stockrl/gpu_scheduler.py",
+    "bytes": 3159,
+    "lines": 75,
+    "sha256": "84258678c4520a722b5e4a9d0e99471129514f05fffb9775eb1f2e117db5d7bf",
+    "definitions": [
+      "FairGpuScheduler"
+    ],
+    "imports": [
+      "from collections import deque",
+      "from contextlib import contextmanager",
+      "import threading",
+      "import time",
+      "from datetime import datetime, timezone",
+      "from zoneinfo import ZoneInfo"
+    ]
+  },
+  {
+    "path": "src/stockrl/instrument_ids.py",
+    "bytes": 2222,
+    "lines": 49,
+    "sha256": "6fc295bc7b2d4522d57f4b2f9681725322c03f07b08176109869ef7f036568b4",
+    "definitions": [
+      "extend_live_symbols"
+    ],
+    "imports": [
+      "from dataclasses import replace",
+      "import torch",
+      "from torch import nn"
+    ]
+  },
+  {
+    "path": "src/stockrl/kiwoom_stream.py",
+    "bytes": 12675,
+    "lines": 270,
+    "sha256": "ac3a02c15e99dce1af17721bd5307859f11a3bf6f3fc24a50437db8e3a555f2e",
+    "definitions": [
+      "_number",
+      "KiwoomRealtimeStream"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import asyncio",
+      "import json",
+      "import logging",
+      "import queue",
+      "import time",
+      "import threading",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from typing import Callable",
+      "from zoneinfo import ZoneInfo",
+      "import requests",
+      "import websockets",
+      "from .provider_credentials import get_credentials, read_settings"
+    ]
+  },
+  {
+    "path": "src/stockrl/launch_web.py",
+    "bytes": 1056,
+    "lines": 31,
+    "sha256": "9ea9414f7490db7733db19f9941eacaf424681573260a5bc3f08da0dc233e151",
+    "definitions": [
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import os",
+      "import sys",
+      "from pathlib import Path",
+      "from .web_app import serve",
+      "from .paths import default_runtime_dir"
+    ]
+  },
+  {
+    "path": "src/stockrl/live_feed.py",
+    "bytes": 29501,
+    "lines": 563,
+    "sha256": "2f52af753260d0e4c95cfbcef23a4e23552590bf62fcf3eb56acd87dd760a6a6",
+    "definitions": [
+      "_market_session_open",
+      "MarketDataProviderAdapter",
+      "register_market_data_provider",
+      "YahooChartAdapter",
+      "KrakenOHLCAdapter",
+      "_utc_stamp",
+      "AppendOnlyMarketCSV",
+      "LiveMarketCollector"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import csv",
+      "import json",
+      "import logging",
+      "import math",
+      "import os",
+      "import queue",
+      "import shutil",
+      "import sqlite3",
+      "import threading",
+      "import time",
+      "from concurrent.futures import ThreadPoolExecutor",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from typing import Any",
+      "from zoneinfo import ZoneInfo",
+      "from .paths import ensure_project_path",
+      "from .multiscale import DailyBarStore, TIMEFRAME_NAMES",
+      "import pandas as pd",
+      "import requests"
+    ]
+  },
+  {
+    "path": "src/stockrl/market_training.py",
+    "bytes": 44874,
+    "lines": 789,
+    "sha256": "fbd86983aabe4b9ac41db0f1342b213d9105e4b5e6203e3b6b6071062403e8a5",
+    "definitions": [
+      "MarketSourceAdapter",
+      "NormalizedBarAdapter",
+      "ITCHSnapshotAdapter",
+      "MarketBatch",
+      "ContextConditionedTransformer",
+      "load_market_candidate_checkpoint",
+      "CoverageSampler",
+      "CommonMarketTrainingLoader"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from collections import deque",
+      "from dataclasses import dataclass",
+      "import heapq",
+      "import json",
+      "import math",
+      "from pathlib import Path",
+      "from typing import Iterable, Iterator, Sequence",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from torch import nn",
+      "from torch.utils.checkpoint import checkpoint",
+      "from .global_transformer import GLOBAL_FEATURES, GlobalMarketTransformer, TransformerConfig, stable_id, load_compatible_state_dict",
+      "from .multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_FEATURE_NAMES",
+      "from .daily_encoder import DailyHistoryEncoder"
+    ]
+  },
+  {
+    "path": "src/stockrl/mock_feed.py",
+    "bytes": 2125,
+    "lines": 45,
+    "sha256": "70680c6b8e46c815a810e919252681198efa6772eb107bcbc1016081a6ad33f8",
+    "definitions": [
+      "replay_market_csv"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import time",
+      "from pathlib import Path",
+      "import pandas as pd",
+      "from .live_feed import AppendOnlyMarketCSV"
+    ]
+  },
+  {
+    "path": "src/stockrl/multiscale.py",
+    "bytes": 16568,
+    "lines": 310,
+    "sha256": "f598ad282007bff61e683b3ab627c2648a98848893eb303d74d60c235040b2d5",
+    "definitions": [
+      "DailyBarStore",
+      "_load_daily",
+      "_aggregate",
+      "MultiscaleFeatures"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from collections import defaultdict, OrderedDict",
+      "from contextlib import closing",
+      "from datetime import datetime, timedelta, timezone",
+      "import math",
+      "import hashlib",
+      "from pathlib import Path",
+      "import sqlite3",
+      "import numpy as np",
+      "import pandas as pd",
+      "from .paths import ensure_project_path",
+      "from .operating_rules import operating_rules"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/__init__.py",
+    "bytes": 580,
+    "lines": 10,
+    "sha256": "780d475fb0c77c16dd55ee0122e20ab285bd150de693dfe9b52006b08c317653",
+    "definitions": [],
+    "imports": []
+  },
+  {
+    "path": "src/stockrl/online/checkpoint.py",
+    "bytes": 4135,
+    "lines": 83,
+    "sha256": "bb4afe738e062e9d93fc06a015f88b6129b3197df49d009fe6025c2137c076a7",
+    "definitions": [
+      "_atomic_save",
+      "_atomic_json",
+      "save_model",
+      "load_model"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import asdict",
+      "from pathlib import Path",
+      "import json, os",
+      "import numpy as np",
+      "import torch",
+      "from ..global_transformer import GlobalMarketTransformer, TransformerConfig, load_compatible_state_dict",
+      "from ..state_io import atomic_json",
+      "from ..multiscale import MULTISCALE_FEATURE_ORDER"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/data.py",
+    "bytes": 8539,
+    "lines": 192,
+    "sha256": "0a5c3c737144490ae8885d92af6056620ae6006f601e6539941beac17212addc",
+    "definitions": [
+      "TrainingMetrics",
+      "IncrementalMarketCSV",
+      "Experience",
+      "parse_horizon",
+      "MarketObservation"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from pathlib import Path",
+      "import io",
+      "import re",
+      "import hashlib",
+      "import numpy as np",
+      "from ..global_transformer import GlobalMarketPanel"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/evaluation.py",
+    "bytes": 9915,
+    "lines": 157,
+    "sha256": "45d1dbfde5ad12bddaff6bf3154ef88da919feeed4436073305755425ac7e5bc",
+    "definitions": [
+      "benchmark_model",
+      "_EvaluationMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from pathlib import Path",
+      "import time",
+      "import numpy as np",
+      "import torch",
+      "from ..global_transformer import ACTION_NAMES, GlobalMarketPanel",
+      "from ..paper_account import PaperAccount, _currency",
+      "from .data import Experience"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/learning.py",
+    "bytes": 45975,
+    "lines": 751,
+    "sha256": "fac9fcac3a06fa12dbe8409c88d89825e6c6d858fb61f12c82ad0dc31abf72ae",
+    "definitions": [
+      "_LearningMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from collections import OrderedDict",
+      "from contextlib import contextmanager",
+      "from dataclasses import asdict",
+      "import os, time, gc",
+      "import numpy as np",
+      "import torch",
+      "from torch import nn",
+      "from torch.distributions import Categorical",
+      "from ..global_transformer import GlobalMarketTransformer",
+      "from ..multiscale import MULTISCALE_FEATURE_COUNT, TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES",
+      "from .checkpoint import load_model, save_model",
+      "from .data import Experience, ONLINE_TRAINABLE_BLOCKS, PAPER_EXPLORATION_EPSILON, TrainingMetrics",
+      "from .losses import shared_experience_losses",
+      "from .prefix_cache import FrozenPrefixCache, prefix_input, install_prefix_forward",
+      "from .optimizer_state import restore_optimizer, remember_optimizer",
+      "from .replay_updates import install_replay_updates"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/losses.py",
+    "bytes": 5569,
+    "lines": 94,
+    "sha256": "91b15a334d6ef86390cd3c27e51ab6edfffdfde40bf67f2ed8138474ceebdb2c",
+    "definitions": [
+      "shared_experience_losses"
+    ],
+    "imports": [
+      "import torch",
+      "from torch import nn",
+      "from torch.distributions import Categorical",
+      "from .data import PAPER_EXPLORATION_EPSILON"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/observation.py",
+    "bytes": 52466,
+    "lines": 768,
+    "sha256": "20f9d6fb671668f0fa5a610345b44bc2e9128746722d02bdf3939d48f12bbb7c",
+    "definitions": [
+      "_ObservationMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from contextlib import nullcontext",
+      "from pathlib import Path",
+      "import json, os, time, pickle",
+      "import numpy as np",
+      "import torch",
+      "from ..global_transformer import ACTION_NAMES, GlobalMarketPanel",
+      "from ..paper_account import _currency",
+      "from ..account_diagnostics import summarize_policy",
+      "from ..multiscale import TIMEFRAME_NAMES, TIMEFRAME_FEATURE_NAMES, BASE_MULTISCALE_FEATURE_COUNT, LONG_CONTEXT_NAMES",
+      "from .checkpoint import _atomic_json",
+      "from .data import IncrementalMarketCSV, MarketObservation, PAPER_EXPLORATION_EPSILON, REWARD_VERSION"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/optimizer_state.py",
+    "bytes": 1319,
+    "lines": 32,
+    "sha256": "0d5a82c793ae619090f31cfe33296dc89110ab9f6a99b52c7b8d935e3be06607",
+    "definitions": [
+      "restore_optimizer",
+      "remember_optimizer"
+    ],
+    "imports": [
+      "import torch"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/prefix_cache.py",
+    "bytes": 5817,
+    "lines": 113,
+    "sha256": "99f38e4187d0fa3731ae06dc5ed27fcedd461b0af1f37d28022b384ff258125f",
+    "definitions": [
+      "FrozenPrefixCache",
+      "prefix_fingerprint",
+      "prefix_input",
+      "install_prefix_forward"
+    ],
+    "imports": [
+      "from collections import OrderedDict",
+      "from contextlib import contextmanager",
+      "from dataclasses import asdict",
+      "import hashlib",
+      "import json",
+      "import numpy as np",
+      "import torch",
+      "from .data import ONLINE_TRAINABLE_BLOCKS"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/replay_updates.py",
+    "bytes": 1473,
+    "lines": 29,
+    "sha256": "f9e00c92b3393253abd3e8722283d9c7734112a6832032deaa0aeeb794ae2f27",
+    "definitions": [
+      "install_replay_updates"
+    ],
+    "imports": [
+      "import ast",
+      "import time",
+      "from pathlib import Path",
+      "from .. import replay_store"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/rewards.py",
+    "bytes": 27440,
+    "lines": 436,
+    "sha256": "3f6467f3369e84aca91e518bb8c5bcafebf0831e7270c81f95909b70a0a262a4",
+    "definitions": [
+      "net_action_reward",
+      "closed_market_credit_ready",
+      "saved_closing_panel",
+      "_RewardMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from datetime import datetime, timezone",
+      "from zoneinfo import ZoneInfo",
+      "from collections import Counter",
+      "import numpy as np",
+      "from ..global_transformer import ACTION_NAMES, GlobalMarketPanel",
+      "from ..paper_account import _currency",
+      "from .data import Experience, REWARD_VERSION"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/runtime_updates.py",
+    "bytes": 9041,
+    "lines": 150,
+    "sha256": "016456ea50885a84129a783c16adcf1137030c755f62ad2ab761973fb819f754",
+    "definitions": [
+      "RuntimeUpdates"
+    ],
+    "imports": [
+      "import ast",
+      "import sys",
+      "import time",
+      "import types",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from ..operating_rules import RULES_PATH, operating_rules"
+    ]
+  },
+  {
+    "path": "src/stockrl/online/validation.py",
+    "bytes": 28057,
+    "lines": 451,
+    "sha256": "cc794bed88657d186f329dc8d14dfd9feba75f07c31c5fa8d5b89b74cbba5ce9",
+    "definitions": [
+      "should_promote",
+      "_ValidationMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from collections import deque",
+      "from pathlib import Path",
+      "import json, os, time, queue",
+      "import hashlib",
+      "import numpy as np",
+      "import torch",
+      "from ..global_transformer import ACTION_NAMES",
+      "from ..paper_account import _currency",
+      "from ..state_io import atomic_json",
+      "from .checkpoint import load_model, save_model",
+      "from .data import MarketObservation"
+    ]
+  },
+  {
+    "path": "src/stockrl/operating_rules.py",
+    "bytes": 1930,
+    "lines": 40,
+    "sha256": "75ee3440b57111dd1e36b0e34b193959f02823785b0601b36ff485a895a6cfc3",
+    "definitions": [
+      "operating_rules",
+      "daily_boundary"
+    ],
+    "imports": [
+      "import json",
+      "import math",
+      "from datetime import datetime, timedelta, timezone",
+      "from pathlib import Path",
+      "from zoneinfo import ZoneInfo"
+    ]
+  },
+  {
+    "path": "src/stockrl/paper_account.py",
+    "bytes": 27626,
+    "lines": 517,
+    "sha256": "de666a889cef2e2f60ea11cf4f3c78f9f16df5e39f4cfdf6494d1f34f88ffaf3",
+    "definitions": [
+      "_currency",
+      "PaperAccount"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import math",
+      "import os",
+      "import uuid",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from .state_io import atomic_json"
+    ]
+  },
+  {
+    "path": "src/stockrl/paths.py",
+    "bytes": 1762,
+    "lines": 45,
+    "sha256": "b5e65d97f736ae91d7ffe4ccc1faae51c156f4f4ee43a7973ba3df56d807a1db",
+    "definitions": [
+      "ensure_project_path",
+      "validate_model_dir",
+      "default_runtime_dir"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import os",
+      "import re",
+      "from pathlib import Path"
+    ]
+  },
+  {
+    "path": "src/stockrl/provider_credentials.py",
+    "bytes": 9955,
+    "lines": 224,
+    "sha256": "34bce061095f87d6df2f3821d6a4b6af0894526380a3eb7f544b42c8d79286fc",
+    "definitions": [
+      "_vault",
+      "_settings_path",
+      "_migration_credentials",
+      "_write_settings",
+      "read_settings",
+      "get_credentials",
+      "public_status",
+      "save_credentials",
+      "test_connection",
+      "connect_credentials",
+      "clear_credentials"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import os",
+      "from datetime import datetime, timezone",
+      "from pathlib import Path",
+      "from .paths import ensure_project_path"
+    ]
+  },
+  {
+    "path": "src/stockrl/public_teachers.py",
+    "bytes": 11897,
+    "lines": 200,
+    "sha256": "4487ea2e89febe7da52dbc6d2ed5a12b184f110f0c9f41cc3dc8ab09f3f1ed84",
+    "definitions": [
+      "_logits_for",
+      "maksim_features",
+      "SB3PPOTeacher",
+      "HFPPOTeacher",
+      "RecurrentPFETeacher",
+      "DeepBioDQNTeacher"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import pickle",
+      "from pathlib import Path",
+      "from typing import Any",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from torch import nn",
+      "from sklearn.preprocessing import StandardScaler",
+      "from .core import ACTION_NAMES, Teacher"
+    ]
+  },
+  {
+    "path": "src/stockrl/replay_store.py",
+    "bytes": 44598,
+    "lines": 754,
+    "sha256": "d80f4cde537dc59527a24291d834bada5840c028b562137659ec985adaf3ed78",
+    "definitions": [
+      "ReplayStorageFull",
+      "GlobalReplayBuffer"
+    ],
+    "imports": [
+      "from collections import OrderedDict, deque",
+      "from contextlib import closing",
+      "from datetime import datetime, timedelta, timezone",
+      "from pathlib import Path",
+      "from types import SimpleNamespace",
+      "import hashlib",
+      "import pickle",
+      "import random",
+      "import sqlite3",
+      "import threading",
+      "import time",
+      "import zlib",
+      "import numpy as np"
+    ]
+  },
+  {
+    "path": "src/stockrl/research_ingest.py",
+    "bytes": 8614,
+    "lines": 174,
+    "sha256": "01a0f454bfbed5df7123e8cf72d16999c000c241bf128387868b87b12b39a5a9",
+    "definitions": [
+      "TeacherRecord",
+      "MacroHFTSubagent",
+      "macrophft_features",
+      "_clip",
+      "trademaster_row_to_features",
+      "trademaster_csv_to_global",
+      "fi2010_file_to_arrays",
+      "fi2010_book_to_features",
+      "finrl_imitation_records",
+      "write_source_manifest"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "from dataclasses import dataclass",
+      "from pathlib import Path",
+      "import json",
+      "import re",
+      "from typing import Iterator",
+      "import numpy as np",
+      "import pandas as pd",
+      "import torch",
+      "from torch import nn",
+      "from .global_transformer import GLOBAL_FEATURES"
+    ]
+  },
+  {
+    "path": "src/stockrl/runtime_backup.py",
+    "bytes": 1607,
+    "lines": 39,
+    "sha256": "da8d0e18503cdec85a4a982acc017a6466683527ea2deeebf6da41540129c09a",
+    "definitions": [
+      "restore_sqlite_backup"
+    ],
+    "imports": [
+      "import gzip",
+      "from contextlib import closing",
+      "import hashlib",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import sqlite3"
+    ]
+  },
+  {
+    "path": "src/stockrl/state_io.py",
+    "bytes": 1041,
+    "lines": 32,
+    "sha256": "53a19f1ee89d4ca1b2571feedf03063f9ec94284a5c06a7b09d5d024aee114a4",
+    "definitions": [
+      "atomic_json"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import os",
+      "from pathlib import Path",
+      "import threading",
+      "import time"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/__init__.py",
+    "bytes": 506,
+    "lines": 10,
+    "sha256": "8591445a57e834732eb791d3c83c1b36c3df97ef5be036d6ac03e8e94793c5b0",
+    "definitions": [],
+    "imports": []
+  },
+  {
+    "path": "src/stockrl/web/accounts.py",
+    "bytes": 11416,
+    "lines": 179,
+    "sha256": "7ebc173f6f27ee11432a73f95ee8dc7f073a93f5ae9d94966410a8372dc16dfa",
+    "definitions": [
+      "_AccountResetMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import os",
+      "import time",
+      "from datetime import datetime, timezone",
+      "from ..account_diagnostics import summarize_account",
+      "from ..state_io import atomic_json",
+      "from .health import _json"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/assets/accounts.js",
+    "bytes": 21398,
+    "lines": 635,
+    "sha256": "646ccbcc722dc5e86737a17fbe8016a616d6e52867c7174493dbd65188a1c2b1"
+  },
+  {
+    "path": "src/stockrl/web/assets/app.js",
+    "bytes": 15659,
+    "lines": 551,
+    "sha256": "0e0f8acafef0f65e686159f97cb4f7f6e64e094cf32b77c1b7289e6ce212a6ba"
+  },
+  {
+    "path": "src/stockrl/web/assets/controls.js",
+    "bytes": 14371,
+    "lines": 447,
+    "sha256": "754b034f2b1443f8e612bf4e2f29358076fa28bb93c7af653a57c51da1ed4cc1"
+  },
+  {
+    "path": "src/stockrl/web/assets/dashboard.css",
+    "bytes": 35946,
+    "lines": 2074,
+    "sha256": "b220d74fdca43124a53bd3d4a65899a85ad4a838126167d7011fa3891f59a9b6"
+  },
+  {
+    "path": "src/stockrl/web/assets/dashboard.js",
+    "bytes": 26419,
+    "lines": 829,
+    "sha256": "7f78d6e0a638a9e21da75dbfeee8ec06239337bc1ffff3df83d23473729875a7"
+  },
+  {
+    "path": "src/stockrl/web/assets/details.js",
+    "bytes": 20014,
+    "lines": 544,
+    "sha256": "8a9d4baa218f5c3c6cb701c6a66f2a45038015622ef4c8bb2c39769687e5c145"
+  },
+  {
+    "path": "src/stockrl/web/assets/learning.js",
+    "bytes": 43394,
+    "lines": 1258,
+    "sha256": "a695667099d11511151ee99f912a6772a2ea402e1b00c5eaa5d288f222aa5755"
+  },
+  {
+    "path": "src/stockrl/web/assets/trial.js",
+    "bytes": 15322,
+    "lines": 426,
+    "sha256": "9a084d4168ad1afaee8a0025f8186e5573e7f419cca8a4406d931ec731b9214d"
+  },
+  {
+    "path": "src/stockrl/web/health.py",
+    "bytes": 9991,
+    "lines": 178,
+    "sha256": "97e8b6a7d970846c748ecffbb394c29be32ba5f35f12501720e49ae9e9ac4924",
+    "definitions": [
+      "_json",
+      "_utc_datetime",
+      "_agent_progress_health",
+      "_candidate_progress_health",
+      "_market_group",
+      "_session",
+      "_market_overview"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import sqlite3",
+      "from datetime import datetime, time as day_time, timezone",
+      "from pathlib import Path"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/resources.py",
+    "bytes": 942,
+    "lines": 24,
+    "sha256": "6c8210b3ff0bc5012c2cecedb94d7efd23e0bbb2ac17ed382ab84ae7cc3ad286",
+    "definitions": [
+      "dashboard_asset"
+    ],
+    "imports": [
+      "from pathlib import Path"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/runtime.py",
+    "bytes": 17236,
+    "lines": 322,
+    "sha256": "1c9eb92fed70b69671d8cde8acde3d8ef540e4ead8a846ef461c5424ba9223c8",
+    "definitions": [
+      "Supervisor"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import os",
+      "import subprocess",
+      "import sys",
+      "import threading",
+      "import time",
+      "from pathlib import Path",
+      "from ..paths import ensure_project_path, validate_model_dir",
+      "from ..operating_rules import operating_rules",
+      "from .health import _json",
+      "from .resources import ROOT",
+      "from .status import _StatusMixin",
+      "from .accounts import _AccountResetMixin"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/server.py",
+    "bytes": 11800,
+    "lines": 208,
+    "sha256": "0ecbe988ab075b45da767d81cd91605cc4c5712d535efe5312ba7d5766fd5c60",
+    "definitions": [
+      "serve"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import json",
+      "import gzip",
+      "import os",
+      "import sys",
+      "import threading",
+      "import time",
+      "import webbrowser",
+      "from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer",
+      "from pathlib import Path",
+      "from urllib.parse import urlparse",
+      "from ..paths import default_runtime_dir",
+      "from .resources import DASHBOARD_PATH, PAGE, ROOT, dashboard_asset",
+      "from .runtime import Supervisor",
+      "from .workers import handoff"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/status.py",
+    "bytes": 38208,
+    "lines": 566,
+    "sha256": "c99eb005dba1ea6376e73a6e6e966ac91e9af93115bc75a4252241e8da95d49d",
+    "definitions": [
+      "_StatusMixin"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import csv",
+      "from collections import deque",
+      "from contextlib import closing",
+      "import os",
+      "import sqlite3",
+      "import shutil",
+      "import subprocess",
+      "import time",
+      "from datetime import datetime",
+      "from pathlib import Path",
+      "from ..paper_account import KR_SELL_TAX_ASSUMPTION, SEED_CASH",
+      "from ..account_diagnostics import summarize_account, valid_bid_ask_count, input_availability",
+      "from ..operating_rules import daily_boundary",
+      "from ..state_io import atomic_json",
+      "from .health import _agent_progress_health, _candidate_progress_health, _json, _market_group, _market_overview"
+    ]
+  },
+  {
+    "path": "src/stockrl/web/workers.py",
+    "bytes": 2589,
+    "lines": 74,
+    "sha256": "b5fe17d5c4d7738012fa44f19b07d81f0ba0ee06f94bf419d40efa0edf3f28df",
+    "definitions": [
+      "AttachedWorker",
+      "handoff",
+      "adopt"
+    ],
+    "imports": [
+      "import json",
+      "from pathlib import Path",
+      "import psutil"
+    ]
+  },
+  {
+    "path": "src/stockrl/web_app.py",
+    "bytes": 1093,
+    "lines": 27,
+    "sha256": "93c15c46c3856719fcd6f62edf780d0471092a73ee0b2ca837da821fee5fe2f9",
+    "definitions": [],
+    "imports": [
+      "from __future__ import annotations",
+      "import csv",
+      "from collections import deque",
+      "from contextlib import closing",
+      "import json",
+      "import os",
+      "import sqlite3",
+      "import shutil",
+      "import subprocess",
+      "import sys",
+      "import threading",
+      "import time",
+      "import webbrowser",
+      "from datetime import datetime, time as day_time, timezone",
+      "from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer",
+      "from pathlib import Path",
+      "from urllib.parse import urlparse",
+      "from .paths import default_runtime_dir, ensure_project_path, validate_model_dir",
+      "from .paper_account import KR_SELL_TAX_ASSUMPTION, SEED_CASH",
+      "from .account_diagnostics import summarize_account, valid_bid_ask_count, input_availability",
+      "from .operating_rules import operating_rules, daily_boundary",
+      "from .state_io import atomic_json",
+      "from .web.resources import ROOT, PAGE",
+      "from .web.runtime import Supervisor",
+      "from .web.server import serve",
+      "from .web.health import _agent_progress_health, _candidate_progress_health, _json, _market_group, _market_overview, _session, _utc_datetime"
+    ]
+  },
+  {
+    "path": "src/stockrl/web_dashboard.html",
+    "bytes": 87593,
+    "lines": 1879,
+    "sha256": "d513f1ab15ee810b7fcfe5fc08eca2727a2c2cda55d66e82534e07befdbc18c8"
+  },
+  {
+    "path": "start_stockrl.py",
+    "bytes": 3750,
+    "lines": 101,
+    "sha256": "428689044096ce8e407370edd54c1d448065145aa0a29dda32a03ad3dd67891d",
+    "definitions": [
+      "default_runtime_dir",
+      "ready",
+      "port_in_use",
+      "main"
+    ],
+    "imports": [
+      "from __future__ import annotations",
+      "import os",
+      "import json",
+      "from pathlib import Path",
+      "import re",
+      "import socket",
+      "import subprocess",
+      "import sys",
+      "import time",
+      "from urllib.error import URLError",
+      "from urllib.request import urlopen",
+      "import webbrowser"
+    ]
+  },
+  {
+    "path": "tests/frontend_behavior.cjs",
+    "bytes": 13701,
+    "lines": 471,
+    "sha256": "12d2da5c735d5c9f72bcffa77a25ce987c3dda7f11fca4d2508084a8733a889c"
+  },
+  {
+    "path": "tests/frontend_learning_status.cjs",
+    "bytes": 9113,
+    "lines": 321,
+    "sha256": "8ade19682e6f7df948254c0ad9026f3942e09d27879f642046975e475fb83f1b"
+  },
+  {
+    "path": "tests/frontend_regression.cjs",
+    "bytes": 15507,
+    "lines": 523,
+    "sha256": "e996272b1776669a9dc4578903772f319c2990d87611683a288c431598d9bb7c"
+  },
+  {
+    "path": "tests/test_daily_operation.py",
+    "bytes": 52349,
+    "lines": 814,
+    "sha256": "51299f6dc6f59e471528cbd5f0e969a17f65cea1a7d0acdf387d2d8b1e810fda",
+    "definitions": [
+      "DailyOperationChecks"
+    ],
+    "imports": [
+      "import unittest",
+      "from contextlib import closing",
+      "from tempfile import TemporaryDirectory",
+      "from pathlib import Path",
+      "import numpy as np",
+      "import torch",
+      "from stockrl.instrument_ids import extend_live_symbols",
+      "from stockrl.global_online import GlobalReplayBuffer, OnlineGlobalAgent, REWARD_VERSION, MarketObservation, Experience",
+      "from stockrl.global_transformer import TransformerConfig, GlobalMarketTransformer",
+      "from stockrl.market_training import ContextConditionedTransformer",
+      "from stockrl.paper_account import PaperAccount",
+      "from test_online_pipeline import Panel, FixedPolicy",
+      "from stockrl.daily_encoder import DailyHistoryEncoder",
+      "from unittest.mock import patch, MagicMock",
+      "import queue",
+      "import threading"
+    ]
+  },
+  {
+    "path": "tests/test_learning_speed.py",
+    "bytes": 11074,
+    "lines": 181,
+    "sha256": "cf8ed6b6e19243d3a601aa4b3cfd35c282794e4c724a87babbd556936c99ed8e",
+    "definitions": [
+      "SharedLossChecks"
+    ],
+    "imports": [
+      "import unittest",
+      "from types import SimpleNamespace",
+      "import numpy as np",
+      "import torch",
+      "import json",
+      "from pathlib import Path",
+      "from tempfile import TemporaryDirectory",
+      "from unittest.mock import patch, MagicMock",
+      "from stockrl.global_online import OnlineGlobalAgent",
+      "from stockrl.online.losses import shared_experience_losses"
+    ]
+  },
+  {
+    "path": "tests/test_online_pipeline.py",
+    "bytes": 35809,
+    "lines": 594,
+    "sha256": "27672f6b632cd45ba622434e41f8d1a7d4d1197fb8cbe37ff2a5cfd2336ed4cc",
+    "definitions": [
+      "Panel",
+      "FixedPolicy",
+      "PipelineTests",
+      "AccountDiagnosticsTests"
+    ],
+    "imports": [
+      "from pathlib import Path",
+      "from contextlib import closing",
+      "from tempfile import TemporaryDirectory",
+      "import json",
+      "import queue",
+      "import unittest",
+      "import threading",
+      "from datetime import datetime, timezone",
+      "from types import SimpleNamespace",
+      "from unittest.mock import Mock, patch",
+      "import numpy as np",
+      "import torch",
+      "from stockrl.global_online import Experience, GlobalReplayBuffer, IncrementalMarketCSV, MarketObservation, OnlineGlobalAgent, REWARD_VERSION, save_model",
+      "from stockrl.global_transformer import GlobalMarketPanel, GlobalMarketTransformer, TransformerConfig",
+      "from stockrl.market_training import ContextConditionedTransformer, CONTEXT_FEATURES",
+      "from stockrl.multiscale import MULTISCALE_FEATURE_COUNT",
+      "from stockrl.paper_account import PaperAccount",
+      "from stockrl.account_diagnostics import summarize_account, summarize_policy",
+      "from stockrl.operating_rules import daily_boundary, operating_rules",
+      "from stockrl.state_io import atomic_json"
+    ]
+  },
+  {
+    "path": "tests/test_pending_rewards.py",
+    "bytes": 6102,
+    "lines": 95,
+    "sha256": "ea21c517d5e54b9038b11372be276fd4570495d3a894cae744a3e2c608862417",
+    "definitions": [
+      "PendingRewardChecks"
+    ],
+    "imports": [
+      "import unittest",
+      "import numpy as np",
+      "import torch",
+      "from stockrl.online.rewards import closed_market_credit_ready, saved_closing_panel",
+      "from stockrl.global_online import OnlineGlobalAgent, GlobalReplayBuffer, REWARD_VERSION",
+      "from stockrl.paper_account import PaperAccount",
+      "from test_online_pipeline import Panel"
+    ]
+  },
+  {
+    "path": "tests/test_throughput_maintenance.py",
+    "bytes": 3838,
+    "lines": 72,
+    "sha256": "fc45c498cb7b4be7672aa23387c7db70f4fa0fb84699d2b6f4688e3b7b4517b0",
+    "definitions": [
+      "ThroughputMaintenanceTests"
+    ],
+    "imports": [
+      "import sqlite3",
+      "from contextlib import closing",
+      "from pathlib import Path",
+      "from tempfile import TemporaryDirectory",
+      "from types import SimpleNamespace",
+      "import unittest",
+      "from unittest.mock import patch",
+      "import torch",
+      "from stockrl.replay_store import GlobalReplayBuffer",
+      "from stockrl.online.optimizer_state import remember_optimizer, restore_optimizer",
+      "from stockrl.online.replay_updates import install_replay_updates",
+      "import test_online_pipeline as pipeline_checks"
+    ]
+  }
+]

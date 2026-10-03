@@ -1,0 +1,24 @@
+{
+  "model": "Datadog/Toto-2.0-313m",
+  "revision": "a7bab288f5e95f8606f8306f86659357e1c001ef",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\README.md",
+      "bytes": 7197,
+      "sha256": "8f457beaf36fd6bda363ae8c23ab9c145dcb459ae306ea05ac49873a62ed5f8d",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Toto-2.0-313m\\config.json",
+      "bytes": 598,
+      "sha256": "9cd42ebab5167752f4382f9304a26c05a44e20eb13b71eea8810f729fed0ffd7",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\Toto-2.0-313m\\model.safetensors",
+      "bytes": 1250763568,
+      "sha256": "5ee6066497963cb904bf1324ab850661c3201bbb3406052459f1f792386aa2f9",
+      "upstream_sha256": "5ee6066497963cb904bf1324ab850661c3201bbb3406052459f1f792386aa2f9"
+    }
+  ]
+}

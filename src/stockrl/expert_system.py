@@ -222,7 +222,7 @@ class TradingMoE:
         for artifact in entry["files"]:
             if artifact.get("archive"):
                 continue
-            path = self.root / artifact["path"]
+            path = expert_weight_path(self.root / artifact["path"])
             if path.stat().st_size != artifact["bytes"]:
                 raise ValueError(f"original file size changed: {path}")
             digest = hashlib.sha256()

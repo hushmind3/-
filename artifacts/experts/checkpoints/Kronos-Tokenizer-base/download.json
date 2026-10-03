@@ -1,0 +1,24 @@
+{
+  "model": "NeoQuasar/Kronos-Tokenizer-base",
+  "revision": "0e0117387f39004a9016484a186a908917e22426",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\README.md",
+      "bytes": 8863,
+      "sha256": "24d59758e911d355a79608b6686610a14f649270d6d852f3d86b2a1e8232ce89",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\Kronos-Tokenizer-base\\config.json",
+      "bytes": 301,
+      "sha256": "2366e7ccfec76cbc19cf3c4c1b9c5d901be336ca1e83f2d2292c9bff381b77a2",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\Kronos-Tokenizer-base\\model.safetensors",
+      "bytes": 15842368,
+      "sha256": "59d85f6af76a2c3b8240ea06cb21db4213b4eeca053f246b23e29cf832fc6bee",
+      "upstream_sha256": "59d85f6af76a2c3b8240ea06cb21db4213b4eeca053f246b23e29cf832fc6bee"
+    }
+  ]
+}

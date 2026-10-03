@@ -1,0 +1,2806 @@
+{
+  "repo": {
+    "id": 977821228,
+    "node_id": "R_kgDOOkheLA",
+    "name": "toto",
+    "full_name": "DataDog/toto",
+    "private": false,
+    "owner": {
+      "login": "DataDog",
+      "id": 365230,
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjM2NTIzMA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/365230?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/DataDog",
+      "html_url": "https://github.com/DataDog",
+      "followers_url": "https://api.github.com/users/DataDog/followers",
+      "following_url": "https://api.github.com/users/DataDog/following{/other_user}",
+      "gists_url": "https://api.github.com/users/DataDog/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/DataDog/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/DataDog/subscriptions",
+      "organizations_url": "https://api.github.com/users/DataDog/orgs",
+      "repos_url": "https://api.github.com/users/DataDog/repos",
+      "events_url": "https://api.github.com/users/DataDog/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/DataDog/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/DataDog/toto",
+    "description": "Time-Series-Optimized Transformer for Observability",
+    "fork": false,
+    "url": "https://api.github.com/repos/DataDog/toto",
+    "forks_url": "https://api.github.com/repos/DataDog/toto/forks",
+    "keys_url": "https://api.github.com/repos/DataDog/toto/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/DataDog/toto/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/DataDog/toto/teams",
+    "hooks_url": "https://api.github.com/repos/DataDog/toto/hooks",
+    "issue_events_url": "https://api.github.com/repos/DataDog/toto/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/DataDog/toto/events",
+    "assignees_url": "https://api.github.com/repos/DataDog/toto/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/DataDog/toto/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/DataDog/toto/tags",
+    "blobs_url": "https://api.github.com/repos/DataDog/toto/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/DataDog/toto/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/DataDog/toto/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/DataDog/toto/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/DataDog/toto/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/DataDog/toto/languages",
+    "stargazers_url": "https://api.github.com/repos/DataDog/toto/stargazers",
+    "contributors_url": "https://api.github.com/repos/DataDog/toto/contributors",
+    "subscribers_url": "https://api.github.com/repos/DataDog/toto/subscribers",
+    "subscription_url": "https://api.github.com/repos/DataDog/toto/subscription",
+    "commits_url": "https://api.github.com/repos/DataDog/toto/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/DataDog/toto/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/DataDog/toto/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/DataDog/toto/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/DataDog/toto/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/DataDog/toto/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/DataDog/toto/merges",
+    "archive_url": "https://api.github.com/repos/DataDog/toto/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/DataDog/toto/downloads",
+    "issues_url": "https://api.github.com/repos/DataDog/toto/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/DataDog/toto/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/DataDog/toto/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/DataDog/toto/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/DataDog/toto/labels{/name}",
+    "releases_url": "https://api.github.com/repos/DataDog/toto/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/DataDog/toto/deployments",
+    "created_at": "2025-05-05T02:45:46Z",
+    "updated_at": "2026-09-30T05:21:35Z",
+    "pushed_at": "2026-10-01T02:43:58Z",
+    "git_url": "git://github.com/DataDog/toto.git",
+    "ssh_url": "git@github.com:DataDog/toto.git",
+    "clone_url": "https://github.com/DataDog/toto.git",
+    "svn_url": "https://github.com/DataDog/toto",
+    "homepage": null,
+    "size": 25806,
+    "stargazers_count": 551,
+    "watchers_count": 551,
+    "language": "Jupyter Notebook",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 76,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 20,
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [],
+    "visibility": "public",
+    "forks": 76,
+    "open_issues": 20,
+    "watchers": 551,
+    "default_branch": "main",
+    "temp_clone_token": null,
+    "custom_properties": {
+      "exemptFromGlobalRepoRules": "false",
+      "require-signatures-method": "github"
+    },
+    "organization": {
+      "login": "DataDog",
+      "id": 365230,
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjM2NTIzMA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/365230?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/DataDog",
+      "html_url": "https://github.com/DataDog",
+      "followers_url": "https://api.github.com/users/DataDog/followers",
+      "following_url": "https://api.github.com/users/DataDog/following{/other_user}",
+      "gists_url": "https://api.github.com/users/DataDog/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/DataDog/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/DataDog/subscriptions",
+      "organizations_url": "https://api.github.com/users/DataDog/orgs",
+      "repos_url": "https://api.github.com/users/DataDog/repos",
+      "events_url": "https://api.github.com/users/DataDog/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/DataDog/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "network_count": 76,
+    "subscribers_count": 11
+  },
+  "tree": {
+    "sha": "9213d2c86f716c43010a0a3b2b6a0e3f440e6743",
+    "url": "https://api.github.com/repos/DataDog/toto/git/trees/9213d2c86f716c43010a0a3b2b6a0e3f440e6743",
+    "tree": [
+      {
+        "path": ".ddla-overrides",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ee0110a6cc04bcfc934334aa307bbe4db3dd579e",
+        "size": 17308,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ee0110a6cc04bcfc934334aa307bbe4db3dd579e"
+      },
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "63852f17c7221dac9a780503fc293d482bda2e80",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/63852f17c7221dac9a780503fc293d482bda2e80"
+      },
+      {
+        "path": ".github/dependabot.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c272b36b58137d36faa503cb7f4efae179dc2109",
+        "size": 538,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c272b36b58137d36faa503cb7f4efae179dc2109"
+      },
+      {
+        "path": ".github/workflows",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "65f8850828c813eaf13f7fde061de0c96812ec01",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/65f8850828c813eaf13f7fde061de0c96812ec01"
+      },
+      {
+        "path": ".github/workflows/black.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0206b95a8d90c0fcc6ba155d932ac593540a381c",
+        "size": 632,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/0206b95a8d90c0fcc6ba155d932ac593540a381c"
+      },
+      {
+        "path": ".github/workflows/cpu-pytest.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c4da510c44fccc39fe72c4dbb9ccbad791251766",
+        "size": 647,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c4da510c44fccc39fe72c4dbb9ccbad791251766"
+      },
+      {
+        "path": ".github/workflows/mypy.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4e18c60496fd6e92235aa2d36526c5ce3e8f8cf2",
+        "size": 654,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4e18c60496fd6e92235aa2d36526c5ce3e8f8cf2"
+      },
+      {
+        "path": ".github/workflows/pypi-publish-dd-unit-scaling.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0f4e3b5b43843c915ef57d95909e34447c34c239",
+        "size": 1701,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/0f4e3b5b43843c915ef57d95909e34447c34c239"
+      },
+      {
+        "path": ".github/workflows/pypi-publish-toto-models.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b2d14fc82c49bd03eed2ba180c7b766a0d0a989e",
+        "size": 1673,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b2d14fc82c49bd03eed2ba180c7b766a0d0a989e"
+      },
+      {
+        "path": ".github/workflows/pypi-publish.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e62ec65c437a48e91c417f4598277e641065a3c6",
+        "size": 1658,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e62ec65c437a48e91c417f4598277e641065a3c6"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eb264f57735cb515dbed4d52e2c37ab383d3e04d",
+        "size": 464,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/eb264f57735cb515dbed4d52e2c37ab383d3e04d"
+      },
+      {
+        "path": ".pre-commit-config.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "35d1a385ec060dd6f43e27376f162a10d2165174",
+        "size": 429,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/35d1a385ec060dd6f43e27376f162a10d2165174"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f4077c0b204035b9e341f39c8e25d083ac14afa0",
+        "size": 3429,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f4077c0b204035b9e341f39c8e25d083ac14afa0"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7a4a3ea2424c09fbe48d455aed1eaa94d9124835",
+        "size": 11357,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/7a4a3ea2424c09fbe48d455aed1eaa94d9124835"
+      },
+      {
+        "path": "LICENSE-3rdparty.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6896ce1433c81257ae7ecc76d4996a38f5af4377",
+        "size": 42862,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6896ce1433c81257ae7ecc76d4996a38f5af4377"
+      },
+      {
+        "path": "NOTICE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5dce6d96de95d7136b5cd4de31e96d1fad193c15",
+        "size": 134,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5dce6d96de95d7136b5cd4de31e96d1fad193c15"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "03a6e14652b0c528af40b5a28acdc233e4545fec",
+        "size": 22554,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/03a6e14652b0c528af40b5a28acdc233e4545fec"
+      },
+      {
+        "path": "boom",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e52453f2470229061764bd17925e44cf88c0c8ca",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e52453f2470229061764bd17925e44cf88c0c8ca"
+      },
+      {
+        "path": "boom/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e25f469027533abc4a2a35d8632307956ab8ab92",
+        "size": 4871,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e25f469027533abc4a2a35d8632307956ab8ab92"
+      },
+      {
+        "path": "boom/boom_properties.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "feed62dcdc5aa565d7f3737c8cac62e35f12dad0",
+        "size": 554966,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/feed62dcdc5aa565d7f3737c8cac62e35f12dad0"
+      },
+      {
+        "path": "boom/boomlet_properties.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d03215942cde8f07b6ccba8444217dd986e365b8",
+        "size": 6255,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d03215942cde8f07b6ccba8444217dd986e365b8"
+      },
+      {
+        "path": "boom/breakdown_tabels",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a298153b9e4cb6d2241a9ec17901c760108eb9ba",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/a298153b9e4cb6d2241a9ec17901c760108eb9ba"
+      },
+      {
+        "path": "boom/breakdown_tabels/domain_CRPS_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aabcd5b0d903373b9729a9b2861e1e933de234f3",
+        "size": 1042,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/aabcd5b0d903373b9729a9b2861e1e933de234f3"
+      },
+      {
+        "path": "boom/breakdown_tabels/domain_MASE_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eecfd5a3d3d9514f4486e94738c8475d92992086",
+        "size": 1033,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/eecfd5a3d3d9514f4486e94738c8475d92992086"
+      },
+      {
+        "path": "boom/breakdown_tabels/full_benchmark_CRPS_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3ab5c5dcb46a27b50c01c70d352a009af32f5a9e",
+        "size": 457,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3ab5c5dcb46a27b50c01c70d352a009af32f5a9e"
+      },
+      {
+        "path": "boom/breakdown_tabels/full_benchmark_MASE_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5d9fc43180641f417d160b72df83356352b3aa14",
+        "size": 455,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5d9fc43180641f417d160b72df83356352b3aa14"
+      },
+      {
+        "path": "boom/breakdown_tabels/real_term_CRPS_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "928b85d79426bf1932377f1f198d78aec16a5a57",
+        "size": 725,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/928b85d79426bf1932377f1f198d78aec16a5a57"
+      },
+      {
+        "path": "boom/breakdown_tabels/real_term_MASE_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "654d1f08f0e92a94c4abe55b870930b74c5e1715",
+        "size": 721,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/654d1f08f0e92a94c4abe55b870930b74c5e1715"
+      },
+      {
+        "path": "boom/breakdown_tabels/type_CRPS_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4cfeac13f9c2c804c9d752ec7dffb3f8d401a597",
+        "size": 870,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4cfeac13f9c2c804c9d752ec7dffb3f8d401a597"
+      },
+      {
+        "path": "boom/breakdown_tabels/type_MASE_shifted_gmean.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "73fc37b2290302be04c706a03c3f4e3ee2af2ff5",
+        "size": 865,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/73fc37b2290302be04c706a03c3f4e3ee2af2ff5"
+      },
+      {
+        "path": "boom/leaderboards",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cd4ed8b4eb8d5d8deaf45b8d8a6ae55b2ab9d2c4",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/cd4ed8b4eb8d5d8deaf45b8d8a6ae55b2ab9d2c4"
+      },
+      {
+        "path": "boom/leaderboards/boom_leaderboard.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5182aee85781fd28e92f8c06c862952ede8a7d32",
+        "size": 1246,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5182aee85781fd28e92f8c06c862952ede8a7d32"
+      },
+      {
+        "path": "boom/leaderboards/boomlet_leaderboard.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aa359ac3e5d6d88153dc3f0d5f4729e86a8e6fce",
+        "size": 1230,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/aa359ac3e5d6d88153dc3f0d5f4729e86a8e6fce"
+      },
+      {
+        "path": "boom/notebooks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "20d94e408dce7193b670d95dae54cf2648c527df",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/20d94e408dce7193b670d95dae54cf2648c527df"
+      },
+      {
+        "path": "boom/notebooks/autoarima.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b760052e666ba6c50d6193f46c2f42868e536d61",
+        "size": 23582,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b760052e666ba6c50d6193f46c2f42868e536d61"
+      },
+      {
+        "path": "boom/notebooks/autoets.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f0f6bd53dee8444dc7f53210315629d8d3736643",
+        "size": 22383,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f0f6bd53dee8444dc7f53210315629d8d3736643"
+      },
+      {
+        "path": "boom/notebooks/autotheta.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d4579e67ebb7046e18a001e9f7af54e21ff50ea7",
+        "size": 23186,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d4579e67ebb7046e18a001e9f7af54e21ff50ea7"
+      },
+      {
+        "path": "boom/notebooks/chronos.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2c7434d946eaf87da8f595ab479b612ea952f6a2",
+        "size": 17650,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2c7434d946eaf87da8f595ab479b612ea952f6a2"
+      },
+      {
+        "path": "boom/notebooks/chronos2.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6f72224d261cee2cfd7fb1e5f58f44c987c08be9",
+        "size": 11046,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6f72224d261cee2cfd7fb1e5f58f44c987c08be9"
+      },
+      {
+        "path": "boom/notebooks/dataset_utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "60d8e5be7e63c66ac80e942284f5cce7d363224c",
+        "size": 1407,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/60d8e5be7e63c66ac80e942284f5cce7d363224c"
+      },
+      {
+        "path": "boom/notebooks/leaderboard.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5c21909883743648c9534d3f7006f4fa1552adf0",
+        "size": 4045,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5c21909883743648c9534d3f7006f4fa1552adf0"
+      },
+      {
+        "path": "boom/notebooks/moirai.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48ba3ea674052956d14495dd5b7bd1629ac50903",
+        "size": 12170,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/48ba3ea674052956d14495dd5b7bd1629ac50903"
+      },
+      {
+        "path": "boom/notebooks/moirai2.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cb286dff5c061b5834a396aed44c370b8f5b9ff3",
+        "size": 7625,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/cb286dff5c061b5834a396aed44c370b8f5b9ff3"
+      },
+      {
+        "path": "boom/notebooks/seasonalnaive.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "64341eb64dd8ead64d725f97f97cd15980cee9f0",
+        "size": 21775,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/64341eb64dd8ead64d725f97f97cd15980cee9f0"
+      },
+      {
+        "path": "boom/notebooks/time-moe.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2aad323b2c28e9f722e525e2fcbd5d9ff4882050",
+        "size": 20157,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2aad323b2c28e9f722e525e2fcbd5d9ff4882050"
+      },
+      {
+        "path": "boom/notebooks/timer.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fbd8d9d865ef6016d2e9a69c20a6c2ad7e5cf613",
+        "size": 20200,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/fbd8d9d865ef6016d2e9a69c20a6c2ad7e5cf613"
+      },
+      {
+        "path": "boom/notebooks/timesfm.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e6b10af1f02099d3c2d930d7f6459cb1e1866d73",
+        "size": 19136,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e6b10af1f02099d3c2d930d7f6459cb1e1866d73"
+      },
+      {
+        "path": "boom/notebooks/timesfm2_5.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "217cc3d298087dbafa02b450511c99e6993b5b05",
+        "size": 10102,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/217cc3d298087dbafa02b450511c99e6993b5b05"
+      },
+      {
+        "path": "boom/notebooks/toto.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3e4b382bdd40ed5a64c191ab342ed2abdf72224a",
+        "size": 17946,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3e4b382bdd40ed5a64c191ab342ed2abdf72224a"
+      },
+      {
+        "path": "boom/notebooks/toto2.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2fc752f87136b480aef3b3e279f2dc403f1d92b7",
+        "size": 9715,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2fc752f87136b480aef3b3e279f2dc403f1d92b7"
+      },
+      {
+        "path": "boom/notebooks/vis_forecast.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32c17031a734518715559309ac221bbede6d17f7",
+        "size": 7403,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/32c17031a734518715559309ac221bbede6d17f7"
+      },
+      {
+        "path": "boom/notebooks/visonts.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4a805e9545e3af2eb4227f41a7ab50fc3089e164",
+        "size": 19368,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4a805e9545e3af2eb4227f41a7ab50fc3089e164"
+      },
+      {
+        "path": "boom/notebooks/visualization.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "350214749f58f87a52182ad9ddc8dbaff726ba08",
+        "size": 353331,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/350214749f58f87a52182ad9ddc8dbaff726ba08"
+      },
+      {
+        "path": "boom/results",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4345dbbaa686331fb3bb38273eb4c264e2cc5b39",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/4345dbbaa686331fb3bb38273eb4c264e2cc5b39"
+      },
+      {
+        "path": "boom/results/autoarima",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "38dba7bd00cea3b1cfc337194d70ef1c9f5d7303",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/38dba7bd00cea3b1cfc337194d70ef1c9f5d7303"
+      },
+      {
+        "path": "boom/results/autoarima/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2c31e2c87040a5703f6e9acde12a63c99d9ac0d1",
+        "size": 1948516,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2c31e2c87040a5703f6e9acde12a63c99d9ac0d1"
+      },
+      {
+        "path": "boom/results/autoets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d37ee66fc17c71553eff539155a1ad8ccd8587d4",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/d37ee66fc17c71553eff539155a1ad8ccd8587d4"
+      },
+      {
+        "path": "boom/results/autoets/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "04a7a2cfa87d2e7c47c15447d8c7b9097a6d2c53",
+        "size": 1942515,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/04a7a2cfa87d2e7c47c15447d8c7b9097a6d2c53"
+      },
+      {
+        "path": "boom/results/autotheta",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4baebbbeb09ff0ee3adea90560a05bde9eee64d1",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/4baebbbeb09ff0ee3adea90560a05bde9eee64d1"
+      },
+      {
+        "path": "boom/results/autotheta/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "624bce5a0c294bd6417a338e623bc94cc145fe7a",
+        "size": 1959430,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/624bce5a0c294bd6417a338e623bc94cc145fe7a"
+      },
+      {
+        "path": "boom/results/chronos_2",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "709fb76798f7561e128b7245f820b56434630e88",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/709fb76798f7561e128b7245f820b56434630e88"
+      },
+      {
+        "path": "boom/results/chronos_2/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "05d08994d012a96ff91991dac1e33db87d45d6d5",
+        "size": 1960729,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/05d08994d012a96ff91991dac1e33db87d45d6d5"
+      },
+      {
+        "path": "boom/results/chronos_bolt_base",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "8067fd34d3622ad1dff9278cc02f86abd4220c12",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/8067fd34d3622ad1dff9278cc02f86abd4220c12"
+      },
+      {
+        "path": "boom/results/chronos_bolt_base/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3f3466aeb35a77802dcfd8891f57d5706cd90e07",
+        "size": 2084659,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3f3466aeb35a77802dcfd8891f57d5706cd90e07"
+      },
+      {
+        "path": "boom/results/chronos_bolt_small",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "38b0908bbd983dbd8cb8995ce98fa6530f04fa8a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/38b0908bbd983dbd8cb8995ce98fa6530f04fa8a"
+      },
+      {
+        "path": "boom/results/chronos_bolt_small/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b12acaff9662f2743bb21c6013e5b66179377dc4",
+        "size": 2139395,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b12acaff9662f2743bb21c6013e5b66179377dc4"
+      },
+      {
+        "path": "boom/results/moirai_1.1_base",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0d3e99c2b6bd0ebf4258ed4b70eaf9b438797865",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/0d3e99c2b6bd0ebf4258ed4b70eaf9b438797865"
+      },
+      {
+        "path": "boom/results/moirai_1.1_base/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f5312f1cf8ecdcbb5c6f71909dbab7feda63fed6",
+        "size": 2046313,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f5312f1cf8ecdcbb5c6f71909dbab7feda63fed6"
+      },
+      {
+        "path": "boom/results/moirai_1.1_large",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1295edba159ad0f416a093cbc877ef715c5854be",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/1295edba159ad0f416a093cbc877ef715c5854be"
+      },
+      {
+        "path": "boom/results/moirai_1.1_large/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "27061fbf46c29106f0244fa73bcba2ce81e9ead2",
+        "size": 2050842,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/27061fbf46c29106f0244fa73bcba2ce81e9ead2"
+      },
+      {
+        "path": "boom/results/moirai_1.1_small",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e4929868f064171100dadfa3acd948faa7f52a02",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e4929868f064171100dadfa3acd948faa7f52a02"
+      },
+      {
+        "path": "boom/results/moirai_1.1_small/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0e69d07182980c39cef17cbd8b888471f1080ba8",
+        "size": 2102878,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/0e69d07182980c39cef17cbd8b888471f1080ba8"
+      },
+      {
+        "path": "boom/results/moirai_2_small",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3e37c1c241120ce542963a9d0cdd538fb142e6a6",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/3e37c1c241120ce542963a9d0cdd538fb142e6a6"
+      },
+      {
+        "path": "boom/results/moirai_2_small/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "154784436a0cd7d890607faf8d8e61e40505c363",
+        "size": 2011366,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/154784436a0cd7d890607faf8d8e61e40505c363"
+      },
+      {
+        "path": "boom/results/seasonalnaive",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4c56d28baa3dfd8f4e5c40c98197212de498c047",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/4c56d28baa3dfd8f4e5c40c98197212de498c047"
+      },
+      {
+        "path": "boom/results/seasonalnaive/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "24468108be4fd957c1eee1f26ae39433fa5de252",
+        "size": 1901246,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/24468108be4fd957c1eee1f26ae39433fa5de252"
+      },
+      {
+        "path": "boom/results/time_moe_200M",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "70aa3dbb0e8a45904d83a40d7555bcb6e30629e6",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/70aa3dbb0e8a45904d83a40d7555bcb6e30629e6"
+      },
+      {
+        "path": "boom/results/time_moe_200M/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "be2c9bd9a8c0de8ecc24c2075bcddd1064dda355",
+        "size": 1992327,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/be2c9bd9a8c0de8ecc24c2075bcddd1064dda355"
+      },
+      {
+        "path": "boom/results/time_moe_50M",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6ea958f78f7886d4f62e9795e512f4de4edd5bfd",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/6ea958f78f7886d4f62e9795e512f4de4edd5bfd"
+      },
+      {
+        "path": "boom/results/time_moe_50M/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "be8c7e497ccc05380d7c7829281350016df7935d",
+        "size": 1981427,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/be8c7e497ccc05380d7c7829281350016df7935d"
+      },
+      {
+        "path": "boom/results/timer",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d6743c48c7d4b0578d115788a91995a4cd957d5e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/d6743c48c7d4b0578d115788a91995a4cd957d5e"
+      },
+      {
+        "path": "boom/results/timer/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "61a4043e4ce017568278920fd2284b53c2b12599",
+        "size": 1929763,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/61a4043e4ce017568278920fd2284b53c2b12599"
+      },
+      {
+        "path": "boom/results/timesfm_2_0_500m",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6cb41519b6c899f97569d468e45e00c4c93ae352",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/6cb41519b6c899f97569d468e45e00c4c93ae352"
+      },
+      {
+        "path": "boom/results/timesfm_2_0_500m/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "79888002bfe167778b476808fa17bb3f605927a9",
+        "size": 2091130,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/79888002bfe167778b476808fa17bb3f605927a9"
+      },
+      {
+        "path": "boom/results/timesfm_2_5_200m",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "667192865f267e4e9e0eb24404a1fa67ec5c2eb0",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/667192865f267e4e9e0eb24404a1fa67ec5c2eb0"
+      },
+      {
+        "path": "boom/results/timesfm_2_5_200m/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "81c11efea4a35455489202793ed777dc059abd92",
+        "size": 1972400,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/81c11efea4a35455489202793ed777dc059abd92"
+      },
+      {
+        "path": "boom/results/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6f74b1ac709fe8f63ab48529a94a32c4e38d6f08",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/6f74b1ac709fe8f63ab48529a94a32c4e38d6f08"
+      },
+      {
+        "path": "boom/results/toto/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "900d64d0de0f49b48259d35f5e42a23c911401e7",
+        "size": 3335378,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/900d64d0de0f49b48259d35f5e42a23c911401e7"
+      },
+      {
+        "path": "boom/results/toto_2.0_1b",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "439694827a63a24404a0cc9342d7e93f861f046f",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/439694827a63a24404a0cc9342d7e93f861f046f"
+      },
+      {
+        "path": "boom/results/toto_2.0_1b/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c1abb9811ef43f7cf30d4a5f2508ccd83a1c897",
+        "size": 1886764,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/8c1abb9811ef43f7cf30d4a5f2508ccd83a1c897"
+      },
+      {
+        "path": "boom/results/toto_2.0_2.5b",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a6bfeb5375b950c2200589d37c6664bfdb073b2f",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/a6bfeb5375b950c2200589d37c6664bfdb073b2f"
+      },
+      {
+        "path": "boom/results/toto_2.0_2.5b/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d04f194b6bd61de15873399bb63869c3c1897e94",
+        "size": 1899891,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d04f194b6bd61de15873399bb63869c3c1897e94"
+      },
+      {
+        "path": "boom/results/toto_2.0_22m",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "55dee674c48e08fce2286931142f9d72834b827e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/55dee674c48e08fce2286931142f9d72834b827e"
+      },
+      {
+        "path": "boom/results/toto_2.0_22m/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "53fe3977eea12bedaa093aa8855460498ee6adcd",
+        "size": 1893851,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/53fe3977eea12bedaa093aa8855460498ee6adcd"
+      },
+      {
+        "path": "boom/results/toto_2.0_313m",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "46849afc41ba5839c589fdcca012906599736d8a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/46849afc41ba5839c589fdcca012906599736d8a"
+      },
+      {
+        "path": "boom/results/toto_2.0_313m/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c4db6870aa987398d8deaf313a3dab55dd8ddfb8",
+        "size": 1899814,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c4db6870aa987398d8deaf313a3dab55dd8ddfb8"
+      },
+      {
+        "path": "boom/results/toto_2.0_4m",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1f7b11ba41f6adeb4bf5a7a201e04c7aad380692",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/1f7b11ba41f6adeb4bf5a7a201e04c7aad380692"
+      },
+      {
+        "path": "boom/results/toto_2.0_4m/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ed02f735bc351fd23ae3fb726b78050adec2c4d9",
+        "size": 1887439,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ed02f735bc351fd23ae3fb726b78050adec2c4d9"
+      },
+      {
+        "path": "boom/results/visionts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2268a271fe58dc451f0019b65cde290f4a420c6d",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/2268a271fe58dc451f0019b65cde290f4a420c6d"
+      },
+      {
+        "path": "boom/results/visionts/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "13669af51b39a3e586564ef8094cc0e1cd340a54",
+        "size": 2067267,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/13669af51b39a3e586564ef8094cc0e1cd340a54"
+      },
+      {
+        "path": "boom/utils",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d55ff149a6e11b01a0b44d89afebd0f512ea92e3",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/d55ff149a6e11b01a0b44d89afebd0f512ea92e3"
+      },
+      {
+        "path": "boom/utils/breakdown.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "39fefaffaf92708e6ec088b8224a3b49d7aeb323",
+        "size": 3501,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/39fefaffaf92708e6ec088b8224a3b49d7aeb323"
+      },
+      {
+        "path": "boom/utils/leaderboard.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5435ed6e6acf112aba44e06631dc09875e453ef8",
+        "size": 6232,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5435ed6e6acf112aba44e06631dc09875e453ef8"
+      },
+      {
+        "path": "dd_unit_scaling",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "656eba6dc5c1d23d664e6444f8e2c3b28efdc631",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/656eba6dc5c1d23d664e6444f8e2c3b28efdc631"
+      },
+      {
+        "path": "dd_unit_scaling/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ec31d4da3403dac96f831695ba40006d8f524e1f",
+        "size": 7690,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ec31d4da3403dac96f831695ba40006d8f524e1f"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d0dc0b3ff5aa85e50472b1ccc2894bb710d40bb5",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/d0dc0b3ff5aa85e50472b1ccc2894bb710d40bb5"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5faf9971e5c777e359e51a5a656554fb4d99a7a0",
+        "size": 1889,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5faf9971e5c777e359e51a5a656554fb4d99a7a0"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling/_modules.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5687b7e14e0d1976634e68d829f0fafa72acde53",
+        "size": 5972,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5687b7e14e0d1976634e68d829f0fafa72acde53"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling/functional.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5d86476de47b7b3c8531258b20b1a05375e0ecd5",
+        "size": 9112,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5d86476de47b7b3c8531258b20b1a05375e0ecd5"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling/optim.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "61072d6c499fe10edeed52cafc51691165654581",
+        "size": 11716,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/61072d6c499fe10edeed52cafc51691165654581"
+      },
+      {
+        "path": "dd_unit_scaling/dd_unit_scaling/scale.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "43a8b862a2d7872558454c3429209f55b00f7c22",
+        "size": 1798,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/43a8b862a2d7872558454c3429209f55b00f7c22"
+      },
+      {
+        "path": "dd_unit_scaling/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f58cc9f3845b8d56fefa404ffc278ccf10cad22b",
+        "size": 967,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f58cc9f3845b8d56fefa404ffc278ccf10cad22b"
+      },
+      {
+        "path": "mypy.ini",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "caaaa2536c59f302fc1e8bb4ab6478b50e7ab742",
+        "size": 139,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/caaaa2536c59f302fc1e8bb4ab6478b50e7ab742"
+      },
+      {
+        "path": "pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "de2d13cbad887d817208b7cdcd3a2db44c8fdf3c",
+        "size": 1079,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/de2d13cbad887d817208b7cdcd3a2db44c8fdf3c"
+      },
+      {
+        "path": "pytest.ini",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b5037ece0843a4d9350e29b7ef7043d96f021e5a",
+        "size": 540,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b5037ece0843a4d9350e29b7ef7043d96f021e5a"
+      },
+      {
+        "path": "requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "db59d83bff4f2dafd9a018476a3adc651fdc91f0",
+        "size": 549,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/db59d83bff4f2dafd9a018476a3adc651fdc91f0"
+      },
+      {
+        "path": "toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b52407fd47bb4b1afb6879a7a350dd48ddea029c",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/b52407fd47bb4b1afb6879a7a350dd48ddea029c"
+      },
+      {
+        "path": "toto/.gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5fdea5d25d32d25578c31a38766718ff2a1fb3ab",
+        "size": 47,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5fdea5d25d32d25578c31a38766718ff2a1fb3ab"
+      },
+      {
+        "path": "toto/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/data",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fc40cb2de45ec77f518ea3cc237bdbdae3d56d2c",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/fc40cb2de45ec77f518ea3cc237bdbdae3d56d2c"
+      },
+      {
+        "path": "toto/data/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "toto/data/datamodule",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3b6b2756190ecc2501ab2bee71a59c98925bcf65",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/3b6b2756190ecc2501ab2bee71a59c98925bcf65"
+      },
+      {
+        "path": "toto/data/datamodule/finetune_datamodule.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "20af9b3b3681cf25f6e77ab477fc83e20b1f7740",
+        "size": 13710,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/20af9b3b3681cf25f6e77ab477fc83e20b1f7740"
+      },
+      {
+        "path": "toto/data/datasets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "bb5ee57209b288cc72ed4dedafa470ca524910a0",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/bb5ee57209b288cc72ed4dedafa470ca524910a0"
+      },
+      {
+        "path": "toto/data/datasets/gluonts_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1dc83aa50b348cbae11bcc34c21eb2550588f272",
+        "size": 15865,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/1dc83aa50b348cbae11bcc34c21eb2550588f272"
+      },
+      {
+        "path": "toto/data/util",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ad9c2118f87ef75ecda2320c7af4608a03e2faf0",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/ad9c2118f87ef75ecda2320c7af4608a03e2faf0"
+      },
+      {
+        "path": "toto/data/util/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/data/util/dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fd8257249d317782debb723b276c3c19d8c6acb8",
+        "size": 7525,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/fd8257249d317782debb723b276c3c19d8c6acb8"
+      },
+      {
+        "path": "toto/data/util/helpers.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "131bfddb9ce0903fd827bb6bc2953c292f735d13",
+        "size": 13047,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/131bfddb9ce0903fd827bb6bc2953c292f735d13"
+      },
+      {
+        "path": "toto/evaluation",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "dded06da08db3ef1efc088efa9fc87ff8f972e73",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/dded06da08db3ef1efc088efa9fc87ff8f972e73"
+      },
+      {
+        "path": "toto/evaluation/fev",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "426d563c9f098e3d1de1a5238bf28ed450c18117",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/426d563c9f098e3d1de1a5238bf28ed450c18117"
+      },
+      {
+        "path": "toto/evaluation/fev/aggregate_results.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1785d9991d51c391b68fb00c8cec80ad60f8799c",
+        "size": 38594,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/1785d9991d51c391b68fb00c8cec80ad60f8799c"
+      },
+      {
+        "path": "toto/evaluation/fev/evaluate.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d0719a70be97772e34fba0357a5ccfdeb8925fc9",
+        "size": 19430,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d0719a70be97772e34fba0357a5ccfdeb8925fc9"
+      },
+      {
+        "path": "toto/evaluation/fev/results",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "728b5a8a6f09530b5789a11bf007dd440ef1fd1f",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/728b5a8a6f09530b5789a11bf007dd440ef1fd1f"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fa4bee48ceaac11da74d94e937b2bd4f0ac57ce5",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/fa4bee48ceaac11da74d94e937b2bd4f0ac57ce5"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1b0e9293d5e395dc9eaa42dc70e8d0d6790a83a4",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/1b0e9293d5e395dc9eaa42dc70e8d0d6790a83a4"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6e13bfee0ce9c2d7a7765acda83f2258c4ce9126",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6e13bfee0ce9c2d7a7765acda83f2258c4ce9126"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b69f0d92f40b6e714ac1f3bc36dfc3f6c06064ae",
+        "size": 625,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b69f0d92f40b6e714ac1f3bc36dfc3f6c06064ae"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "bf2b01cb120542a1acf5e9f15cf74cc0893f1e6a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/bf2b01cb120542a1acf5e9f15cf74cc0893f1e6a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "43317094f3741abbee89100b721b19a3ce6181a5",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/43317094f3741abbee89100b721b19a3ce6181a5"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "477b88951421ac313003d9c31b17b1a2d98313bf",
+        "size": 643,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/477b88951421ac313003d9c31b17b1a2d98313bf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "113098b94cf9dc7081f332e2ea62fb903619cf10",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/113098b94cf9dc7081f332e2ea62fb903619cf10"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "75aebc4893990d49081356fdec60ffd0f5ce8e1f",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/75aebc4893990d49081356fdec60ffd0f5ce8e1f"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_15T/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "81fd752aa69420a72ff8f98ff409035087588982",
+        "size": 645,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/81fd752aa69420a72ff8f98ff409035087588982"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e83cbbc20853c413c89f742c99356a8521458033",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e83cbbc20853c413c89f742c99356a8521458033"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "328105e4c3e2bf1bc6ad01c4a48541429d99e086",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/328105e4c3e2bf1bc6ad01c4a48541429d99e086"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f60f64b8a27d0ed830c7339fc608aeb07380118a",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f60f64b8a27d0ed830c7339fc608aeb07380118a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "15e0620b1330b7615a15c988f26ff5c25e1d5f83",
+        "size": 626,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/15e0620b1330b7615a15c988f26ff5c25e1d5f83"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "da79ad196b2a8f0dbdc71dd065d874457520a4bd",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/da79ad196b2a8f0dbdc71dd065d874457520a4bd"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dabda873efe4c33d08ae76aa1968077adac36b2b",
+        "size": 97,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/dabda873efe4c33d08ae76aa1968077adac36b2b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ae1d367f2b6379d4ca0c05ddd3d7c4019ac04255",
+        "size": 619,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ae1d367f2b6379d4ca0c05ddd3d7c4019ac04255"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "f2571c59b5028a87b346cdd1fb5de1e1cde5b79a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/f2571c59b5028a87b346cdd1fb5de1e1cde5b79a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e21653af95f846f900d56a455f0ffb0721f20904",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e21653af95f846f900d56a455f0ffb0721f20904"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_1H/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "780154e6e35847bc359363ee35070de603483510",
+        "size": 643,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/780154e6e35847bc359363ee35070de603483510"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2d826c769fa635c8f86923b3ba6ce0fe8eedfdfc",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/2d826c769fa635c8f86923b3ba6ce0fe8eedfdfc"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2d97caa1da790feabae26adbb1ce9ac0b9ec85a0",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/2d97caa1da790feabae26adbb1ce9ac0b9ec85a0"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "41fbe8a34bafd16d3e531e537d1836125de4d0f9",
+        "size": 97,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/41fbe8a34bafd16d3e531e537d1836125de4d0f9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5f9473e7b5fca8e4bdf9c55b848bd107bea659b9",
+        "size": 630,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5f9473e7b5fca8e4bdf9c55b848bd107bea659b9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9861d6b5990674aeff3a874930ab9e2d3d95bca7",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9861d6b5990674aeff3a874930ab9e2d3d95bca7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "65cc531ff178fa554d5326e5e126f93225e75e7f",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/65cc531ff178fa554d5326e5e126f93225e75e7f"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2e7a61fe80fc12f974f270ed5672d6eef467f2bb",
+        "size": 628,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2e7a61fe80fc12f974f270ed5672d6eef467f2bb"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7e8b0624ffc0f616d27efd610c740f11cec52e9a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/7e8b0624ffc0f616d27efd610c740f11cec52e9a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7fe5afade7893778d743f1e810c11c22ef68dea7",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/7fe5afade7893778d743f1e810c11c22ef68dea7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/entsoe_30T/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9aa2f634ca846723e171de0a950a841f1912bb35",
+        "size": 639,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/9aa2f634ca846723e171de0a950a841f1912bb35"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fd326968074f7b6e2defefc35110b462780e97eb",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/fd326968074f7b6e2defefc35110b462780e97eb"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "dc5c79134df73957b96dd5aa27cebc211b772cd7",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/dc5c79134df73957b96dd5aa27cebc211b772cd7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "43c5c2fae2b51f1c964d7df27ae969c6876f57f9",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/43c5c2fae2b51f1c964d7df27ae969c6876f57f9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5af56dcd3432f723a02da69ac7acbbc13e626ada",
+        "size": 629,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5af56dcd3432f723a02da69ac7acbbc13e626ada"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "59cfb31bf7b058beeb942ce672d6dec27572740c",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/59cfb31bf7b058beeb942ce672d6dec27572740c"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5b2af1e7dcc7e1f220d84f64526ef505b96a4f79",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5b2af1e7dcc7e1f220d84f64526ef505b96a4f79"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d48b62f91546914e874472fedc5b39b5d76f9502",
+        "size": 620,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d48b62f91546914e874472fedc5b39b5d76f9502"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "21f375957ed246d0234d7c3a05b1db5fa0b9d2a9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/21f375957ed246d0234d7c3a05b1db5fa0b9d2a9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "90708fc5198708f01b093e896f96505cb06ea0c0",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/90708fc5198708f01b093e896f96505cb06ea0c0"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_be/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6c7d3aceeef79a76f71247ebe1b3616816950dae",
+        "size": 619,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6c7d3aceeef79a76f71247ebe1b3616816950dae"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "04334ef27a38c6e2ab2b6e3238b9f43bbd9f8ba9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/04334ef27a38c6e2ab2b6e3238b9f43bbd9f8ba9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3724610275cfc3ec9befe5c5358367ab010242c4",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/3724610275cfc3ec9befe5c5358367ab010242c4"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "48823a67b86c3505bf7216cbb23de47eef2fcbbc",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/48823a67b86c3505bf7216cbb23de47eef2fcbbc"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32de87e12767381b15dc7589bc4be05b52d6f5dd",
+        "size": 629,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/32de87e12767381b15dc7589bc4be05b52d6f5dd"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9e44c2c1cbe6d9efd7debc2c4cb57d6c301bab5d",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9e44c2c1cbe6d9efd7debc2c4cb57d6c301bab5d"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8c44b6207524d8856676087641e68b002707eccf",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/8c44b6207524d8856676087641e68b002707eccf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ccf0d7f27c827342823c94c112ca7e2459f97a65",
+        "size": 626,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ccf0d7f27c827342823c94c112ca7e2459f97a65"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "96df2af1f40028d0a0e67f7b93eda29240e01bb8",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/96df2af1f40028d0a0e67f7b93eda29240e01bb8"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "43fb39050b520cf1a6056a514d8254d8875fa1cc",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/43fb39050b520cf1a6056a514d8254d8875fa1cc"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_de/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ae671385c51d3022f682991413607788b9313c93",
+        "size": 636,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ae671385c51d3022f682991413607788b9313c93"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ed58cd2c7940e9e008a6611cddbc9d6a24744047",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/ed58cd2c7940e9e008a6611cddbc9d6a24744047"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "51080b76bcaa04493e4798d98333ff018b5c64da",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/51080b76bcaa04493e4798d98333ff018b5c64da"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b4014b77638c5ba2d313bca4b12cd0d2ee6cbbc9",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b4014b77638c5ba2d313bca4b12cd0d2ee6cbbc9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1e25c18d8711be666f30d78b9c32e605de1f6eeb",
+        "size": 628,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/1e25c18d8711be666f30d78b9c32e605de1f6eeb"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cb7ab41e8776d6c550c1cab884676bedde66fdf7",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/cb7ab41e8776d6c550c1cab884676bedde66fdf7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e29809dfdd8bb3fff1d7bdd9d13b6368315f1f63",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e29809dfdd8bb3fff1d7bdd9d13b6368315f1f63"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7b2686623ea4db3b8c020f682c21f01084dcdeb7",
+        "size": 627,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/7b2686623ea4db3b8c020f682c21f01084dcdeb7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a349626967064c778589dbfa4eb5f298a39a6104",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/a349626967064c778589dbfa4eb5f298a39a6104"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d81b6be9bdc6b4b92ea4772ac495e8e2ba05ed13",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d81b6be9bdc6b4b92ea4772ac495e8e2ba05ed13"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_fr/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "22699f9cb8836b5ec98a5f96495951c6a651e659",
+        "size": 626,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/22699f9cb8836b5ec98a5f96495951c6a651e659"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cf5ed7784ac5d1040fac69ba4ca150b1b2d32e4b",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/cf5ed7784ac5d1040fac69ba4ca150b1b2d32e4b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "156dbe2572b0608a1081e1cff1b2ca4b2ce87c44",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/156dbe2572b0608a1081e1cff1b2ca4b2ce87c44"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c42a14bc3789aea5646cf565e00d449785e45aca",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c42a14bc3789aea5646cf565e00d449785e45aca"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "99b2261c3604249c96db40a6f26273a4590a57a3",
+        "size": 637,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/99b2261c3604249c96db40a6f26273a4590a57a3"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "c4e433bd147fda504853b234b29182d7b1650482",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/c4e433bd147fda504853b234b29182d7b1650482"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ba4baaa8309b4af9c6f2cfc05607b97768824e36",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ba4baaa8309b4af9c6f2cfc05607b97768824e36"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "754df830c60c18d26fe0843b3562fed37148abaf",
+        "size": 639,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/754df830c60c18d26fe0843b3562fed37148abaf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "8267e2e32dadf08333c37588296b0856f5973e82",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/8267e2e32dadf08333c37588296b0856f5973e82"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b3cf034098fd541357a333e6968adbe670ab4234",
+        "size": 96,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b3cf034098fd541357a333e6968adbe670ab4234"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_np/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "854fd5251d6663a8039933cd75b41d19c9951faf",
+        "size": 634,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/854fd5251d6663a8039933cd75b41d19c9951faf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9bb2257e844471341e0e48c7a29e320eea14d407",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9bb2257e844471341e0e48c7a29e320eea14d407"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e95f93b5b3d527f0dbe3943cb7da1c2a2b2fd92a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e95f93b5b3d527f0dbe3943cb7da1c2a2b2fd92a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "db56017345173a2a0c927f156e96d5d9c00e3879",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/db56017345173a2a0c927f156e96d5d9c00e3879"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "934329acfc1280e42c114573b3a7c5fbec91cefb",
+        "size": 626,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/934329acfc1280e42c114573b3a7c5fbec91cefb"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "71365719750f76e47d1c019b0eb966b269886ecf",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/71365719750f76e47d1c019b0eb966b269886ecf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2d143a4e21feb60009d7a38bf0a906679f0eb5bf",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2d143a4e21feb60009d7a38bf0a906679f0eb5bf"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "75e32f94bd8e82f657e764184678ca3fe6b7ab3b",
+        "size": 626,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/75e32f94bd8e82f657e764184678ca3fe6b7ab3b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9f34bfec6d840e74e5b6e276da332b9e20ddcb8e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9f34bfec6d840e74e5b6e276da332b9e20ddcb8e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a10d5e45a81143f6518372e86c2a0063471c202f",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a10d5e45a81143f6518372e86c2a0063471c202f"
+      },
+      {
+        "path": "toto/evaluation/fev/results/epf_pjm/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f99ba5103f5369d336f6df6b6796da399608db3c",
+        "size": 632,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/f99ba5103f5369d336f6df6b6796da399608db3c"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4b9ac082bb5e2bbf8fb445806637f040d960c448",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/4b9ac082bb5e2bbf8fb445806637f040d960c448"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "516574c1bdc140d0488f69994eb9458fdcfaf3ff",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/516574c1bdc140d0488f69994eb9458fdcfaf3ff"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3c7c26769e356d0a3e04d3e3d8a8c2502dccf7ca",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3c7c26769e356d0a3e04d3e3d8a8c2502dccf7ca"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "513e87776874d494c874783eea2376b7e6331bc3",
+        "size": 92,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/513e87776874d494c874783eea2376b7e6331bc3"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "17150025a3c95876a4283f034bc562d83873dbc9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/17150025a3c95876a4283f034bc562d83873dbc9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fa2a0086ea671181891ac0656b7fe191a845fdbd",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/fa2a0086ea671181891ac0656b7fe191a845fdbd"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8fc3c72a45329fef51f9d584ebfe9f367290e4fe",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/8fc3c72a45329fef51f9d584ebfe9f367290e4fe"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "063539512f15d2d841d57cb8f52a3ec9ecc7ad0e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/063539512f15d2d841d57cb8f52a3ec9ecc7ad0e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3ff25c39e62936c8b1c64d664ef5292f7973a708",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3ff25c39e62936c8b1c64d664ef5292f7973a708"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_orders_1D/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d969de53ca76b80824a82db0dd814ce996bd3b23",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d969de53ca76b80824a82db0dd814ce996bd3b23"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "f21a382a09b76bd5494e2672f3e7ef0a163d10b3",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/f21a382a09b76bd5494e2672f3e7ef0a163d10b3"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0b79baddb3eb9ef630453b28b6cf59f8a497d5ee",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/0b79baddb3eb9ef630453b28b6cf59f8a497d5ee"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6a067f4975e70ec9d8770c332350a64b53f608ae",
+        "size": 78,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6a067f4975e70ec9d8770c332350a64b53f608ae"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e50232cca453e562bac58039a892c5e64642721d",
+        "size": 121,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e50232cca453e562bac58039a892c5e64642721d"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e857b0723112d48dd472ba153123c9ec6b658947",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e857b0723112d48dd472ba153123c9ec6b658947"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "82bd5043ee6d9616c1a83609a3518714cfdd0e11",
+        "size": 79,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/82bd5043ee6d9616c1a83609a3518714cfdd0e11"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ad669288dd727e84c667887c898158c6702bc80b",
+        "size": 121,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ad669288dd727e84c667887c898158c6702bc80b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9fa259c63fbdcd7d60d96e75d15f2e52ab52d385",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9fa259c63fbdcd7d60d96e75d15f2e52ab52d385"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "888ededf1f93f8c44d5af8c9684402206e6e08c1",
+        "size": 78,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/888ededf1f93f8c44d5af8c9684402206e6e08c1"
+      },
+      {
+        "path": "toto/evaluation/fev/results/rohlik_sales_1D/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32260ab1418c716c91276b257e1858590d265e22",
+        "size": 122,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/32260ab1418c716c91276b257e1858590d265e22"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "739c4364770e5ab79d13e8dad722f8eabd70f723",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/739c4364770e5ab79d13e8dad722f8eabd70f723"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a0ac00f59adc2ba889b44941c1d220ad51f0b84a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/a0ac00f59adc2ba889b44941c1d220ad51f0b84a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b1fdc9fb579de13b94db994f7cea8a76a581a303",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b1fdc9fb579de13b94db994f7cea8a76a581a303"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bf43de09eecedbf17e55800e274dbd103872f3fa",
+        "size": 586,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/bf43de09eecedbf17e55800e274dbd103872f3fa"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "797d5b408ea97c6ad2534cc37e07159441d13719",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/797d5b408ea97c6ad2534cc37e07159441d13719"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "de60ce2bf8fea7e96a234fe9a6db6a01ebd466fe",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/de60ce2bf8fea7e96a234fe9a6db6a01ebd466fe"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c6f98aafa6f2b6bbfbfc17413cbc989f37b913f9",
+        "size": 585,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c6f98aafa6f2b6bbfbfc17413cbc989f37b913f9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9f9f74dd3e953f79318d0ce1bf99c5403e482e3a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9f9f74dd3e953f79318d0ce1bf99c5403e482e3a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6794db4add8a4630a77f069489574a7bdc6b8ff9",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6794db4add8a4630a77f069489574a7bdc6b8ff9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_15T/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "98e718c5b6d3b876f1aa9b5a1fb5978a55e5ec53",
+        "size": 617,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/98e718c5b6d3b876f1aa9b5a1fb5978a55e5ec53"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "572b1ae149edec7251a4af7b19f3b01f75ad04b7",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/572b1ae149edec7251a4af7b19f3b01f75ad04b7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "930d949b000e5fd4a21438adf88795fcf62c6906",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/930d949b000e5fd4a21438adf88795fcf62c6906"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ace9d439e5a12a929a90bdec3de27b5f488dae09",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ace9d439e5a12a929a90bdec3de27b5f488dae09"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6fa9a916ef10776b619a926bd6d804505ecc2d9a",
+        "size": 578,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6fa9a916ef10776b619a926bd6d804505ecc2d9a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1d56dcb9de89a108c900d1f017f7ff979be1574e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/1d56dcb9de89a108c900d1f017f7ff979be1574e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "00103c9f0face20b1c74dc02fef2574e914ef748",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/00103c9f0face20b1c74dc02fef2574e914ef748"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4e6e204f488612f1e632dd52caf684574f91e289",
+        "size": 590,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4e6e204f488612f1e632dd52caf684574f91e289"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "95342046a559bebc73b6db6dc021bf7211aacc5b",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/95342046a559bebc73b6db6dc021bf7211aacc5b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e7320acdfcd5c39ff3174c8fd558e6b15875e667",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e7320acdfcd5c39ff3174c8fd558e6b15875e667"
+      },
+      {
+        "path": "toto/evaluation/fev/results/solar_with_weather_1H/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "13f5927e4a37e057d66f748744a2bf14f7c00d5f",
+        "size": 620,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/13f5927e4a37e057d66f748744a2bf14f7c00d5f"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cbee642d5df68e4888626d1dacd7a473d0716f6e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/cbee642d5df68e4888626d1dacd7a473d0716f6e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "0d024baf0f8dee28e99b2e927625841ab232bc8e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/0d024baf0f8dee28e99b2e927625841ab232bc8e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d54b34ae3fd83a1d44a1ed650aa2369bfe6c2339",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d54b34ae3fd83a1d44a1ed650aa2369bfe6c2339"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9b58a8d7ddc3931149d4ad7487c086aaf3d244b2",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/9b58a8d7ddc3931149d4ad7487c086aaf3d244b2"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3580649bb36728139463887b381772a16aff2ff9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/3580649bb36728139463887b381772a16aff2ff9"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "36669717fd4aa18a4585f23f5e5a4fa1eaa24f6b",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/36669717fd4aa18a4585f23f5e5a4fa1eaa24f6b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d239cb8918ce3f48459c12ec4d5dbe3178b41247",
+        "size": 93,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d239cb8918ce3f48459c12ec4d5dbe3178b41247"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "630cb5ab93755a32cb01d6efd07930828b60bb7c",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/630cb5ab93755a32cb01d6efd07930828b60bb7c"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "def7ee1ff6c45ca4d8508226d325b7ecb7cdcc00",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/def7ee1ff6c45ca4d8508226d325b7ecb7cdcc00"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1D/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "32dbb430b19dc37c4182d1be067eab246ee2bc6e",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/32dbb430b19dc37c4182d1be067eab246ee2bc6e"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fd636ea9ffca96c508d5d8a3c00b48bbd2fe361b",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/fd636ea9ffca96c508d5d8a3c00b48bbd2fe361b"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "10102610bb093165e5bfb15ec40af29187595c02",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/10102610bb093165e5bfb15ec40af29187595c02"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5bd09a6caa280b6da75f089a977f4dd330556fed",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5bd09a6caa280b6da75f089a977f4dd330556fed"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "df2060f20b3963fd6c6eda0a358da4acbb265fd7",
+        "size": 446,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/df2060f20b3963fd6c6eda0a358da4acbb265fd7"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "c8b6b59733482750ceb6a6db90d46a8b3d38ce8a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/c8b6b59733482750ceb6a6db90d46a8b3d38ce8a"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5a38456037a76b18059f4b6e0be18a2d457892fb",
+        "size": 95,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5a38456037a76b18059f4b6e0be18a2d457892fb"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ac9a9628015e62483612293051bbd237aca0c041",
+        "size": 448,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ac9a9628015e62483612293051bbd237aca0c041"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning_exogenous",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "4687d909bfb41a8fecf377f7802328ebc5ab92c1",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/4687d909bfb41a8fecf377f7802328ebc5ab92c1"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning_exogenous/aggregated_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6bfba6e611203ce5d1ba62da6f856b1da7f5f6a2",
+        "size": 94,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/6bfba6e611203ce5d1ba62da6f856b1da7f5f6a2"
+      },
+      {
+        "path": "toto/evaluation/fev/results/uci_air_quality_1H/toto_finetuning_exogenous/results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4d9c821586ebb7d62b3e933ab3500e3a726c5277",
+        "size": 448,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4d9c821586ebb7d62b3e933ab3500e3a726c5277"
+      },
+      {
+        "path": "toto/evaluation/fev/tasks.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8bbca75fe83ff5f5c810382a9f2bc614be81f29e",
+        "size": 10070,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/8bbca75fe83ff5f5c810382a9f2bc614be81f29e"
+      },
+      {
+        "path": "toto/evaluation/fev/utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c19394cf39ded2cdd7cca8354a955543ccb1dcb9",
+        "size": 11624,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c19394cf39ded2cdd7cca8354a955543ccb1dcb9"
+      },
+      {
+        "path": "toto/evaluation/gift_eval",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "8473df073f70f697ee4f858d07f5f05af5842e1e",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/8473df073f70f697ee4f858d07f5f05af5842e1e"
+      },
+      {
+        "path": "toto/evaluation/gift_eval/dataset_properties.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d3316997242e5857cf35d5506586d1cf8976b2f2",
+        "size": 3351,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d3316997242e5857cf35d5506586d1cf8976b2f2"
+      },
+      {
+        "path": "toto/evaluation/gift_eval/toto.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "589f5c6dd4e364c9090b0d5abc7a58b18afab3e7",
+        "size": 47738,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/589f5c6dd4e364c9090b0d5abc7a58b18afab3e7"
+      },
+      {
+        "path": "toto/evaluation/lsf",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3d3f00310418160c731d81d4810e4ef5f6201306",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/3d3f00310418160c731d81d4810e4ef5f6201306"
+      },
+      {
+        "path": "toto/evaluation/lsf/lsf_datasets.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "659bb3d03f1ae9b32f932793f33261b82e564e3e",
+        "size": 9477,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/659bb3d03f1ae9b32f932793f33261b82e564e3e"
+      },
+      {
+        "path": "toto/evaluation/lsf/lsf_evaluator.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "74dbc0145ec53cbf36f85203cc6be883afb3f909",
+        "size": 4588,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/74dbc0145ec53cbf36f85203cc6be883afb3f909"
+      },
+      {
+        "path": "toto/evaluation/run_lsf_eval.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "27a2a986431043ccb09851c35da6b23a709ee948",
+        "size": 6709,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/27a2a986431043ccb09851c35da6b23a709ee948"
+      },
+      {
+        "path": "toto/inference",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "667d9c8745f64efbab105d08611ab3e471084894",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/667d9c8745f64efbab105d08611ab3e471084894"
+      },
+      {
+        "path": "toto/inference/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/inference/forecaster.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a933a0f5122199120defc1fe181efefa6d4b5fee",
+        "size": 26640,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a933a0f5122199120defc1fe181efefa6d4b5fee"
+      },
+      {
+        "path": "toto/inference/gluonts_predictor.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5fedbc52e520c3741362ab4769a2fbbeb63cabf0",
+        "size": 18745,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5fedbc52e520c3741362ab4769a2fbbeb63cabf0"
+      },
+      {
+        "path": "toto/model",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "249903ec24b54f3b38d1455367774789c7e0ded9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/249903ec24b54f3b38d1455367774789c7e0ded9"
+      },
+      {
+        "path": "toto/model/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "toto/model/attention.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a9996121149ecbd11e6162ee7f3870d6785b215f",
+        "size": 11329,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a9996121149ecbd11e6162ee7f3870d6785b215f"
+      },
+      {
+        "path": "toto/model/backbone.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ba4ded9a14020f328cbaea58e2b612eeb3f028f6",
+        "size": 13369,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ba4ded9a14020f328cbaea58e2b612eeb3f028f6"
+      },
+      {
+        "path": "toto/model/distribution.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5237afd8b34bf0529eaa89e8ecd64a039eb09f75",
+        "size": 2759,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5237afd8b34bf0529eaa89e8ecd64a039eb09f75"
+      },
+      {
+        "path": "toto/model/embedding.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3ab063955223dc371148e966d819a6c7fd15ff24",
+        "size": 2346,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3ab063955223dc371148e966d819a6c7fd15ff24"
+      },
+      {
+        "path": "toto/model/feed_forward.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "27ea6da21f97501952e946414e761030897d6351",
+        "size": 600,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/27ea6da21f97501952e946414e761030897d6351"
+      },
+      {
+        "path": "toto/model/fusion.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "216b5e061f75bae684da8ccf41bd3d367716693a",
+        "size": 1212,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/216b5e061f75bae684da8ccf41bd3d367716693a"
+      },
+      {
+        "path": "toto/model/lightning_module.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4962cee42a370a92d7e8f82acc8c6f90a65e33c6",
+        "size": 10898,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/4962cee42a370a92d7e8f82acc8c6f90a65e33c6"
+      },
+      {
+        "path": "toto/model/losses.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7dc0ea0dda24563f9fe09bdc91bffcaec1135697",
+        "size": 2594,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/7dc0ea0dda24563f9fe09bdc91bffcaec1135697"
+      },
+      {
+        "path": "toto/model/rope.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7b99e7fd8500aaf06f587d125d2b482acd5af357",
+        "size": 3491,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/7b99e7fd8500aaf06f587d125d2b482acd5af357"
+      },
+      {
+        "path": "toto/model/scaler.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9740cd7c3b45af348dce0336c8d86b6047fc09a9",
+        "size": 19836,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/9740cd7c3b45af348dce0336c8d86b6047fc09a9"
+      },
+      {
+        "path": "toto/model/scheduler.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a824671a7fb67ee1cb35070ab749da2d783e5566",
+        "size": 2337,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a824671a7fb67ee1cb35070ab749da2d783e5566"
+      },
+      {
+        "path": "toto/model/toto.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "94d1a10f92a9a90857de542d0d3925bca3b81e9a",
+        "size": 6590,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/94d1a10f92a9a90857de542d0d3925bca3b81e9a"
+      },
+      {
+        "path": "toto/model/transformer.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a477e65ac5385f5d72a7d11fe05bbb503b287fc7",
+        "size": 13811,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a477e65ac5385f5d72a7d11fe05bbb503b287fc7"
+      },
+      {
+        "path": "toto/model/util.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d891a0b67d3e4c63fc4a1839ec3450735a2f1899",
+        "size": 8410,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/d891a0b67d3e4c63fc4a1839ec3450735a2f1899"
+      },
+      {
+        "path": "toto/notebooks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "cc44547a0aef3ec429373cde4eb95f272f5e4f63",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/cc44547a0aef3ec429373cde4eb95f272f5e4f63"
+      },
+      {
+        "path": "toto/notebooks/finetuning_tutorial.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "86fb59e010bb277b3218575e72b07598966314e7",
+        "size": 2385115,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/86fb59e010bb277b3218575e72b07598966314e7"
+      },
+      {
+        "path": "toto/notebooks/inference_tutorial.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b9efa6ad1edc45f901a3b83f0bcfdc617571a36f",
+        "size": 507472,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b9efa6ad1edc45f901a3b83f0bcfdc617571a36f"
+      },
+      {
+        "path": "toto/results",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7813aa28f5ce9faac876eafd5fc7e5ab10c7ac73",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/7813aa28f5ce9faac876eafd5fc7e5ab10c7ac73"
+      },
+      {
+        "path": "toto/results/gift_eval",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "202d0bd03f91b4e6538ac57df887dfcb3dcaba63",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/202d0bd03f91b4e6538ac57df887dfcb3dcaba63"
+      },
+      {
+        "path": "toto/results/gift_eval/toto",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "dfd916f86b118e8ddc65c06161977744f2a96694",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/dfd916f86b118e8ddc65c06161977744f2a96694"
+      },
+      {
+        "path": "toto/results/gift_eval/toto/all_results.csv",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c25680728b47a1adc94730246b8638a5ddba492d",
+        "size": 19775,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c25680728b47a1adc94730246b8638a5ddba492d"
+      },
+      {
+        "path": "toto/scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "168a83a118eb24dfa3c457ee9c2e7c18f502ac25",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/168a83a118eb24dfa3c457ee9c2e7c18f502ac25"
+      },
+      {
+        "path": "toto/scripts/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/scripts/benchmark_finetuning.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "db9322cd8e1a6ee7f2abaecd72b3e45bce98178e",
+        "size": 12574,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/db9322cd8e1a6ee7f2abaecd72b3e45bce98178e"
+      },
+      {
+        "path": "toto/scripts/configs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7bf0c51b2973ae1872521930484bb73e54e9bbd9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/7bf0c51b2973ae1872521930484bb73e54e9bbd9"
+      },
+      {
+        "path": "toto/scripts/configs/finetune_config.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fc9c9537994123ed54bfaac097e01ff1f3a0202b",
+        "size": 1700,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/fc9c9537994123ed54bfaac097e01ff1f3a0202b"
+      },
+      {
+        "path": "toto/scripts/finetune_toto.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "be71d020da22b4b111bb4d8cebabbb153d0c197f",
+        "size": 12872,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/be71d020da22b4b111bb4d8cebabbb153d0c197f"
+      },
+      {
+        "path": "toto/test",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2d53dced7410e781a71d625b24f94b5174a91411",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/2d53dced7410e781a71d625b24f94b5174a91411"
+      },
+      {
+        "path": "toto/test/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/test/helper_functions.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a8f0f10ab0194abd0694fc62fffcf520f1bf3774",
+        "size": 1846,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/a8f0f10ab0194abd0694fc62fffcf520f1bf3774"
+      },
+      {
+        "path": "toto/test/inference",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "e0988be0e16d2627627dd2ceb1feea0e851ba3cd",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/e0988be0e16d2627627dd2ceb1feea0e851ba3cd"
+      },
+      {
+        "path": "toto/test/inference/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/test/inference/forecaster_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "84a1701f0b5440da9907b76ca185e72d788df136",
+        "size": 6122,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/84a1701f0b5440da9907b76ca185e72d788df136"
+      },
+      {
+        "path": "toto/test/inference/gluonts_predictor_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ac9ae3954965b071f408ebbc4721f640f6e41064",
+        "size": 13507,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ac9ae3954965b071f408ebbc4721f640f6e41064"
+      },
+      {
+        "path": "toto/test/model",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "d372ba6c77786fd1597c1e111848608028ededbe",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/d372ba6c77786fd1597c1e111848608028ededbe"
+      },
+      {
+        "path": "toto/test/model/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c49493aa4ced439640ddef76e84ab2ebb6b99849",
+        "size": 225,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/c49493aa4ced439640ddef76e84ab2ebb6b99849"
+      },
+      {
+        "path": "toto/test/model/attention_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2afe928bc57400fe2b7fe919ca7c2a2da80042c0",
+        "size": 2622,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2afe928bc57400fe2b7fe919ca7c2a2da80042c0"
+      },
+      {
+        "path": "toto/test/model/fusion_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b7e12f0a740a82dd8bd932e5d5bec54f5e3dd389",
+        "size": 3620,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/b7e12f0a740a82dd8bd932e5d5bec54f5e3dd389"
+      },
+      {
+        "path": "toto/test/model/scaler_test.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "74100f20cd52bcc9f792a9299f023d5b8db4036e",
+        "size": 18761,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/74100f20cd52bcc9f792a9299f023d5b8db4036e"
+      },
+      {
+        "path": "toto2",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1242e8790ea0379ac66e956660dcac432e548189",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/1242e8790ea0379ac66e956660dcac432e548189"
+      },
+      {
+        "path": "toto2/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ce2993e242d550a8e9e64509c98e9bf85d9e218b",
+        "size": 4646,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/ce2993e242d550a8e9e64509c98e9bf85d9e218b"
+      },
+      {
+        "path": "toto2/notebooks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ba78a2f379dff4bd334d6926fd0cf42ed4e95e0a",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/ba78a2f379dff4bd334d6926fd0cf42ed4e95e0a"
+      },
+      {
+        "path": "toto2/notebooks/gluonts_integration.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "85a37ace003524fc52cf34ec1117e54c5990e479",
+        "size": 9087,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/85a37ace003524fc52cf34ec1117e54c5990e479"
+      },
+      {
+        "path": "toto2/notebooks/quick_start.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "87dfa58c2ebe12c95ba8bf68955a5dda12f158b8",
+        "size": 5830,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/87dfa58c2ebe12c95ba8bf68955a5dda12f158b8"
+      },
+      {
+        "path": "toto2/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bc05ff3c47fc1b5a68233961396f6984d8d6feef",
+        "size": 1291,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/bc05ff3c47fc1b5a68233961396f6984d8d6feef"
+      },
+      {
+        "path": "toto2/tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "bb4fbdb863b00088e57a5bb66cc5864f5407feb9",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/bb4fbdb863b00088e57a5bb66cc5864f5407feb9"
+      },
+      {
+        "path": "toto2/tests/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "path": "toto2/tests/test_block_decode.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3a2f03a426bd99cc0aab5c7b5dc6d5ef74aa7b0c",
+        "size": 8559,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3a2f03a426bd99cc0aab5c7b5dc6d5ef74aa7b0c"
+      },
+      {
+        "path": "toto2/tests/test_cache_performance.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "23152a26fb03fe2dec9f7076ac9c1d2409e65a6d",
+        "size": 7362,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/23152a26fb03fe2dec9f7076ac9c1d2409e65a6d"
+      },
+      {
+        "path": "toto2/toto2",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "18257ff07b8632405d5047cccd4f7de8e8da9c1c",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/18257ff07b8632405d5047cccd4f7de8e8da9c1c"
+      },
+      {
+        "path": "toto2/toto2/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3da7671253245941b4f24dfeefe1fb60a294c73b",
+        "size": 344,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/3da7671253245941b4f24dfeefe1fb60a294c73b"
+      },
+      {
+        "path": "toto2/toto2/configuration.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "974be277d3be0a99e2a8da7e57d1ebf63ca8e45e",
+        "size": 3704,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/974be277d3be0a99e2a8da7e57d1ebf63ca8e45e"
+      },
+      {
+        "path": "toto2/toto2/model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2abf6e79e3f1481c38032b66d2eb552b7c56de25",
+        "size": 60043,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/2abf6e79e3f1481c38032b66d2eb552b7c56de25"
+      },
+      {
+        "path": "toto_models",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "047aa36d55076def799e9ae8f7d3431ee88fa232",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/047aa36d55076def799e9ae8f7d3431ee88fa232"
+      },
+      {
+        "path": "toto_models/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5c39667c5f3b0f035ece3cb922e544b7a60a59ff",
+        "size": 2221,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/5c39667c5f3b0f035ece3cb922e544b7a60a59ff"
+      },
+      {
+        "path": "toto_models/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "368f51b58d7d02b91d139afd948cd071f96182a2",
+        "size": 824,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/368f51b58d7d02b91d139afd948cd071f96182a2"
+      },
+      {
+        "path": "toto_models/toto_models",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "9d1dcfdaf1a6857c5f83dc27019c7600e1ffaff8",
+        "url": "https://api.github.com/repos/DataDog/toto/git/trees/9d1dcfdaf1a6857c5f83dc27019c7600e1ffaff8"
+      },
+      {
+        "path": "toto_models/toto_models/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0,
+        "url": "https://api.github.com/repos/DataDog/toto/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      }
+    ],
+    "truncated": false
+  }
+}

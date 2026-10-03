@@ -1,0 +1,1548 @@
+[
+  {
+    "expert": "stock_dapo",
+    "name": "FinRL-DAPO-SR",
+    "filename": "model_rl.pth",
+    "file_bytes": 3295286,
+    "parameters": 822952,
+    "dtype": "FP32",
+    "universe": [
+      "AAPL",
+      "ADBE",
+      "ADI",
+      "ADP",
+      "ADSK",
+      "AEP",
+      "ALGN",
+      "AMAT",
+      "AMD",
+      "AMGN",
+      "AMZN",
+      "ANSS",
+      "ASML",
+      "AVGO",
+      "AZN",
+      "BIIB",
+      "BKNG",
+      "BKR",
+      "CDNS",
+      "CHTR",
+      "CMCSA",
+      "COST",
+      "CPRT",
+      "CSCO",
+      "CSGP",
+      "CSX",
+      "CTAS",
+      "CTSH",
+      "DLTR",
+      "DXCM",
+      "EA",
+      "EBAY",
+      "ENPH",
+      "EXC",
+      "FANG",
+      "FAST",
+      "FTNT",
+      "GILD",
+      "GOOG",
+      "GOOGL",
+      "HON",
+      "IDXX",
+      "ILMN",
+      "INTC",
+      "INTU",
+      "ISRG",
+      "KDP",
+      "KLAC",
+      "LRCX",
+      "LULU",
+      "MAR",
+      "MCHP",
+      "MDLZ",
+      "MELI",
+      "META",
+      "MNST",
+      "MRVL",
+      "MSFT",
+      "MU",
+      "NFLX",
+      "NVDA",
+      "NXPI",
+      "ODFL",
+      "ON",
+      "ORLY",
+      "PANW",
+      "PAYX",
+      "PCAR",
+      "PEP",
+      "QCOM",
+      "REGN",
+      "ROST",
+      "SBUX",
+      "SIRI",
+      "SNPS",
+      "TMUS",
+      "TSLA",
+      "TXN",
+      "VRSK",
+      "VRTX",
+      "WBA",
+      "WBD",
+      "WDAY",
+      "XEL"
+    ],
+    "native_action": "84 signed share actions",
+    "observation_shape": [
+      1,
+      1009
+    ],
+    "native_output_shape": [
+      1,
+      84
+    ],
+    "raw_output": [
+      [
+        -1.5708812475204468,
+        -0.306268572807312,
+        -1.1491104364395142,
+        -0.17312408983707428,
+        0.1318860650062561,
+        -0.22304582595825195,
+        -1.3016818761825562,
+        0.06944828480482101,
+        1.5059561729431152,
+        -0.17418819665908813,
+        1.4657578468322754,
+        -0.07484304904937744,
+        -0.6200105547904968,
+        1.1087027788162231,
+        -0.14338350296020508,
+        -0.6178932785987854,
+        1.201635718345642,
+        0.3771546483039856,
+        0.48581695556640625,
+        0.3029610216617584,
+        0.2496541142463684,
+        -0.39532408118247986,
+        0.26486334204673767,
+        0.4175528287887573,
+        0.21433952450752258,
+        0.2163422405719757,
+        0.7682899832725525,
+        0.9032643437385559,
+        -1.0381925106048584,
+        0.7198147177696228,
+        -0.3050011098384857,
+        0.15544933080673218,
+        0.08705438673496246,
+        -0.09173641353845596,
+        1.9325604438781738,
+        -0.9442927837371826,
+        -1.1136595010757446,
+        0.560020387172699,
+        1.1210204362869263,
+        0.41647928953170776,
+        0.11170889437198639,
+        0.7112746238708496,
+        -1.019573450088501,
+        -0.10372734069824219,
+        0.3975735604763031,
+        0.004004389047622681,
+        -0.37892112135887146,
+        -0.0851772204041481,
+        0.5488444566726685,
+        -1.0757769346237183,
+        0.06728720664978027,
+        0.5732250809669495,
+        0.9623488783836365,
+        0.18872538208961487,
+        1.511902928352356,
+        -1.1803725957870483,
+        2.887040853500366,
+        -0.5347634553909302,
+        2.5793344974517822,
+        2.0132768154144287,
+        -0.46105876564979553,
+        -0.13609839975833893,
+        0.23902131617069244,
+        0.7618798613548279,
+        0.12274216115474701,
+        1.8974729776382446,
+        -0.24557223916053772,
+        -0.031918495893478394,
+        1.1670804023742676,
+        -0.39299049973487854,
+        -1.3605883121490479,
+        0.6992582082748413,
+        0.17203931510448456,
+        0.25726184248924255,
+        0.45462504029273987,
+        -0.06538388133049011,
+        -0.5113444924354553,
+        -0.296994149684906,
+        1.0051296949386597,
+        1.826955795288086,
+        0.8699785470962524,
+        0.38128870725631714,
+        -0.14357857406139374,
+        -0.2812059223651886
+      ]
+    ],
+    "common_output": [
+      {
+        "symbol_id": "AAPL",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "ADBE",
+        "buy_score": 0.0,
+        "hold_score": 0.693731427192688,
+        "sell_score": 0.306268572807312,
+        "target_weight": 0.0,
+        "confidence": 0.306268572807312
+      },
+      {
+        "symbol_id": "ADI",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "ADP",
+        "buy_score": 0.0,
+        "hold_score": 0.8268759101629257,
+        "sell_score": 0.17312408983707428,
+        "target_weight": 0.0,
+        "confidence": 0.17312408983707428
+      },
+      {
+        "symbol_id": "ADSK",
+        "buy_score": 0.1318860650062561,
+        "hold_score": 0.8681139349937439,
+        "sell_score": 0.0,
+        "target_weight": 0.0024069499206542974,
+        "confidence": 0.1318860650062561
+      },
+      {
+        "symbol_id": "AEP",
+        "buy_score": 0.0,
+        "hold_score": 0.776954174041748,
+        "sell_score": 0.22304582595825195,
+        "target_weight": 0.0,
+        "confidence": 0.22304582595825195
+      },
+      {
+        "symbol_id": "ALGN",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "AMAT",
+        "buy_score": 0.06944828480482101,
+        "hold_score": 0.930551715195179,
+        "sell_score": 0.0,
+        "target_weight": 0.0005705944519042968,
+        "confidence": 0.06944828480482101
+      },
+      {
+        "symbol_id": "AMD",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.00640199966430664,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "AMGN",
+        "buy_score": 0.0,
+        "hold_score": 0.8258118033409119,
+        "sell_score": 0.17418819665908813,
+        "target_weight": 0.0,
+        "confidence": 0.17418819665908813
+      },
+      {
+        "symbol_id": "AMZN",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.008581999969482421,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "ANSS",
+        "buy_score": 0.0,
+        "hold_score": 0.9251569509506226,
+        "sell_score": 0.07484304904937744,
+        "target_weight": 0.0,
+        "confidence": 0.07484304904937744
+      },
+      {
+        "symbol_id": "ASML",
+        "buy_score": 0.0,
+        "hold_score": 0.3799894452095032,
+        "sell_score": 0.6200105547904968,
+        "target_weight": 0.0,
+        "confidence": 0.6200105547904968
+      },
+      {
+        "symbol_id": "AVGO",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.0053397117614746095,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "AZN",
+        "buy_score": 0.0,
+        "hold_score": 0.8566164970397949,
+        "sell_score": 0.14338350296020508,
+        "target_weight": 0.0,
+        "confidence": 0.14338350296020508
+      },
+      {
+        "symbol_id": "BIIB",
+        "buy_score": 0.0,
+        "hold_score": 0.3821067214012146,
+        "sell_score": 0.6178932785987854,
+        "target_weight": 0.0,
+        "confidence": 0.6178932785987854
+      },
+      {
+        "symbol_id": "BKNG",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.2014349853515625,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "BKR",
+        "buy_score": 0.3771546483039856,
+        "hold_score": 0.6228453516960144,
+        "sell_score": 0.0,
+        "target_weight": 0.0010121805019378662,
+        "confidence": 0.3771546483039856
+      },
+      {
+        "symbol_id": "CDNS",
+        "buy_score": 0.48581695556640625,
+        "hold_score": 0.5141830444335938,
+        "sell_score": 0.0,
+        "target_weight": 0.007662719970703125,
+        "confidence": 0.48581695556640625
+      },
+      {
+        "symbol_id": "CHTR",
+        "buy_score": 0.3029610216617584,
+        "hold_score": 0.6970389783382416,
+        "sell_score": 0.0,
+        "target_weight": 0.010247399597167969,
+        "confidence": 0.3029610216617584
+      },
+      {
+        "symbol_id": "CMCSA",
+        "buy_score": 0.2496541142463684,
+        "hold_score": 0.7503458857536316,
+        "sell_score": 0.0,
+        "target_weight": 0.0008046183471679687,
+        "confidence": 0.2496541142463684
+      },
+      {
+        "symbol_id": "COST",
+        "buy_score": 0.0,
+        "hold_score": 0.6046759188175201,
+        "sell_score": 0.39532408118247986,
+        "target_weight": 0.0,
+        "confidence": 0.39532408118247986
+      },
+      {
+        "symbol_id": "CPRT",
+        "buy_score": 0.26486334204673767,
+        "hold_score": 0.7351366579532623,
+        "sell_score": 0.0,
+        "target_weight": 0.0007989799880981445,
+        "confidence": 0.26486334204673767
+      },
+      {
+        "symbol_id": "CSCO",
+        "buy_score": 0.4175528287887573,
+        "hold_score": 0.5824471712112427,
+        "sell_score": 0.0,
+        "target_weight": 0.001834462532043457,
+        "confidence": 0.4175528287887573
+      },
+      {
+        "symbol_id": "CSGP",
+        "buy_score": 0.21433952450752258,
+        "hold_score": 0.7856604754924774,
+        "sell_score": 0.0,
+        "target_weight": 0.001630650032043457,
+        "confidence": 0.21433952450752258
+      },
+      {
+        "symbol_id": "CSX",
+        "buy_score": 0.2163422405719757,
+        "hold_score": 0.7836577594280243,
+        "sell_score": 0.0,
+        "target_weight": 0.0006307093219757082,
+        "confidence": 0.2163422405719757
+      },
+      {
+        "symbol_id": "CTAS",
+        "buy_score": 0.7682899832725525,
+        "hold_score": 0.2317100167274475,
+        "sell_score": 0.0,
+        "target_weight": 0.008248428344726562,
+        "confidence": 0.7682899832725525
+      },
+      {
+        "symbol_id": "CTSH",
+        "buy_score": 0.9032643437385559,
+        "hold_score": 0.09673565626144409,
+        "sell_score": 0.0,
+        "target_weight": 0.00501314151763916,
+        "confidence": 0.9032643437385559
+      },
+      {
+        "symbol_id": "DLTR",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "DXCM",
+        "buy_score": 0.7198147177696228,
+        "hold_score": 0.2801852822303772,
+        "sell_score": 0.0,
+        "target_weight": 0.008145830238342285,
+        "confidence": 0.7198147177696228
+      },
+      {
+        "symbol_id": "EA",
+        "buy_score": 0.0,
+        "hold_score": 0.6949988901615143,
+        "sell_score": 0.3050011098384857,
+        "target_weight": 0.0,
+        "confidence": 0.3050011098384857
+      },
+      {
+        "symbol_id": "EBAY",
+        "buy_score": 0.15544933080673218,
+        "hold_score": 0.8445506691932678,
+        "sell_score": 0.0,
+        "target_weight": 0.0006059936141967774,
+        "confidence": 0.15544933080673218
+      },
+      {
+        "symbol_id": "ENPH",
+        "buy_score": 0.08705438673496246,
+        "hold_score": 0.9129456132650375,
+        "sell_score": 0.0,
+        "target_weight": 0.00202647998046875,
+        "confidence": 0.08705438673496246
+      },
+      {
+        "symbol_id": "EXC",
+        "buy_score": 0.0,
+        "hold_score": 0.908263586461544,
+        "sell_score": 0.09173641353845596,
+        "target_weight": 0.0,
+        "confidence": 0.09173641353845596
+      },
+      {
+        "symbol_id": "FANG",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.0119176513671875,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "FAST",
+        "buy_score": 0.0,
+        "hold_score": 0.05570721626281738,
+        "sell_score": 0.9442927837371826,
+        "target_weight": 0.0,
+        "confidence": 0.9442927837371826
+      },
+      {
+        "symbol_id": "FTNT",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "GILD",
+        "buy_score": 0.560020387172699,
+        "hold_score": 0.439979612827301,
+        "sell_score": 0.0,
+        "target_weight": 0.004423244201660156,
+        "confidence": 0.560020387172699
+      },
+      {
+        "symbol_id": "GOOG",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.008937885284423828,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "GOOGL",
+        "buy_score": 0.41647928953170776,
+        "hold_score": 0.5835207104682922,
+        "sell_score": 0.0,
+        "target_weight": 0.003640722236633301,
+        "confidence": 0.41647928953170776
+      },
+      {
+        "symbol_id": "HON",
+        "buy_score": 0.11170889437198639,
+        "hold_score": 0.8882911056280136,
+        "sell_score": 0.0,
+        "target_weight": 0.002258152160644531,
+        "confidence": 0.11170889437198639
+      },
+      {
+        "symbol_id": "IDXX",
+        "buy_score": 0.7112746238708496,
+        "hold_score": 0.2887253761291504,
+        "sell_score": 0.0,
+        "target_weight": 0.028826710693359375,
+        "confidence": 0.7112746238708496
+      },
+      {
+        "symbol_id": "ILMN",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "INTC",
+        "buy_score": 0.0,
+        "hold_score": 0.8962726593017578,
+        "sell_score": 0.10372734069824219,
+        "target_weight": 0.0,
+        "confidence": 0.10372734069824219
+      },
+      {
+        "symbol_id": "INTU",
+        "buy_score": 0.3975735604763031,
+        "hold_score": 0.6024264395236969,
+        "sell_score": 0.0,
+        "target_weight": 0.015030534301757813,
+        "confidence": 0.3975735604763031
+      },
+      {
+        "symbol_id": "ISRG",
+        "buy_score": 0.004004389047622681,
+        "hold_score": 0.9959956109523773,
+        "sell_score": 0.0,
+        "target_weight": 0.0,
+        "confidence": 0.004004389047622681
+      },
+      {
+        "symbol_id": "KDP",
+        "buy_score": 0.0,
+        "hold_score": 0.6210788786411285,
+        "sell_score": 0.37892112135887146,
+        "target_weight": 0.0,
+        "confidence": 0.37892112135887146
+      },
+      {
+        "symbol_id": "KLAC",
+        "buy_score": 0.0,
+        "hold_score": 0.9148227795958519,
+        "sell_score": 0.0851772204041481,
+        "target_weight": 0.0,
+        "confidence": 0.0851772204041481
+      },
+      {
+        "symbol_id": "LRCX",
+        "buy_score": 0.5488444566726685,
+        "hold_score": 0.45115554332733154,
+        "sell_score": 0.0,
+        "target_weight": 0.0020978342056274415,
+        "confidence": 0.5488444566726685
+      },
+      {
+        "symbol_id": "LULU",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "MAR",
+        "buy_score": 0.06728720664978027,
+        "hold_score": 0.9327127933502197,
+        "sell_score": 0.0,
+        "target_weight": 0.0008686035461425781,
+        "confidence": 0.06728720664978027
+      },
+      {
+        "symbol_id": "MCHP",
+        "buy_score": 0.5732250809669495,
+        "hold_score": 0.42677491903305054,
+        "sell_score": 0.0,
+        "target_weight": 0.0037767822875976564,
+        "confidence": 0.5732250809669495
+      },
+      {
+        "symbol_id": "MDLZ",
+        "buy_score": 0.9623488783836365,
+        "hold_score": 0.037651121616363525,
+        "sell_score": 0.0,
+        "target_weight": 0.006052741333007813,
+        "confidence": 0.9623488783836365
+      },
+      {
+        "symbol_id": "MELI",
+        "buy_score": 0.18872538208961487,
+        "hold_score": 0.8112746179103851,
+        "sell_score": 0.0,
+        "target_weight": 0.014869979736328125,
+        "confidence": 0.18872538208961487
+      },
+      {
+        "symbol_id": "META",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.012426530456542966,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "MNST",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "MRVL",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.0035656204223632813,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.0,
+        "hold_score": 0.4652365446090698,
+        "sell_score": 0.5347634553909302,
+        "target_weight": 0.0,
+        "confidence": 0.5347634553909302
+      },
+      {
+        "symbol_id": "MU",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.004981067657470703,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "NFLX",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.029495001220703126,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "NVDA",
+        "buy_score": 0.0,
+        "hold_score": 0.5389412343502045,
+        "sell_score": 0.46105876564979553,
+        "target_weight": 0.0,
+        "confidence": 0.46105876564979553
+      },
+      {
+        "symbol_id": "NXPI",
+        "buy_score": 0.0,
+        "hold_score": 0.8639016002416611,
+        "sell_score": 0.13609839975833893,
+        "target_weight": 0.0,
+        "confidence": 0.13609839975833893
+      },
+      {
+        "symbol_id": "ODFL",
+        "buy_score": 0.23902131617069244,
+        "hold_score": 0.7609786838293076,
+        "sell_score": 0.0,
+        "target_weight": 0.0032180750274658203,
+        "confidence": 0.23902131617069244
+      },
+      {
+        "symbol_id": "ON",
+        "buy_score": 0.7618798613548279,
+        "hold_score": 0.23812013864517212,
+        "sell_score": 0.0,
+        "target_weight": 0.004682360046386719,
+        "confidence": 0.7618798613548279
+      },
+      {
+        "symbol_id": "ORLY",
+        "buy_score": 0.12274216115474701,
+        "hold_score": 0.877257838845253,
+        "sell_score": 0.0,
+        "target_weight": 0.0100886396484375,
+        "confidence": 0.12274216115474701
+      },
+      {
+        "symbol_id": "PANW",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.00692249984741211,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "PAYX",
+        "buy_score": 0.0,
+        "hold_score": 0.7544277608394623,
+        "sell_score": 0.24557223916053772,
+        "target_weight": 0.0,
+        "confidence": 0.24557223916053772
+      },
+      {
+        "symbol_id": "PCAR",
+        "buy_score": 0.0,
+        "hold_score": 0.9680815041065216,
+        "sell_score": 0.031918495893478394,
+        "target_weight": 0.0,
+        "confidence": 0.031918495893478394
+      },
+      {
+        "symbol_id": "PEP",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.01689917449951172,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "QCOM",
+        "buy_score": 0.0,
+        "hold_score": 0.6070095002651215,
+        "sell_score": 0.39299049973487854,
+        "target_weight": 0.0,
+        "confidence": 0.39299049973487854
+      },
+      {
+        "symbol_id": "REGN",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "ROST",
+        "buy_score": 0.6992582082748413,
+        "hold_score": 0.3007417917251587,
+        "sell_score": 0.0,
+        "target_weight": 0.007821382049560547,
+        "confidence": 0.6992582082748413
+      },
+      {
+        "symbol_id": "SBUX",
+        "buy_score": 0.17203931510448456,
+        "hold_score": 0.8279606848955154,
+        "sell_score": 0.0,
+        "target_weight": 0.0016362083663940433,
+        "confidence": 0.17203931510448456
+      },
+      {
+        "symbol_id": "SIRI",
+        "buy_score": 0.25726184248924255,
+        "hold_score": 0.7427381575107574,
+        "sell_score": 0.0,
+        "target_weight": 0.0014081664085388184,
+        "confidence": 0.25726184248924255
+      },
+      {
+        "symbol_id": "SNPS",
+        "buy_score": 0.45462504029273987,
+        "hold_score": 0.5453749597072601,
+        "sell_score": 0.0,
+        "target_weight": 0.014385599670410157,
+        "confidence": 0.45462504029273987
+      },
+      {
+        "symbol_id": "TMUS",
+        "buy_score": 0.0,
+        "hold_score": 0.9346161186695099,
+        "sell_score": 0.06538388133049011,
+        "target_weight": 0.0,
+        "confidence": 0.06538388133049011
+      },
+      {
+        "symbol_id": "TSLA",
+        "buy_score": 0.0,
+        "hold_score": 0.4886555075645447,
+        "sell_score": 0.5113444924354553,
+        "target_weight": 0.0,
+        "confidence": 0.5113444924354553
+      },
+      {
+        "symbol_id": "TXN",
+        "buy_score": 0.0,
+        "hold_score": 0.703005850315094,
+        "sell_score": 0.296994149684906,
+        "target_weight": 0.0,
+        "confidence": 0.296994149684906
+      },
+      {
+        "symbol_id": "VRSK",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.01751954345703125,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "VRTX",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.02860199890136719,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "WBA",
+        "buy_score": 0.8699785470962524,
+        "hold_score": 0.13002145290374756,
+        "sell_score": 0.0,
+        "target_weight": 0.0027580964126586913,
+        "confidence": 0.8699785470962524
+      },
+      {
+        "symbol_id": "WBD",
+        "buy_score": 0.38128870725631714,
+        "hold_score": 0.6187112927436829,
+        "sell_score": 0.0,
+        "target_weight": 0.00036251999855041505,
+        "confidence": 0.38128870725631714
+      },
+      {
+        "symbol_id": "WDAY",
+        "buy_score": 0.0,
+        "hold_score": 0.8564214259386063,
+        "sell_score": 0.14357857406139374,
+        "target_weight": 0.0,
+        "confidence": 0.14357857406139374
+      },
+      {
+        "symbol_id": "XEL",
+        "buy_score": 0.0,
+        "hold_score": 0.7187940776348114,
+        "sell_score": 0.2812059223651886,
+        "target_weight": 0.0,
+        "confidence": 0.2812059223651886
+      }
+    ],
+    "hash": "f1197cc2207c3ec7f7770853a5594f6aefd985f0740de03a436636fbffda922a",
+    "training_timesteps": null,
+    "training_epoch": 99,
+    "inference_seconds": 0.22901650000130758
+  },
+  {
+    "expert": "stock_adilbai",
+    "name": "Adilbai Stock Trading RL Agent",
+    "filename": "final_model.zip",
+    "file_bytes": 4875406,
+    "parameters": 393669,
+    "dtype": "FP32",
+    "universe": [
+      "AAPL",
+      "AMZN",
+      "GOOGL",
+      "MSFT",
+      "TSLA"
+    ],
+    "native_action": "[action_type 0=HOLD/1=BUY/2=SELL, fraction]",
+    "observation_shape": [
+      1,
+      3008
+    ],
+    "native_output_shape": [
+      1,
+      2
+    ],
+    "raw_output": [
+      [
+        0.4791657030582428,
+        -0.00047884508967399597
+      ]
+    ],
+    "common_output": [
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.21271884441375732,
+        "hold_score": 0.7728255987167358,
+        "sell_score": 0.014455556869506836,
+        "target_weight": 0.0,
+        "confidence": 0.7728255987167358
+      }
+    ],
+    "hash": "6b2ef850e51a4f30c2bdad385759f4c6f71bdd96800e698ef4a97ac766c972d4",
+    "training_timesteps": 501760,
+    "training_epoch": null,
+    "inference_seconds": 0.035993500001495704
+  },
+  {
+    "expert": "stock_msft_ppo",
+    "name": "RLTradingAgent MSFT PPO",
+    "filename": "ppo_trader.zip",
+    "file_bytes": 276393,
+    "parameters": 20228,
+    "dtype": "FP32",
+    "universe": [
+      "MSFT"
+    ],
+    "native_action": "0=SELL/1=HOLD/2=BUY",
+    "observation_shape": [
+      1,
+      90
+    ],
+    "native_output_shape": [
+      1
+    ],
+    "raw_output": [
+      1
+    ],
+    "common_output": [
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.06069319695234299,
+        "hold_score": 0.9357272982597351,
+        "sell_score": 0.0035795096773654222,
+        "target_weight": 0.0,
+        "confidence": 0.9357272982597351
+      }
+    ],
+    "hash": "0bc92fdc76246a2882fb365d102e90f60d2649d4d68c5d12b40d587abaf80594",
+    "training_timesteps": 100352,
+    "training_epoch": null,
+    "inference_seconds": 0.10685449999436969
+  },
+  {
+    "expert": "stock_finrl_a2c",
+    "name": "FinRL trading bot A2C",
+    "filename": "agent_a2c.zip",
+    "file_bytes": 283439,
+    "parameters": 31523,
+    "dtype": "FP32",
+    "universe": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "CAT",
+      "CRWD",
+      "GOOGL",
+      "GS",
+      "HD",
+      "IBM",
+      "INTC",
+      "META",
+      "MSFT",
+      "NVDA",
+      "PYPL",
+      "T",
+      "TSLA",
+      "V"
+    ],
+    "native_action": "17 signed share actions",
+    "observation_shape": [
+      1,
+      171
+    ],
+    "native_output_shape": [
+      1,
+      17
+    ],
+    "raw_output": [
+      [
+        0.9415164589881897,
+        1.107122540473938,
+        0.2621535360813141,
+        1.1889642477035522,
+        -0.7207149267196655,
+        -0.19901901483535767,
+        0.1648261845111847,
+        1.433654546737671,
+        -0.058481231331825256,
+        0.8658116459846497,
+        0.9279434680938721,
+        0.3389357328414917,
+        -0.3699619174003601,
+        0.16950425505638123,
+        -0.2296460121870041,
+        -1.0814045667648315,
+        -0.9568251967430115
+      ]
+    ],
+    "common_output": [
+      {
+        "symbol_id": "AAPL",
+        "buy_score": 0.9415164589881897,
+        "hold_score": 0.0584835410118103,
+        "sell_score": 0.0,
+        "target_weight": 0.003923714630126953,
+        "confidence": 0.9415164589881897
+      },
+      {
+        "symbol_id": "AMD",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.0021288000488281244,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "AMZN",
+        "buy_score": 0.2621535360813141,
+        "hold_score": 0.7378464639186859,
+        "sell_score": 0.0,
+        "target_weight": 0.000981050033569336,
+        "confidence": 0.2621535360813141
+      },
+      {
+        "symbol_id": "CAT",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.006683419799804687,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "CRWD",
+        "buy_score": 0.0,
+        "hold_score": 0.2792850732803345,
+        "sell_score": 0.7207149267196655,
+        "target_weight": 0.0,
+        "confidence": 0.7207149267196655
+      },
+      {
+        "symbol_id": "GOOGL",
+        "buy_score": 0.0,
+        "hold_score": 0.8009809851646423,
+        "sell_score": 0.19901901483535767,
+        "target_weight": 0.0,
+        "confidence": 0.19901901483535767
+      },
+      {
+        "symbol_id": "GS",
+        "buy_score": 0.1648261845111847,
+        "hold_score": 0.8351738154888153,
+        "sell_score": 0.0,
+        "target_weight": 0.0016870111083984376,
+        "confidence": 0.1648261845111847
+      },
+      {
+        "symbol_id": "HD",
+        "buy_score": 1.0,
+        "hold_score": 0.0,
+        "sell_score": 0.0,
+        "target_weight": 0.006979624633789062,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "IBM",
+        "buy_score": 0.0,
+        "hold_score": 0.9415187686681747,
+        "sell_score": 0.058481231331825256,
+        "target_weight": 0.0,
+        "confidence": 0.058481231331825256
+      },
+      {
+        "symbol_id": "INTC",
+        "buy_score": 0.8658116459846497,
+        "hold_score": 0.13418835401535034,
+        "sell_score": 0.0,
+        "target_weight": 0.00041242000389099125,
+        "confidence": 0.8658116459846497
+      },
+      {
+        "symbol_id": "META",
+        "buy_score": 0.9279434680938721,
+        "hold_score": 0.07205653190612793,
+        "sell_score": 0.0,
+        "target_weight": 0.010724248168945313,
+        "confidence": 0.9279434680938721
+      },
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.3389357328414917,
+        "hold_score": 0.6610642671585083,
+        "sell_score": 0.0,
+        "target_weight": 0.0023432581787109375,
+        "confidence": 0.3389357328414917
+      },
+      {
+        "symbol_id": "NVDA",
+        "buy_score": 0.0,
+        "hold_score": 0.6300380825996399,
+        "sell_score": 0.3699619174003601,
+        "target_weight": 0.0,
+        "confidence": 0.3699619174003601
+      },
+      {
+        "symbol_id": "PYPL",
+        "buy_score": 0.16950425505638123,
+        "hold_score": 0.8304957449436188,
+        "sell_score": 0.0,
+        "target_weight": 0.00021057000732421874,
+        "confidence": 0.16950425505638123
+      },
+      {
+        "symbol_id": "T",
+        "buy_score": 0.0,
+        "hold_score": 0.7703539878129959,
+        "sell_score": 0.2296460121870041,
+        "target_weight": 0.0,
+        "confidence": 0.2296460121870041
+      },
+      {
+        "symbol_id": "TSLA",
+        "buy_score": 0.0,
+        "hold_score": 0.0,
+        "sell_score": 1.0,
+        "target_weight": 0.0,
+        "confidence": 1.0
+      },
+      {
+        "symbol_id": "V",
+        "buy_score": 0.0,
+        "hold_score": 0.043174803256988525,
+        "sell_score": 0.9568251967430115,
+        "target_weight": 0.0,
+        "confidence": 0.9568251967430115
+      }
+    ],
+    "hash": "d8d113343f0a107d9cd9c79f9da49b4f3389c133ec9cf321c544193bba5b1c89",
+    "training_timesteps": 50000,
+    "training_epoch": null,
+    "inference_seconds": 0.00232500000129221
+  },
+  {
+    "expert": "stock_finrl_ppo",
+    "name": "FinRL trading bot PPO",
+    "filename": "agent_ppo.zip",
+    "file_bytes": 412897,
+    "parameters": 31523,
+    "dtype": "FP32",
+    "universe": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "CAT",
+      "CRWD",
+      "GOOGL",
+      "GS",
+      "HD",
+      "IBM",
+      "INTC",
+      "META",
+      "MSFT",
+      "NVDA",
+      "PYPL",
+      "T",
+      "TSLA",
+      "V"
+    ],
+    "native_action": "17 signed share actions",
+    "observation_shape": [
+      1,
+      171
+    ],
+    "native_output_shape": [
+      1,
+      17
+    ],
+    "raw_output": [
+      [
+        0.02077697031199932,
+        -0.00419383542612195,
+        0.11878615617752075,
+        -0.18103665113449097,
+        -0.1231568306684494,
+        -0.19798804819583893,
+        0.10843677818775177,
+        -0.1298835724592209,
+        -0.05370960384607315,
+        -0.05906476452946663,
+        -0.09055779874324799,
+        -0.032052088528871536,
+        -0.12711864709854126,
+        -0.12699459493160248,
+        0.1491510570049286,
+        -0.09435118734836578,
+        -0.13279788196086884
+      ]
+    ],
+    "common_output": [
+      {
+        "symbol_id": "AAPL",
+        "buy_score": 0.02077697031199932,
+        "hold_score": 0.9792230296880007,
+        "sell_score": 0.0,
+        "target_weight": 0.0,
+        "confidence": 0.02077697031199932
+      },
+      {
+        "symbol_id": "AMD",
+        "buy_score": 0.0,
+        "hold_score": 0.995806164573878,
+        "sell_score": 0.00419383542612195,
+        "target_weight": 0.0,
+        "confidence": 0.00419383542612195
+      },
+      {
+        "symbol_id": "AMZN",
+        "buy_score": 0.11878615617752075,
+        "hold_score": 0.8812138438224792,
+        "sell_score": 0.0,
+        "target_weight": 0.0003924200134277344,
+        "confidence": 0.11878615617752075
+      },
+      {
+        "symbol_id": "CAT",
+        "buy_score": 0.0,
+        "hold_score": 0.818963348865509,
+        "sell_score": 0.18103665113449097,
+        "target_weight": 0.0,
+        "confidence": 0.18103665113449097
+      },
+      {
+        "symbol_id": "CRWD",
+        "buy_score": 0.0,
+        "hold_score": 0.8768431693315506,
+        "sell_score": 0.1231568306684494,
+        "target_weight": 0.0,
+        "confidence": 0.1231568306684494
+      },
+      {
+        "symbol_id": "GOOGL",
+        "buy_score": 0.0,
+        "hold_score": 0.8020119518041611,
+        "sell_score": 0.19798804819583893,
+        "target_weight": 0.0,
+        "confidence": 0.19798804819583893
+      },
+      {
+        "symbol_id": "GS",
+        "buy_score": 0.10843677818775177,
+        "hold_score": 0.8915632218122482,
+        "sell_score": 0.0,
+        "target_weight": 0.001124674072265625,
+        "confidence": 0.10843677818775177
+      },
+      {
+        "symbol_id": "HD",
+        "buy_score": 0.0,
+        "hold_score": 0.8701164275407791,
+        "sell_score": 0.1298835724592209,
+        "target_weight": 0.0,
+        "confidence": 0.1298835724592209
+      },
+      {
+        "symbol_id": "IBM",
+        "buy_score": 0.0,
+        "hold_score": 0.9462903961539268,
+        "sell_score": 0.05370960384607315,
+        "target_weight": 0.0,
+        "confidence": 0.05370960384607315
+      },
+      {
+        "symbol_id": "INTC",
+        "buy_score": 0.0,
+        "hold_score": 0.9409352354705334,
+        "sell_score": 0.05906476452946663,
+        "target_weight": 0.0,
+        "confidence": 0.05906476452946663
+      },
+      {
+        "symbol_id": "META",
+        "buy_score": 0.0,
+        "hold_score": 0.909442201256752,
+        "sell_score": 0.09055779874324799,
+        "target_weight": 0.0,
+        "confidence": 0.09055779874324799
+      },
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.0,
+        "hold_score": 0.9679479114711285,
+        "sell_score": 0.032052088528871536,
+        "target_weight": 0.0,
+        "confidence": 0.032052088528871536
+      },
+      {
+        "symbol_id": "NVDA",
+        "buy_score": 0.0,
+        "hold_score": 0.8728813529014587,
+        "sell_score": 0.12711864709854126,
+        "target_weight": 0.0,
+        "confidence": 0.12711864709854126
+      },
+      {
+        "symbol_id": "PYPL",
+        "buy_score": 0.0,
+        "hold_score": 0.8730054050683975,
+        "sell_score": 0.12699459493160248,
+        "target_weight": 0.0,
+        "confidence": 0.12699459493160248
+      },
+      {
+        "symbol_id": "T",
+        "buy_score": 0.1491510570049286,
+        "hold_score": 0.8508489429950714,
+        "sell_score": 0.0,
+        "target_weight": 5.347244644165039e-05,
+        "confidence": 0.1491510570049286
+      },
+      {
+        "symbol_id": "TSLA",
+        "buy_score": 0.0,
+        "hold_score": 0.9056488126516342,
+        "sell_score": 0.09435118734836578,
+        "target_weight": 0.0,
+        "confidence": 0.09435118734836578
+      },
+      {
+        "symbol_id": "V",
+        "buy_score": 0.0,
+        "hold_score": 0.8672021180391312,
+        "sell_score": 0.13279788196086884,
+        "target_weight": 0.0,
+        "confidence": 0.13279788196086884
+      }
+    ],
+    "hash": "fa3ff171a5c845df2976af263405c1004794a25f8c70c08df9c33cc7b2d89475",
+    "training_timesteps": 51200,
+    "training_epoch": null,
+    "inference_seconds": 0.002057300000160467
+  },
+  {
+    "expert": "stock_finrl_sac",
+    "name": "FinRL trading bot SAC",
+    "filename": "agent_sac.zip",
+    "file_bytes": 5135576,
+    "parameters": 576294,
+    "dtype": "FP32",
+    "universe": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "CAT",
+      "CRWD",
+      "GOOGL",
+      "GS",
+      "HD",
+      "IBM",
+      "INTC",
+      "META",
+      "MSFT",
+      "NVDA",
+      "PYPL",
+      "T",
+      "TSLA",
+      "V"
+    ],
+    "native_action": "17 signed share actions",
+    "observation_shape": [
+      1,
+      171
+    ],
+    "native_output_shape": [
+      1,
+      17
+    ],
+    "raw_output": [
+      [
+        0.9636622071266174,
+        -0.8642576932907104,
+        0.8151302337646484,
+        0.9478976726531982,
+        0.8225680589675903,
+        -0.735892117023468,
+        0.9118021130561829,
+        0.5742344856262207,
+        -0.3916490972042084,
+        -0.2158348709344864,
+        0.9699790477752686,
+        0.8914975523948669,
+        -0.8757243156433105,
+        0.28600406646728516,
+        0.9486376047134399,
+        -0.48845604062080383,
+        0.8071588277816772
+      ]
+    ],
+    "common_output": [
+      {
+        "symbol_id": "AAPL",
+        "buy_score": 0.9636622071266174,
+        "hold_score": 0.03633779287338257,
+        "sell_score": 0.0,
+        "target_weight": 0.004141698776245118,
+        "confidence": 0.9636622071266174
+      },
+      {
+        "symbol_id": "AMD",
+        "buy_score": 0.0,
+        "hold_score": 0.13574230670928955,
+        "sell_score": 0.8642576932907104,
+        "target_weight": 0.0,
+        "confidence": 0.8642576932907104
+      },
+      {
+        "symbol_id": "AMZN",
+        "buy_score": 0.8151302337646484,
+        "hold_score": 0.18486976623535156,
+        "sell_score": 0.0,
+        "target_weight": 0.003139360107421875,
+        "confidence": 0.8151302337646484
+      },
+      {
+        "symbol_id": "CAT",
+        "buy_score": 0.9478976726531982,
+        "hold_score": 0.05210232734680176,
+        "sell_score": 0.0,
+        "target_weight": 0.006015077819824219,
+        "confidence": 0.9478976726531982
+      },
+      {
+        "symbol_id": "CRWD",
+        "buy_score": 0.8225680589675903,
+        "hold_score": 0.17743194103240967,
+        "sell_score": 0.0,
+        "target_weight": 0.00579583984375,
+        "confidence": 0.8225680589675903
+      },
+      {
+        "symbol_id": "GOOGL",
+        "buy_score": 0.0,
+        "hold_score": 0.264107882976532,
+        "sell_score": 0.735892117023468,
+        "target_weight": 0.0,
+        "confidence": 0.735892117023468
+      },
+      {
+        "symbol_id": "GS",
+        "buy_score": 0.9118021130561829,
+        "hold_score": 0.08819788694381714,
+        "sell_score": 0.0,
+        "target_weight": 0.010122066650390626,
+        "confidence": 0.9118021130561829
+      },
+      {
+        "symbol_id": "HD",
+        "buy_score": 0.5742344856262207,
+        "hold_score": 0.4257655143737793,
+        "sell_score": 0.0,
+        "target_weight": 0.0038387935485839843,
+        "confidence": 0.5742344856262207
+      },
+      {
+        "symbol_id": "IBM",
+        "buy_score": 0.0,
+        "hold_score": 0.6083509027957916,
+        "sell_score": 0.3916490972042084,
+        "target_weight": 0.0,
+        "confidence": 0.3916490972042084
+      },
+      {
+        "symbol_id": "INTC",
+        "buy_score": 0.0,
+        "hold_score": 0.7841651290655136,
+        "sell_score": 0.2158348709344864,
+        "target_weight": 0.0,
+        "confidence": 0.2158348709344864
+      },
+      {
+        "symbol_id": "META",
+        "buy_score": 0.9699790477752686,
+        "hold_score": 0.030020952224731445,
+        "sell_score": 0.0,
+        "target_weight": 0.01132003973388672,
+        "confidence": 0.9699790477752686
+      },
+      {
+        "symbol_id": "MSFT",
+        "buy_score": 0.8914975523948669,
+        "hold_score": 0.10850244760513306,
+        "sell_score": 0.0,
+        "target_weight": 0.006639231506347656,
+        "confidence": 0.8914975523948669
+      },
+      {
+        "symbol_id": "NVDA",
+        "buy_score": 0.0,
+        "hold_score": 0.12427568435668945,
+        "sell_score": 0.8757243156433105,
+        "target_weight": 0.0,
+        "confidence": 0.8757243156433105
+      },
+      {
+        "symbol_id": "PYPL",
+        "buy_score": 0.28600406646728516,
+        "hold_score": 0.7139959335327148,
+        "sell_score": 0.0,
+        "target_weight": 0.0003509500122070313,
+        "confidence": 0.28600406646728516
+      },
+      {
+        "symbol_id": "T",
+        "buy_score": 0.9486376047134399,
+        "hold_score": 0.05136239528656006,
+        "sell_score": 0.0,
+        "target_weight": 0.00048125201797485353,
+        "confidence": 0.9486376047134399
+      },
+      {
+        "symbol_id": "TSLA",
+        "buy_score": 0.0,
+        "hold_score": 0.5115439593791962,
+        "sell_score": 0.48845604062080383,
+        "target_weight": 0.0,
+        "confidence": 0.48845604062080383
+      },
+      {
+        "symbol_id": "V",
+        "buy_score": 0.8071588277816772,
+        "hold_score": 0.19284117221832275,
+        "sell_score": 0.0,
+        "target_weight": 0.00536165576171875,
+        "confidence": 0.8071588277816772
+      }
+    ],
+    "hash": "23d2ed5fcdfab3a9824135018e9e5f7a69fec7872231fb153d7f73d1ab5927b4",
+    "training_timesteps": 50000,
+    "training_epoch": null,
+    "inference_seconds": 0.003442200002609752
+  }
+]

@@ -1,0 +1,14 @@
+pandas
+numpy
+yfinance
+tigeropen
+stable-baselines3
+finrl
+torch
+scikit-learn
+matplotlib
+swig
+wrds
+pyportfolioopt
+git+https://github.com/AI4Finance-Foundation/FinRL.git
+pandas_market_calendars

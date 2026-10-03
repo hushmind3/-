@@ -1,0 +1,98 @@
+{
+  "_id": "66ef0a4a5599f0296639f142",
+  "id": "Maple728/TimeMoE-200M",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "tags": [
+    "safetensors",
+    "time_moe",
+    "time-series-forecasting",
+    "custom_code",
+    "arxiv:2409.16040",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "downloads": 3968,
+  "likes": 15,
+  "modelId": "Maple728/TimeMoE-200M",
+  "author": "Maple728",
+  "sha": "794591bfeb1225fdf742cec0f4c71f20c3f3b87e",
+  "lastModified": "2024-10-22T06:28:59.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {
+    "architectures": [
+      "TimeMoeForPrediction"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_time_moe.TimeMoeConfig",
+      "AutoModelForCausalLM": "modeling_time_moe.TimeMoeForPrediction"
+    },
+    "model_type": "time_moe",
+    "num_experts": 8,
+    "num_experts_per_tok": 2
+  },
+  "cardData": {
+    "license": "apache-2.0",
+    "pipeline_tag": "time-series-forecasting"
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "size": 1519
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "2e60ab2b51e6624fca1080c232da66de975155ae",
+      "size": 400
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "06a02c64d28421f79d7dc1ee2f47b981dbbb8d13",
+      "size": 892
+    },
+    {
+      "rfilename": "configuration_time_moe.py",
+      "blobId": "1fa6c0b26ea3e638ca590a60b56c72680f1bf390",
+      "size": 2503
+    },
+    {
+      "rfilename": "generation_config.json",
+      "blobId": "b62b5fe29d4c8e667f2ef9a733903e0beba2bc86",
+      "size": 69
+    },
+    {
+      "rfilename": "model.safetensors",
+      "blobId": "62abb598b8d3f3fea70fe3897bc89ef1827091fe",
+      "size": 906450104,
+      "lfs": {
+        "sha256": "28d1cbf480c1f63d4ad56d8b7649d9860b9afa9f31abeedff9decea48d9aee57",
+        "size": 906450104,
+        "pointerSize": 134
+      }
+    },
+    {
+      "rfilename": "modeling_time_moe.py",
+      "blobId": "7de402643b7bf70f0addc3f9337cb55bcaf645a1",
+      "size": 51921
+    },
+    {
+      "rfilename": "ts_generation_mixin.py",
+      "blobId": "800d3eb8c4c6c5969ca30794e761ae57ee5d5241",
+      "size": 11529
+    }
+  ],
+  "spaces": [
+    "TSFM-ai/future-ts"
+  ],
+  "createdAt": "2024-09-21T18:02:50.000Z",
+  "safetensors": {
+    "parameters": {
+      "BF16": 453196800
+    },
+    "total": 453196800
+  },
+  "usedStorage": 906450104
+}

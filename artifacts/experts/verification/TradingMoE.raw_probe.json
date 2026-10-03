@@ -1,0 +1,276 @@
+{
+  "schema": "frozen_heterogeneous_experts_v1",
+  "as_of": "2025-10-31",
+  "selected_experts": [
+    "timesfm",
+    "toto"
+  ],
+  "router_status": "deterministic_untrained",
+  "evidence_tokens": [
+    {
+      "expert": "timesfm",
+      "symbols": [
+        "AAPL",
+        "MSFT"
+      ],
+      "units": "daily_excess_return",
+      "layout": "symbol,horizon,point_and_nine_quantiles",
+      "horizon": 1,
+      "sampling_seconds": 86400,
+      "as_of": "2025-10-31",
+      "native_output": [
+        [
+          [
+            -0.01088643353432417,
+            0.066646508872509,
+            1.186401128768921,
+            0.49087071418762207,
+            0.8925682902336121,
+            -0.11969713121652603,
+            0.053142692893743515,
+            -0.24188022315502167,
+            -0.3029518723487854,
+            0.9568277597427368
+          ]
+        ],
+        [
+          [
+            -0.009103450924158096,
+            -0.079766646027565,
+            -0.1672564297914505,
+            -0.012016275897622108,
+            0.2822471857070923,
+            -0.14285947382450104,
+            -0.005945645272731781,
+            -0.07356268167495728,
+            -0.028227370232343674,
+            0.044621095061302185
+          ]
+        ]
+      ],
+      "frozen": true
+    },
+    {
+      "expert": "toto",
+      "symbols": [
+        "AAPL",
+        "MSFT"
+      ],
+      "units": "daily_excess_return",
+      "layout": "nine_quantiles,batch,variate,horizon",
+      "horizon": 1,
+      "sampling_seconds": 86400,
+      "as_of": "2025-10-31",
+      "native_output": [
+        [
+          [
+            [
+              -0.018721241503953934
+            ],
+            [
+              -0.014488428831100464
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -0.01199125126004219
+            ],
+            [
+              -0.008758985437452793
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -0.007544620428234339
+            ],
+            [
+              -0.005210426636040211
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -0.003886633552610874
+            ],
+            [
+              -0.0023835301399230957
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              -0.0006957019213587046
+            ],
+            [
+              0.00022473791614174843
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0.0021723408717662096
+            ],
+            [
+              0.0027622804045677185
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0.005299718584865332
+            ],
+            [
+              0.005420686677098274
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0.009502971544861794
+            ],
+            [
+              0.008739380165934563
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0.01743207685649395
+            ],
+            [
+              0.014100492000579834
+            ]
+          ]
+        ]
+      ],
+      "frozen": true
+    }
+  ],
+  "trading_output": {
+    "policy_status": "fusion_head_not_trained",
+    "executable": false,
+    "actions": {
+      "AAPL": "HOLD",
+      "MSFT": "HOLD"
+    },
+    "target_weights": {
+      "AAPL": 0.0,
+      "MSFT": 0.0
+    },
+    "cash_weights_by_currency": {
+      "USD": 1.0
+    },
+    "selected_symbols": [],
+    "position_replacements": [],
+    "reason": "native inference verified; joint trading head needs subsequent training"
+  },
+  "shared_representation": [],
+  "adapter_status": "disabled_raw_review_phase",
+  "profiles": [
+    {
+      "expert": "timesfm",
+      "layout": "symbol,horizon,point_and_nine_quantiles",
+      "units": "daily_excess_return",
+      "symbols": [
+        "AAPL",
+        "MSFT"
+      ],
+      "as_of": "2025-10-31",
+      "horizon": 1,
+      "sampling_seconds": 86400,
+      "parameters": 19809304,
+      "native_modules": [
+        {
+          "type": "PatchedTimeSeriesDecoder",
+          "parameters": 19809304,
+          "buffer_elements": 0,
+          "buffer_bytes": 0
+        }
+      ],
+      "parameter_bytes": 79237216,
+      "parameter_dtypes": [
+        "torch.float32"
+      ],
+      "frozen": true,
+      "output_shape": [
+        2,
+        1,
+        10
+      ],
+      "load_seconds": 0.27047460000176216,
+      "input_shapes": {
+        "series": [
+          2,
+          128
+        ]
+      },
+      "rss_start_bytes": 552321024,
+      "rss_loaded_bytes": 742723584,
+      "rss_end_bytes": 1340989440,
+      "peak_ram_bytes": 1340989440,
+      "ram_measurement": "Windows process peak working set",
+      "forward_seconds": 0.3465089000019361,
+      "peak_allocated_bytes": 87979520,
+      "peak_reserved_bytes": 115343360
+    },
+    {
+      "expert": "toto",
+      "layout": "nine_quantiles,batch,variate,horizon",
+      "units": "daily_excess_return",
+      "symbols": [
+        "AAPL",
+        "MSFT"
+      ],
+      "as_of": "2025-10-31",
+      "horizon": 1,
+      "sampling_seconds": 86400,
+      "parameters": 312684608,
+      "native_modules": [
+        {
+          "type": "Toto2Model",
+          "parameters": 312684608,
+          "buffer_elements": 24118768,
+          "buffer_bytes": 96475072
+        }
+      ],
+      "parameter_bytes": 1250738432,
+      "parameter_dtypes": [
+        "torch.float32"
+      ],
+      "frozen": true,
+      "output_shape": [
+        9,
+        1,
+        2,
+        1
+      ],
+      "load_seconds": 4.358969900000375,
+      "input_shapes": {
+        "series": [
+          2,
+          128
+        ]
+      },
+      "rss_start_bytes": 552960000,
+      "rss_loaded_bytes": 1466720256,
+      "rss_end_bytes": 2019008512,
+      "peak_ram_bytes": 3229483008,
+      "ram_measurement": "Windows process peak working set",
+      "forward_seconds": 0.5234786000000895,
+      "peak_allocated_bytes": 1395540992,
+      "peak_reserved_bytes": 1453326336
+    }
+  ],
+  "training_performed": false,
+  "live_integration": false
+}

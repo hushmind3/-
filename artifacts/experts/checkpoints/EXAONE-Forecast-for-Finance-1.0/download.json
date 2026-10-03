@@ -1,0 +1,42 @@
+{
+  "model": "LG-AI-Research/EXAONE-Forecast-for-Finance-1.0",
+  "revision": "e9d7c4e8dcbbb5d0b559c41fddeb409dac152c53",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\EXAONE_Finance_v1.0_Technical_Report.pdf",
+      "bytes": 1397938,
+      "sha256": "1ed941c2dd1474717abe7a729a28292ee37f11c12dc9d917b8e01a0252429bae",
+      "upstream_sha256": "1ed941c2dd1474717abe7a729a28292ee37f11c12dc9d917b8e01a0252429bae"
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\LICENSE",
+      "bytes": 12545,
+      "sha256": "2ea59f85ed1d65bb1fd2394ce6f7418db6ef612bcd7bb9bc0cec271195c16fc3",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\Notice.md",
+      "bytes": 47536,
+      "sha256": "f6a2b0644843eecfb2117838cee3acde569c5a07230eb0cc8b172d114ba01d2a",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\README.md",
+      "bytes": 7983,
+      "sha256": "031bde248267fee58f6ef6a16426c9cc2b598f0f5418153b39d113b5e025e943",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\EXAONE-Forecast-for-Finance-1.0\\config.json",
+      "bytes": 1117,
+      "sha256": "e82a06240e5d146ffb555d9414f544ecbe4d0fd92f2872d1ec06d0c8a838e569",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\EXAONE-Forecast-for-Finance-1.0\\exaone-finance-1.0.safetensors",
+      "bytes": 809297128,
+      "sha256": "b08305e586fff0c540293c22ba38651277cb331b142e760e819feccb8ad71572",
+      "upstream_sha256": "b08305e586fff0c540293c22ba38651277cb331b142e760e819feccb8ad71572"
+    }
+  ]
+}

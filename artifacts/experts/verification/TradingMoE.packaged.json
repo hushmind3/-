@@ -1,0 +1,83 @@
+{
+  "checkpoint": "C:\\Users\\hushm\\Desktop\\모델\\TradingMoE.pt",
+  "bytes": 8006965615,
+  "seconds": 30.563727000000654,
+  "experts": {
+    "fincast": {
+      "parameters": 991436960,
+      "hash": "196302e3b507ee8804883db0da3f0d56561347be3bf631ca78c930484b53f60a",
+      "frozen": true
+    },
+    "exaone": {
+      "parameters": 202319520,
+      "hash": "6952f046c4a58af009c607911745e9018746580399a9ab5ff9a5215ae6ebf8f3",
+      "frozen": true
+    },
+    "kronos": {
+      "parameters": 106268634,
+      "hash": "7f19f00af753a4d7efcb6b9cae2a458bce6776a7e474b02e9552fa2cadd4bbb1",
+      "frozen": true
+    },
+    "marketgpt": {
+      "parameters": 94292736,
+      "hash": "55f4ea71702172a4c044d8d8e2f79a22255e75216add8236c98b3ec8b791dc2a",
+      "frozen": true
+    },
+    "chronos": {
+      "parameters": 46154240,
+      "hash": "404b8dedcde2ab4c88e69339b528930981abf09f6c0f745160bea5539f11d808",
+      "frozen": true
+    },
+    "timesfm": {
+      "parameters": 19809304,
+      "hash": "e14cb0c608a40ccd7e4dc135e65c187e309626f984ea4a970397dd3e95eb134d",
+      "frozen": true
+    },
+    "timemoe": {
+      "parameters": 453196800,
+      "hash": "518510196190d6c676c70ed03559cf1cde72a8f2c797bd71203339e1cee1260e",
+      "frozen": true
+    },
+    "toto": {
+      "parameters": 312684608,
+      "hash": "b75072961c02dd0ecb807846efe176369ea778b2d8374dd1aa0563686e8b6425",
+      "frozen": true
+    },
+    "macrophft_slope_1": {
+      "parameters": 45507,
+      "hash": "98d18a820eacde2b890994565bffac2edda33fb7b73a7ed9c7c4aac4a1b30d50",
+      "frozen": true
+    },
+    "macrophft_slope_2": {
+      "parameters": 45507,
+      "hash": "cb91f6e4de417925b6f275304fc3d17ce824ff39a19c1db3c0c3eec29069fac3",
+      "frozen": true
+    },
+    "macrophft_slope_3": {
+      "parameters": 45507,
+      "hash": "f73901c50640fe4a55545e3c5342b4a300cda9a916ebaca544e29aea2c666b65",
+      "frozen": true
+    },
+    "macrophft_vol_1": {
+      "parameters": 45507,
+      "hash": "d50b04c6f7eec2b0120f5dcd98779832ff46617bedeab1c1dcb11efdd80d06ab",
+      "frozen": true
+    },
+    "macrophft_vol_2": {
+      "parameters": 45507,
+      "hash": "ae6a61ffda6a99acf9b3afbfe18b8933d0ddfdee88e579feb6b8c5a79aa5b4ca",
+      "frozen": true
+    },
+    "macrophft_vol_3": {
+      "parameters": 45507,
+      "hash": "409e221f31106c8c551786be3734868fd3063462a06e9a988b3ca1a68a6611f9",
+      "frozen": true
+    }
+  },
+  "parameters": 2227270963,
+  "expert_count": 14,
+  "controller_parameters": 835119,
+  "max_gpu_experts": 1,
+  "expert_probes_rerun": 0,
+  "load_from_one_checkpoint": false
+}

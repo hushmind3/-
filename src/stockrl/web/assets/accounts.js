@@ -279,7 +279,7 @@ function renderAccountDiagnostics(d) {
     );
     if (lifecycle) {
       text(role + "ModelResidency", (lifecycle.loaded ? "모델 적재됨" : "모델 메모리 해제됨") + " · RAM " + (lifecycle.memory_scope === "worker" ? "프로세스 사용 " : "가중치 ") + decimal((lifecycle.ram_weight_bytes || 0)/1024**3,2) + " GB · GPU 가중치 " + decimal((lifecycle.gpu_weight_bytes || 0)/1024**3,2) + " GB" + (lifecycle.loaded ? " · 계산 장치 " + (lifecycle.compute_device || lifecycle.device || "—") : ""));
-      text(role + "ModelDecision", "최근 판단 " + timeOf(account.last_full_decision_timestamp) + " · " + (account.last_inference_seconds == null ? "—" : decimal(account.last_inference_seconds,2) + "초"));
+      text(role + "ModelDecision", (modelUsesHistoricalData(d,role) ? "과거 데이터 " + marketDataTime(account.last_full_decision_timestamp) : "최근 판단 " + timeOf(account.last_full_decision_timestamp)) + " · 계산 " + (account.last_inference_seconds == null ? "—" : decimal(account.last_inference_seconds,2) + "초"));
 
     }
     property(

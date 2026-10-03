@@ -1,0 +1,446 @@
+{
+  "repo": {
+    "id": 1355631153,
+    "node_id": "R_kgDOUM1KMQ",
+    "name": "EXAONE-Forecast",
+    "full_name": "LGAI-Research/EXAONE-Forecast",
+    "private": false,
+    "owner": {
+      "login": "LGAI-Research",
+      "id": 147458776,
+      "node_id": "O_kgDOCMoK2A",
+      "avatar_url": "https://avatars.githubusercontent.com/u/147458776?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/LGAI-Research",
+      "html_url": "https://github.com/LGAI-Research",
+      "followers_url": "https://api.github.com/users/LGAI-Research/followers",
+      "following_url": "https://api.github.com/users/LGAI-Research/following{/other_user}",
+      "gists_url": "https://api.github.com/users/LGAI-Research/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/LGAI-Research/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/LGAI-Research/subscriptions",
+      "organizations_url": "https://api.github.com/users/LGAI-Research/orgs",
+      "repos_url": "https://api.github.com/users/LGAI-Research/repos",
+      "events_url": "https://api.github.com/users/LGAI-Research/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/LGAI-Research/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/LGAI-Research/EXAONE-Forecast",
+    "description": null,
+    "fork": false,
+    "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast",
+    "forks_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/forks",
+    "keys_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/teams",
+    "hooks_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/hooks",
+    "issue_events_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/events",
+    "assignees_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/tags",
+    "blobs_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/languages",
+    "stargazers_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/stargazers",
+    "contributors_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/contributors",
+    "subscribers_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/subscribers",
+    "subscription_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/subscription",
+    "commits_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/merges",
+    "archive_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/downloads",
+    "issues_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/labels{/name}",
+    "releases_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/deployments",
+    "created_at": "2026-09-03T07:05:36Z",
+    "updated_at": "2026-10-02T06:33:33Z",
+    "pushed_at": "2026-10-02T06:33:29Z",
+    "git_url": "git://github.com/LGAI-Research/EXAONE-Forecast.git",
+    "ssh_url": "git@github.com:LGAI-Research/EXAONE-Forecast.git",
+    "clone_url": "https://github.com/LGAI-Research/EXAONE-Forecast.git",
+    "svn_url": "https://github.com/LGAI-Research/EXAONE-Forecast",
+    "homepage": null,
+    "size": 779,
+    "stargazers_count": 6,
+    "watchers_count": 6,
+    "language": "Python",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 2,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 0,
+    "license": {
+      "key": "other",
+      "name": "Other",
+      "spdx_id": "NOASSERTION",
+      "url": null,
+      "node_id": "MDc6TGljZW5zZTA="
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [],
+    "visibility": "public",
+    "forks": 2,
+    "open_issues": 0,
+    "watchers": 6,
+    "default_branch": "main",
+    "temp_clone_token": null,
+    "custom_properties": {},
+    "organization": {
+      "login": "LGAI-Research",
+      "id": 147458776,
+      "node_id": "O_kgDOCMoK2A",
+      "avatar_url": "https://avatars.githubusercontent.com/u/147458776?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/LGAI-Research",
+      "html_url": "https://github.com/LGAI-Research",
+      "followers_url": "https://api.github.com/users/LGAI-Research/followers",
+      "following_url": "https://api.github.com/users/LGAI-Research/following{/other_user}",
+      "gists_url": "https://api.github.com/users/LGAI-Research/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/LGAI-Research/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/LGAI-Research/subscriptions",
+      "organizations_url": "https://api.github.com/users/LGAI-Research/orgs",
+      "repos_url": "https://api.github.com/users/LGAI-Research/repos",
+      "events_url": "https://api.github.com/users/LGAI-Research/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/LGAI-Research/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "network_count": 2,
+    "subscribers_count": 0
+  },
+  "tree": {
+    "sha": "5e6e5224f2a0205f146bc772082d7fa4f59bd7c5",
+    "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/5e6e5224f2a0205f146bc772082d7fa4f59bd7c5",
+    "tree": [
+      {
+        "path": ".gitattributes",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "262a86e5abbca9c2329939f31d367d234043f413",
+        "size": 110,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/262a86e5abbca9c2329939f31d367d234043f413"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "87ccdbd8eb66fb51dc9e1364f16400b006bee53b",
+        "size": 75,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/87ccdbd8eb66fb51dc9e1364f16400b006bee53b"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6a7a123dae093862bd107cc89ac502534933a4b5",
+        "size": 1868,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/6a7a123dae093862bd107cc89ac502534933a4b5"
+      },
+      {
+        "path": "MANIFEST.in",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3c73fb518dda14ae82d49c0f9f7a85450423d37f",
+        "size": 52,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/3c73fb518dda14ae82d49c0f9f7a85450423d37f"
+      },
+      {
+        "path": "Notice.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3cc56d19722bbcb2ce952ad4b145f2d810b9ae10",
+        "size": 47536,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/3cc56d19722bbcb2ce952ad4b145f2d810b9ae10"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1c2a9a8eecb5f34924d45202705529b01f1717ca",
+        "size": 10300,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/1c2a9a8eecb5f34924d45202705529b01f1717ca"
+      },
+      {
+        "path": "assets",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "8fcb5db6318b3cf35b872179d44fe82d28096b09",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/8fcb5db6318b3cf35b872179d44fe82d28096b09"
+      },
+      {
+        "path": "assets/exaone_logo.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bc550f7e378d2f208de4a2cb7ad0d18b69e9593a",
+        "size": 86060,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/bc550f7e378d2f208de4a2cb7ad0d18b69e9593a"
+      },
+      {
+        "path": "domains",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "c043e2b0d719044d6972078abf0aeed0f7ce32d7",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/c043e2b0d719044d6972078abf0aeed0f7ce32d7"
+      },
+      {
+        "path": "domains/demand",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "631ec0ddfd08043c13f573d8b6bb793044c9e01e",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/631ec0ddfd08043c13f573d8b6bb793044c9e01e"
+      },
+      {
+        "path": "domains/demand/Notice.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "881a5679d4ae72b956f19bdc5ee4b0ea71c4eb81",
+        "size": 35812,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/881a5679d4ae72b956f19bdc5ee4b0ea71c4eb81"
+      },
+      {
+        "path": "domains/demand/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b53b91325a1c8318a27cac5dc684b3f71e8d4728",
+        "size": 10061,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/b53b91325a1c8318a27cac5dc684b3f71e8d4728"
+      },
+      {
+        "path": "domains/demand/quickstart.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b7308d5592529beb3ab36b34a0748d471a65a247",
+        "size": 3417,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/b7308d5592529beb3ab36b34a0748d471a65a247"
+      },
+      {
+        "path": "domains/finance",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5e80663fe318af6ae2fb1c5dad3c578516e1ae8c",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/5e80663fe318af6ae2fb1c5dad3c578516e1ae8c"
+      },
+      {
+        "path": "domains/finance/README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aa78913c3cb2dc75f30b10f97644b9cf75ac5a74",
+        "size": 9746,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/aa78913c3cb2dc75f30b10f97644b9cf75ac5a74"
+      },
+      {
+        "path": "domains/finance/quickstart.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "46b4626e6e585c0cf8b486208399dbe1675ac1bd",
+        "size": 2772,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/46b4626e6e585c0cf8b486208399dbe1675ac1bd"
+      },
+      {
+        "path": "domains/general",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2971c8c7269375ad7a69ada96580e1e46d32711d",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/2971c8c7269375ad7a69ada96580e1e46d32711d"
+      },
+      {
+        "path": "domains/general/EXAONE_Forecast_Technical_Report.pdf",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a2bebcb582cd2b9d2346329b676168e08c66f5ba",
+        "size": 632651,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/a2bebcb582cd2b9d2346329b676168e08c66f5ba"
+      },
+      {
+        "path": "pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a441467586765d87b2b6791adccc00e89564bf8b",
+        "size": 2401,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/a441467586765d87b2b6791adccc00e89564bf8b"
+      },
+      {
+        "path": "src",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "6a91be6f6dc7ea515343d625768f5faf5948571e",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/6a91be6f6dc7ea515343d625768f5faf5948571e"
+      },
+      {
+        "path": "src/exaone_forecast",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "732f6faa21bbf6b39cde3a6ccf27717333911465",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/732f6faa21bbf6b39cde3a6ccf27717333911465"
+      },
+      {
+        "path": "src/exaone_forecast/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "69d5899ba417e041ba4b851f88f0c63e4a02a5f2",
+        "size": 649,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/69d5899ba417e041ba4b851f88f0c63e4a02a5f2"
+      },
+      {
+        "path": "src/exaone_forecast/_api.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9053971d317e80a519f0464c316f24e66dc9cfcd",
+        "size": 1408,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/9053971d317e80a519f0464c316f24e66dc9cfcd"
+      },
+      {
+        "path": "src/exaone_forecast/_hub.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1f4db62ff57af30873655dd1e6ee1ee69749b2c2",
+        "size": 4320,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/1f4db62ff57af30873655dd1e6ee1ee69749b2c2"
+      },
+      {
+        "path": "src/exaone_forecast/_loading.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "af4afc0cc02cb07a7423d0e055d85a9054182486",
+        "size": 2084,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/af4afc0cc02cb07a7423d0e055d85a9054182486"
+      },
+      {
+        "path": "src/exaone_forecast/demand",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "bd5cee068c57ff89d4298e7feed2e6e2be007da4",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/bd5cee068c57ff89d4298e7feed2e6e2be007da4"
+      },
+      {
+        "path": "src/exaone_forecast/demand/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dfdbfac74526589c3c0b0d05fd5e1f2745f8de71",
+        "size": 3181,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/dfdbfac74526589c3c0b0d05fd5e1f2745f8de71"
+      },
+      {
+        "path": "src/exaone_forecast/demand/adapter.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b7ed19c4cf9e690c94e6b624456473b586ed0d58",
+        "size": 11387,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/b7ed19c4cf9e690c94e6b624456473b586ed0d58"
+      },
+      {
+        "path": "src/exaone_forecast/demand/config.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b637e6448f54bcf34fd333658f33a3278ab46c9c",
+        "size": 5993,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/b637e6448f54bcf34fd333658f33a3278ab46c9c"
+      },
+      {
+        "path": "src/exaone_forecast/demand/forecaster.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b067ddd678c27fe526956d796afe701c07ebc68a",
+        "size": 16131,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/b067ddd678c27fe526956d796afe701c07ebc68a"
+      },
+      {
+        "path": "src/exaone_forecast/demand/layers.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "616ac73b08bfbd482e9fead85edc3b7fc5031185",
+        "size": 15242,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/616ac73b08bfbd482e9fead85edc3b7fc5031185"
+      },
+      {
+        "path": "src/exaone_forecast/demand/model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "50428cb3b2a2e87d82756a2a0b5774290c84cf6a",
+        "size": 13452,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/50428cb3b2a2e87d82756a2a0b5774290c84cf6a"
+      },
+      {
+        "path": "src/exaone_forecast/finance",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "69e455b4c2feedc2b41ea80444d95ddc3ebcddca",
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/trees/69e455b4c2feedc2b41ea80444d95ddc3ebcddca"
+      },
+      {
+        "path": "src/exaone_forecast/finance/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6a57b2db4b059da90906b618ac26e307f7afeb1f",
+        "size": 3249,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/6a57b2db4b059da90906b618ac26e307f7afeb1f"
+      },
+      {
+        "path": "src/exaone_forecast/finance/config.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a396621ee55d13a3dd4df76bfbcb5e58fedd7cd4",
+        "size": 4279,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/a396621ee55d13a3dd4df76bfbcb5e58fedd7cd4"
+      },
+      {
+        "path": "src/exaone_forecast/finance/forecaster.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "251e7bc51fafd991f9d4296d88d737212d0034de",
+        "size": 6416,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/251e7bc51fafd991f9d4296d88d737212d0034de"
+      },
+      {
+        "path": "src/exaone_forecast/finance/layers.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cbee02cb61ddb74efdbbfd8b936ee8ff716e1069",
+        "size": 6075,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/cbee02cb61ddb74efdbbfd8b936ee8ff716e1069"
+      },
+      {
+        "path": "src/exaone_forecast/finance/model.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8058d3c662ad04297a41b1cbbeebf5fe478a44d6",
+        "size": 19753,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/8058d3c662ad04297a41b1cbbeebf5fe478a44d6"
+      },
+      {
+        "path": "src/exaone_forecast/finance/ops.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cbaec90c54245b3e5d7028da32be58b60fed32c4",
+        "size": 2124,
+        "url": "https://api.github.com/repos/LGAI-Research/EXAONE-Forecast/git/blobs/cbaec90c54245b3e5d7028da32be58b60fed32c4"
+      }
+    ],
+    "truncated": false
+  }
+}

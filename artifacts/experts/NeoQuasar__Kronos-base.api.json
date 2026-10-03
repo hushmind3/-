@@ -1,0 +1,113 @@
+{
+  "_id": "6862c53843c5d350ace97398",
+  "id": "NeoQuasar/Kronos-base",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "tags": [
+    "safetensors",
+    "Finance",
+    "Candlestick",
+    "K-line",
+    "time-series-forecasting",
+    "arxiv:2508.02739",
+    "license:mit",
+    "region:us"
+  ],
+  "downloads": 804009,
+  "likes": 281,
+  "modelId": "NeoQuasar/Kronos-base",
+  "author": "NeoQuasar",
+  "sha": "2b554741eca47781b64468546e77fef3e85130e6",
+  "lastModified": "2025-09-09T14:08:15.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {},
+  "cardData": {
+    "license": "mit",
+    "pipeline_tag": "time-series-forecasting",
+    "tags": [
+      "Finance",
+      "Candlestick",
+      "K-line"
+    ]
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "size": 1519
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "1a2dbfe2fa6b9c73a609c3917a55040aa9d52ef2",
+      "size": 8841
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "b38b53ec92facc89fc178f641a951cbe9730ecc7",
+      "size": 228
+    },
+    {
+      "rfilename": "model.safetensors",
+      "blobId": "72c493a949886e90774a02b6986c761c56816948",
+      "size": 409264008,
+      "lfs": {
+        "sha256": "abff193acab6db1a0368e9773e75799d11403b6d054ee6d5f0a11aeabc5f4b83",
+        "size": 409264008,
+        "pointerSize": 134
+      }
+    }
+  ],
+  "spaces": [
+    "embedl/hfviewer",
+    "Demolifted/kronos-market-forecast",
+    "0xfei/crypto-price-predict",
+    "Bit-Trading-Company/bit-forecast-arena",
+    "TSFM-ai/future-ts",
+    "Surut4r/kronos-trading-bot",
+    "3kmfi6hp/kronos",
+    "heyunfei/crypt",
+    "yangyang158/kronos",
+    "superyan/kronos-jp",
+    "ariesljm/kronos",
+    "yingfeng64/kronos-api",
+    "StingBigD/kronos-financial-prediction",
+    "muhamm3dahmed/Kronos_Model",
+    "haoyubai212/kronos-predictor",
+    "shinopqxm/lreport3l-main",
+    "Bellafiore1/kronos-btc-predictor",
+    "Kurtobe/kronos-filter",
+    "shinopqxm/Final_gp02",
+    "LuigiSimao/stock-predictor",
+    "Chia-Ming/kronos-mc",
+    "milemike/crypto-price-predict",
+    "Zhenzhao/kronos-tang-demo",
+    "almascp/kronos-eurusd-dashboard",
+    "JAQtrades/KronosTest",
+    "siloupope/kronos-stock-analyzer",
+    "techplugged/kronos-forecast",
+    "ASD0168/kronos-stock-pred",
+    "Joe2166/kronos-forecast",
+    "CPater/nwo-oracle",
+    "saurabhk2812/kronos-prediction",
+    "devalis1/kronos-inference",
+    "rudeboydkay/kronos-api",
+    "iduzzz/kronosNEW",
+    "farone11/bot-xauusd",
+    "gghaven/omega-trade-ai",
+    "nura312/nurafuture",
+    "CyrilPi/Growlex",
+    "go-knicks/kronos-passivbot",
+    "MAUROPIZZI/investoredge-kronos",
+    "zolporto/kronos-trader"
+  ],
+  "createdAt": "2025-06-30T17:11:20.000Z",
+  "safetensors": {
+    "parameters": {
+      "F32": 102311008
+    },
+    "total": 102311008
+  },
+  "usedStorage": 409264008
+}

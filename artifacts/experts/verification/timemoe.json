@@ -1,0 +1,41 @@
+{
+  "expert": "timemoe",
+  "native_output": [
+    [
+      339.6792297363281
+    ]
+  ],
+  "layout": "symbol,horizon",
+  "units": "price",
+  "symbols": [
+    "AAPL"
+  ],
+  "as_of": "2026-09-25",
+  "horizon": 1,
+  "sampling_seconds": 86400,
+  "parameters": 453196800,
+  "parameter_bytes": 906393600,
+  "parameter_dtypes": [
+    "torch.bfloat16"
+  ],
+  "frozen": true,
+  "output_shape": [
+    1,
+    1
+  ],
+  "load_seconds": 9.548738299999968,
+  "input_shapes": {
+    "series": [
+      1,
+      128
+    ]
+  },
+  "rss_start_bytes": 568860672,
+  "rss_loaded_bytes": 1471270912,
+  "rss_end_bytes": 2177495040,
+  "peak_ram_bytes": 3524087808,
+  "ram_measurement": "Windows process peak working set",
+  "forward_seconds": 0.3926783000006253,
+  "peak_allocated_bytes": 967892480,
+  "peak_reserved_bytes": 983564288
+}

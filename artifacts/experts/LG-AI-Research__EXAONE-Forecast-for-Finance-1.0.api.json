@@ -1,0 +1,132 @@
+{
+  "_id": "6a9931df25791fcf1ebb66da",
+  "id": "LG-AI-Research/EXAONE-Forecast-for-Finance-1.0",
+  "private": false,
+  "pipeline_tag": "time-series-forecasting",
+  "library_name": "pytorch",
+  "tags": [
+    "pytorch",
+    "t5",
+    "time-series",
+    "time-series-forecasting",
+    "foundation-model",
+    "finance",
+    "attention-free",
+    "zero-shot",
+    "exaone",
+    "arxiv:2609.04239",
+    "license:other",
+    "region:us"
+  ],
+  "downloads": 3662,
+  "likes": 5,
+  "modelId": "LG-AI-Research/EXAONE-Forecast-for-Finance-1.0",
+  "author": "LG-AI-Research",
+  "sha": "e9d7c4e8dcbbb5d0b559c41fddeb409dac152c53",
+  "lastModified": "2026-09-09T06:51:10.000Z",
+  "gated": false,
+  "disabled": false,
+  "model-index": null,
+  "config": {
+    "architectures": [
+      "EXAONEFinance"
+    ],
+    "model_type": "t5"
+  },
+  "cardData": {
+    "license": "other",
+    "license_name": "exaone",
+    "license_link": "LICENSE",
+    "pipeline_tag": "time-series-forecasting",
+    "library_name": "pytorch",
+    "tags": [
+      "time-series",
+      "time-series-forecasting",
+      "foundation-model",
+      "finance",
+      "attention-free",
+      "zero-shot",
+      "exaone"
+    ]
+  },
+  "siblings": [
+    {
+      "rfilename": ".gitattributes",
+      "blobId": "b7e259742f8c4a68fc977198aec7af877b8c1247",
+      "size": 395
+    },
+    {
+      "rfilename": "EXAONE_Finance_v1.0_Technical_Report.pdf",
+      "blobId": "2d06c278a60a71824592e829dc3043dcc79627cd",
+      "size": 1397938,
+      "lfs": {
+        "sha256": "1ed941c2dd1474717abe7a729a28292ee37f11c12dc9d917b8e01a0252429bae",
+        "size": 1397938,
+        "pointerSize": 132
+      }
+    },
+    {
+      "rfilename": "LICENSE",
+      "blobId": "682f88d5eb2ff0b1097866978f05230c12824bcd",
+      "size": 12545
+    },
+    {
+      "rfilename": "Notice.md",
+      "blobId": "3cc56d19722bbcb2ce952ad4b145f2d810b9ae10",
+      "size": 47536
+    },
+    {
+      "rfilename": "README.md",
+      "blobId": "9b9c149e0bc2d68d0947fb58e5d777fe6141c5f9",
+      "size": 7983
+    },
+    {
+      "rfilename": "config.json",
+      "blobId": "583d2dfecc8be6000c05001bf73d8399eac8e178",
+      "size": 1117
+    },
+    {
+      "rfilename": "exaone-finance-1.0.safetensors",
+      "blobId": "ad08a7aa590902d08753a769a5a3ae078f21c2cf",
+      "size": 809297128,
+      "lfs": {
+        "sha256": "b08305e586fff0c540293c22ba38651277cb331b142e760e819feccb8ad71572",
+        "size": 809297128,
+        "pointerSize": 134
+      }
+    },
+    {
+      "rfilename": "figures/fig_size_vs_perf.png",
+      "blobId": "78919824728909e54f0b4ec2f06a518f629d0dce",
+      "size": 165765,
+      "lfs": {
+        "sha256": "fbd1f3856ec5061e79b96ebce8a4f1ad193b563f8f615b7a4f62ee5ec935458c",
+        "size": 165765,
+        "pointerSize": 131
+      }
+    },
+    {
+      "rfilename": "figures/fig_tier_transposed.png",
+      "blobId": "41b47ea8509ae6d4a0bdf1bbe111822c45cd9add",
+      "size": 123320,
+      "lfs": {
+        "sha256": "e9ec6cb2876270616c6323d5bada72ca007d4b3fdb2b54e7300fe291341a93b2",
+        "size": 123320,
+        "pointerSize": 131
+      }
+    },
+    {
+      "rfilename": "figures/fig_winrate.png",
+      "blobId": "584d9f8e5d3e4c7f1f14b7b8ff3e05a1ae1c1133",
+      "size": 597288,
+      "lfs": {
+        "sha256": "c0a9f4d6abed4bc3d8c520a6c6ee37c96e8bda1a86722cc75b8866a4a348bcc8",
+        "size": 597288,
+        "pointerSize": 131
+      }
+    }
+  ],
+  "spaces": [],
+  "createdAt": "2026-09-03T08:37:51.000Z",
+  "usedStorage": 813516200
+}

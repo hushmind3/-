@@ -52,7 +52,7 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         ensure_project_path(self.settings_path, "settings")
         self.runtime.mkdir(parents=True, exist_ok=True)
         self.settings_path.parent.mkdir(parents=True, exist_ok=True)
-        settings = _json(self.settings_path)
+        settings = _json(self.settings_path) or _json(ROOT / "configs" / "web_settings.default.json")
         self.mode = settings.get("mode", "live")
         self.horizon = settings.get("horizon", horizon)
         self.autonomy_enabled = bool(settings.get("paper_enabled", settings.get("autonomy_enabled", True)))

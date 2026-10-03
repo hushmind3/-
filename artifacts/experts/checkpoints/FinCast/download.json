@@ -1,0 +1,24 @@
+{
+  "model": "Vincent05R/FinCast",
+  "revision": "2d7d90b159db8961d27c2cf165d51195902ef92b",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\README.md",
+      "bytes": 2040,
+      "sha256": "cbc5c2eb63cd9cc2ff8baa1ed888cd062e81ec170413ffe9827b920bc726794d",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\FinCast\\checksum_f.txt",
+      "bytes": 73,
+      "sha256": "c6fae0899a4de9f1485488f203e0c043bec61916cc16e11c3220849558c7dc97",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\FinCast\\v1.pth",
+      "bytes": 3966703063,
+      "sha256": "d5ca999b02c944effa60d2b94174dc4d5a0cd2c0543ae289b2e36f37431492a8",
+      "upstream_sha256": "d5ca999b02c944effa60d2b94174dc4d5a0cd2c0543ae289b2e36f37431492a8"
+    }
+  ]
+}

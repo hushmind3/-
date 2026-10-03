@@ -183,11 +183,15 @@ class _StatusMixin:
                         read_error=type(exc).__name__)
                     metrics["shared_observation"]=shared
             else:
-                shared=dict(metrics.get("shared_observation") or {})
-                shared.update(source="replay_db_missing",
-                    updated_utc=shared.get("updated_utc") or metrics.get("last_update_utc"),
-                    read_error="replay database not found")
-                metrics["shared_observation"]=shared
+                # Removed/archived legacy DB must not revive old dashboard counters.
+                metrics["shared_observation"]={"pending":0,"common":0,"candidate_completed":0,
+                    "experience_origins":{},"source":"empty_legacy_replay","read_error":None}
+                for key in ("replay_count","trainable_replay_count","replay_eligible_backlog",
+                            "replay_pending_count","pending_experiences","replay_file_bytes",
+                            "replay_untrained_count","replay_quarantined_count","replay_unsupported_count",
+                            "candidate_eligible_replay_count","champion_eligible_replay_count"):
+                    metrics[key]=0
+                metrics["daily_learning"]=[]
             if candidate_observer_state.get("observation_profile"):
                 metrics["candidate_live_observation_profile"]=candidate_observer_state["observation_profile"]
             observer_state_path=state/"candidate_observer_state.json"
@@ -432,6 +436,11 @@ class _StatusMixin:
                         gpu_weight_bytes=native.get("compute",{}).get("allocated_bytes",0) if live else 0,
                         compute_device=native.get("compute",{}).get("inference_device"),
                         last_decision=native.get("decision",{}).get("as_of"),
+                        source_kind="historical_paper",updated_at=native.get("updated_at"),
+                        learning_active=bool(live and native.get("learning_active")),
+                        learning=native.get("learning",{}),optimizer_updates=native.get("optimizer_updates",0),
+                        replay=native.get("replay",{}),books=native.get("books",{}),
+                        decision_seconds=native.get("decision",{}).get("seconds"),
                         memory_scope="worker",source="TradingMoE · 공식 ETHUSDT 과거 가상매매 · 기존 주식계좌 보존")
                     if native.get("stop_requested"):item["status"]="saving"
                 model_runtime[role]=item
@@ -508,7 +517,7 @@ class _StatusMixin:
                             position.update(quantity=position["quantity"]*.001,quantity_unit="ETH",
                                 average_cost=position["average_cost"]*1000,mark=position["mark"]*1000)
                 native=worker.status();decision=native.get("decision",{})
-                account_observability[role]={**summary,"training":native.get("status")=="running",
+                account_observability[role]={**summary,"training":bool(native.get("alive") and native.get("learning_active")),
                     "version":native.get("optimizer_updates",0),"last_inference_seconds":decision.get("seconds"),
                     "last_full_decision_timestamp":decision.get("as_of"),"policy":{},"last_tradable_policy":{}}
             feed_metrics["provider_environment"]=provider_status["environment"]
@@ -518,7 +527,8 @@ class _StatusMixin:
             if agent_health["status"] in ("stale","unknown"):
                 alert=f"AGENT ALERT: process {'alive' if agent_process_running else 'stopped'}, progress {agent_health['status']}: {agent_health['reason']}"
                 status_logs=[alert]+status_logs[-7:]
-            return {"running": self.run_requested, "stopping": self.stopping,
+            return {"status_updated_at":datetime.now().astimezone().isoformat(),
+                    "running": self.run_requested, "stopping": self.stopping,
                     "restarting": self.restart_request is not None,
                     "agent_reload_pending": self.agent_reload_pending,
                     "mode": self.mode, "horizon": self.horizon,

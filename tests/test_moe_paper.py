@@ -2,6 +2,7 @@ import tempfile
 import unittest
 import json
 import runpy
+from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
 import numpy as np
@@ -16,6 +17,21 @@ def panel():
 
 
 class PaperBridgeTests(unittest.TestCase):
+    def test_context_filter_precedes_fifo_limit_without_deleting_old_rows(self):
+        self.bridge.advance(self.panel,0)
+        self.bridge.submit(self.result,self.panel,0,paper_executable=True)
+        self.bridge.advance(self.panel,1);self.bridge.advance(self.panel,2)
+        old = self.bridge.replay.pending_batch(1)[0]
+        ready = deepcopy(old)
+        ready.timestamp = "2025-10-30T14:00:00.000000000"
+        self.bridge.replay.add(ready)
+        total = self.bridge.replay.stats()["total"]
+        selected = self.bridge.replay.pending_batch(1,timestamps={ready.timestamp})
+        self.assertEqual([e.timestamp for e in selected],[ready.timestamp])
+        self.assertEqual(self.bridge.replay.pending_batch(1)[0].timestamp,old.timestamp)
+        self.assertEqual(self.bridge.replay.stats()["total"],total)
+        self.assertEqual(self.bridge.replay.pending_batch(1,timestamps=set()),[])
+
     def test_paper_off_cancels_orders_without_erasing_positions_or_learning(self):
         self.bridge.advance(self.panel,0)
         self.bridge.submit(self.result,self.panel,0,paper_executable=True)

@@ -1,0 +1,16 @@
+{
+  "architectures": [
+    "TimesFMForHF"
+  ],
+  "context_len": 512,
+  "head_dim": 72,
+  "hidden_size": 432,
+  "horizon_len": 128,
+  "intermediate_size": 1248,
+  "model_type": "timesfm",
+  "num_heads": 6,
+  "num_kv_heads": 6,
+  "num_layers": 9,
+  "torch_dtype": "float32",
+  "transformers_version": "4.47.1"
+}

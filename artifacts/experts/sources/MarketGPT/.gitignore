@@ -1,0 +1,21 @@
+# Data stuff
+dataset/raw/*
+dataset/proc/*
+gen_data/*
+eval/empirical/*
+
+# Figures
+fig/*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Model Logs & Checkpoints
+*.pt
+wandb/*
+
+# Local packages
+causal-conv1d/*
+mamba/*

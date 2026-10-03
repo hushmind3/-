@@ -500,7 +500,7 @@ class GlobalReplayBuffer:
         with self.lock, closing(self._connect()) as db, db:
             db.execute("DELETE FROM pending_records WHERE kind=? AND record_key=?", (kind, key))
 
-    def pending_batch(self, batch_size, passes=1, exclude_row_ids=(), learner="candidate"):
+    def pending_batch(self, batch_size, passes=1, exclude_row_ids=(), learner="candidate", *, timestamps=None):
         if learner not in ("candidate","champion"):
             raise ValueError("unknown learner")
         uses_by_id=self._champion_memory_uses if learner=="champion" else self._memory_uses
@@ -508,20 +508,36 @@ class GlobalReplayBuffer:
         with self.lock:
             if not self.journal_path:
                 rows = [row for row in self.items if self._training_eligible(vars(row)) and
-                        uses_by_id.get(id(row), 0) < passes and id(row) not in exclude_row_ids]
+                        uses_by_id.get(id(row), 0) < passes and id(row) not in exclude_row_ids
+                        and (timestamps is None or row.timestamp in timestamps)]
                 for row in rows:
                     row._replay_training_uses=uses_by_id.get(id(row),0)
                 return sorted(rows, key=lambda row: (row.timestamp, uses_by_id.get(id(row), 0)))[:batch_size]
             with closing(self._connect()) as db:
                 excluded = sorted(set(exclude_row_ids))
                 clause = (" AND id NOT IN (" + ",".join("?" for _ in excluded) + ")") if excluded else ""
+                parameters = [passes, *excluded]
+                if timestamps is not None:
+                    import json
+                    # Filter before LIMIT: missing evidence cannot starve ready MoE work.
+                    clause += " AND timestamp IN (SELECT value FROM json_each(?))"
+                    parameters.append(json.dumps(list(timestamps)))
                 rows = db.execute(f"SELECT id,window_key,metadata,{column} FROM experiences WHERE eligible=1 AND error IS NULL AND {column}<?" +
-                    clause + f" ORDER BY timestamp,{column},id LIMIT ?", (passes, *excluded, batch_size)).fetchall()
+                    clause + f" ORDER BY timestamp,{column},id LIMIT ?", (*parameters, batch_size)).fetchall()
                 return [self._decode(db, row) for row in rows]
 
     def sample(self, batch_size, exclude_ids=None):
         excluded = [self.row_ids.get(key, key) for key in (exclude_ids or ())]
         return self.pending_batch(batch_size, exclude_row_ids=excluded)
+
+    def retained_row_count(self, row_ids):
+        """Rows updated in RAM, retained until their checkpoint is durable."""
+        if not row_ids or not self.journal_path:
+            return 0
+        import json
+        with self.lock, closing(self._connect()) as db:
+            return db.execute("SELECT COUNT(*) FROM experiences WHERE id IN "
+                "(SELECT value FROM json_each(?))",(json.dumps([int(k) for k in row_ids]),)).fetchone()[0]
 
     @staticmethod
     def _ensure_performance_indexes(db):

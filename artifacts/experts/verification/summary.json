@@ -1,0 +1,85 @@
+[
+  {
+    "expert": "exaone",
+    "layout": "symbol,21_quantiles,horizon",
+    "units": "price",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 202319520,
+    "parameter_bytes": 809278080,
+    "parameter_dtypes": [
+      "torch.float32"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      21,
+      1
+    ],
+    "load_seconds": 6.508648799999719,
+    "input_shapes": {
+      "series": [
+        1,
+        128
+      ]
+    },
+    "rss_start_bytes": 569339904,
+    "rss_loaded_bytes": 972185600,
+    "rss_end_bytes": 1475432448,
+    "peak_ram_bytes": 2361753600,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.49531369999931485,
+    "peak_allocated_bytes": 823684096,
+    "peak_reserved_bytes": 845152256,
+    "status": "ok",
+    "process_seconds": 12.174057700000048
+  },
+  {
+    "expert": "timemoe",
+    "layout": "symbol,horizon",
+    "units": "price",
+    "symbols": [
+      "AAPL"
+    ],
+    "as_of": "2026-09-25",
+    "horizon": 1,
+    "sampling_seconds": 86400,
+    "parameters": 453196800,
+    "parameter_bytes": 906393600,
+    "parameter_dtypes": [
+      "torch.bfloat16"
+    ],
+    "frozen": true,
+    "output_shape": [
+      1,
+      1
+    ],
+    "load_seconds": 9.611040399999183,
+    "input_shapes": {
+      "series": [
+        1,
+        128
+      ]
+    },
+    "rss_start_bytes": 569524224,
+    "rss_loaded_bytes": 959688704,
+    "rss_end_bytes": 1665167360,
+    "peak_ram_bytes": 3545587712,
+    "ram_measurement": "Windows process peak working set",
+    "forward_seconds": 0.4190679999992426,
+    "peak_allocated_bytes": 967892480,
+    "peak_reserved_bytes": 983564288,
+    "status": "ok",
+    "process_seconds": 15.006093699999838
+  },
+  {
+    "expert": "toto",
+    "status": "error",
+    "error": "ModuleNotFoundError: No module named 'docstring_parser'",
+    "process_seconds": 3.318758200000957
+  }
+]

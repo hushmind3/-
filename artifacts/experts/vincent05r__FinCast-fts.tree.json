@@ -1,0 +1,570 @@
+{
+  "repo": {
+    "id": 1041119120,
+    "node_id": "R_kgDOPg43kA",
+    "name": "FinCast-fts",
+    "full_name": "vincent05r/FinCast-fts",
+    "private": false,
+    "owner": {
+      "login": "vincent05r",
+      "id": 111105725,
+      "node_id": "U_kgDOBp9WvQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/111105725?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/vincent05r",
+      "html_url": "https://github.com/vincent05r",
+      "followers_url": "https://api.github.com/users/vincent05r/followers",
+      "following_url": "https://api.github.com/users/vincent05r/following{/other_user}",
+      "gists_url": "https://api.github.com/users/vincent05r/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/vincent05r/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/vincent05r/subscriptions",
+      "organizations_url": "https://api.github.com/users/vincent05r/orgs",
+      "repos_url": "https://api.github.com/users/vincent05r/repos",
+      "events_url": "https://api.github.com/users/vincent05r/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/vincent05r/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "html_url": "https://github.com/vincent05r/FinCast-fts",
+    "description": "This is the official implementation of CIKM 2025 FinCast Financial Time series foundation model",
+    "fork": false,
+    "url": "https://api.github.com/repos/vincent05r/FinCast-fts",
+    "forks_url": "https://api.github.com/repos/vincent05r/FinCast-fts/forks",
+    "keys_url": "https://api.github.com/repos/vincent05r/FinCast-fts/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/vincent05r/FinCast-fts/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/vincent05r/FinCast-fts/teams",
+    "hooks_url": "https://api.github.com/repos/vincent05r/FinCast-fts/hooks",
+    "issue_events_url": "https://api.github.com/repos/vincent05r/FinCast-fts/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/vincent05r/FinCast-fts/events",
+    "assignees_url": "https://api.github.com/repos/vincent05r/FinCast-fts/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/vincent05r/FinCast-fts/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/vincent05r/FinCast-fts/tags",
+    "blobs_url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/vincent05r/FinCast-fts/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/vincent05r/FinCast-fts/languages",
+    "stargazers_url": "https://api.github.com/repos/vincent05r/FinCast-fts/stargazers",
+    "contributors_url": "https://api.github.com/repos/vincent05r/FinCast-fts/contributors",
+    "subscribers_url": "https://api.github.com/repos/vincent05r/FinCast-fts/subscribers",
+    "subscription_url": "https://api.github.com/repos/vincent05r/FinCast-fts/subscription",
+    "commits_url": "https://api.github.com/repos/vincent05r/FinCast-fts/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/vincent05r/FinCast-fts/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/vincent05r/FinCast-fts/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/vincent05r/FinCast-fts/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/vincent05r/FinCast-fts/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/vincent05r/FinCast-fts/merges",
+    "archive_url": "https://api.github.com/repos/vincent05r/FinCast-fts/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/vincent05r/FinCast-fts/downloads",
+    "issues_url": "https://api.github.com/repos/vincent05r/FinCast-fts/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/vincent05r/FinCast-fts/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/vincent05r/FinCast-fts/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/vincent05r/FinCast-fts/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/vincent05r/FinCast-fts/labels{/name}",
+    "releases_url": "https://api.github.com/repos/vincent05r/FinCast-fts/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/vincent05r/FinCast-fts/deployments",
+    "created_at": "2025-08-20T02:33:47Z",
+    "updated_at": "2026-09-29T07:32:39Z",
+    "pushed_at": "2026-06-22T07:19:52Z",
+    "git_url": "git://github.com/vincent05r/FinCast-fts.git",
+    "ssh_url": "git@github.com:vincent05r/FinCast-fts.git",
+    "clone_url": "https://github.com/vincent05r/FinCast-fts.git",
+    "svn_url": "https://github.com/vincent05r/FinCast-fts",
+    "homepage": null,
+    "size": 4048,
+    "stargazers_count": 134,
+    "watchers_count": 134,
+    "language": "Jupyter Notebook",
+    "has_issues": true,
+    "has_projects": true,
+    "has_downloads": false,
+    "has_wiki": true,
+    "has_pages": false,
+    "has_discussions": false,
+    "forks_count": 28,
+    "mirror_url": null,
+    "archived": false,
+    "disabled": false,
+    "open_issues_count": 10,
+    "license": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "spdx_id": "Apache-2.0",
+      "url": "https://api.github.com/licenses/apache-2.0",
+      "node_id": "MDc6TGljZW5zZTI="
+    },
+    "allow_forking": true,
+    "is_template": false,
+    "web_commit_signoff_required": false,
+    "has_pull_requests": true,
+    "pull_request_creation_policy": "all",
+    "topics": [],
+    "visibility": "public",
+    "forks": 28,
+    "open_issues": 10,
+    "watchers": 134,
+    "default_branch": "main",
+    "temp_clone_token": null,
+    "network_count": 28,
+    "subscribers_count": 3
+  },
+  "tree": {
+    "sha": "488b19d1d85fa2b3d4b93469530cefdcf1cc97a4",
+    "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/488b19d1d85fa2b3d4b93469530cefdcf1cc97a4",
+    "tree": [
+      {
+        "path": ".gitattributes",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "47c7ca0e5c589f66409ecfa899a3d25763ef7f5f",
+        "size": 15,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/47c7ca0e5c589f66409ecfa899a3d25763ef7f5f"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0eab2c2f96868ef0a7d1ac8fddf17d3cfa9c03ee",
+        "size": 166,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/0eab2c2f96868ef0a7d1ac8fddf17d3cfa9c03ee"
+      },
+      {
+        "path": "Inference",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "fe5d914cc440da72acf87b859be16c810d10b517",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/fe5d914cc440da72acf87b859be16c810d10b517"
+      },
+      {
+        "path": "Inference/inference_future.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7fac8c60e61f17437bdad818b2c5094fe0fd414",
+        "size": 82427,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/f7fac8c60e61f17437bdad818b2c5094fe0fd414"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+        "size": 11357,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a01099696b965261e5d0905800b76eb21d7678e9",
+        "size": 3718,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/a01099696b965261e5d0905800b76eb21d7678e9"
+      },
+      {
+        "path": "dep_install.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "da750b405ad92988d24169f5b980f9706bd08567",
+        "size": 645,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/da750b405ad92988d24169f5b980f9706bd08567"
+      },
+      {
+        "path": "env_setup.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e0ca66ddb3047bf898bef60c50b91d1b7f55735b",
+        "size": 304,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/e0ca66ddb3047bf898bef60c50b91d1b7f55735b"
+      },
+      {
+        "path": "experiments",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b0f1bd03ef95f8030b0d09f7aa972b2a4a3739ea",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/b0f1bd03ef95f8030b0d09f7aa972b2a4a3739ea"
+      },
+      {
+        "path": "experiments/long_horizon_benchmarks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b39b93320dd9c3f8849d01cf2f357de42eea37c5",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/b39b93320dd9c3f8849d01cf2f357de42eea37c5"
+      },
+      {
+        "path": "experiments/long_horizon_benchmarks/Freq_map_eval.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "332dcb6f7354c8b69e0b59e5ec198dfd58b30ab6",
+        "size": 1251,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/332dcb6f7354c8b69e0b59e5ec198dfd58b30ab6"
+      },
+      {
+        "path": "experiments/long_horizon_benchmarks/run_eval_ffm.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5fc0b81c1ef7adaca836527e09d0ffd72695a8dc",
+        "size": 11199,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/5fc0b81c1ef7adaca836527e09d0ffd72695a8dc"
+      },
+      {
+        "path": "experiments/long_horizon_benchmarks/run_eval_ffm_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b9ffe4032cc13f82e8f9319f78703a5e47c2f5f7",
+        "size": 3845,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/b9ffe4032cc13f82e8f9319f78703a5e47c2f5f7"
+      },
+      {
+        "path": "experiments/long_horizon_benchmarks/run_eval_ffm_stock.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6fa6e809f4046658cc8940ecec445839c71f5e4c",
+        "size": 10034,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/6fa6e809f4046658cc8940ecec445839c71f5e4c"
+      },
+      {
+        "path": "notebooks",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "eec65748fe375d2a4d4d1c8053b37de3d9093191",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/eec65748fe375d2a4d4d1c8053b37de3d9093191"
+      },
+      {
+        "path": "notebooks/result_summary.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7654314a46b71aac5c5088e36511520a82437422",
+        "size": 206740,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/7654314a46b71aac5c5088e36511520a82437422"
+      },
+      {
+        "path": "paper.pdf",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "aae88b60444c754d2b14be7613c741d9e4f7cc4c",
+        "size": 3626569,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/aae88b60444c754d2b14be7613c741d9e4f7cc4c"
+      },
+      {
+        "path": "peft_Fincast",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "c583670940188e3eee0ce024e8a4babba4a81ff4",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/c583670940188e3eee0ce024e8a4babba4a81ff4"
+      },
+      {
+        "path": "peft_Fincast/peft_injector.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "af3c29e1215e8c16a5dbe7c789862b45e5328ed7",
+        "size": 3651,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/af3c29e1215e8c16a5dbe7c789862b45e5328ed7"
+      },
+      {
+        "path": "pics",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ff926ee6c0870074f7d7d30f0bcba9250f1424bf",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/ff926ee6c0870074f7d7d30f0bcba9250f1424bf"
+      },
+      {
+        "path": "pics/example1_APPL.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bec144e0c79046692373ea04f89a5932e86880b1",
+        "size": 57870,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/bec144e0c79046692373ea04f89a5932e86880b1"
+      },
+      {
+        "path": "pics/example2_ETHUSD.png",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c2cb870a907c662f1d6329d8f933aa4665931a26",
+        "size": 53562,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/c2cb870a907c662f1d6329d8f933aa4665931a26"
+      },
+      {
+        "path": "requirement_v2.txt",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "55eca334367dde0d260f9b87facd5e3bf48a8593",
+        "size": 375,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/55eca334367dde0d260f9b87facd5e3bf48a8593"
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "085ccbd668274be6783e3900e46f2cb86616a7db",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/085ccbd668274be6783e3900e46f2cb86616a7db"
+      },
+      {
+        "path": "scripts/Fincast_PEFT",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ecd5162b2c4ea15f1d18299ca74291535a781a85",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/ecd5162b2c4ea15f1d18299ca74291535a781a85"
+      },
+      {
+        "path": "scripts/Fincast_PEFT/local_4090_t1.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2a703939acf2563b95624ae77126e995d69f4ea0",
+        "size": 1698,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/2a703939acf2563b95624ae77126e995d69f4ea0"
+      },
+      {
+        "path": "scripts/Fincast_eval",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5192c0727f93a8687cc9c7b8b591b8d53d37b372",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/5192c0727f93a8687cc9c7b8b591b8d53d37b372"
+      },
+      {
+        "path": "scripts/Fincast_eval/eval_stock_loop.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0df85ae1e7f711cb39d6f161f013cffe4fa753b5",
+        "size": 1952,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/0df85ae1e7f711cb39d6f161f013cffe4fa753b5"
+      },
+      {
+        "path": "scripts/Fincast_eval/eval_stock_loop_supervised42.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "79c6a4d74c5cb266862b1077f7a269c4422b9603",
+        "size": 1898,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/79c6a4d74c5cb266862b1077f7a269c4422b9603"
+      },
+      {
+        "path": "setup.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8fa0efe40a8329bab8ac388ab729982579aa0876",
+        "size": 178,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/8fa0efe40a8329bab8ac388ab729982579aa0876"
+      },
+      {
+        "path": "src",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3f1bf1bca2151aa5a371abb156b7a6972d3ee0e1",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/3f1bf1bca2151aa5a371abb156b7a6972d3ee0e1"
+      },
+      {
+        "path": "src/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "11c4e8d784d2a36e289666f033e8028da134f90d",
+        "size": 14,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/11c4e8d784d2a36e289666f033e8028da134f90d"
+      },
+      {
+        "path": "src/data_tools",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "be813f95bc73d351bdc3d6f358a10937a05e8a4e",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/be813f95bc73d351bdc3d6f358a10937a05e8a4e"
+      },
+      {
+        "path": "src/data_tools/Inference_dataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f3989860782898aed94b37285d60fc9e694c2bf3",
+        "size": 6829,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/f3989860782898aed94b37285d60fc9e694c2bf3"
+      },
+      {
+        "path": "src/data_tools/TSdataset.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f496bde4af61144d7941d656e7b2dbeee21631bc",
+        "size": 10721,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/f496bde4af61144d7941d656e7b2dbeee21631bc"
+      },
+      {
+        "path": "src/data_tools/batch_sampler.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a793937e8c4fdd3403e3508aa8bc7133d574b9de",
+        "size": 5330,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/a793937e8c4fdd3403e3508aa8bc7133d574b9de"
+      },
+      {
+        "path": "src/data_tools/batch_sampler_ddp.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "cb098425ef61d889a8630327a56a6d7b36bf9bf3",
+        "size": 5299,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/cb098425ef61d889a8630327a56a6d7b36bf9bf3"
+      },
+      {
+        "path": "src/ffm",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "7e1d749462dc65a879387bec60c9a20b67b4f170",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/7e1d749462dc65a879387bec60c9a20b67b4f170"
+      },
+      {
+        "path": "src/ffm/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ef7e1b06e054e9eaf2d0e0fa82559e2756958aab",
+        "size": 760,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/ef7e1b06e054e9eaf2d0e0fa82559e2756958aab"
+      },
+      {
+        "path": "src/ffm/data_loader.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d9c5a5cf27975ef77a484e4ebf292c9060f6582e",
+        "size": 8739,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/d9c5a5cf27975ef77a484e4ebf292c9060f6582e"
+      },
+      {
+        "path": "src/ffm/ffm_base.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b83b59f88e4e5ab80463b3d14b8b77c886335c77",
+        "size": 27148,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/b83b59f88e4e5ab80463b3d14b8b77c886335c77"
+      },
+      {
+        "path": "src/ffm/ffm_torch_moe.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "955a84ea969ace48f590f1ef7d9406e6471e7f46",
+        "size": 7230,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/955a84ea969ace48f590f1ef7d9406e6471e7f46"
+      },
+      {
+        "path": "src/ffm/pytorch_patched_decoder_MOE.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ecf9f152a7682631b02067d8268f04191dd7de56",
+        "size": 28146,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/ecf9f152a7682631b02067d8268f04191dd7de56"
+      },
+      {
+        "path": "src/ffm/time_features.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6fdfad674633814ea709b0f569ab2f743d460e72",
+        "size": 6267,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/6fdfad674633814ea709b0f569ab2f743d460e72"
+      },
+      {
+        "path": "src/ffm/xreg_lib.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e74e0eaea2afc0bfa2ae00bffd2accc4d4ee513d",
+        "size": 20641,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/e74e0eaea2afc0bfa2ae00bffd2accc4d4ee513d"
+      },
+      {
+        "path": "src/st_moe_pytorch",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "ee38c028f3a9bcec4f5eda30084217d43418ac1c",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/ee38c028f3a9bcec4f5eda30084217d43418ac1c"
+      },
+      {
+        "path": "src/st_moe_pytorch/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8dc79db35a0ea6c53921c7348b3203e85598e541",
+        "size": 74,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/8dc79db35a0ea6c53921c7348b3203e85598e541"
+      },
+      {
+        "path": "src/st_moe_pytorch/distributed.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a62dd7cd3927b13405ce00c2b3397510bd482167",
+        "size": 2993,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/a62dd7cd3927b13405ce00c2b3397510bd482167"
+      },
+      {
+        "path": "src/st_moe_pytorch/st_moe_pytorch.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f4d3c7bded39d97cdf6bb49ee275aa8f99b44acf",
+        "size": 24122,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/f4d3c7bded39d97cdf6bb49ee275aa8f99b44acf"
+      },
+      {
+        "path": "src/tools",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "3b0e5306883a146ad0357f923063fae30732b8f5",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/3b0e5306883a146ad0357f923063fae30732b8f5"
+      },
+      {
+        "path": "src/tools/__init__.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "11c4e8d784d2a36e289666f033e8028da134f90d",
+        "size": 14,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/11c4e8d784d2a36e289666f033e8028da134f90d"
+      },
+      {
+        "path": "src/tools/inference_utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e5fb17a1ae01d5aa519245468d897304685c1e5c",
+        "size": 28156,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/e5fb17a1ae01d5aa519245468d897304685c1e5c"
+      },
+      {
+        "path": "src/tools/metrics.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "bb6544b629e2ec3dab9efc81e377b18e2fe873da",
+        "size": 951,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/bb6544b629e2ec3dab9efc81e377b18e2fe873da"
+      },
+      {
+        "path": "src/tools/model_utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3510cbe1353d2fd77cfc3ed4096772513c90fcd5",
+        "size": 2493,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/3510cbe1353d2fd77cfc3ed4096772513c90fcd5"
+      },
+      {
+        "path": "src/tools/result_vis_plt.ipynb",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b89ace9480b3edb0b15b0176e58be4356cd9b648",
+        "size": 10099,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/b89ace9480b3edb0b15b0176e58be4356cd9b648"
+      },
+      {
+        "path": "src/tools/utils.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fff88674338a9372e11749bbe5b916dd68718c5d",
+        "size": 4693,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/fff88674338a9372e11749bbe5b916dd68718c5d"
+      },
+      {
+        "path": "src/unit_test",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "56031f37cc781559119a97008f3e15cf9a7fce57",
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/trees/56031f37cc781559119a97008f3e15cf9a7fce57"
+      },
+      {
+        "path": "src/unit_test/BS_DDP_tc4.py",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9b6f88fb35caa3d429eaa281991f46db25587d9d",
+        "size": 5602,
+        "url": "https://api.github.com/repos/vincent05r/FinCast-fts/git/blobs/9b6f88fb35caa3d429eaa281991f46db25587d9d"
+      }
+    ],
+    "truncated": false
+  }
+}

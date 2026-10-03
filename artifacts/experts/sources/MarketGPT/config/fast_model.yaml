@@ -1,0 +1,82 @@
+method: random
+metric:
+  name: loss/val
+  goal: minimize
+parameters:
+  # I/O
+  eval_interval:
+    value: 25 ########### Frequently changed ###########
+  log_interval:
+    value: 1
+  eval_iters:
+    value: 100
+  eval_only:
+    value: False
+  # data
+  seed:
+    value: 42
+  use_sink: # if True, use a dedicated sink token at the start of every training sample (per https://arxiv.org/pdf/2309.17453.pdf)
+    value: True
+  use_bpe: # if True, use byte-pair encoding to tokenize the input
+    value: True
+  eom_token_val: # value of the end-of-message token
+    value: 0
+  msg_seq_len:
+    value: 112 # 432
+  batch_size: # if gradient_accumulation_steps > 1, this is the micro-batch size
+    value: 1
+  max_seq_len: # block_size
+    value: 2688 # 10368
+  # model
+  # dim:
+  #   values: [768, 1536]
+  vocab_size:
+    value: 12544 # 12515
+  dim:
+    value: 768
+  n_layers:
+    value: 12
+  n_heads:
+    value: 12
+  n_kv_heads:
+    value: 12
+  multiple_of:
+    value: 32
+  dropout:
+    values: [0.0, 0.1]
+  # adamw optimizer
+  gradient_accumulation_steps: # used to simulate larger batch sizes
+    values: [20, 30, 40, 50]
+  learning_rate: # max learning rate
+    # values: [6e-4, 5e-5, 3e-5, 2e-5]
+    min: 1e-6
+    max: 2e-3
+    distribution: log_uniform_values
+  max_iters: # total number of training iterations
+    value: 500 ########### Frequently changed ###########
+  weight_decay:
+    values: [0.0, 0.00001, 0.0001, 0.001, 0.01, 0.1]
+  beta1:
+    value: 0.9
+  beta2:
+    values: [0.95, 0.98, 0.999]
+  grad_clip: # clip gradients at this value, or disable if == 0.0
+    value: 1.0
+  # learning rate decay settings
+  decay_lr: # whether to decay the learning rate
+    value: True
+  warmup_iters: # how many steps to warm up for
+    # value: 5 ########### Frequently changed ###########
+    values: [5, 10, 20, 50, 100, 200]
+  # system
+  device:
+    value: "cuda"
+  dtype:
+    value: "bfloat16"
+  compile: # use PyTorch 2.0 to compile the model to be faster
+    value: False
+early_terminate: # https://docs.wandb.ai/guides/sweeps/define-sweep-configuration#early_terminate
+  type: hyperband # https://arxiv.org/abs/1603.06560
+  s: 2
+  eta: 3
+  max_iter: 27

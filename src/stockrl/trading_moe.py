@@ -175,9 +175,8 @@ class TradingMoE(nn.Module):
             else:
                 evidence[key],validity[key]=self.adapters[key](packet,symbols)
                 if evidence[key].shape[-1]!=size:raise ValueError(f"native shape changed for {key}")
-                if key in self.config.get("stock_policy_ids",()):
-                    universe=self.experts[key].entry["stock_policy"]["universe"]
-                    validity[key]&=torch.tensor([[s.upper() in universe for s in symbols]],device=validity[key].device)
+                # Native adapters already identify which symbols have real outputs.
+                # The controller uses evidence coverage, not a second universe gate.
         return evidence,validity
 
     def forward(self,snapshot,account_state,*,packets=None,device="cpu",explore=False):

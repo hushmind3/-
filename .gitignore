@@ -13,9 +13,33 @@ __pycache__/
 # TradingMoE generated residency, process samples and local artifact paths.
 /runtime/trading_moe/
 
-# Machine-local pretrained originals, native datasets and dedicated Python envs.
-/artifacts/experts/
+# Expert sources/configs/data are project assets; installed Python envs are local.
+/artifacts/experts/venv/
+/artifacts/experts/venv-toto/
+**/.git/
+# Downloaded vendor demonstration data/plots and native datasets remain local.
+/artifacts/experts/native_data/**/*.npy
+/artifacts/experts/sources/**/*.csv
+/artifacts/experts/sources/**/*.npy
+/artifacts/experts/sources/**/*.npz
+/artifacts/experts/sources/**/*.pkl
+/artifacts/experts/sources/**/*.h5
+/artifacts/experts/sources/**/*.parquet
+/artifacts/experts/sources/**/*.feather
+/artifacts/experts/sources/**/*.png
+/artifacts/experts/sources/**/*.jpg
+/artifacts/experts/sources/**/*.pdf
 /runtime/gpu-owner.lock
 
 # Recoverable local cleanup; never upload archived datasets/source ZIPs.
 /휴지통/
+
+# Process-local locks and SQLite shared-memory files are recreated at runtime.
+*.sqlite3-shm
+*.sqlite3-wal
+*.lock
+.env
+
+# Running accounts/replay/logs/cache are local state, not source deliveries.
+/runtime/
+/configs/local/

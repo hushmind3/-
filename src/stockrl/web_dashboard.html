@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="ko" data-ui-revision="cards-layout-2">
+<html lang="ko" data-ui-revision="moe-operations-3">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f3f6fb" />
     <title>Continual Trading Agent · 운영실</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23265de8'/%3E%3Ctext x='5' y='22' fill='white' font-size='18'%3ECT%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="/assets/dashboard.css?v=cards-layout-2" />
+    <link rel="stylesheet" href="/assets/dashboard.css?v=moe-operations-3" />
   </head>
   <body>
     <div class="app">
@@ -126,6 +126,49 @@
             <h1>운영 · 계좌</h1>
             <span>실행 제어와 두 모델의 장기 가상계좌</span>
           </div>
+            <section class="runtime-board" aria-label="실시간 운영 전광판">
+              <div class="runtime-board-heading"><h2>현재 실행 · 학습 변화</h2><span class="pill" id="processHealthBadge">확인 중</span></div>
+              <p class="runtime-board-summary"><strong id="processHealthValue">확인 중</strong><span id="processHealthDetail">실행 상태 확인 중</span></p>
+              <div class="status-grid" aria-label="운영 상태">
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>시장 데이터</span
+                    ><span class="pill" id="feedBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="freshCount">—</strong>
+                  <div class="detail" id="feedDetail">
+                    최근 5분 수신 종목을 확인 중입니다.
+                  </div>
+                </div>
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>모델 실행</span
+                    ><span class="pill" id="agentBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="decisionCount">—</strong>
+                  <div class="detail" id="agentDetail">
+                    마지막 판단 시각을 확인 중입니다.
+                  </div>
+                </div>
+                <div class="card status-card">
+                  <div class="topline">
+                    <span>키움 시세</span
+                    ><span class="pill" id="brokerBadge">확인 중</span>
+                  </div>
+                  <strong class="big" id="brokerState">—</strong>
+                  <div class="detail" id="brokerDetail">
+                    인증·소켓·실제 체결 수신을 구분합니다.
+                  </div>
+                </div>
+                <article class="card status-card optimizer-card">
+                  <div class="topline"><span>MoE 가중치 업데이트</span><span class="pill" id="overviewOptimizerBadge">확인 중</span></div>
+                  <strong class="big" id="overviewOptimizerCount">—</strong>
+                  <div class="detail" id="overviewOptimizerChange">변화 확인 중</div>
+                  <div class="optimizer-values"><span>최근 loss <b id="overviewOptimizerLoss">—</b></span><span>reward <b id="overviewOptimizerReward">—</b></span></div>
+                  <div class="detail" id="overviewOptimizerTime">실제 학습 완료 시각 확인 중</div>
+                </article>
+              </div>
+            </section>
           <section id="control">
             <div class="card hero">
               <div class="hero-top">
@@ -250,41 +293,7 @@
                 </div>
               </div>
             </div>
-            <details class="compact-detail">
-              <summary>시세 수집·모델 프로세스·연결 상태</summary>
-              <div class="status-grid" aria-label="운영 상태">
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>시장 데이터</span
-                    ><span class="pill" id="feedBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="freshCount">—</strong>
-                  <div class="detail" id="feedDetail">
-                    최근 5분 수신 종목을 확인 중입니다.
-                  </div>
-                </div>
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>모델 판단</span
-                    ><span class="pill" id="agentBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="decisionCount">—</strong>
-                  <div class="detail" id="agentDetail">
-                    마지막 판단 시각을 확인 중입니다.
-                  </div>
-                </div>
-                <div class="card status-card">
-                  <div class="topline">
-                    <span>키움 시세</span
-                    ><span class="pill" id="brokerBadge">확인 중</span>
-                  </div>
-                  <strong class="big" id="brokerState">—</strong>
-                  <div class="detail" id="brokerDetail">
-                    인증·소켓·실제 체결 수신을 구분합니다.
-                  </div>
-                </div>
-              </div>
-            </details>
+
 
             <details class="compact-detail">
               <summary>표시 기준 · 실제 주문 상태</summary>
@@ -299,54 +308,6 @@
               <summary>지난 실행의 학습 오류 기록 · 현재 실행 상태와 별개</summary>
               <pre id="previousLearningErrors" class="caption"></pre>
             </details>
-          </section>
-          <section
-            class="overview-health metric-grid"
-            aria-label="현재 운영 상태"
-          >
-            <a class="live-metric" href="#markets"
-              ><div class="metric-heading">
-                <span>시세 수신</span
-                ><span class="pill" id="workflowFeedState">확인 중</span>
-              </div>
-              <strong class="metric-number" id="workflowFeed">—</strong
-              ><progress
-                id="workflowFeedMeter"
-                max="100"
-                value="0"
-                aria-label="시세 수신"
-                aria-valuetext="미측정"
-              ></progress
-              ><small class="metric-caption" id="workflowFeedDetail"
-                >확인 중</small
-              ></a
-            ><a class="live-metric" href="#control"
-              ><div class="metric-heading">
-                <span>두 모델의 시세 처리 지연</span
-                ><span class="pill" id="workflowInferenceState">확인 중</span>
-              </div>
-              <strong class="metric-number" id="workflowInference">—</strong
-              ><progress
-                id="workflowInferenceMeter"
-                max="100"
-                value="0"
-                aria-label="두 모델의 시세 처리 지연"
-                aria-valuetext="미측정"
-              ></progress
-              ><small class="metric-caption" id="workflowInferenceDetail"
-                >확인 중</small
-              ></a
-            >
-            <article class="card live-metric process-health">
-              <div class="metric-heading">
-                <span>서버 · 시세 수집 · 모델</span
-                ><span class="pill" id="processHealthBadge">확인 중</span>
-              </div>
-              <strong class="metric-number" id="processHealthValue">—</strong
-              ><small class="metric-caption" id="processHealthDetail"
-                >확인 중</small
-              >
-            </article>
           </section>
           <div id="operationsOverview">
             <div class="mini ops-status secondary-lags">
@@ -383,6 +344,121 @@
               ></div>
             </details>
           </div>
+<section
+            class="overview-rounds metric-grid"
+            aria-label="학습과 승급전"
+          >
+            <a class="live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>오늘 학습·저장 완료</span
+                ><span class="pill" id="workflowLearningState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowLearning">—</strong
+              ><progress
+                id="workflowLearningMeter"
+                max="100"
+                value="0"
+                aria-label="오늘 학습·저장 완료"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="learningAtGlance"
+                >확인 중</small
+              ></a
+            ><a class="live-metric" href="#promotionTrial"
+              ><div class="metric-heading">
+                <span>승급전 진행</span
+                ><span class="pill" id="workflowTrialState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowTrial">—</strong
+              ><progress
+                id="workflowTrialMeter"
+                max="100"
+                value="0"
+                aria-label="승급전 진행"
+                aria-valuetext="미측정"
+              ></progress
+              ><small class="metric-caption" id="workflowTrialDetail"
+                >확인 중</small
+              ></a
+            >
+          </section>
+<section class="overview-experience metric-grid">
+            <a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>손익 확인 중</span><span class="pill">결과 대기</span>
+              </div>
+              <strong class="metric-number" id="overviewExperiencePending"
+                >—</strong
+              ><small class="metric-caption"
+                >후속 시세로 보상 확정 후 학습</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>학습 가능한 경험</span><span class="pill">Replay</span>
+              </div>
+              <strong class="metric-number" id="overviewExperienceEligible"
+                >—</strong
+              ><small class="metric-caption" id="overviewLearningReason"
+                >학습 상태 확인 중</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>학습 완료 경험</span><span class="pill">학습 DB</span>
+              </div>
+              <strong class="metric-number" id="overviewExperienceCompleted"
+                >—</strong
+              ><small class="metric-caption"
+                >현재 모델의 DB 완료 합계 · 정지해도 기록 유지</small
+              ></a
+            >
+          </section>
+<section
+            class="overview-resources metric-grid"
+            aria-label="자원과 저장소"
+          >
+            <div class="card status-card live-metric gpu-summary">
+              <div class="topline">
+                <span>GPU · 메모리</span
+                ><span class="pill" id="gpuBadge">확인 중</span>
+              </div>
+              <strong class="big" id="gpuMemory">—</strong>
+              <div
+                class="meter"
+                role="progressbar"
+                aria-label="장치 GPU 메모리 사용 비율"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                id="gpuMeter"
+              >
+                <div id="gpuFill"></div>
+              </div>
+              <div class="metric-sub">
+                <span id="gpuDevice">GPU 확인 중</span
+                ><span id="gpuPercent">—</span>
+              </div>
+            </div>
+            <a class="live-metric" href="#control"
+              ><div class="metric-heading">
+                <span>가상계좌 누적 체결</span
+                ><span class="pill" id="workflowPaperState">확인 중</span>
+              </div>
+              <strong class="metric-number" id="workflowPaper">—</strong>
+              <div class="metric-spacer"></div>
+              <small class="metric-caption" id="workflowPaperDetail"
+                >확인 중</small
+              ></a
+            ><a class="card live-metric" href="#learning"
+              ><div class="metric-heading">
+                <span>Replay · 학습 DB</span
+                ><span class="pill" id="overviewReplayBadge">확인 중</span>
+              </div>
+              <strong class="metric-number" id="overviewReplaySize">—</strong
+              ><small class="metric-caption" id="overviewReplayDetail"
+                >미학습은 보존 · 양쪽 저장 확인 후 삭제</small
+              ></a
+            >
+          </section>
           <div id="liveAccounts">
             <details class="compact-detail">
               <summary>두 모델의 판단·학습·계좌 운영 방식</summary>
@@ -586,122 +662,10 @@
               </article>
             </div>
           </div>
-          <section
-            class="overview-rounds metric-grid"
-            aria-label="학습과 승급전"
-          >
-            <a class="live-metric" href="#learning"
-              ><div class="metric-heading">
-                <span>오늘 학습·저장 완료</span
-                ><span class="pill" id="workflowLearningState">확인 중</span>
-              </div>
-              <strong class="metric-number" id="workflowLearning">—</strong
-              ><progress
-                id="workflowLearningMeter"
-                max="100"
-                value="0"
-                aria-label="오늘 학습·저장 완료"
-                aria-valuetext="미측정"
-              ></progress
-              ><small class="metric-caption" id="learningAtGlance"
-                >확인 중</small
-              ></a
-            ><a class="live-metric" href="#promotionTrial"
-              ><div class="metric-heading">
-                <span>승급전 진행</span
-                ><span class="pill" id="workflowTrialState">확인 중</span>
-              </div>
-              <strong class="metric-number" id="workflowTrial">—</strong
-              ><progress
-                id="workflowTrialMeter"
-                max="100"
-                value="0"
-                aria-label="승급전 진행"
-                aria-valuetext="미측정"
-              ></progress
-              ><small class="metric-caption" id="workflowTrialDetail"
-                >확인 중</small
-              ></a
-            >
-          </section>
-          <section class="overview-experience metric-grid">
-            <a class="card live-metric" href="#learning"
-              ><div class="metric-heading">
-                <span>손익 확인 중</span><span class="pill">결과 대기</span>
-              </div>
-              <strong class="metric-number" id="overviewExperiencePending"
-                >—</strong
-              ><small class="metric-caption"
-                >후속 시세로 보상 확정 후 학습</small
-              ></a
-            ><a class="card live-metric" href="#learning"
-              ><div class="metric-heading">
-                <span>학습 가능한 경험</span><span class="pill">Replay</span>
-              </div>
-              <strong class="metric-number" id="overviewExperienceEligible"
-                >—</strong
-              ><small class="metric-caption" id="overviewLearningReason"
-                >학습 상태 확인 중</small
-              ></a
-            ><a class="card live-metric" href="#learning"
-              ><div class="metric-heading">
-                <span>학습·저장 완료</span><span class="pill">두 모델</span>
-              </div>
-              <strong class="metric-number" id="overviewExperienceCompleted"
-                >—</strong
-              ><small class="metric-caption"
-                >최근 날짜 기록의 완료 합계</small
-              ></a
-            >
-          </section>
+          
+          
 
-          <section
-            class="overview-resources metric-grid"
-            aria-label="자원과 저장소"
-          >
-            <div class="card status-card live-metric gpu-summary">
-              <div class="topline">
-                <span>GPU · 메모리</span
-                ><span class="pill" id="gpuBadge">확인 중</span>
-              </div>
-              <strong class="big" id="gpuMemory">—</strong>
-              <div
-                class="meter"
-                role="progressbar"
-                aria-label="장치 GPU 메모리 사용 비율"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-                id="gpuMeter"
-              >
-                <div id="gpuFill"></div>
-              </div>
-              <div class="metric-sub">
-                <span id="gpuDevice">GPU 확인 중</span
-                ><span id="gpuPercent">—</span>
-              </div>
-            </div>
-            <a class="live-metric" href="#control"
-              ><div class="metric-heading">
-                <span>가상계좌 누적 체결</span
-                ><span class="pill" id="workflowPaperState">확인 중</span>
-              </div>
-              <strong class="metric-number" id="workflowPaper">—</strong>
-              <div class="metric-spacer"></div>
-              <small class="metric-caption" id="workflowPaperDetail"
-                >확인 중</small
-              ></a
-            ><a class="card live-metric" href="#learning"
-              ><div class="metric-heading">
-                <span>Replay · 학습 DB</span
-                ><span class="pill" id="overviewReplayBadge">확인 중</span>
-              </div>
-              <strong class="metric-number" id="overviewReplaySize">—</strong
-              ><small class="metric-caption" id="overviewReplayDetail"
-                >미학습은 보존 · 양쪽 저장 확인 후 삭제</small
-              ></a
-            >
-          </section>
+          
         </div>
         <div data-view="market" class="page-view">
           <div class="page-heading">
@@ -826,6 +790,18 @@
             <h1>경험 학습</h1>
             <span>경험 생성부터 두 모델 학습·저장까지</span>
           </div>
+          <section id="moeLearningView" hidden>
+            <h2>TradingMoE · 실제 학습 변화</h2>
+            <article class="card pad optimizer-card">
+              <div class="topline"><span>가중치 업데이트</span><span class="pill" id="learningOptimizerBadge">확인 중</span></div>
+              <strong class="big" id="learningOptimizerCount">—</strong>
+              <p id="learningOptimizerChange">변화 확인 중</p>
+              <div class="optimizer-values"><span>최근 loss <b id="learningOptimizerLoss">—</b></span><span>reward <b id="learningOptimizerReward">—</b></span></div>
+              <p id="learningOptimizerTime">학습 완료 시각 확인 중</p>
+            </article>
+            <p id="moeLearningReplay">실행 중 MoE 학습 DB 확인 중</p>
+            <div class="grid-2" id="moeLearningWorkers"></div>
+          </section>
           <section id="learning">
             <div class="section-head">
               <div>
@@ -1950,14 +1926,14 @@
         </footer>
       </main>
     </div>
-    <script defer="" src="/assets/app.js?v=cards-layout-2"></script>
-    <script defer="" src="/assets/dashboard.js?v=cards-layout-2"></script>
-    <script defer="" src="/assets/details.js?v=cards-layout-2"></script>
-    <script defer="" src="/assets/accounts.js?v=cards-layout-2"></script>
-    <script defer="" src="/assets/learning.js?v=cards-layout-2"></script>
-    <script defer="" src="/assets/trial.js?v=cards-layout-2"></script>
+    <script defer="" src="/assets/app.js?v=moe-operations-3"></script>
+    <script defer="" src="/assets/dashboard.js?v=moe-operations-3"></script>
+    <script defer="" src="/assets/details.js?v=moe-operations-3"></script>
+    <script defer="" src="/assets/accounts.js?v=moe-operations-3"></script>
+    <script defer="" src="/assets/learning.js?v=moe-operations-3"></script>
+    <script defer="" src="/assets/trial.js?v=moe-operations-3"></script>
     <script defer="" src="/assets/experts.js?v=integrated-2"></script>
     <script defer="" src="/assets/trading-moe.js?v=operate-1"></script>
-    <script defer="" src="/assets/controls.js?v=cards-layout-2"></script>
+    <script defer="" src="/assets/controls.js?v=moe-operations-3"></script>
   </body>
 </html>

@@ -1,0 +1,48 @@
+{
+  "model": "Maple728/TimeMoE-200M",
+  "revision": "794591bfeb1225fdf742cec0f4c71f20c3f3b87e",
+  "files": [
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\README.md",
+      "bytes": 400,
+      "sha256": "c0ab1a3140946b09c2e10f62194eda89db391bde05576fbfcf664f703829f1f6",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\config.json",
+      "bytes": 892,
+      "sha256": "cd582cc3dd64decc15c088735d18dcae00ad2bdc013ec6a814af7999e16952bd",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\configuration_time_moe.py",
+      "bytes": 2503,
+      "sha256": "d9b2e91a18fcc79753af7504a93382d43fa87d168318db01eb8431ef8d1b1125",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\generation_config.json",
+      "bytes": 69,
+      "sha256": "d90f7f1d9ef012f9ec0bd76fdf42e6979d086f157d65910b3b273edfb100e748",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\Desktop\\모델\\experts\\market\\TimeMoE-200M\\model.safetensors",
+      "bytes": 906450104,
+      "sha256": "28d1cbf480c1f63d4ad56d8b7649d9860b9afa9f31abeedff9decea48d9aee57",
+      "upstream_sha256": "28d1cbf480c1f63d4ad56d8b7649d9860b9afa9f31abeedff9decea48d9aee57"
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\modeling_time_moe.py",
+      "bytes": 51921,
+      "sha256": "afd34fc6799799ef7784ae55425da7e58f4dabe49f2873744af201c06ebcfae6",
+      "upstream_sha256": null
+    },
+    {
+      "path": "C:\\Users\\hushm\\OneDrive\\문서\\ChatGPT\\금융매매모델\\artifacts\\experts\\checkpoints\\TimeMoE-200M\\ts_generation_mixin.py",
+      "bytes": 11529,
+      "sha256": "b8ed9708bb450dda5443093ce46fa84890ae119823bd897e7f86c4f50dd2814d",
+      "upstream_sha256": null
+    }
+  ]
+}

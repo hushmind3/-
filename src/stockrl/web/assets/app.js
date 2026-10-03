@@ -15,7 +15,21 @@ function runningModelRoles(data) {
 }
 function modelIsLearning(data, role) {
   return modelIsRunning(data, role) && data.learning_enabled !== false
-    && data.model_runtime?.[role]?.memory_scope !== "worker" && data.metrics?.[role + "_training"] === true;
+    && (data.model_runtime?.[role]?.memory_scope === "worker"
+      ? data.model_runtime[role].learning_active === true
+      : data.metrics?.[role + "_training"] === true);
+}
+function modelUsesHistoricalData(data, role) {
+  const runtime = data.model_runtime?.[role];
+  return runtime?.source_kind != null ? runtime.source_kind === "historical_paper"
+    : runtime?.memory_scope === "worker";
+}
+function moeModelRoles(data) {
+  return ["champion", "candidate"].filter((role) => modelUsesHistoricalData(data, role));
+}
+// Historical source timestamps are data time, never the worker's wall clock.
+function marketDataTime(value) {
+  return value ? String(value).replace("T", " ").slice(0, 19) : "대기";
 }
 function modelStateLabel(runtime) {
   return ({stopped: "정지", loading: "로딩 중", running: "실행 중", saving: "저장 중", error: "정지 · 오류"})[runtime?.status] || "상태 미확인";
@@ -436,7 +450,7 @@ function render(d) {
       renderOutputDiagnostics(d);
       renderVenues(d);
     }
-    if (screenVisible("learning")) {
+    if (screenVisible("learning") && !renderMoELearning(d)) {
       renderLearningTotals(d);
       renderLearningMeasurements(d);
       renderLearningMetrics(d);
@@ -480,10 +494,10 @@ function render(d) {
 function startDashboard() {
   // Old tabs can receive newer assets during deployment. Reload the document
   // before running renderers that require the corresponding screen markup.
-  if (document.documentElement.dataset.uiRevision !== "cards-layout-2") {
+  if (document.documentElement.dataset.uiRevision !== "moe-operations-3") {
     const url = new URL(location.href);
-    if (url.searchParams.get("ui") !== "cards-layout-2") {
-      url.searchParams.set("ui", "cards-layout-2");
+    if (url.searchParams.get("ui") !== "moe-operations-3") {
+      url.searchParams.set("ui", "moe-operations-3");
       location.replace(url.href);
     } else {
       writeText("systemBadge", "화면 버전 불일치 · 새로고침 필요");

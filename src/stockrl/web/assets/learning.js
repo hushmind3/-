@@ -59,6 +59,30 @@ function renderExperienceFlow(d) {
 
 // Explain the same measured state everywhere; no inference or control requests.
 
+// MoE runtime owns its learner and ledger; legacy metrics are a separate screen scope.
+function renderMoELearning(d) {
+  const roles = moeModelRoles(d);
+  const native = roles.length > 0 && runningModelRoles(d).every((role) => modelUsesHistoricalData(d,role));
+  property("moeLearningView","hidden",!native);
+  property("learning","hidden",native);
+  if (!native) return false;
+  renderOptimizerBoard(d,"learning");
+  const experience = overviewExperience(d);
+  text("moeLearningReplay", "학습 대기 " + whole(experience.eligible) + "건 · 결과 대기 "
+    + whole(experience.pending) + "건 · 완료 " + whole(experience.completed) + "건 · "
+    + "학습 후 저장 대기 " + whole(experience.saving) + "건 · " + decimal(experience.bytes/1048576,1) + " MiB");
+  html("moeLearningWorkers", () => roles.map((role) => {
+    const r=d.model_runtime[role];
+    return '<article class="card pad"><h3>' + (role === "champion" ? "Champion" : "Candidate")
+      + ' · TradingMoE</h3><p>' + esc(!modelIsRunning(d,role) ? modelStateLabel(r) + " · 마지막 저장 기록" : modelIsLearning(d,role) ? "최근 사이클 학습 완료" : d.learning_enabled === false ? "학습 중지" : "추론·경험 수집 · 학습 대기")
+      + '</p><p>데이터 시점 ' + esc(marketDataTime(r.last_decision)) + '</p><p>최근 판단 계산 '
+      + esc(decimal(r.decision_seconds,2)) + '초 · 상태 갱신 ' + esc(ageOf(r.updated_at))
+      + '</p><p>업데이트 ' + esc(whole(r.optimizer_updates)) + '회 · 학습 DB '
+      + esc(whole(r.replay?.remaining_for_update ?? r.replay?.untrained)) + '건 대기</p></article>';
+  }).join(""));
+  return true;
+}
+
 function learningSituation(d) {
   if (d.status_unavailable)
     return {
@@ -76,7 +100,7 @@ function learningSituation(d) {
   const pending = known(pendingValue) ? Number(pendingValue) : null;
   const roles = runningModelRoles(d);
   const legacyRoles = roles.filter((role) => d.model_runtime?.[role]?.memory_scope !== "worker");
-  const workerRoles = roles.filter((role) => d.model_runtime?.[role]?.memory_scope === "worker");
+  const workerRoles = moeModelRoles(d);
   const error = d.agent_process_running
     ? m.learner_statistics_error || m.agent_last_input_error || legacyRoles.map((role) => m["last_" + role + "_error"]).find(Boolean)
     : null;
@@ -86,10 +110,10 @@ function learningSituation(d) {
     .join(" · ");
   if (workerRoles.length && !legacyRoles.length)
     return {
-      title: workerRoles.map((role) => role === "champion" ? "Champion" : "Candidate").join(" · ") + (d.learning_enabled === false ? " 학습 중지" : " TradingMoE · 학습 허용"),
+      title: workerRoles.map((role) => role === "champion" ? "Champion" : "Candidate").join(" · ") + (!workerRoles.some((role) => modelIsRunning(d,role)) ? " MoE 정지 · 마지막 기록" : d.learning_enabled === false ? " 학습 중지" : workerRoles.some((role) => modelIsLearning(d,role)) ? " MoE 학습 중" : " MoE 학습 대기"),
       reason: "공식 ETHUSDT 과거 구간을 실행합니다. 이 모델의 계좌와 replay는 기존 두 모델의 replay DB와 별개입니다.",
-      next: "해당 모델의 상세에서 최근 학습 결과를 확인하세요. 아래 DB 수치는 기존 공통 replay입니다.",
-      tone: d.learning_enabled === false ? "" : "blue",
+      next: "운영 전광판과 경험 학습 화면에 이 MoE의 업데이트·loss·replay를 표시합니다.",
+      tone: workerRoles.some((role) => modelIsLearning(d,role)) ? "blue" : "",
     };
   const wait = String(m.learning_wait_reason || "");
   if (d.agent_process_running !== true)

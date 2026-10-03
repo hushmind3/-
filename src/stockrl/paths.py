@@ -24,6 +24,10 @@ def expert_weight_path(path: str | Path) -> Path:
     test directories keep their own paths; only project expert assets relocate.
     """
     path = Path(path)
+    # Registries/checkpoints may have been produced under another Windows user.
+    if path.is_absolute() and "Desktop" in path.parts and "모델" in path.parts:
+        marker = path.parts.index("모델")
+        return DEFAULT_MODEL_DIR.joinpath(*path.parts[marker + 1:])
     try:
         relative = path.resolve().relative_to(EXPERT_ASSETS_DIR.resolve())
     except ValueError:

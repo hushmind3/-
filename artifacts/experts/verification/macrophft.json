@@ -1,0 +1,33 @@
+{
+  "expert": "macrophft",
+  "native_output": [
+    [
+      2.3842105865478516,
+      2.607295513153076
+    ]
+  ],
+  "layout": "batch,Q_flat_long",
+  "units": "native_ETHUSDT_policy_Q",
+  "symbols": [
+    "ETHUSDT"
+  ],
+  "as_of": null,
+  "horizon": 1,
+  "sampling_seconds": null,
+  "parameters": 45507,
+  "parameter_bytes": 182028,
+  "parameter_dtypes": [
+    "torch.float32"
+  ],
+  "frozen": true,
+  "output_shape": [
+    1,
+    2
+  ],
+  "load_seconds": 0.9439564999993308,
+  "forward_seconds": 0.1342878000014025,
+  "peak_allocated_bytes": 8711168,
+  "peak_reserved_bytes": 23068672,
+  "variant": "slope/1",
+  "input_authenticity": "synthetic_schema_probe_not_market_validation"
+}
