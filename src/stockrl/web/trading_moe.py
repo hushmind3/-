@@ -17,6 +17,8 @@ class TradingMoELifecycle:
         self.state=Path(state) if state else ROOT/"runtime/trading_moe/native_vertical_run"
         self.record=self.state/"worker.json" if state else ROOT/"runtime/trading_moe/worker.json"
         self.lock=threading.RLock()
+        self.runner_script="run_native_vertical_trading.py"
+        self.extra_args=[]
 
     @staticmethod
     def read(path):
@@ -78,8 +80,9 @@ class TradingMoELifecycle:
             (self.state/"stop.request").unlink(missing_ok=True)
             previous=self.read(self.state/"worker_status.json")
             atomic_json(self.state/"worker_status.json",{**previous,"status":"loading","error":None,"stop_requested":False})
-            command=[str(python),"-u",str(ROOT/"scripts/run_native_vertical_trading.py"),
+            command=[str(python),"-u",str(ROOT/"scripts"/self.runner_script),
                 "--root",str(self.artifacts),"--checkpoint",str(checkpoint),"--state",str(self.state),"--resume","--continuous","--interval","0.1"]
+            command.extend(self.extra_args)
             try:
                 with (self.state/"worker.log").open("ab") as log:
                     worker=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,

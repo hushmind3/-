@@ -15,6 +15,7 @@ from .resources import DASHBOARD_PATH, PAGE, ROOT, dashboard_asset
 from .runtime import Supervisor
 from .workers import handoff
 from .trading_moe import TradingMoELifecycle
+from ..assembly_orchestrator import AssemblyOrchestrator
 
 def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
           device: str = "auto", candidate_every: int = 16, fee: float = .001,
@@ -29,6 +30,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                             model_dir, settings_dir)
     restart_server_requested = threading.Event()
     trading_moe = TradingMoELifecycle()
+    assembly = AssemblyOrchestrator(supervisor)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "StockRLWeb/1.0"
@@ -78,6 +80,8 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
                 return self._send(supervisor.status())
             if route == "/api/trading-moe/status":
                 return self._send(trading_moe.status())
+            if route == "/api/assembly/status":
+                return self._send(assembly.status())
             if route in ("/api/experts", "/api/experts/output", "/api/experts/fusion"):
                 from ..expert_registry import read_registry, read_raw_output, read_fusion_output
                 registry = ROOT / "runtime/trading_moe/registry.json"
@@ -111,6 +115,18 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
             except (ValueError, json.JSONDecodeError):
                 return self._send({"error": "invalid json"}, 400)
             route = urlparse(self.path).path
+            if route.startswith("/api/assembly/"):
+                action=route.removeprefix("/api/assembly/")
+                try:
+                    if action in ("start","stop"):result=assembly.start(action=="start")
+                    elif action=="generate":assembly.generate();result={"ok":True}
+                    elif action=="next":result=assembly.next()
+                    elif action=="settings":result=assembly.settings(payload)
+                    elif action=="trial/start":result=assembly.trial(True)
+                    elif action=="trial/stop":result=assembly.trial(False)
+                    else:return self._send({"error":"unknown assembly action"},404)
+                    return self._send({**result,"assembly":assembly.status()},200 if result.get("ok") else 409)
+                except (ValueError,OSError) as exc:return self._send({"error":str(exc)},409)
             if route in ("/api/trading-moe/start","/api/trading-moe/stop"):
                 result=trading_moe.start() if route.endswith("/start") else trading_moe.stop()
                 return self._send(result,200 if result.get("ok") else 400)
@@ -218,6 +234,7 @@ def serve(host: str = "127.0.0.1", port: int = 8766, runtime: str | None = None,
     except KeyboardInterrupt:
         pass
     finally:
+        assembly.close()
         if restart_server_requested.is_set():
             handoff(supervisor)
         else:

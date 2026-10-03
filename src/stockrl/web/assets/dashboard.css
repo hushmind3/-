@@ -2133,3 +2133,11 @@ body {
   gap: 16px;
   margin-bottom: 18px;
 }
+
+/* Assembly screen reuses existing cards/tables; long universes stay scrollable. */
+#assembly > .card { margin-top: 18px; }
+#assembly .assembly-number { font-size: clamp(18px, 2vw, 28px); overflow-wrap: anywhere; }
+#assembly .assembly-controls .mode-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+#assemblyExperts table { min-width: 1080px; }
+#assemblyExperts td:nth-child(5) { max-width: 320px; white-space: normal; }
+#assembly .table-wrap { overflow-x: auto; }

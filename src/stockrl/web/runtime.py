@@ -165,6 +165,9 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
 
     def set_model(self,role,enabled):
         if role not in ("champion","candidate"):return {"error":"Unknown model role"}
+        assembly=getattr(self,"assembly_orchestrator",None)
+        if role=="candidate" and assembly is not None and assembly.owns_candidate_slot():
+            return assembly.trial(enabled)
         with self.lock:
             if self.stopping:return {"error":"System is saving; wait for completion."}
             if enabled and not self.run_requested:
@@ -177,14 +180,18 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
             self.model_enabled[role]=bool(enabled)
             self.model_request_versions[role]=time.time_ns()
             if enabled:
-                import torch
-                try:metadata=torch.load(self.model_dir/(role+".pt"),map_location="cpu",weights_only=False,mmap=True)
-                except Exception as exc:
-                    self.model_enabled[role]=False
-                    self._write_autonomy()
-                    return {"error":f"{role}.pt could not be read: {exc}"}
-                self.model_families[role]="trading_moe" if "feature_sizes" in metadata.get("config",{}) else "legacy"
-                del metadata
+                assembly_worker=self.moe_model_workers.get(role)
+                if assembly_worker and assembly_worker.runner_script=="run_assembly_trial.py":
+                    self.model_families[role]="trading_moe"
+                else:
+                    import torch
+                    try:metadata=torch.load(self.model_dir/(role+".pt"),map_location="cpu",weights_only=False,mmap=True)
+                    except Exception as exc:
+                        self.model_enabled[role]=False
+                        self._write_autonomy()
+                        return {"error":f"{role}.pt could not be read: {exc}"}
+                    self.model_families[role]="trading_moe" if "feature_sizes" in metadata.get("config",{}) else "legacy"
+                    del metadata
             self._write_autonomy()
             if enabled:
                 if self.model_families.get(role)=="trading_moe":
@@ -207,6 +214,10 @@ class Supervisor(_StatusMixin, _AccountResetMixin):
         if worker is None or worker.state!=state:
             worker=TradingMoELifecycle(checkpoint=self.model_dir/(role+".pt"),state=state)
             self.moe_model_workers[role]=worker
+        if role=="champion":
+            recipe=ROOT/"runtime/assembly/champion_recipe.json"
+            if recipe.is_file() and _json(recipe).get("enabled_experts"):
+                worker.extra_args=["--recipe",str(recipe)]
         return worker
 
     def _write_autonomy(self):

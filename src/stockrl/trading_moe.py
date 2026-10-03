@@ -69,6 +69,12 @@ class VerticalController(nn.Module):
     def forward(self,evidence,validity,account,policy_q=None):
         logits=torch.cat([self.router[k](evidence[k]) for k in self.market_ids],-1)+self.router_context(account)
         market_mask=torch.stack([validity[k] for k in self.market_ids],-1)
+        routing=getattr(self,"assembly_routing",{})
+        logits=logits/max(.05,float(routing.get("market",{}).get("temperature",1)))
+        top_k=int(routing.get("market",{}).get("top_k",0))
+        if 0<top_k<len(self.market_ids):
+            selected=torch.zeros_like(market_mask).scatter_(-1,logits.masked_fill(~market_mask,-1e9).topk(top_k,-1).indices,True)
+            market_mask=market_mask&selected
         gates=logits.masked_fill(~market_mask,-1e9).softmax(-1)*market_mask
         gates=gates/gates.sum(-1,keepdim=True).clamp_min(1e-9)
         # Every available historical expert participates; no initial fixed top-2.
@@ -81,6 +87,11 @@ class VerticalController(nn.Module):
         policy_gates=None
         if self.stock_policy_ids:
             policy_logits=torch.cat([self.policy_router[k](evidence[k]) for k in self.policy_ids],-1)
+            policy_logits=policy_logits/max(.05,float(routing.get("policy",{}).get("temperature",1)))
+            policy_k=int(routing.get("policy",{}).get("top_k",0))
+            if 0<policy_k<len(self.policy_ids):
+                selected=torch.zeros_like(policy_mask).scatter_(-1,policy_logits.masked_fill(~policy_mask,-1e9).topk(policy_k,-1).indices,True)
+                policy_mask=policy_mask&selected
             policy_gates=policy_logits.masked_fill(~policy_mask,-1e9).softmax(-1)*policy_mask
             policy_gates=policy_gates/policy_gates.sum(-1,keepdim=True).clamp_min(1e-9)
             tokens=tokens*policy_gates[...,None]*policy_mask.sum(-1)[...,None,None]
@@ -96,7 +107,7 @@ class VerticalController(nn.Module):
         prior=torch.zeros_like(head.policy(final));allocation_prior=torch.zeros_like(head.allocation(final).squeeze(-1))
         if policy_q is not None:
             q=torch.stack([policy_q[k] for k in self.macro_policy_ids],-2)
-            macro_mask=torch.stack([validity[k] for k in self.macro_policy_ids],-1)
+            macro_mask=policy_mask[...,:len(self.macro_policy_ids)]
             centered=q-q.mean(-1,keepdim=True)
             direction=centered/(centered.square().mean(-1,keepdim=True).sqrt().clamp_min(1e-8))
             votes=direction.softmax(-1)*macro_mask[...,None]
@@ -110,7 +121,7 @@ class VerticalController(nn.Module):
             prior=prior.masked_fill(macro_unavailable[...,None],0)
             allocation_prior=(long-flat).masked_fill(macro_unavailable,0)
             if self.stock_policy_ids:
-                stock_mask=torch.stack([validity[k] for k in self.stock_policy_ids],-1)
+                stock_mask=policy_mask[...,len(self.macro_policy_ids):]
                 stock_votes=torch.stack([policy_q[k][...,:3] for k in self.stock_policy_ids],-2)
                 stock_gates=policy_gates[...,len(self.macro_policy_ids):]*stock_mask
                 stock_gates=stock_gates/stock_gates.sum(-1,keepdim=True).clamp_min(1e-9)
@@ -169,6 +180,7 @@ class TradingMoE(nn.Module):
         packets={p["expert"]:p for p in packets}
         for key,size in self.config["feature_sizes"].items():
             packet=packets.get(key)
+            if hasattr(self,"assembly_enabled") and key not in self.assembly_enabled:packet=None
             if packet is None:
                 device=self.adapters[key].scale.device
                 evidence[key]=torch.zeros(1,len(symbols),size,device=device);validity[key]=torch.zeros(1,len(symbols),dtype=torch.bool,device=device)
@@ -185,6 +197,7 @@ class TradingMoE(nn.Module):
             packets=[]
             with registry_owner(self.gpu_lock):
                 for key,expert in self.experts.items():
+                    if hasattr(self,"assembly_enabled") and key not in self.assembly_enabled:continue
                     data=snapshot["expert_inputs"].get(key)
                     if key in self.config.get("stock_policy_ids",()) and data is None:
                         data=expert.prepare_input(snapshot)
@@ -233,6 +246,32 @@ class TradingMoE(nn.Module):
             "decision_seconds":time.perf_counter()-started,"training_performed":False}
         return result,outputs
 
+    def apply_assembly_recipe(self,recipe):
+        unknown=set(recipe["enabled_experts"])-set(self.config["feature_sizes"])
+        if unknown:raise ValueError("공용 PT에 아직 없는 expert: "+", ".join(sorted(unknown)))
+        if recipe.get("controller_variant")!="vertical_native_prior_v1":raise ValueError("unsupported controller variant")
+        self.assembly_enabled=set(recipe["enabled_experts"])
+        self.controller.assembly_routing={"market":recipe["market_routing"],"policy":recipe["policy_routing"]}
+
+    def save_assembly_state(self,path,optimizer=None):
+        """Only learned modules; frozen expert weights never enter this file."""
+        destination=Path(path);destination.parent.mkdir(parents=True,exist_ok=True)
+        temporary=destination.with_suffix(".partial")
+        torch.save({"format":"trading_moe_assembly_v1","feature_sizes":self.config["feature_sizes"],
+            "controller":self.controller.state_dict(),"adapters":self.adapters.state_dict(),
+            "optimizer":optimizer.state_dict() if optimizer else None,"optimizer_updates":self.optimizer_updates,
+            "learning_state":{key:self.config[key] for key in ("replay_account_episode","applied_replay_rows") if key in self.config}},temporary)
+        temporary.replace(destination)
+
+    def load_assembly_state(self,path):
+        state=torch.load(path,map_location=next(self.controller.parameters()).device,weights_only=True)
+        if state["format"]!="trading_moe_assembly_v1" or state["feature_sizes"]!=self.config["feature_sizes"]:
+            raise ValueError("assembly state does not match shared base")
+        self.controller.load_state_dict(state["controller"]);self.adapters.load_state_dict(state["adapters"])
+        self.optimizer_updates=state["optimizer_updates"]
+        self.config.update(state.get("learning_state",{}))
+        return state.get("optimizer")
+
     def policy_q(self,packets,symbols):
         device=next(self.controller.parameters()).device
         values={k:torch.zeros(1,len(symbols),2 if k in self.controller.macro_policy_ids else 4,device=device) for k in self.controller.policy_ids}
@@ -255,7 +294,7 @@ class TradingMoE(nn.Module):
         temporary.replace(path)
 
     @classmethod
-    def load_checkpoint(cls,path):
+    def load_checkpoint(cls,path,*,cached_market=False):
         saved=torch.load(path,map_location="cpu",weights_only=True,mmap=True)
         if saved["format"]!="registered_vertical_trading_moe_v1":raise ValueError("unknown MoE format")
         temp=tempfile.TemporaryDirectory(prefix="stockrl-moe-native-")
@@ -266,6 +305,11 @@ class TradingMoE(nn.Module):
             archive.extractall(root)
         experts={}
         for key,entry in saved["expert_mapping"].items():
+            if cached_market and not key.startswith("macrophft_"):
+                # Replay trials reuse actual native market/stock outputs; no
+                # native body materialization. Six crypto Q modules remain real.
+                experts[key]=nn.Identity()
+                continue
             prefix=f"experts.{key}.models."
             count=saved["config"]["native_module_counts"][key]
             states=[{k.removeprefix(prefix+str(i)+"."):v for k,v in saved["state_dict"].items() if k.startswith(prefix+str(i)+".")} for i in range(count)]

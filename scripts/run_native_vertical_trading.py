@@ -171,6 +171,7 @@ def main():
     p.add_argument("--root",type=Path,required=True);p.add_argument("--steps",type=int,default=6)
     p.add_argument("--state",type=Path,default=Path("runtime/trading_moe/native_vertical"))
     p.add_argument("--checkpoint",type=Path,help="use this named model file without renaming or copying it")
+    p.add_argument("--recipe",type=Path,help="shared expert base with a separate small learned state")
     p.add_argument("--device",default="cuda:0");p.add_argument("--resume",action="store_true")
     p.add_argument("--continuous",action="store_true",help="keep one model resident and run until stop.request")
     p.add_argument("--interval",type=float,default=2,help="wall seconds between historical decisions")
@@ -188,6 +189,12 @@ def run(args):
     publish_worker(args.state,status="loading",load_count=0,error=None,stop_requested=False,message=f"{checkpoint.name}를 한 번 적재하는 중입니다.")
     load_started=time.perf_counter()
     model,saved=TradingMoE.load_checkpoint(checkpoint)
+    assembly_recipe=None
+    if args.recipe:
+        assembly_recipe=json.loads(args.recipe.read_text(encoding="utf-8"))
+        model.apply_assembly_recipe(assembly_recipe)
+        if assembly_recipe.get("trainable_state"):
+            saved=model.load_assembly_state(assembly_recipe["trainable_state"])
     model.runtime_checkpoint=checkpoint
     if args.device.startswith("cuda") and not torch.cuda.is_available():raise RuntimeError("CUDA is required for the requested GPU worker")
     model.set_learning_device(args.device)
@@ -264,7 +271,8 @@ def run(args):
                 "tradable_symbols":[s for j,s in enumerate(panel.symbols) if panel.observed[pi,j]],
                 "current_weights":{s:float(pstate[j][1]) for j,s in enumerate(panel.symbols)},"expert_inputs":{}}
             for key in model.controller.macro_policy_ids:snapshot["expert_inputs"][key]={**policy_data,"variant":model.experts[key].entry["variant"]}
-            if market_packets is None or (args.continuous and step%120==0):
+            refresh_steps=max(1,min(assembly_recipe["refresh_seconds"][k] for k in model.controller.market_ids if k in assembly_recipe["enabled_experts"])//60) if assembly_recipe else 120
+            if market_packets is None or (args.continuous and step%refresh_steps==0):
                 inputs=market_inputs(args.root,native,index)
                 snapshot["expert_inputs"].update(inputs)
                 with torch.no_grad():decision,_=model(snapshot,account,device=args.device,explore=True)
@@ -274,6 +282,7 @@ def run(args):
             else:
                 packets=list(market_packets)
                 for key in model.controller.macro_policy_ids:
+                    if assembly_recipe and key not in assembly_recipe["enabled_experts"]:continue
                     data=snapshot["expert_inputs"][key]
                     with registry_owner(model.gpu_lock),model.scheduler.work("champion_live"):
                         packet=model.experts[key](model.root,data,args.device)
@@ -308,7 +317,12 @@ def run(args):
             while time.monotonic()<deadline and not (args.state/"stop.request").exists():time.sleep(min(.1,max(0,deadline-time.monotonic())))
     publish_worker(args.state,model,bridge,status="saving",stop_requested=True,message="계좌·replay·optimizer·TradingMoE.pt를 저장하는 중입니다.")
     bridge.paper_account.save();save_contexts(args.state,contexts)
-    model.save_checkpoint(checkpoint,optimizer)
+    if assembly_recipe:
+        small_path=args.recipe.parent/"trainable"/(assembly_recipe["candidate_id"]+".pt")
+        model.save_assembly_state(small_path,optimizer)
+        assembly_recipe["trainable_state"]=str(small_path)
+        atomic_json(args.recipe,assembly_recipe)
+    else:model.save_checkpoint(checkpoint,optimizer)
     bridge.replay.acknowledge_training({int(k):v for k,v in model.config.get("applied_replay_rows",{}).items()})
     if rows:publish_paper_status(args.root,args.state,bridge,None,rows[-1],model,completed=True)
     publish_worker(args.state,model,bridge,status="stopped",stop_requested=False,message="저장 완료 · 다음 시작은 같은 계좌와 학습 상태에서 이어집니다.")

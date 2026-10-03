@@ -42,12 +42,42 @@
         ><a href="#system" data-page="details">상세 · 기록</a>
         <a href="#experts" data-page="experts">TradingMoE · 전문가</a>
         <a href="#trading-moe" data-page="trading-moe">TradingMoE · 자동매매</a>
+        <a href="#assembly" data-page="assembly">조립 · 자동실험</a>
         <div class="nav-foot">
           동일 시장 · 독립 계좌<br />공동 경험 · 두 모델 학습
         </div>
       </nav>
 
       <main class="workspace" id="workspace">
+        <div data-view="assembly" class="page-view" hidden>
+          <section id="assembly" aria-label="TradingMoE 조립 및 자동실험">
+            <h1>조립 · 자동실험</h1>
+            <p class="metric-caption">공용 frozen expert · 작은 recipe와 학습 state만 교체 · 실제 주문 OFF</p>
+            <div id="assemblyBoard" class="status-grid" aria-live="polite"></div>
+            <article class="card pad assembly-controls">
+              <div class="section-head"><h2>자동실험 제어</h2><span id="assemblyActionStatus" role="status"></span></div>
+              <div class="mode-buttons">
+                <button type="button" data-assembly-action="start">자동조립 시작</button>
+                <button type="button" data-assembly-action="stop">자동조립 정지</button>
+                <button type="button" data-assembly-action="generate">새 Candidate 즉시 생성</button>
+                <button type="button" data-assembly-action="trial/start">현재 Candidate 시험 시작</button>
+                <button type="button" data-assembly-action="trial/stop">현재 Candidate 시험 정지</button>
+                <button type="button" data-assembly-action="next">현재 Candidate 탈락 · 다음 후보</button>
+              </div>
+              <div class="mode-buttons">
+                <button type="button" data-assembly-setting="auto_replace" role="switch">자동 후보 교체</button>
+                <button type="button" data-assembly-setting="auto_promote" role="switch">자동 승격</button>
+                <button type="button" data-assembly-setting="detect_experts" role="switch">새 Expert 자동감지</button>
+              </div>
+              <p id="assemblyMessage" class="metric-caption"></p>
+              <p class="metric-caption">자동조립 정지는 새 시험 예약을 멈춥니다. 실행 중인 시험은 시험 정지 버튼으로 저장·중지합니다. 승격은 Champion recipe·작은 state만 변경하며 장기 계좌는 유지합니다. 운영 Champion에는 다음 모델 시작부터 적용합니다.</p>
+            </article>
+            <article class="card pad"><h2>전문가 조립표</h2><div class="table-wrap" id="assemblyExperts"></div></article>
+            <article class="card pad"><h2>현재 Candidate · 변경점과 성적</h2><div id="assemblyCandidate"></div></article>
+            <article class="card pad"><h2>다음 Candidate 대기열</h2><div class="table-wrap" id="assemblyQueue"></div></article>
+            <article class="card pad"><h2>실험 기록 · 생성과 탈락 이유</h2><div class="table-wrap" id="assemblyHistory"></div></article>
+          </section>
+        </div>
         <div data-view="trading-moe" class="page-view" hidden>
           <section id="trading-moe" aria-label="TradingMoE 전용 가상매매">
             <div class="page-heading"><h1>TradingMoE · 자동매매</h1><span class="pill good">PAPER · 실제 주문 OFF</span></div>
@@ -1934,6 +1964,7 @@
     <script defer="" src="/assets/trial.js?v=moe-operations-3"></script>
     <script defer="" src="/assets/experts.js?v=integrated-2"></script>
     <script defer="" src="/assets/trading-moe.js?v=operate-1"></script>
+    <script defer="" src="/assets/assembly.js?v=assembly-1"></script>
     <script defer="" src="/assets/controls.js?v=moe-operations-3"></script>
   </body>
 </html>
