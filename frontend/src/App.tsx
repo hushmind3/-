@@ -23,6 +23,19 @@ const descriptions: Record<Page, string> = {
   assembly: '조립 recipe를 생성하고 후보 시험을 순환합니다.',
 };
 
+function Navigation({ page, mobile = false }: { page: Page; mobile?: boolean }) {
+  return (
+    <nav className={mobile ? 'mobile-nav' : 'primary-nav'} aria-label="주요 메뉴">
+      {pages.map(([key, name], index) => (
+        <a key={key} href={'#' + key} aria-current={key === page ? 'page' : undefined}>
+          <span className="nav-index">{String(index + 1).padStart(2, '0')}</span>
+          <span>{name}</span>
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export default function App() {
   const page = pageFromHash(useHash()),
     status = usePolling('/api/status'),
@@ -38,7 +51,12 @@ export default function App() {
   else if (page === 'experts') content = <Experts />;
   else if (page === 'trading-moe') content = <TradingMoE />;
   else if (page === 'connection') content = <Connection />;
-  else if (!s) content = status.error ? <ErrorState message={status.error} retry={status.refresh} /> : <Loading />;
+  else if (!s)
+    content = status.error ? (
+      <ErrorState message={status.error} retry={status.refresh} />
+    ) : (
+      <Loading />
+    );
   else if (page === 'markets') content = <Markets status={s} />;
   else if (page === 'learning') content = <Learning status={s} />;
   else if (page === 'system') content = <Details status={s} />;
@@ -48,36 +66,69 @@ export default function App() {
     <CommandProvider>
       <div className="workspace">
         <aside className="rail">
-          <a className="brand" href="#control"><span className="brand-mark">M</span><span>MARKET<br />WORKS</span></a>
+          <a className="brand" href="#control">
+            <span className="brand-mark">M</span>
+            <span>
+              MARKET
+              <br />
+              WORKS
+            </span>
+          </a>
           <div className="rail-caption">TRADING SYSTEM</div>
-          <nav className="primary-nav" aria-label="주요 메뉴">
-            {pages.map(([key, name], index) => (
-              <a key={key} href={'#' + key} aria-current={key === page ? 'page' : undefined}>
-                <span className="nav-index">{String(index + 1).padStart(2, '0')}</span><span>{name}</span>
-              </a>
-            ))}
-          </nav>
-          <div className="rail-footer"><span className="live-dot" />Paper operations</div>
+          <Navigation page={page} />
+          <div className="rail-footer">
+            <span className="live-dot" />
+            Paper operations
+          </div>
         </aside>
         <main className="main-area">
           <header className="global-bar">
             <div className="global-state" aria-label="전역 시스템 상태">
-              <Signal label="웹서버" value={status.error ? '연결 오류' : s ? '연결됨' : '연결 중'} tone={status.error ? 'bad' : s ? 'good' : 'neutral'} />
-              <Signal label="시장 Feed" value={s?.feed_running ? '수신 중' : '정지'} tone={s?.feed_running ? 'good' : 'neutral'} />
-              <Signal label="실제 주문" value={s?.real_orders_enabled ? '허용' : '차단'} tone={s?.real_orders_enabled ? 'bad' : 'good'} />
+              <Signal
+                label="웹서버"
+                value={status.error ? '연결 오류' : s ? '연결됨' : '연결 중'}
+                tone={status.error ? 'bad' : s ? 'good' : 'neutral'}
+              />
+              <Signal
+                label="시장 Feed"
+                value={s?.feed_running ? '수신 중' : '정지'}
+                tone={s?.feed_running ? 'good' : 'neutral'}
+              />
+              <Signal
+                label="실제 주문"
+                value={s?.real_orders_enabled ? '허용' : '차단'}
+                tone={s?.real_orders_enabled ? 'bad' : 'good'}
+              />
             </div>
-            <span className="last-refresh">갱신 {status.updatedAt ? time(new Date(status.updatedAt).toISOString()) : '—'}</span>
+            <span className="last-refresh">
+              갱신 {status.updatedAt ? time(new Date(status.updatedAt).toISOString()) : '—'}
+            </span>
           </header>
-          <div className="mobile-brand"><a href="#control">MARKET WORKS</a><span>TRADING SYSTEM · PAPER</span></div>
-          <nav className="mobile-nav" aria-label="주요 메뉴">
-            {pages.map(([key, name], index) => <a key={key} href={'#' + key} aria-current={key === page ? 'page' : undefined}><small>{String(index + 1).padStart(2, '0')}</small>{name}</a>)}
-          </nav>
+          <div className="mobile-brand">
+            <a href="#control">MARKET WORKS</a>
+            <span>TRADING SYSTEM · PAPER</span>
+          </div>
+          <Navigation page={page} mobile />
           <section className="page-heading">
-            <div><div className="page-kicker">PAPER OPERATIONS / {String(page).toUpperCase()}</div><h1>{title}</h1><p>{descriptions[page]}</p></div>
-            <div className="page-heading-badge"><span className="live-dot" />{s?.running ? '공유 runtime 실행 중' : 'PAPER · 실제 주문 차단'}</div>
+            <div>
+              <div className="page-kicker">PAPER OPERATIONS / {String(page).toUpperCase()}</div>
+              <h1>{title}</h1>
+              <p>{descriptions[page]}</p>
+            </div>
+            <div className="page-heading-badge">
+              <span className="live-dot" />
+              {s?.running ? '공유 runtime 실행 중' : 'PAPER · 실제 주문 차단'}
+            </div>
           </section>
-          {status.error && s && <ErrorState message={'상태 갱신 오류 · 마지막 수신값 표시 중: ' + status.error} retry={status.refresh} />}
-          <div className="page-view" key={page}>{content}</div>
+          {status.error && s && (
+            <ErrorState
+              message={'상태 갱신 오류 · 마지막 수신값 표시 중: ' + status.error}
+              retry={status.refresh}
+            />
+          )}
+          <div className="page-view" key={page}>
+            {content}
+          </div>
         </main>
       </div>
     </CommandProvider>
